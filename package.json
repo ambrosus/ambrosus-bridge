@@ -1,0 +1,52 @@
+{
+  "name": "bridge",
+  "version": "0.0.1",
+  "description": "bridge",
+  "repository": "https://github.com/inc4/bridge",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "test": "hardhat test",
+
+    "build": "hardhat compile",
+    "deploy": "hardhat deploy --network rinkeby && hardhat deploy --network amb",
+    "verify": "hardhat etherscan-verify --network rinkeby",
+    "sourcify": "hardhat sourcify --network rinkeby",
+    "coverage": "hardhat coverage",
+    "lint": "eslint .",
+    "console": "hardhat console"
+  },
+  "devDependencies": {
+    "@types/chai-as-promised": "^7.1.4",
+    "@types/express": "^4.17.13",
+    "@types/mocha": "^8.2.2",
+    "@typescript-eslint/eslint-plugin": "^4.23.0",
+    "@typescript-eslint/parser": "^4.23.0",
+    "chai": "^4.3.4",
+    "chai-as-promised": "^7.1.1",
+    "eslint": "^7.26.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^3.4.0",
+    "hardhat-gas-reporter": "^1.0.4",
+    "istanbul": "^0.4.5",
+    "mocha": "^8.4.0",
+    "prettier": "^2.3.0",
+    "solidity-coverage": "https://github.com/SvineruS/solidity-coverage"
+  },
+  "dependencies": {
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/contracts": "^4.1.0",
+    "@openzeppelin/contracts-upgradeable": "^4.1.0",
+    "@types/dotenv": "^8.2.0",
+    "dotenv": "^9.0.2",
+    "ethereum-waffle": "^3.2.0",
+    "ethers": "^5.5.1",
+    "hardhat": "^2.3.3",
+    "hardhat-deploy": "^0.8.11",
+    "hardhat-deploy-ethers": "0.3.0-beta.10",
+    "openzeppelin-solidity": "^4.2.0",
+    "ts-node": "^9.1.1",
+    "typescript": "^4.2.4"
+  }
+}
