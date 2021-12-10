@@ -36,8 +36,7 @@ contract EthBridge {
             TestSignature(validator, block_hash, block.signature);
         }
 
-        bytes32 events_hash = keccak256(abi.encode(events));
-        TestReceiptsProof(proof, events_hash, receiptsRoot);
+        TestReceiptsProof(proof, abi.encode(events), receiptsRoot);
 
 //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
@@ -49,11 +48,11 @@ contract EthBridge {
 
 
 
-    function TestReceiptsProof(bytes[] memory proof, bytes32 eventToSearch, bytes32 receiptsRoot) public {
-        bytes32 el = eventToSearch;
+    function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
+        bytes32 el = keccak256(abi.encodePacked(proof[0], eventToSearch, proof[1]));
         bytes memory s;
 
-        for (uint i = 0; i < proof.length-1; i += 2) {
+        for (uint i = 2; i < proof.length-1; i += 2) {
             s = abi.encodePacked(proof[i], el, proof[i+1]);
             el = (s.length > 32) ? keccak256(s) : bytes32(s);
         }
