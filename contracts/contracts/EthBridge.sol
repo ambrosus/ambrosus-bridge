@@ -6,7 +6,12 @@ import "hardhat/console.sol";
 
 contract EthBridge {
     struct Block {
-        bytes header;
+        bytes p1;
+        bytes32 prevHashOrReceiptRoot;  // receipt for main block, prevHash for others
+        bytes p2;
+        bytes timestamp;
+        bytes p3;
+
         bytes signature;
     }
 
@@ -29,35 +34,42 @@ contract EthBridge {
     }
 
 
+    function TestAll(Block[] memory blocks, Withdraw[] memory events, bytes[] memory proof) public {
+        TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
 
-    function TestAll(Block memory block, Withdraw[] memory events, bytes[] memory proof, bytes32 receiptsRoot) public {
-        for (int i=0; i<10; i++) {
-            bytes32 block_hash = keccak256(block.header);
-            TestSignature(validator, block_hash, block.signature);
+        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
+
+        for (uint i = 0; i < blocks.length; i++) {
+            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
+            hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].timestamp, blocks[i].p3));
+
+            TestSignature(validator, hash, blocks[i].signature);
         }
 
-        TestReceiptsProof(proof, abi.encode(events), receiptsRoot);
 
-//        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
+        //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
-        for (uint i=0; i<events.length; i++) {
+        for (uint i = 0; i < events.length; i++) {
             emit WithdrawEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
         }
 
     }
 
 
-
     function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
+        require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
+    }
+
+    function calcReceiptsRoot(bytes[] memory proof, bytes memory eventToSearch) public view returns (bytes32){
         bytes32 el = keccak256(abi.encodePacked(proof[0], eventToSearch, proof[1]));
         bytes memory s;
 
-        for (uint i = 2; i < proof.length-1; i += 2) {
-            s = abi.encodePacked(proof[i], el, proof[i+1]);
+        for (uint i = 2; i < proof.length - 1; i += 2) {
+            s = abi.encodePacked(proof[i], el, proof[i + 1]);
             el = (s.length > 32) ? keccak256(s) : bytes32(s);
         }
 
-        require(el == receiptsRoot, "Failed to verify receipts proof");
+        return el;
     }
 
 
@@ -99,5 +111,7 @@ contract EthBridge {
         return uint16(a) + uint16(uint8(b));
     }
 
-
+    function bytesToUint(bytes memory b) public view returns (uint){
+        return uint(bytes32(b)) >> (256 - b.length * 8);
+    }
 }
