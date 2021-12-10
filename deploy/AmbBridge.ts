@@ -5,10 +5,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name !== 'hardhat' && hre.network.name != 'rinkeby') return
   const {owner} = await hre.getNamedAccounts();
 
-  await hre.deployments.deploy("EthBridge", {
-    contract: "EthBridge",
+  await hre.deployments.deploy("AmbBridge", {
+    contract: "AmbBridge",
     from: owner,
-    args: [owner],
+    args: [],
     log: true,
   });
 
@@ -17,4 +17,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 export default func;
-func.tags = ["ethbridge"];
+func.tags = ["ambbridge"];

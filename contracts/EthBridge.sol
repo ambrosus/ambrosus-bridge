@@ -2,48 +2,86 @@
 pragma solidity 0.8.6;
 
 import "hardhat/console.sol";
+import "./treeTest.sol";
 
 
 contract EthBridge {
-
-
     struct Block {
         bytes header;
-        uint timeOffset;
-        uint timeLength;
+        bytes signature;
     }
 
-
-    // todo maybe not always
-    uint constant BloomOffset = 180 + 12;
-    uint constant BloomLength = 256;
+    struct Withdraw {
+        address fromAddress;
+        address toAddress;
+        uint amount;
+    }
 
     bytes1 constant b1 = bytes1(0x01);
 
+    address validator;
 
-    constructor() {}
+    event WithdrawEvent(address indexed from, address indexed to, uint amount);
 
 
 
-    function BlockHashTest(bytes memory block) public view returns (bytes32) {
-        return keccak256(block);
+    constructor(address validator_) {
+        validator = validator_;
     }
 
 
-//    function TimestampTest(Block memory block) public view returns (uint) {
-//
-//        uint block_time;
-//        assembly {
-//            block_time := mload(add(block.header, block.timeOffset))
-//        }
-//        block_time = block_time >> (32 - block.timeLength);
-//
-//
-//        return block_time;
-//    }
+
+    function TestAll(Block memory block, Withdraw[] memory events, bytes[] memory proof, bytes32 receiptsRoot) public {
+        for (int i=0; i<10; i++) {
+            bytes32 block_hash = keccak256(block.header);
+            TestSignature(validator, block_hash, block.signature);
+        }
+
+        bytes32 events_hash = keccak256(abi.encode(events));
+        TestReceiptsProof(proof, events_hash, receiptsRoot);
+
+//        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
+
+        for (uint i=0; i<events.length; i++) {
+            emit WithdrawEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
+        }
+
+    }
 
 
-    function BloomTest(bytes memory bloom, bytes memory topicHash) public view returns (bool) {
+
+    function TestReceiptsProof(bytes[] memory proof, bytes32 eventToSearch, bytes32 receiptsRoot) public {
+        bytes32 el = eventToSearch;
+        bytes memory s;
+
+        for (uint i = 0; i < proof.length-1; i += 2) {
+            s = abi.encodePacked(proof[i], el, proof[i+1]);
+            el = (s.length > 32) ? keccak256(s) : bytes32(s);
+        }
+
+        require(el == receiptsRoot, "Failed to verify receipts proof");
+    }
+    function TestReceiptsProof2(bytes memory value, bytes memory encodedPath, bytes memory rlpParentNodes, bytes32 root) public {
+        MerklePatriciaProof.verify(value, encodedPath, rlpParentNodes, root);
+    }
+
+
+    function TestSignature(address signer, bytes32 message, bytes memory signature) internal view {
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        assembly {
+            r := mload(add(signature, 32))
+            s := mload(add(signature, 64))
+            v := byte(0, mload(add(signature, 96)))
+        }
+        require(
+            ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message)), v, r, s) == signer,
+            "Failed to verify sign");
+    }
+
+
+    function TestBloom(bytes memory bloom, bytes memory topicHash) public returns (bool) {
         bytes32 hashbuf = keccak256(topicHash);
 
         // todo asm
@@ -51,9 +89,9 @@ contract EthBridge {
         bytes1 v2 = b1 << uint8(hashbuf[3] & 0x07);
         bytes1 v3 = b1 << uint8(hashbuf[5] & 0x07);
 
-        uint i1 = BloomLength - uint((Uint16(hashbuf[0], hashbuf[1]) & 0x7ff) >> 3) - 1;
-        uint i2 = BloomLength - uint((Uint16(hashbuf[2], hashbuf[3]) & 0x7ff) >> 3) - 1;
-        uint i3 = BloomLength - uint((Uint16(hashbuf[4], hashbuf[5]) & 0x7ff) >> 3) - 1;
+        uint i1 = 256 - uint((Uint16(hashbuf[0], hashbuf[1]) & 0x7ff) >> 3) - 1;
+        uint i2 = 256 - uint((Uint16(hashbuf[2], hashbuf[3]) & 0x7ff) >> 3) - 1;
+        uint i3 = 256 - uint((Uint16(hashbuf[4], hashbuf[5]) & 0x7ff) >> 3) - 1;
 
         return
         v1 == v1 & bloom[i1] &&
