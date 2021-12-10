@@ -2,7 +2,6 @@
 pragma solidity 0.8.6;
 
 import "hardhat/console.sol";
-import "./treeTest.sol";
 
 
 contract EthBridge {
@@ -60,9 +59,6 @@ contract EthBridge {
         }
 
         require(el == receiptsRoot, "Failed to verify receipts proof");
-    }
-    function TestReceiptsProof2(bytes memory value, bytes memory encodedPath, bytes memory rlpParentNodes, bytes32 root) public {
-        MerklePatriciaProof.verify(value, encodedPath, rlpParentNodes, root);
     }
 
 
