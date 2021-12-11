@@ -1,0 +1,200 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "validator_",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
+      }
+    ],
+    "name": "WithdrawEvent",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "p1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "prevHashOrReceiptRoot",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "timestamp",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p3",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          }
+        ],
+        "internalType": "struct EthBridge.Block[]",
+        "name": "blocks",
+        "type": "tuple[]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "fromAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "toAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct EthBridge.Withdraw[]",
+        "name": "events",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "bytes[]",
+        "name": "proof",
+        "type": "bytes[]"
+      }
+    ],
+    "name": "TestAll",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "bloom",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes",
+        "name": "topicHash",
+        "type": "bytes"
+      }
+    ],
+    "name": "TestBloom",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes[]",
+        "name": "proof",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "eventToSearch",
+        "type": "bytes"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "receiptsRoot",
+        "type": "bytes32"
+      }
+    ],
+    "name": "TestReceiptsProof",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "b",
+        "type": "bytes"
+      }
+    ],
+    "name": "bytesToUint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes[]",
+        "name": "proof",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "bytes",
+        "name": "eventToSearch",
+        "type": "bytes"
+      }
+    ],
+    "name": "calcReceiptsRoot",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]

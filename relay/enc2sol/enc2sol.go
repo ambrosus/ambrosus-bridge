@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"math/big"
-	"test/mytrie"
+	"relay/enc2sol/mytrie"
 )
 
 const SafetyBlocks = 9

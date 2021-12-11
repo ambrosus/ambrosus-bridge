@@ -3,7 +3,7 @@ package enc2sol
 import (
 	"bytes"
 	"github.com/ethereum/go-ethereum/common"
-	"test/mytrie"
+	"relay/enc2sol/mytrie"
 )
 
 type proofGen struct {
