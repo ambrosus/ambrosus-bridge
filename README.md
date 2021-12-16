@@ -76,13 +76,13 @@ bytes32 hash = keccak256(abi.encodePacked(
 
 simplified example of merkle patricia tree:
 ```
-root = hash(rlpEncode(children)
-├── path1 = hash(rlpEncode(children)
+root = hash(rlpEncode(childrens)
+├── path1 = hash(rlpEncode(childrens)
 │   ├── receipt1
 │   ├── receipt2
 │   ├── receipt...
 │   └── receipt16
-├── path2 = hash(rlpEncode(children)
+├── path2 = hash(rlpEncode(childrens)
 │   ├── receipt1
 │   ├── receipt2
 │   ├── receipt...
@@ -92,7 +92,7 @@ root = hash(rlpEncode(children)
 │   │   └── someMoreReceiptInfo
 │   ├── receipt...
 │   └── receipt16
-└── path3 = hash(rlpEncode(children)
+└── path3 = hash(rlpEncode(childrens)
     ├── receipt1
     ├── receipt...
     └── receipt16
