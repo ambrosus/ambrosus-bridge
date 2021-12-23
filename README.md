@@ -106,9 +106,9 @@ simplify trie
 ```
 root
 ├── p3 == path1
-│   ├── p1 = rlpEncode(receipt1-receip5) + rlpEncode(someReceiptInfo)
+│   ├── p1 = rlpEncode(receipt1-receip5) + rlpEncode(someReceipt6Info)
 │   │   └── eventData
-│   └── p2 = rlpEncode(someMoreReceiptInfo) + rlpEncode(7-receip16)
+│   └── p2 = rlpEncode(someMoreReceipt6Info) + rlpEncode(receipt7-receipt16)
 └── p4 == path3
 
 where
