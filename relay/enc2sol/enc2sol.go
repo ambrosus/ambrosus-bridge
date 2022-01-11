@@ -60,7 +60,7 @@ func EncodeBlock(header *types.Header, main bool) (result EncodedBlock) {
 }
 
 func encodeBlock(header *types.Header, splitEls [][]byte) (result EncodedBlock) {
-	rlpHeader := rlpEnc(header)
+	rlpHeader, _ := rlp.EncodeToBytes(header)
 
 	for _, se := range splitEls {
 		r := bytes.SplitN(rlpHeader, se, 2)
@@ -98,10 +98,4 @@ func findReceipts(client *ethclient.Client, blockHash common.Hash) []*types.Rece
 		receipts = append(receipts, receipt)
 	}
 	return receipts
-}
-
-func rlpEnc(val interface{}) []byte {
-	buf := new(bytes.Buffer)
-	rlp.Encode(buf, val)
-	return buf.Bytes()
 }

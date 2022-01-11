@@ -30,6 +30,20 @@ describe("Contract", () => {
 
 
 
+
+  it('TestSign', async () => {
+    // amb main net block 16021709
+
+    const hash = "0x6a6249e2d7c2aca375164f7eb233dfa23a8c0ff7046520849894ee23dd026eaf"
+    const msg = ethers.utils.arrayify(hash);
+    const signature = "0xe437f2d7a70044b9b7c1d98cde917b28e7e0298ab26abdbeacd3fd81de6100af5a61014a397218b4fb36230867634db0e5e40d4c17dd8b69979e52eb2fb9217e1b";
+
+    const address = ethers.utils.recoverAddress(msg, signature);
+    expect(address).eq("0x7a3599b88EA2068268B763deE8B8703d21700DF3");
+  });
+
+
+
   it('TestAll', async () => {
 
 
