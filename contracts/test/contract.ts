@@ -1,5 +1,5 @@
-import {deployments, ethers, getNamedAccounts} from "hardhat";
-import type {Contract, Signer} from "ethers";
+import {deployments, ethers, getNamedAccounts, network} from "hardhat";
+import type {Contract, Signer, ContractTransaction, ContractReceipt} from "ethers";
 
 import chai from "chai";
 
@@ -110,4 +110,30 @@ describe("Contract", () => {
   });
 
 
+  it("TestWithdraw timeframe", async ()=> {
+    let [addr1, addr2, _] = await ethers.getSigners();
+    await ambBridge.withdraw(addr1.address, addr2.address, 1);
+    await ambBridge.withdraw(addr1.address, addr2.address, 2);
+    await nextTimeframe();
+    let tx1: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337);
+    await ambBridge.withdraw(addr1.address, addr2.address, 3);
+    await ambBridge.withdraw(addr1.address, addr2.address, 4);
+    await nextTimeframe();
+    let tx2: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337);
+    await ambBridge.withdraw(addr1.address, addr2.address, 5);
+
+    let receipt1: ContractReceipt = await tx1.wait();
+    let receipt2: ContractReceipt = await tx2.wait();
+
+    let events1: any = await receipt1.events?.filter((x: any) => {return x.event == "newWithdraw"});
+    let events2: any = await receipt2.events?.filter((x: any) => {return x.event == "newWithdraw"});
+    expect(events2[0].args.event_id).eq(events1[0].args.event_id.add("1"));
+  });
+
+  let currentTimeframe = Math.floor(Date.now() / 4);
+  const nextTimeframe = async (amount = 1) => {
+    currentTimeframe += amount;
+    const timestamp = currentTimeframe * 4 + amount * 240;
+    await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
+  }
 });

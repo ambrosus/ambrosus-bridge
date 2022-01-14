@@ -29,13 +29,12 @@ contract AmbBridge {
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) public {
         if (lastTimeframeWithActions != getTimeframe(block.timestamp)) {
             emit newWithdraw(eventWithdrawId, queue);
+            eventWithdrawId += 1;
             delete queue;
         }
 
         queue.push(Withdraw(tokenAmbAddress, msg.sender, toAddress, amount));
         lastTimeframeWithActions = getTimeframe(block.timestamp);
-
-        eventWithdrawId += 1;
     }
 
 
