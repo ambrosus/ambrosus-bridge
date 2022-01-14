@@ -17,7 +17,7 @@ contract AmbBridge {
 
     uint lastTimeframeWithActions;
 
-    uint eventId;
+    uint eventWithdrawId;
 
     constructor() {}
 
@@ -28,14 +28,14 @@ contract AmbBridge {
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) public {
         if (block.timestamp != getTimeframe(lastTimeframeWithActions)) {
-            emit newWithdraw(eventId, queue);
+            emit newWithdraw(eventWithdrawId, queue);
             delete queue;
         }
 
         queue.push(Withdraw(tokenAmbAddress, msg.sender, toAddress, amount));
         lastTimeframeWithActions = getTimeframe(block.timestamp);
 
-        eventId += 1;
+        eventWithdrawId += 1;
     }
 
 
