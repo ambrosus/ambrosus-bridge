@@ -22,7 +22,7 @@ contract AmbBridge {
     constructor() {}
 
 
-    function getTimeframe(uint timestamp_) private view returns (uint) {
+    function getTimeframe(uint timestamp_) private pure returns (uint) {
         return timestamp_ / uint(4);
     }
 
