@@ -27,8 +27,6 @@ contract EthBridge {
 
     event WithdrawEvent(address indexed from, address indexed to, uint amount);
 
-
-
     constructor(address validator_) {
         validator = validator_;
     }
@@ -55,6 +53,11 @@ contract EthBridge {
 
     }
 
+    function withdraw(address toAddress, uint amount) public {
+        emit WithdrawEvent(msg.sender, toAddress, amount);
+
+        // ...
+    }
 
     function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
         require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
