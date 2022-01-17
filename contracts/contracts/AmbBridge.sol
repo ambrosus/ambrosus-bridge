@@ -61,11 +61,7 @@ contract AmbBridge {
     function TestAll(
         Block[] memory blocks,
         Withdraw[] memory events,
-        bytes[] memory proof,
-
-        address MyTokenAddress,
-        address recipient,
-        uint256 amount) public {
+        bytes[] memory proof) public {
         TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
 
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
@@ -80,8 +76,10 @@ contract AmbBridge {
 
         //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
-        // TODO transfer things
-        TestTransfer(MyTokenAddress, recipient, amount);
+        // TestTransfer(MyTokenAddress, recipient, amount);
+        for (uint i = 0; i < events.length; i++) {
+            emit DepositEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
+        }
     }
 
     function TestPoW(bytes32 hash, bytes memory difficulty) internal view {
@@ -110,6 +108,7 @@ contract AmbBridge {
     }
 
     function TestTransfer(address TokenAddress, address recipient, uint256 amount) {
+        // require(IERC20(sender.contractAddress).transferFrom(sender.user, receiver, actualPrice), "Fail transfer coins");
         (bool success, bytes memory data) = TokenAddress.call(
             abi.encodeWithSignature('transferFrom(address,address,uint256)',
             address(this),

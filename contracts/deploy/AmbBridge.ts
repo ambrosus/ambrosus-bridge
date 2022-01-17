@@ -8,7 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await hre.deployments.deploy("AmbBridge", {
     contract: "AmbBridge",
     from: owner,
-    args: [],
+    args: [[], []],
     log: true,
   });
 
