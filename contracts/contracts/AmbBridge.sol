@@ -3,7 +3,7 @@ pragma solidity 0.8.6;
 
 contract AmbBridge {
     // event Test(bytes32 indexed withdraws_hash, Withdraw[] withdraws);
-    event newWithdraw(uint event_id, Withdraw[] queue);
+    event newWithdraw(uint indexed event_id, Withdraw[] queue);
 
 
     struct Block {
@@ -58,7 +58,14 @@ contract AmbBridge {
     }
 
 
-    function TestAll(Block[] memory blocks, Withdraw[] memory events, bytes[] memory proof) public {
+    function TestAll(
+        Block[] memory blocks,
+        Withdraw[] memory events,
+        bytes[] memory proof,
+
+        address MyTokenAddress,
+        address recipient,
+        uint256 amount) public {
         TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
 
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
@@ -73,9 +80,8 @@ contract AmbBridge {
 
         //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
-//        for (uint i = 0; i < events.length; i++) {
-//            emit newWithdraw(events[i].fromAddress, events[i].toAddress, events[i].amount);
-//        }
+        // TODO transfer things
+        TestTransfer(MyTokenAddress, recipient, amount);
     }
 
     function TestPoW(bytes32 hash, bytes memory difficulty) internal view {
@@ -101,6 +107,16 @@ contract AmbBridge {
 
     function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
         require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
+    }
+
+    function TestTransfer(address TokenAddress, address recipient, uint256 amount) {
+        (bool success, bytes memory data) = TokenAddress.call(
+            abi.encodeWithSignature('transferFrom(address,address,uint256)',
+            address(this),
+            recipient,
+            amount));
+
+        require(success, "Transfer failed");
     }
 
     function bytesToUint(bytes memory b) public view returns (uint){
