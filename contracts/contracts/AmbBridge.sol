@@ -6,6 +6,14 @@ contract AmbBridge {
     event newWithdraw(uint event_id, Withdraw[] queue);
 
 
+    struct Block {
+        bytes p1;
+        bytes32 prevHashOrReceiptRoot;
+        bytes p2;
+        bytes difficulty;
+        bytes p3;
+    }
+
     struct Withdraw {
         address tokenExtAddress;
         address fromAddress;
@@ -50,8 +58,52 @@ contract AmbBridge {
     }
 
 
+    function TestAll(Block[] memory blocks, Withdraw[] memory events, bytes[] memory proof) public {
+        TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
+
+        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
+
+        for (uint i = 0; i < blocks.length; i++) {
+            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
+            hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].difficulty, blocks[i].p3));
+
+            TestPoW(hash, blocks[i].difficulty);
+        }
+
+
+        //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
+
+        for (uint i = 0; i < events.length; i++) {
+            emit WithdrawEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
+        }
+    }
+
+    function TestPoW(bytes32 hash, bytes memory difficulty) internal view {
+        require(bytesToUint(hash) < bytesToUint(difficulty), "hash must be less than difficulty");
+    }
+
     function eventTest() public {
 //        emit Test(keccak256(abi.encode(queue)), queue);
         delete queue;
+    }
+
+    function calcReceiptsRoot(bytes[] memory proof, bytes memory eventToSearch) public view returns (bytes32){
+        bytes32 el = keccak256(abi.encodePacked(proof[0], eventToSearch, proof[1]));
+        bytes memory s;
+
+        for (uint i = 2; i < proof.length - 1; i += 2) {
+            s = abi.encodePacked(proof[i], el, proof[i + 1]);
+            el = (s.length > 32) ? keccak256(s) : bytes32(s);
+        }
+
+        return el;
+    }
+
+    function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
+        require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
+    }
+
+    function bytesToUint(bytes memory b) public view returns (uint){
+        return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 }
