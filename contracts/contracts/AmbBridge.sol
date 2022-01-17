@@ -73,13 +73,13 @@ contract AmbBridge {
 
         //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
-        for (uint i = 0; i < events.length; i++) {
-            emit WithdrawEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
-        }
+//        for (uint i = 0; i < events.length; i++) {
+//            emit newWithdraw(events[i].fromAddress, events[i].toAddress, events[i].amount);
+//        }
     }
 
     function TestPoW(bytes32 hash, bytes memory difficulty) internal view {
-        require(bytesToUint(hash) < bytesToUint(difficulty), "hash must be less than difficulty");
+        require(uint(hash) < bytesToUint(difficulty), "hash must be less than difficulty");
     }
 
     function eventTest() public {
