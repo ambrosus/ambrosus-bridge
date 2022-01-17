@@ -2,7 +2,7 @@
 pragma solidity 0.8.6;
 
 contract AmbBridge {
-    // event Test(bytes32 indexed withdraws_hash, Withdraw[] withdraws);
+    event Test(uint indexed event_id, Withdraw[] unimportant);
     event newWithdraw(uint indexed event_id, Withdraw[] queue);
 
 
@@ -86,9 +86,8 @@ contract AmbBridge {
         require(uint(hash) < bytesToUint(difficulty), "hash must be less than difficulty");
     }
 
-    function eventTest() public {
-//        emit Test(keccak256(abi.encode(queue)), queue);
-        delete queue;
+    function eventTest(uint event_id) public {
+        emit Test(event_id, [1, 3, 3, 7]);
     }
 
     function calcReceiptsRoot(bytes[] memory proof, bytes memory eventToSearch) public view returns (bytes32){
