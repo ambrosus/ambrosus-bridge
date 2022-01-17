@@ -27,7 +27,7 @@ contract EthBridge {
 
     address validator;
 
-    event WithdrawEvent(address indexed from, address indexed to, uint amount);
+    event DepositEvent(address indexed from, address indexed to, uint amount);
 
     constructor(
         address validator_,
@@ -61,13 +61,13 @@ contract EthBridge {
         //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
         for (uint i = 0; i < events.length; i++) {
-            emit WithdrawEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
+            emit DepositEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
         }
 
     }
 
-    function withdraw(address toAddress, uint amount) public {
-        emit WithdrawEvent(msg.sender, toAddress, amount);
+    function deposit(address toAddress, uint amount) public {
+        emit DepositEvent(msg.sender, toAddress, amount);
 
         // ...
     }
