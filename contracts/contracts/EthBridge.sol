@@ -23,12 +23,25 @@ contract EthBridge {
 
     bytes1 constant b1 = bytes1(0x01);
 
+    mapping(address => address) toAmb;
+
     address validator;
 
     event WithdrawEvent(address indexed from, address indexed to, uint amount);
 
-    constructor(address validator_) {
+    constructor(
+        address validator_,
+        address[] memory ethAddress,
+        address[] memory ambAddress) {
+
         validator = validator_;
+
+        require(ambAddress.length == ethAddress.length, "sizes of ambAddress and ethAddress must be same");
+
+        uint arrayLength = ambAddress.length;
+        for (uint i = 0; i < arrayLength; i++) {
+            toAmb[ambAddress[i]] = ethAddress[i];
+        }
     }
 
 

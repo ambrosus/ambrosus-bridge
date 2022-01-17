@@ -13,13 +13,25 @@ contract AmbBridge {
         uint amount;
     }
 
+    mapping(address => address) fromAmb;
+
     Withdraw[] queue;
 
     uint lastTimeframeWithActions;
 
     uint eventWithdrawId;
 
-    constructor() {}
+
+    constructor(
+        address[] memory ambAddress,
+        address[] memory ethAddress) {
+        require(ambAddress.length == ethAddress.length, "sizes of ambAddress and ethAddress must be same");
+
+        uint arrayLength = ambAddress.length;
+        for (uint i = 0; i < arrayLength; i++) {
+            fromAmb[ambAddress[i]] = ethAddress[i];
+        }
+    }
 
 
     function getTimeframe(uint timestamp_) private pure returns (uint) {
