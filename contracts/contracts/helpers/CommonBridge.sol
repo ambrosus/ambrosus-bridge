@@ -41,6 +41,7 @@ contract CommonBridge is AccessControl {
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
         uint fee_)
     {
+        require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
 
         sideBridgeAddress = _sideBridgeAddress;
 
