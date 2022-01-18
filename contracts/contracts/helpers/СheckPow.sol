@@ -3,6 +3,12 @@ pragma solidity 0.8.6;
 
 contract CheckPoW {
 
+    struct Transfer {
+        address tokenAddress;
+        address toAddress;
+        uint amount;
+    }
+
     struct BlockPoW {
         bytes p1;
         bytes32 prevHashOrReceiptRoot;  // receipt for main block, prevHash for safety blocks
@@ -12,7 +18,7 @@ contract CheckPoW {
     }
 
     function TestPoW(
-        Block[] memory blocks,
+        BlockPoW[] memory blocks,
         Transfer[] memory events,
         bytes[] memory proof) public
     {
@@ -22,14 +28,28 @@ contract CheckPoW {
             require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
             hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].difficulty, blocks[i].p3));
 
-            TestPoW(hash, blocks[i].difficulty);
+            require(uint(hash) < bytesToUint(blocks[i].difficulty), "hash must be less than difficulty");
         }
-
     }
 
+    function calcReceiptsRoot(bytes[] memory proof, bytes memory eventToSearch) public view returns (bytes32){
+        bytes32 el = keccak256(abi.encodePacked(proof[0], eventToSearch, proof[1]));
+        bytes memory s;
 
+        for (uint i = 2; i < proof.length - 1; i += 2) {
+            s = abi.encodePacked(proof[i], el, proof[i + 1]);
+            el = (s.length > 32) ? keccak256(s) : bytes32(s);
+        }
 
+        return el;
+    }
 
+    // unused
+//    function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
+//        require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
+//    }
 
-
+    function bytesToUint(bytes memory b) public view returns (uint){
+        return uint(bytes32(b)) >> (256 - b.length * 8);
+    }
 }
