@@ -2,13 +2,11 @@
 pragma solidity 0.8.6;
 
 contract AmbBridge {
-    event Test(uint indexed event_id, Withdraw[] unimportant);
-    event newWithdraw(uint indexed event_id, Withdraw[] queue);
 
 
-    struct Block {
+    struct BlockPoW {
         bytes p1;
-        bytes32 prevHashOrReceiptRoot;
+        bytes32 prevHashOrReceiptRoot;  // receipt for main block, prevHash for safety blocks
         bytes p2;
         bytes difficulty;
         bytes p3;
@@ -16,54 +14,50 @@ contract AmbBridge {
 
     struct Withdraw {
         address tokenExtAddress;
-        address fromAddress;
         address toAddress;
         uint amount;
     }
 
-    mapping(address => address) fromAmb;
-
     Withdraw[] queue;
 
-    uint lastTimeframeWithActions;
+    mapping(address => address) tokenAmbToEth;
 
-    uint eventWithdrawId;
+    uint lastTimeframe;
+    uint eventId;
 
 
-    constructor(
-        address[] memory ambAddress,
-        address[] memory ethAddress) {
-        require(ambAddress.length == ethAddress.length, "sizes of ambAddress and ethAddress must be same");
+    event Withdraw(uint indexed event_id, Withdraw[] queue);
 
-        uint arrayLength = ambAddress.length;
+
+    constructor(address[] memory tokenAmbAddresses, address[] memory tokenEthAddresses) {
+        require(tokenAmbAddresses.length == tokenEthAddresses.length, "sizes of ambAddress and ethAddress must be same");
+
+        uint arrayLength = tokenAmbAddresses.length;
         for (uint i = 0; i < arrayLength; i++) {
-            fromAmb[ambAddress[i]] = ethAddress[i];
+            toAmb[tokenAmbAddresses[i]] = tokenEthAddresses[i];
         }
-    }
-
-
-    function getTimeframe(uint timestamp_) private pure returns (uint) {
-        return timestamp_ / uint(4);
     }
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) public {
-        if (lastTimeframeWithActions != getTimeframe(block.timestamp)) {
-            emit newWithdraw(eventWithdrawId, queue);
-            eventWithdrawId += 1;
+        uint nowTimeframe = block.timestamp / 4 hours;
+
+        if (nowTimeframe != lastTimeframe) {
+            emit newWithdraw(eventId, queue);
+            eventId += 1;
             delete queue;
+            lastTimeframe = nowTimeframe;
         }
 
         queue.push(Withdraw(tokenAmbAddress, msg.sender, toAddress, amount));
-        lastTimeframeWithActions = getTimeframe(block.timestamp);
+
     }
 
 
     function TestAll(
         Block[] memory blocks,
         Withdraw[] memory events,
-        bytes[] memory proof) public {
-        TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
-
+        bytes[] memory proof) public
+    {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
@@ -73,13 +67,6 @@ contract AmbBridge {
             TestPoW(hash, blocks[i].difficulty);
         }
 
-
-        //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
-
-        // TestTransfer(MyTokenAddress, recipient, amount);
-        for (uint i = 0; i < events.length; i++) {
-            emit DepositEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
-        }
     }
 
     function TestPoW(bytes32 hash, bytes memory difficulty) internal view {

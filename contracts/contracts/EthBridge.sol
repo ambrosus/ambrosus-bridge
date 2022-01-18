@@ -5,15 +5,10 @@ import "hardhat/console.sol";
 
 
 contract EthBridge {
-    struct Block {
-        bytes p1;
-        bytes32 prevHashOrReceiptRoot;  // receipt for main block, prevHash for others
-        bytes p2;
-        bytes timestamp;
-        bytes p3;
 
-        bytes signature;
-    }
+
+
+
 
     struct Withdraw {
         address fromAddress;
@@ -25,46 +20,18 @@ contract EthBridge {
 
     mapping(address => address) toAmb;
 
-    address validator;
-
     event DepositEvent(address indexed from, address indexed to, uint amount);
 
-    constructor(
-        address validator_,
-        address[] memory ethAddress,
-        address[] memory ambAddress) {
+    constructor(address[] memory tokenEthAddresses, address[] memory tokenAmbAddresses) {
+        require(tokenAmbAddresses.length == tokenEthAddresses.length, "sizes of ambAddress and ethAddress must be same");
 
-        validator = validator_;
-
-        require(ambAddress.length == ethAddress.length, "sizes of ambAddress and ethAddress must be same");
-
-        uint arrayLength = ambAddress.length;
+        uint arrayLength = tokenAmbAddresses.length;
         for (uint i = 0; i < arrayLength; i++) {
-            toAmb[ambAddress[i]] = ethAddress[i];
+            toAmb[tokenAmbAddresses[i]] = tokenEthAddresses[i];
         }
     }
 
 
-    function TestAll(Block[] memory blocks, Withdraw[] memory events, bytes[] memory proof) public {
-        TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
-
-        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
-
-        for (uint i = 0; i < blocks.length; i++) {
-            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
-            hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].timestamp, blocks[i].p3));
-
-            TestSignature(validator, hash, blocks[i].signature);
-        }
-
-
-        //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
-
-        for (uint i = 0; i < events.length; i++) {
-            emit DepositEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
-        }
-
-    }
 
     function deposit(address toAddress, uint amount) public {
         emit DepositEvent(msg.sender, toAddress, amount);
