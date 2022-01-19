@@ -51,6 +51,11 @@ contract CommonBridge is AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         fee = fee_;
+
+        uint arrayLength = tokenThisAddresses.length;
+        for (uint i = 0; i < arrayLength; i++) {
+            tokenAddresses[tokenThisAddresses[i]] = tokenSideAddresses[i];
+        }
     }
 
 
