@@ -1,16 +1,15 @@
-package enc2sol
+package amb
 
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/ethereum/go-ethereum/rlp"
-	"math/big"
-	"net/http"
-	"relay/enc2sol/mytrie"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rlp"
+	"math/big"
+	"net/http"
+	"relay/helpers/mytrie"
 )
 
 type Request struct {
@@ -41,20 +40,16 @@ type Header struct {
 	Extra       *hexutil.Bytes  `json:"extraData"`
 
 	SealFields []string `json:"sealFields"`
-	Signature  *string  `json:"signature"`
-}
-
-func newRequest(id int, method string, params []interface{}) *Request {
-	return &Request{
-		Jsonrpc: "2.0",
-		Id:      id,
-		Method:  method,
-		Params:  params,
-	}
+	Signature  string   `json:"signature"`
 }
 
 func HeaderByNumber(number *big.Int) (*Header, error) {
-	body := newRequest(1, "eth_getBlockByNumber", []interface{}{hexutil.EncodeBig(number), true})
+	body := &Request{
+		Jsonrpc: "2.0",
+		Id:      1,
+		Method:  "eth_getBlockByNumber",
+		Params:  []interface{}{hexutil.EncodeBig(number), true},
+	}
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
 		return nil, err
@@ -108,6 +103,22 @@ func (h *Header) Rlp(withSeal bool) []byte {
 		panic(err)
 	}
 	return res
+}
+
+func (h *Header) SealRlp() (result []byte, err error) {
+
+	for _, seal := range h.SealFields {
+		sealBytes, _ := hexutil.Decode(seal)
+		sealRlpDecoded := new([]byte)
+
+		err := rlp.DecodeBytes(sealBytes, sealRlpDecoded)
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, *sealRlpDecoded...)
+	}
+	return
 }
 
 func (h *Header) Hash(seal bool) common.Hash {

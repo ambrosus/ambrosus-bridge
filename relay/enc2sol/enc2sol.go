@@ -10,7 +10,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"math/big"
-	"relay/enc2sol/mytrie"
+	"relay/helpers"
 )
 
 const SafetyBlocks = 9
@@ -26,15 +26,15 @@ func Encode(client *ethclient.Client, event *types.Log) (*types.Block, EncodedBl
 	}
 
 	receipts := types.Receipts(findReceipts(client, block.Hash()))
-	proof := getReceiptProof(&receipts, event.Data)
+	proof := helpers.CalcProof(&receipts, event.Data)
 
 	encodedBlock := EncodeBlock(block.Header(), true)
-	otherBlocks := EncodeOtherBlock(client, block.Number())
+	safetyBlocks := EncodeSafetyBlocks(client, block.Number())
 
-	return block, encodedBlock, otherBlocks, proof
+	return block, encodedBlock, safetyBlocks, proof
 }
 
-func EncodeOtherBlock(client *ethclient.Client, blockNum *big.Int) []EncodedBlock {
+func EncodeSafetyBlocks(client *ethclient.Client, blockNum *big.Int) []EncodedBlock {
 	var result []EncodedBlock
 
 	for i := int64(0); i < SafetyBlocks; i++ {
@@ -48,19 +48,26 @@ func EncodeOtherBlock(client *ethclient.Client, blockNum *big.Int) []EncodedBloc
 	return result
 }
 
-func EncodeBlock(header *types.Header, main bool) (result EncodedBlock) {
+func EncodeBlock(header *types.Header, isEventBlock bool) (result EncodedBlock) {
+	// split rlp encoded header (bytes) by
+	// - receiptHash (for event block) / parentHash (for safety block)
+	// - Timestamp (for AURA) / todo Difficulty (for PoW)
+
+	rlpHeader, _ := rlp.EncodeToBytes(header)
+
 	splitEls := make([][]byte, 2)
-	splitEls[1], _ = hex.DecodeString(fmt.Sprintf("%x", header.Time))
-	if main {
+	if isEventBlock {
 		splitEls[0] = header.ReceiptHash.Bytes()
 	} else {
 		splitEls[0] = header.ParentHash.Bytes()
 	}
-	return encodeBlock(header, splitEls)
-}
 
-func encodeBlock(header *types.Header, splitEls [][]byte) (result EncodedBlock) {
-	rlpHeader, _ := rlp.EncodeToBytes(header)
+	if true {
+		timeBytes, _ := hex.DecodeString(fmt.Sprintf("%x", header.Time))
+		splitEls[1] = timeBytes
+	} else {
+		splitEls[1] = header.Difficulty.Bytes()
+	}
 
 	for _, se := range splitEls {
 		r := bytes.SplitN(rlpHeader, se, 2)
@@ -69,13 +76,6 @@ func encodeBlock(header *types.Header, splitEls [][]byte) (result EncodedBlock) 
 	}
 	result = append(result, rlpHeader)
 	return
-}
-
-func getReceiptProof(receipts *types.Receipts, eventDataToSearch []byte) [][]byte {
-	hasher := mytrie.NewStackTrie()
-	types.DeriveSha(receipts, hasher)
-	return CalcProof(hasher, eventDataToSearch)
-
 }
 
 func findReceipts(client *ethclient.Client, blockHash common.Hash) []*types.Receipt {

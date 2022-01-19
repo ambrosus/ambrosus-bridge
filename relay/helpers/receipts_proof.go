@@ -1,9 +1,10 @@
-package enc2sol
+package helpers
 
 import (
 	"bytes"
 	"github.com/ethereum/go-ethereum/common"
-	"relay/enc2sol/mytrie"
+	"github.com/ethereum/go-ethereum/core/types"
+	"relay/helpers/mytrie"
 )
 
 type proofGen struct {
@@ -27,7 +28,9 @@ func CheckProof(whatSearch []byte, proof [][]byte, realRoot common.Hash) bool {
 	return common.BytesToHash(el) == realRoot
 }
 
-func CalcProof(root *mytrie.ModifiedStackTrie, whatSearch []byte) [][]byte {
+func CalcProof(receipts *types.Receipts, whatSearch []byte) [][]byte {
+	root := mytrie.NewStackTrie()
+	types.DeriveSha(receipts, root)
 	p := proofGen{whatSearch: whatSearch, Result: [][]byte{}}
 	p.calcProof(root)
 	return p.Result

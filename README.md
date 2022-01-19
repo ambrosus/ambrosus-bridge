@@ -1,4 +1,11 @@
-## Block pre-encoding
+## Contracts
+
+
+
+
+## Relay
+
+### Block pre-encoding
 
 ```
 BlockHeader = {
@@ -71,7 +78,7 @@ bytes32 hash = keccak256(abi.encodePacked(
 ```
 
 
-## Receipts proof
+### Receipts proof
 
 
 simplified example of merkle patricia tree:

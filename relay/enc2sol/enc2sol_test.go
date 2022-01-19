@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"relay/helpers"
 	"testing"
 )
 
@@ -27,7 +28,7 @@ func Test(t *testing.T) {
 		t.Fatal("receiptsHash from encoded block != original")
 	}
 
-	if !CheckProof(receipt.Logs[0].Data, proof, block.ReceiptHash()) {
+	if !helpers.CheckProof(receipt.Logs[0].Data, proof, block.ReceiptHash()) {
 		t.Fatal("proof check failed")
 	}
 
