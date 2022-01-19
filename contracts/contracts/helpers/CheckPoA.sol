@@ -22,7 +22,7 @@ contract CheckPoA {
     }
 
 
-    function TestAll(BlockPoA[] memory blocks, CommonStructs.Transfer[] memory events, bytes[] memory proof, address validator) public {
+    function CheckPoA(BlockPoA[] memory blocks, CommonStructs.Transfer[] memory events, bytes[] memory proof) public {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
@@ -32,7 +32,8 @@ contract CheckPoA {
 
             // hash without seal for signature check
             bytes32 bare_hash = keccak256(abi.encodePacked(blocks[i].p0_bare, rlp));
-            TestSignature(validator, bare_hash, blocks[i].signature);
+            address validator = GetValidator(bytesToUint(blocks[i].timestamp));
+            CheckSignature(validator, bare_hash, blocks[i].signature);
 
             // hash with seal, for prev_hash check
             hash = keccak256(abi.encodePacked(blocks[i].p0_seal, rlp, blocks[i].s1, blocks[i].signature, blocks[i].s2));
@@ -40,7 +41,14 @@ contract CheckPoA {
     }
 
 
-    function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
+    function GetValidator(uint timestamp) internal view returns (address) {
+        // todo
+        return address(this);
+    }
+
+
+
+    function CheckReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
         require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
     }
 
@@ -57,7 +65,7 @@ contract CheckPoA {
     }
 
 
-    function TestSignature(address signer, bytes32 message, bytes memory signature) internal view {
+    function CheckSignature(address signer, bytes32 message, bytes memory signature) internal view {
         bytes32 r;
         bytes32 s;
         uint8 v;
@@ -71,28 +79,6 @@ contract CheckPoA {
             "Failed to verify sign");
     }
 
-
-    function TestBloom(bytes memory bloom, bytes memory topicHash, bytes1 b1) public returns (bool) {
-        bytes32 hashbuf = keccak256(topicHash);
-
-        // todo asm
-        bytes1 v1 = b1 << uint8(hashbuf[1] & 0x07);
-        bytes1 v2 = b1 << uint8(hashbuf[3] & 0x07);
-        bytes1 v3 = b1 << uint8(hashbuf[5] & 0x07);
-
-        uint i1 = 256 - uint((Uint16(hashbuf[0], hashbuf[1]) & 0x7ff) >> 3) - 1;
-        uint i2 = 256 - uint((Uint16(hashbuf[2], hashbuf[3]) & 0x7ff) >> 3) - 1;
-        uint i3 = 256 - uint((Uint16(hashbuf[4], hashbuf[5]) & 0x7ff) >> 3) - 1;
-
-        return
-        v1 == v1 & bloom[i1] &&
-        v2 == v2 & bloom[i2] &&
-        v3 == v3 & bloom[i3];
-    }
-
-    function Uint16(bytes2 a, bytes1 b) internal view returns (uint16) {
-        return uint16(a) + uint16(uint8(b));
-    }
 
     function bytesToUint(bytes memory b) public view returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
