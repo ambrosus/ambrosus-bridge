@@ -16,9 +16,9 @@ contract CommonBridge is AccessControl {
 
 
     // this network to side network
-    mapping(address => address) tokenAddresses;
+    mapping(address => address) public tokenAddresses;
 
-    uint fee;
+    uint public fee;
 
     uint lastTimeframe;
 
@@ -41,6 +41,7 @@ contract CommonBridge is AccessControl {
         tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
 
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(RELAY_ROLE, relayAddress);
 
         fee = fee_;
     }
@@ -49,6 +50,7 @@ contract CommonBridge is AccessControl {
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value and fee must be same");
 
+        // вместо 4 часов глобальную переменную
         uint nowTimeframe = block.timestamp / 4 hours;
 
         if (nowTimeframe != lastTimeframe) {
@@ -86,8 +88,6 @@ contract CommonBridge is AccessControl {
 
 
     // token addressed mapping
-
-    // todo only admin
 
     function tokensAdd(address tokenThisAddress, address tokenSideAddress) public onlyRole(ADMIN_ROLE) {
         tokenAddresses[tokenThisAddress] = tokenSideAddress;
