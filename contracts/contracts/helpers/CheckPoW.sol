@@ -12,7 +12,7 @@ contract CheckPoW {
         bytes p3;
     }
 
-    function CheckPoW(
+    function CheckPoW_(
         BlockPoW[] memory blocks,
         CommonStructs.Transfer[] memory events,
         bytes[] memory proof) public

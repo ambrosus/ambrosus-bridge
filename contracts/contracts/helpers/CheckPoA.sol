@@ -22,7 +22,7 @@ contract CheckPoA {
     }
 
 
-    function CheckPoA(BlockPoA[] memory blocks, CommonStructs.Transfer[] memory events, bytes[] memory proof) public {
+    function CheckPoA_(BlockPoA[] memory blocks, CommonStructs.Transfer[] memory events, bytes[] memory proof) public {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
