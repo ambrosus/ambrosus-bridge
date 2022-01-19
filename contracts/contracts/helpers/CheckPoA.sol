@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 contract CheckPoA {
 
     // delete
-    struct Transfer {
+    struct _Transfer {
         address tokenAddress;
         address toAddress;
         uint amount;
@@ -26,13 +26,13 @@ contract CheckPoA {
     }
 
 
-    function TestAll(BlockPoA[] memory blocks, Transfer[] memory events, bytes[] memory proof) public {
+    function TestAll(BlockPoA[] memory blocks, _Transfer[] memory events, bytes[] memory proof, address validator) public {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
             require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
 
-            bytes rlp = abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].timestamp, blocks[i].p3);
+            bytes memory rlp = abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].timestamp, blocks[i].p3);
 
             // hash without seal for signature check
             bytes32 bare_hash = keccak256(abi.encodePacked(blocks[i].p0_bare, rlp));
@@ -76,7 +76,7 @@ contract CheckPoA {
     }
 
 
-    function TestBloom(bytes memory bloom, bytes memory topicHash) public returns (bool) {
+    function TestBloom(bytes memory bloom, bytes memory topicHash, bytes1 b1) public returns (bool) {
         bytes32 hashbuf = keccak256(topicHash);
 
         // todo asm

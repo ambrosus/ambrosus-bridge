@@ -41,8 +41,6 @@ contract CommonBridge is AccessControl {
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
         uint fee_)
     {
-        require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
-
         sideBridgeAddress = _sideBridgeAddress;
 
         // initialise tokenAddresses with start values
@@ -51,11 +49,6 @@ contract CommonBridge is AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
         fee = fee_;
-
-        uint arrayLength = tokenThisAddresses.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            tokenAddresses[tokenThisAddresses[i]] = tokenSideAddresses[i];
-        }
     }
 
 
@@ -129,15 +122,4 @@ contract CommonBridge is AccessControl {
     function changeFee(uint fee_) public onlyRole(ADMIN_ROLE) {
         fee = fee_;
     }
-
-
-
-
-    // utils
-
-    function bytesToUint(bytes memory b) public view returns (uint){
-        return uint(bytes32(b)) >> (256 - b.length * 8);
-    }
-
-
 }

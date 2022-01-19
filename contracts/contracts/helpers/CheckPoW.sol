@@ -3,7 +3,8 @@ pragma solidity 0.8.6;
 
 contract CheckPoW {
 
-    struct Transfer {
+    // delete
+    struct _Transfer {
         address tokenAddress;
         address toAddress;
         uint amount;
@@ -19,7 +20,7 @@ contract CheckPoW {
 
     function TestPoW(
         BlockPoW[] memory blocks,
-        Transfer[] memory events,
+        _Transfer[] memory events,
         bytes[] memory proof) public
     {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
@@ -43,11 +44,6 @@ contract CheckPoW {
 
         return el;
     }
-
-    // unused
-//    function TestReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
-//        require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
-//    }
 
     function bytesToUint(bytes memory b) public view returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
