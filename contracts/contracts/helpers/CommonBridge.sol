@@ -21,6 +21,8 @@ contract CommonBridge is AccessControl {
 
     uint public fee;
 
+    uint public timeframeSeconds;
+
     uint lastTimeframe;
 
     CommonStructs.Transfer[] queue;
@@ -34,7 +36,7 @@ contract CommonBridge is AccessControl {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_)
+        uint fee_, uint timeframeSeconds_)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);
@@ -45,6 +47,8 @@ contract CommonBridge is AccessControl {
         _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
 
         fee = fee_;
+
+        timeframeSeconds = timeframeSeconds_;
     }
 
 
@@ -52,7 +56,7 @@ contract CommonBridge is AccessControl {
         require(msg.value == fee, "Sent value and fee must be same");
 
         // вместо 4 часов глобальную переменную
-        uint nowTimeframe = block.timestamp / 4 hours;
+        uint nowTimeframe = block.timestamp / timeframeSeconds;
 
         if (nowTimeframe != lastTimeframe) {
             emit TransferEvent(outputEventId, queue);
@@ -120,5 +124,9 @@ contract CommonBridge is AccessControl {
 
     function changeFee(uint fee_) public onlyRole(ADMIN_ROLE) {
         fee = fee_;
+    }
+
+    function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
+        timeframeSeconds = timeframeSeconds_;
     }
 }
