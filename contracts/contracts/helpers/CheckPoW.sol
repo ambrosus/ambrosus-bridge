@@ -27,6 +27,10 @@ contract CheckPoW {
         }
     }
 
+    function CheckReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
+        require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
+    }
+
     function calcReceiptsRoot(bytes[] memory proof, bytes memory eventToSearch) public view returns (bytes32){
         bytes32 el = keccak256(abi.encodePacked(proof[0], eventToSearch, proof[1]));
         bytes memory s;

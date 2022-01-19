@@ -4,6 +4,7 @@ pragma solidity 0.8.6;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./CommonStructs.sol";
+import "hardhat/console.sol";
 
 
 contract CommonBridge is AccessControl {
@@ -35,13 +36,13 @@ contract CommonBridge is AccessControl {
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
         uint fee_)
     {
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(RELAY_ROLE, relayAddress);
+
         sideBridgeAddress = _sideBridgeAddress;
 
         // initialise tokenAddresses with start values
-        tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
-
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(RELAY_ROLE, relayAddress);
+        _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
 
         fee = fee_;
     }
@@ -97,7 +98,11 @@ contract CommonBridge is AccessControl {
         delete tokenAddresses[tokenThisAddress];
     }
 
-    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
+    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE){
+        tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
+    }
+
+    function _tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) private {
         require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
         uint arrayLength = tokenThisAddresses.length;
         for (uint i = 0; i < arrayLength; i++) {

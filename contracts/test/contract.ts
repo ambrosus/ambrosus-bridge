@@ -19,7 +19,6 @@ describe("Contract", () => {
     await deployments.fixture(["ethbridge", "ambbridge"]);
     ({owner} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
-
     ethBridge = await ethers.getContract("EthBridge", ownerS);
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
   });
@@ -77,11 +76,12 @@ describe("Contract", () => {
     }
 
 
-    await ethBridge.TestAll(rlpBlocks, events, proof);
+    await ethBridge.CheckPoA_(rlpBlocks, events, proof);
+    await ambBridge.CheckPoW_(rlpBlocks, events, proof);
 
   });
 
-  it('TestReceiptsProof', async () => {
+  it('CheckReceiptsProof', async () => {
 
     const receiptsRoot = "0x0e19377a0bfb933115babbc12b4c8dbdac491e6b59346d1d311204af82c4dd08"
     const eventToCheck = "0x000000000000000000000000a17d0240c839e5461fd897a943080e3420156d40"
@@ -94,46 +94,35 @@ describe("Contract", () => {
       "0xa05621bdcbf22658e545e8288486f0a32cbfd514319b4721fd629b28f30eb1f4f4808080808080a0449d4b558ab1dd1bc88d1e456bf9c7cff9e09370c045086eb062515407e1fa3e8080808080808080"]
 
 
-    await ethBridge.TestReceiptsProof(proof, eventToCheck, receiptsRoot);
-
-
-  });
-
-
-  it('TestBloom', async () => {
-
-    const topicHash = "0x000000000000000000000000a17d0240c839e5461fd897a943080e3420156d40"
-    const bloom = "0x00000001020010340000000080000000000000004005402000402010008008420150000000000000000000000808000000000020082260800810004000240001100000000090000000000028002000000004010001040000000800808002080802800000060040001080000400000800420000100400000104040010100000080802100002440000400100000000000000000480000000000402800008004000020000001040000c000001080000000004000080040100040000182200080100000404020000000000010010003000080250000000810000000000200800e00100100c00000000000001000100000000a0010000100000004000520000000081"
-
-    await ethBridge.TestBloom(bloom, topicHash);
-
+    await ethBridge.CheckReceiptsProof(proof, eventToCheck, receiptsRoot);
+    await ambBridge.CheckReceiptsProof(proof, eventToCheck, receiptsRoot);
   });
 
 
   it("TestWithdraw timeframe", async ()=> {
     let [addr1, addr2, _] = await ethers.getSigners();
-    await ambBridge.withdraw(addr1.address, addr2.address, 1);
-    await ambBridge.withdraw(addr1.address, addr2.address, 2);
+    await ambBridge.withdraw(addr1.address, addr2.address, 1, {value: 1000});
+    await ambBridge.withdraw(addr1.address, addr2.address, 2, {value: 1000});
     await nextTimeframe();
-    let tx1: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337);
-    await ambBridge.withdraw(addr1.address, addr2.address, 3);
-    await ambBridge.withdraw(addr1.address, addr2.address, 4);
+    let tx1: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
+    await ambBridge.withdraw(addr1.address, addr2.address, 3, {value: 1000});
+    await ambBridge.withdraw(addr1.address, addr2.address, 4, {value: 1000});
     await nextTimeframe();
-    let tx2: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337);
-    await ambBridge.withdraw(addr1.address, addr2.address, 5);
+    let tx2: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: 1000});
 
     let receipt1: ContractReceipt = await tx1.wait();
     let receipt2: ContractReceipt = await tx2.wait();
 
-    let events1: any = await receipt1.events?.filter((x: any) => {return x.event == "newWithdraw"});
-    let events2: any = await receipt2.events?.filter((x: any) => {return x.event == "newWithdraw"});
+    let events1: any = await receipt1.events?.filter((x: any) => {return x.event == "TransferEvent"});
+    let events2: any = await receipt2.events?.filter((x: any) => {return x.event == "TransferEvent"});
     expect(events2[0].args.event_id).eq(events1[0].args.event_id.add("1"));
   });
 
-  let currentTimeframe = Math.floor(Date.now() / 4);
+  let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
-    const timestamp = currentTimeframe * 4 + amount * 240;
+    const timestamp = currentTimeframe * 14400 + amount * 14400;
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   }
 });
