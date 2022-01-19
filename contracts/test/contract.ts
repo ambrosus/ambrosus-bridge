@@ -119,6 +119,26 @@ describe("Contract", () => {
     expect(events2[0].args.event_id).eq(events1[0].args.event_id.add("1"));
   });
 
+  it("Test TokenAddresses", async () => {
+    let [addr1, addr2, _] = await ethers.getSigners();
+    let tokenThisAddresses = [ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe")];
+    let tokenSideAddresses = [ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe")];
+    for (let i = 0; i < tokenThisAddresses.length; i++) {
+      expect(await ambBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
+    }
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr2.address);
+
+    let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
+    let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe")
+    await ambBridge.connect(addr2).tokensAdd(first, second);
+    expect(await ambBridge.tokenAddresses(first)).eq(second);
+
+    await ambBridge.connect(addr2).tokensRemove(first);
+    expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
