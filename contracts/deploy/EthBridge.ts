@@ -8,7 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await hre.deployments.deploy("EthBridge", {
     contract: "EthBridge",
     from: owner,
-    args: [owner],
+    args: ["0x295c2707319ad4beca6b5bb4086617fd6f240cfe", "0x295c2707319ad4beca6b5bb4086617fd6f240cfe", [], [], 0],
     log: true,
   });
 
