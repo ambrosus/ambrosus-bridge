@@ -1,15 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
+import "./CommonStructs.sol";
+
 contract CheckPoW {
-
-    // delete
-    struct _Transfer {
-        address tokenAddress;
-        address toAddress;
-        uint amount;
-    }
-
     struct BlockPoW {
         bytes p1;
         bytes32 prevHashOrReceiptRoot;  // receipt for main block, prevHash for safety blocks
@@ -20,7 +14,7 @@ contract CheckPoW {
 
     function TestPoW(
         BlockPoW[] memory blocks,
-        _Transfer[] memory events,
+        CommonStructs.Transfer[] memory events,
         bytes[] memory proof) public
     {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));

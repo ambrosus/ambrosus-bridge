@@ -3,6 +3,7 @@ pragma solidity 0.8.6;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./CommonStructs.sol";
 
 
 contract CommonBridge is AccessControl {
@@ -11,14 +12,7 @@ contract CommonBridge is AccessControl {
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
 
     event Test(uint indexed event_id, uint unimportant);
-    event TransferEvent(uint indexed event_id, Transfer[] queue);
-
-
-    struct Transfer {
-        address tokenAddress;
-        address toAddress;
-        uint amount;
-    }
+    event TransferEvent(uint indexed event_id, CommonStructs.Transfer[] queue);
 
 
     // this network to side network
@@ -28,7 +22,7 @@ contract CommonBridge is AccessControl {
 
     uint lastTimeframe;
 
-    Transfer[] queue;
+    CommonStructs.Transfer[] queue;
 
     uint outputEventId;
     uint public inputEventId;
@@ -64,7 +58,7 @@ contract CommonBridge is AccessControl {
             lastTimeframe = nowTimeframe;
         }
 
-        queue.push(Transfer(tokenAmbAddress, toAddress, amount));
+        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
     }
 
 
@@ -82,7 +76,7 @@ contract CommonBridge is AccessControl {
     }
 
 
-    function Transfer_(Transfer memory transfer) public {
+    function Transfer(CommonStructs.Transfer memory transfer) public {
         require(IERC20(transfer.tokenAddress).transferFrom(msg.sender, transfer.toAddress, transfer.amount), "Fail transfer coins");
     }
 

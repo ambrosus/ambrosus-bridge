@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-contract CheckPoA {
+import "./CommonStructs.sol";
 
-    // delete
-    struct _Transfer {
-        address tokenAddress;
-        address toAddress;
-        uint amount;
-    }
+
+contract CheckPoA {
 
     struct BlockPoA {
         bytes p0_seal;
@@ -26,7 +22,7 @@ contract CheckPoA {
     }
 
 
-    function TestAll(BlockPoA[] memory blocks, _Transfer[] memory events, bytes[] memory proof, address validator) public {
+    function TestAll(BlockPoA[] memory blocks, CommonStructs.Transfer[] memory events, bytes[] memory proof, address validator) public {
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
