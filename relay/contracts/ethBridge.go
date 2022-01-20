@@ -28,26 +28,23 @@ var (
 	_ = event.NewSubscription
 )
 
-// EthBridgeBlock is an auto generated low-level Go binding around an user-defined struct.
-type EthBridgeBlock struct {
+// CheckPoABlockPoA is an auto generated low-level Go binding around an user-defined struct.
+type CheckPoABlockPoA struct {
+	P0Seal                []byte
+	P0Bare                []byte
 	P1                    []byte
 	PrevHashOrReceiptRoot [32]byte
 	P2                    []byte
 	Timestamp             []byte
 	P3                    []byte
+	S1                    []byte
 	Signature             []byte
-}
-
-// EthBridgeWithdraw is an auto generated low-level Go binding around an user-defined struct.
-type EthBridgeWithdraw struct {
-	FromAddress common.Address
-	ToAddress   common.Address
-	Amount      *big.Int
+	S2                    []byte
 }
 
 // EthMetaData contains all meta data concerning the Eth contract.
 var EthMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"validator_\",\"type\":\"address\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"WithdrawEvent\",\"type\":\"event\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"prevHashOrReceiptRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"timestamp\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"internalType\":\"structEthBridge.Block[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"fromAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structEthBridge.Withdraw[]\",\"name\":\"events\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"}],\"name\":\"TestAll\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"bloom\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"topicHash\",\"type\":\"bytes\"}],\"name\":\"TestBloom\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"receiptsRoot\",\"type\":\"bytes32\"}],\"name\":\"TestReceiptsProof\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"b\",\"type\":\"bytes\"}],\"name\":\"bytesToUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"}],\"name\":\"calcReceiptsRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sideBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"relayAddress\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unimportant\",\"type\":\"uint256\"}],\"name\":\"Test\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"queue\",\"type\":\"tuple[]\"}],\"name\":\"TransferEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes\",\"name\":\"p0_seal\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p0_bare\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"prevHashOrReceiptRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"timestamp\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"s1\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"s2\",\"type\":\"bytes\"}],\"internalType\":\"structCheckPoA.BlockPoA[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"events\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"}],\"name\":\"CheckPoA_\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"receiptsRoot\",\"type\":\"bytes32\"}],\"name\":\"CheckReceiptsProof\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"RELAY_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer\",\"name\":\"transfer\",\"type\":\"tuple\"}],\"name\":\"Transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"acceptBlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"b\",\"type\":\"bytes\"}],\"name\":\"bytesToUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"}],\"name\":\"calcReceiptsRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"name\":\"changeFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"eventTest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inputEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sideBridgeAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenSideAddress\",\"type\":\"address\"}],\"name\":\"tokensAdd\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensAddBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"}],\"name\":\"tokensRemove\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensRemoveBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAmbAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 }
 
 // EthABI is the input ABI used to generate the binding from.
@@ -196,6 +193,99 @@ func (_Eth *EthTransactorRaw) Transact(opts *bind.TransactOpts, method string, p
 	return _Eth.Contract.contract.Transact(opts, method, params...)
 }
 
+// ADMINROLE is a free data retrieval call binding the contract method 0x75b238fc.
+//
+// Solidity: function ADMIN_ROLE() view returns(bytes32)
+func (_Eth *EthCaller) ADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "ADMIN_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// ADMINROLE is a free data retrieval call binding the contract method 0x75b238fc.
+//
+// Solidity: function ADMIN_ROLE() view returns(bytes32)
+func (_Eth *EthSession) ADMINROLE() ([32]byte, error) {
+	return _Eth.Contract.ADMINROLE(&_Eth.CallOpts)
+}
+
+// ADMINROLE is a free data retrieval call binding the contract method 0x75b238fc.
+//
+// Solidity: function ADMIN_ROLE() view returns(bytes32)
+func (_Eth *EthCallerSession) ADMINROLE() ([32]byte, error) {
+	return _Eth.Contract.ADMINROLE(&_Eth.CallOpts)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_Eth *EthCaller) DEFAULTADMINROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "DEFAULT_ADMIN_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_Eth *EthSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _Eth.Contract.DEFAULTADMINROLE(&_Eth.CallOpts)
+}
+
+// DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
+//
+// Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
+func (_Eth *EthCallerSession) DEFAULTADMINROLE() ([32]byte, error) {
+	return _Eth.Contract.DEFAULTADMINROLE(&_Eth.CallOpts)
+}
+
+// RELAYROLE is a free data retrieval call binding the contract method 0x04421823.
+//
+// Solidity: function RELAY_ROLE() view returns(bytes32)
+func (_Eth *EthCaller) RELAYROLE(opts *bind.CallOpts) ([32]byte, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "RELAY_ROLE")
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
+}
+
+// RELAYROLE is a free data retrieval call binding the contract method 0x04421823.
+//
+// Solidity: function RELAY_ROLE() view returns(bytes32)
+func (_Eth *EthSession) RELAYROLE() ([32]byte, error) {
+	return _Eth.Contract.RELAYROLE(&_Eth.CallOpts)
+}
+
+// RELAYROLE is a free data retrieval call binding the contract method 0x04421823.
+//
+// Solidity: function RELAY_ROLE() view returns(bytes32)
+func (_Eth *EthCallerSession) RELAYROLE() ([32]byte, error) {
+	return _Eth.Contract.RELAYROLE(&_Eth.CallOpts)
+}
+
 // BytesToUint is a free data retrieval call binding the contract method 0x02d06d05.
 //
 // Solidity: function bytesToUint(bytes b) view returns(uint256)
@@ -258,72 +348,520 @@ func (_Eth *EthCallerSession) CalcReceiptsRoot(proof [][]byte, eventToSearch []b
 	return _Eth.Contract.CalcReceiptsRoot(&_Eth.CallOpts, proof, eventToSearch)
 }
 
-// TestAll is a paid mutator transaction binding the contract method 0x3315de1f.
+// Fee is a free data retrieval call binding the contract method 0xddca3f43.
 //
-// Solidity: function TestAll((bytes,bytes32,bytes,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof) returns()
-func (_Eth *EthTransactor) TestAll(opts *bind.TransactOpts, blocks []EthBridgeBlock, events []EthBridgeWithdraw, proof [][]byte) (*types.Transaction, error) {
-	return _Eth.contract.Transact(opts, "TestAll", blocks, events, proof)
+// Solidity: function fee() view returns(uint256)
+func (_Eth *EthCaller) Fee(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "fee")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
 }
 
-// TestAll is a paid mutator transaction binding the contract method 0x3315de1f.
+// Fee is a free data retrieval call binding the contract method 0xddca3f43.
 //
-// Solidity: function TestAll((bytes,bytes32,bytes,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof) returns()
-func (_Eth *EthSession) TestAll(blocks []EthBridgeBlock, events []EthBridgeWithdraw, proof [][]byte) (*types.Transaction, error) {
-	return _Eth.Contract.TestAll(&_Eth.TransactOpts, blocks, events, proof)
+// Solidity: function fee() view returns(uint256)
+func (_Eth *EthSession) Fee() (*big.Int, error) {
+	return _Eth.Contract.Fee(&_Eth.CallOpts)
 }
 
-// TestAll is a paid mutator transaction binding the contract method 0x3315de1f.
+// Fee is a free data retrieval call binding the contract method 0xddca3f43.
 //
-// Solidity: function TestAll((bytes,bytes32,bytes,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof) returns()
-func (_Eth *EthTransactorSession) TestAll(blocks []EthBridgeBlock, events []EthBridgeWithdraw, proof [][]byte) (*types.Transaction, error) {
-	return _Eth.Contract.TestAll(&_Eth.TransactOpts, blocks, events, proof)
+// Solidity: function fee() view returns(uint256)
+func (_Eth *EthCallerSession) Fee() (*big.Int, error) {
+	return _Eth.Contract.Fee(&_Eth.CallOpts)
 }
 
-// TestBloom is a paid mutator transaction binding the contract method 0xb11a8408.
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function TestBloom(bytes bloom, bytes topicHash) returns(bool)
-func (_Eth *EthTransactor) TestBloom(opts *bind.TransactOpts, bloom []byte, topicHash []byte) (*types.Transaction, error) {
-	return _Eth.contract.Transact(opts, "TestBloom", bloom, topicHash)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_Eth *EthCaller) GetRoleAdmin(opts *bind.CallOpts, role [32]byte) ([32]byte, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "getRoleAdmin", role)
+
+	if err != nil {
+		return *new([32]byte), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
+
+	return out0, err
+
 }
 
-// TestBloom is a paid mutator transaction binding the contract method 0xb11a8408.
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function TestBloom(bytes bloom, bytes topicHash) returns(bool)
-func (_Eth *EthSession) TestBloom(bloom []byte, topicHash []byte) (*types.Transaction, error) {
-	return _Eth.Contract.TestBloom(&_Eth.TransactOpts, bloom, topicHash)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_Eth *EthSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _Eth.Contract.GetRoleAdmin(&_Eth.CallOpts, role)
 }
 
-// TestBloom is a paid mutator transaction binding the contract method 0xb11a8408.
+// GetRoleAdmin is a free data retrieval call binding the contract method 0x248a9ca3.
 //
-// Solidity: function TestBloom(bytes bloom, bytes topicHash) returns(bool)
-func (_Eth *EthTransactorSession) TestBloom(bloom []byte, topicHash []byte) (*types.Transaction, error) {
-	return _Eth.Contract.TestBloom(&_Eth.TransactOpts, bloom, topicHash)
+// Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
+func (_Eth *EthCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
+	return _Eth.Contract.GetRoleAdmin(&_Eth.CallOpts, role)
 }
 
-// TestReceiptsProof is a paid mutator transaction binding the contract method 0x98f4333f.
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function TestReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
-func (_Eth *EthTransactor) TestReceiptsProof(opts *bind.TransactOpts, proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
-	return _Eth.contract.Transact(opts, "TestReceiptsProof", proof, eventToSearch, receiptsRoot)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_Eth *EthCaller) HasRole(opts *bind.CallOpts, role [32]byte, account common.Address) (bool, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "hasRole", role, account)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
-// TestReceiptsProof is a paid mutator transaction binding the contract method 0x98f4333f.
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function TestReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
-func (_Eth *EthSession) TestReceiptsProof(proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
-	return _Eth.Contract.TestReceiptsProof(&_Eth.TransactOpts, proof, eventToSearch, receiptsRoot)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_Eth *EthSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _Eth.Contract.HasRole(&_Eth.CallOpts, role, account)
 }
 
-// TestReceiptsProof is a paid mutator transaction binding the contract method 0x98f4333f.
+// HasRole is a free data retrieval call binding the contract method 0x91d14854.
 //
-// Solidity: function TestReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
-func (_Eth *EthTransactorSession) TestReceiptsProof(proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
-	return _Eth.Contract.TestReceiptsProof(&_Eth.TransactOpts, proof, eventToSearch, receiptsRoot)
+// Solidity: function hasRole(bytes32 role, address account) view returns(bool)
+func (_Eth *EthCallerSession) HasRole(role [32]byte, account common.Address) (bool, error) {
+	return _Eth.Contract.HasRole(&_Eth.CallOpts, role, account)
 }
 
-// EthWithdrawEventIterator is returned from FilterWithdrawEvent and is used to iterate over the raw logs and unpacked data for WithdrawEvent events raised by the Eth contract.
-type EthWithdrawEventIterator struct {
-	Event *EthWithdrawEvent // Event containing the contract specifics and raw log
+// InputEventId is a free data retrieval call binding the contract method 0x99b5bb64.
+//
+// Solidity: function inputEventId() view returns(uint256)
+func (_Eth *EthCaller) InputEventId(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "inputEventId")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// InputEventId is a free data retrieval call binding the contract method 0x99b5bb64.
+//
+// Solidity: function inputEventId() view returns(uint256)
+func (_Eth *EthSession) InputEventId() (*big.Int, error) {
+	return _Eth.Contract.InputEventId(&_Eth.CallOpts)
+}
+
+// InputEventId is a free data retrieval call binding the contract method 0x99b5bb64.
+//
+// Solidity: function inputEventId() view returns(uint256)
+func (_Eth *EthCallerSession) InputEventId() (*big.Int, error) {
+	return _Eth.Contract.InputEventId(&_Eth.CallOpts)
+}
+
+// SideBridgeAddress is a free data retrieval call binding the contract method 0xf33fe10f.
+//
+// Solidity: function sideBridgeAddress() view returns(address)
+func (_Eth *EthCaller) SideBridgeAddress(opts *bind.CallOpts) (common.Address, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "sideBridgeAddress")
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// SideBridgeAddress is a free data retrieval call binding the contract method 0xf33fe10f.
+//
+// Solidity: function sideBridgeAddress() view returns(address)
+func (_Eth *EthSession) SideBridgeAddress() (common.Address, error) {
+	return _Eth.Contract.SideBridgeAddress(&_Eth.CallOpts)
+}
+
+// SideBridgeAddress is a free data retrieval call binding the contract method 0xf33fe10f.
+//
+// Solidity: function sideBridgeAddress() view returns(address)
+func (_Eth *EthCallerSession) SideBridgeAddress() (common.Address, error) {
+	return _Eth.Contract.SideBridgeAddress(&_Eth.CallOpts)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_Eth *EthCaller) SupportsInterface(opts *bind.CallOpts, interfaceId [4]byte) (bool, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "supportsInterface", interfaceId)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_Eth *EthSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _Eth.Contract.SupportsInterface(&_Eth.CallOpts, interfaceId)
+}
+
+// SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
+//
+// Solidity: function supportsInterface(bytes4 interfaceId) view returns(bool)
+func (_Eth *EthCallerSession) SupportsInterface(interfaceId [4]byte) (bool, error) {
+	return _Eth.Contract.SupportsInterface(&_Eth.CallOpts, interfaceId)
+}
+
+// TokenAddresses is a free data retrieval call binding the contract method 0xb6d3385e.
+//
+// Solidity: function tokenAddresses(address ) view returns(address)
+func (_Eth *EthCaller) TokenAddresses(opts *bind.CallOpts, arg0 common.Address) (common.Address, error) {
+	var out []interface{}
+	err := _Eth.contract.Call(opts, &out, "tokenAddresses", arg0)
+
+	if err != nil {
+		return *new(common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
+
+	return out0, err
+
+}
+
+// TokenAddresses is a free data retrieval call binding the contract method 0xb6d3385e.
+//
+// Solidity: function tokenAddresses(address ) view returns(address)
+func (_Eth *EthSession) TokenAddresses(arg0 common.Address) (common.Address, error) {
+	return _Eth.Contract.TokenAddresses(&_Eth.CallOpts, arg0)
+}
+
+// TokenAddresses is a free data retrieval call binding the contract method 0xb6d3385e.
+//
+// Solidity: function tokenAddresses(address ) view returns(address)
+func (_Eth *EthCallerSession) TokenAddresses(arg0 common.Address) (common.Address, error) {
+	return _Eth.Contract.TokenAddresses(&_Eth.CallOpts, arg0)
+}
+
+// CheckPoA is a paid mutator transaction binding the contract method 0x6580ed60.
+//
+// Solidity: function CheckPoA_((bytes,bytes,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof) returns()
+func (_Eth *EthTransactor) CheckPoA(opts *bind.TransactOpts, blocks []CheckPoABlockPoA, events []CommonStructsTransfer, proof [][]byte) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "CheckPoA_", blocks, events, proof)
+}
+
+// CheckPoA is a paid mutator transaction binding the contract method 0x6580ed60.
+//
+// Solidity: function CheckPoA_((bytes,bytes,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof) returns()
+func (_Eth *EthSession) CheckPoA(blocks []CheckPoABlockPoA, events []CommonStructsTransfer, proof [][]byte) (*types.Transaction, error) {
+	return _Eth.Contract.CheckPoA(&_Eth.TransactOpts, blocks, events, proof)
+}
+
+// CheckPoA is a paid mutator transaction binding the contract method 0x6580ed60.
+//
+// Solidity: function CheckPoA_((bytes,bytes,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof) returns()
+func (_Eth *EthTransactorSession) CheckPoA(blocks []CheckPoABlockPoA, events []CommonStructsTransfer, proof [][]byte) (*types.Transaction, error) {
+	return _Eth.Contract.CheckPoA(&_Eth.TransactOpts, blocks, events, proof)
+}
+
+// CheckReceiptsProof is a paid mutator transaction binding the contract method 0xd44d273c.
+//
+// Solidity: function CheckReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
+func (_Eth *EthTransactor) CheckReceiptsProof(opts *bind.TransactOpts, proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "CheckReceiptsProof", proof, eventToSearch, receiptsRoot)
+}
+
+// CheckReceiptsProof is a paid mutator transaction binding the contract method 0xd44d273c.
+//
+// Solidity: function CheckReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
+func (_Eth *EthSession) CheckReceiptsProof(proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
+	return _Eth.Contract.CheckReceiptsProof(&_Eth.TransactOpts, proof, eventToSearch, receiptsRoot)
+}
+
+// CheckReceiptsProof is a paid mutator transaction binding the contract method 0xd44d273c.
+//
+// Solidity: function CheckReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
+func (_Eth *EthTransactorSession) CheckReceiptsProof(proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
+	return _Eth.Contract.CheckReceiptsProof(&_Eth.TransactOpts, proof, eventToSearch, receiptsRoot)
+}
+
+// Transfer is a paid mutator transaction binding the contract method 0xc6f666c8.
+//
+// Solidity: function Transfer((address,address,uint256) transfer) returns()
+func (_Eth *EthTransactor) Transfer(opts *bind.TransactOpts, transfer CommonStructsTransfer) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "Transfer", transfer)
+}
+
+// Transfer is a paid mutator transaction binding the contract method 0xc6f666c8.
+//
+// Solidity: function Transfer((address,address,uint256) transfer) returns()
+func (_Eth *EthSession) Transfer(transfer CommonStructsTransfer) (*types.Transaction, error) {
+	return _Eth.Contract.Transfer(&_Eth.TransactOpts, transfer)
+}
+
+// Transfer is a paid mutator transaction binding the contract method 0xc6f666c8.
+//
+// Solidity: function Transfer((address,address,uint256) transfer) returns()
+func (_Eth *EthTransactorSession) Transfer(transfer CommonStructsTransfer) (*types.Transaction, error) {
+	return _Eth.Contract.Transfer(&_Eth.TransactOpts, transfer)
+}
+
+// AcceptBlock is a paid mutator transaction binding the contract method 0x54583364.
+//
+// Solidity: function acceptBlock() returns()
+func (_Eth *EthTransactor) AcceptBlock(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "acceptBlock")
+}
+
+// AcceptBlock is a paid mutator transaction binding the contract method 0x54583364.
+//
+// Solidity: function acceptBlock() returns()
+func (_Eth *EthSession) AcceptBlock() (*types.Transaction, error) {
+	return _Eth.Contract.AcceptBlock(&_Eth.TransactOpts)
+}
+
+// AcceptBlock is a paid mutator transaction binding the contract method 0x54583364.
+//
+// Solidity: function acceptBlock() returns()
+func (_Eth *EthTransactorSession) AcceptBlock() (*types.Transaction, error) {
+	return _Eth.Contract.AcceptBlock(&_Eth.TransactOpts)
+}
+
+// ChangeFee is a paid mutator transaction binding the contract method 0x6a1db1bf.
+//
+// Solidity: function changeFee(uint256 fee_) returns()
+func (_Eth *EthTransactor) ChangeFee(opts *bind.TransactOpts, fee_ *big.Int) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "changeFee", fee_)
+}
+
+// ChangeFee is a paid mutator transaction binding the contract method 0x6a1db1bf.
+//
+// Solidity: function changeFee(uint256 fee_) returns()
+func (_Eth *EthSession) ChangeFee(fee_ *big.Int) (*types.Transaction, error) {
+	return _Eth.Contract.ChangeFee(&_Eth.TransactOpts, fee_)
+}
+
+// ChangeFee is a paid mutator transaction binding the contract method 0x6a1db1bf.
+//
+// Solidity: function changeFee(uint256 fee_) returns()
+func (_Eth *EthTransactorSession) ChangeFee(fee_ *big.Int) (*types.Transaction, error) {
+	return _Eth.Contract.ChangeFee(&_Eth.TransactOpts, fee_)
+}
+
+// EventTest is a paid mutator transaction binding the contract method 0x94fb3d29.
+//
+// Solidity: function eventTest(uint256 event_id) returns()
+func (_Eth *EthTransactor) EventTest(opts *bind.TransactOpts, event_id *big.Int) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "eventTest", event_id)
+}
+
+// EventTest is a paid mutator transaction binding the contract method 0x94fb3d29.
+//
+// Solidity: function eventTest(uint256 event_id) returns()
+func (_Eth *EthSession) EventTest(event_id *big.Int) (*types.Transaction, error) {
+	return _Eth.Contract.EventTest(&_Eth.TransactOpts, event_id)
+}
+
+// EventTest is a paid mutator transaction binding the contract method 0x94fb3d29.
+//
+// Solidity: function eventTest(uint256 event_id) returns()
+func (_Eth *EthTransactorSession) EventTest(event_id *big.Int) (*types.Transaction, error) {
+	return _Eth.Contract.EventTest(&_Eth.TransactOpts, event_id)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_Eth *EthTransactor) GrantRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "grantRole", role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_Eth *EthSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.GrantRole(&_Eth.TransactOpts, role, account)
+}
+
+// GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
+//
+// Solidity: function grantRole(bytes32 role, address account) returns()
+func (_Eth *EthTransactorSession) GrantRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.GrantRole(&_Eth.TransactOpts, role, account)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address account) returns()
+func (_Eth *EthTransactor) RenounceRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "renounceRole", role, account)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address account) returns()
+func (_Eth *EthSession) RenounceRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.RenounceRole(&_Eth.TransactOpts, role, account)
+}
+
+// RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
+//
+// Solidity: function renounceRole(bytes32 role, address account) returns()
+func (_Eth *EthTransactorSession) RenounceRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.RenounceRole(&_Eth.TransactOpts, role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_Eth *EthTransactor) RevokeRole(opts *bind.TransactOpts, role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "revokeRole", role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_Eth *EthSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.RevokeRole(&_Eth.TransactOpts, role, account)
+}
+
+// RevokeRole is a paid mutator transaction binding the contract method 0xd547741f.
+//
+// Solidity: function revokeRole(bytes32 role, address account) returns()
+func (_Eth *EthTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.RevokeRole(&_Eth.TransactOpts, role, account)
+}
+
+// TokensAdd is a paid mutator transaction binding the contract method 0x853890ae.
+//
+// Solidity: function tokensAdd(address tokenThisAddress, address tokenSideAddress) returns()
+func (_Eth *EthTransactor) TokensAdd(opts *bind.TransactOpts, tokenThisAddress common.Address, tokenSideAddress common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "tokensAdd", tokenThisAddress, tokenSideAddress)
+}
+
+// TokensAdd is a paid mutator transaction binding the contract method 0x853890ae.
+//
+// Solidity: function tokensAdd(address tokenThisAddress, address tokenSideAddress) returns()
+func (_Eth *EthSession) TokensAdd(tokenThisAddress common.Address, tokenSideAddress common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensAdd(&_Eth.TransactOpts, tokenThisAddress, tokenSideAddress)
+}
+
+// TokensAdd is a paid mutator transaction binding the contract method 0x853890ae.
+//
+// Solidity: function tokensAdd(address tokenThisAddress, address tokenSideAddress) returns()
+func (_Eth *EthTransactorSession) TokensAdd(tokenThisAddress common.Address, tokenSideAddress common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensAdd(&_Eth.TransactOpts, tokenThisAddress, tokenSideAddress)
+}
+
+// TokensAddBatch is a paid mutator transaction binding the contract method 0x09fce356.
+//
+// Solidity: function tokensAddBatch(address[] tokenThisAddresses, address[] tokenSideAddresses) returns()
+func (_Eth *EthTransactor) TokensAddBatch(opts *bind.TransactOpts, tokenThisAddresses []common.Address, tokenSideAddresses []common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "tokensAddBatch", tokenThisAddresses, tokenSideAddresses)
+}
+
+// TokensAddBatch is a paid mutator transaction binding the contract method 0x09fce356.
+//
+// Solidity: function tokensAddBatch(address[] tokenThisAddresses, address[] tokenSideAddresses) returns()
+func (_Eth *EthSession) TokensAddBatch(tokenThisAddresses []common.Address, tokenSideAddresses []common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensAddBatch(&_Eth.TransactOpts, tokenThisAddresses, tokenSideAddresses)
+}
+
+// TokensAddBatch is a paid mutator transaction binding the contract method 0x09fce356.
+//
+// Solidity: function tokensAddBatch(address[] tokenThisAddresses, address[] tokenSideAddresses) returns()
+func (_Eth *EthTransactorSession) TokensAddBatch(tokenThisAddresses []common.Address, tokenSideAddresses []common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensAddBatch(&_Eth.TransactOpts, tokenThisAddresses, tokenSideAddresses)
+}
+
+// TokensRemove is a paid mutator transaction binding the contract method 0x8e5df9c7.
+//
+// Solidity: function tokensRemove(address tokenThisAddress) returns()
+func (_Eth *EthTransactor) TokensRemove(opts *bind.TransactOpts, tokenThisAddress common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "tokensRemove", tokenThisAddress)
+}
+
+// TokensRemove is a paid mutator transaction binding the contract method 0x8e5df9c7.
+//
+// Solidity: function tokensRemove(address tokenThisAddress) returns()
+func (_Eth *EthSession) TokensRemove(tokenThisAddress common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensRemove(&_Eth.TransactOpts, tokenThisAddress)
+}
+
+// TokensRemove is a paid mutator transaction binding the contract method 0x8e5df9c7.
+//
+// Solidity: function tokensRemove(address tokenThisAddress) returns()
+func (_Eth *EthTransactorSession) TokensRemove(tokenThisAddress common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensRemove(&_Eth.TransactOpts, tokenThisAddress)
+}
+
+// TokensRemoveBatch is a paid mutator transaction binding the contract method 0x5249a705.
+//
+// Solidity: function tokensRemoveBatch(address[] tokenThisAddresses) returns()
+func (_Eth *EthTransactor) TokensRemoveBatch(opts *bind.TransactOpts, tokenThisAddresses []common.Address) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "tokensRemoveBatch", tokenThisAddresses)
+}
+
+// TokensRemoveBatch is a paid mutator transaction binding the contract method 0x5249a705.
+//
+// Solidity: function tokensRemoveBatch(address[] tokenThisAddresses) returns()
+func (_Eth *EthSession) TokensRemoveBatch(tokenThisAddresses []common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensRemoveBatch(&_Eth.TransactOpts, tokenThisAddresses)
+}
+
+// TokensRemoveBatch is a paid mutator transaction binding the contract method 0x5249a705.
+//
+// Solidity: function tokensRemoveBatch(address[] tokenThisAddresses) returns()
+func (_Eth *EthTransactorSession) TokensRemoveBatch(tokenThisAddresses []common.Address) (*types.Transaction, error) {
+	return _Eth.Contract.TokensRemoveBatch(&_Eth.TransactOpts, tokenThisAddresses)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0xd9caed12.
+//
+// Solidity: function withdraw(address tokenAmbAddress, address toAddress, uint256 amount) payable returns()
+func (_Eth *EthTransactor) Withdraw(opts *bind.TransactOpts, tokenAmbAddress common.Address, toAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Eth.contract.Transact(opts, "withdraw", tokenAmbAddress, toAddress, amount)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0xd9caed12.
+//
+// Solidity: function withdraw(address tokenAmbAddress, address toAddress, uint256 amount) payable returns()
+func (_Eth *EthSession) Withdraw(tokenAmbAddress common.Address, toAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Eth.Contract.Withdraw(&_Eth.TransactOpts, tokenAmbAddress, toAddress, amount)
+}
+
+// Withdraw is a paid mutator transaction binding the contract method 0xd9caed12.
+//
+// Solidity: function withdraw(address tokenAmbAddress, address toAddress, uint256 amount) payable returns()
+func (_Eth *EthTransactorSession) Withdraw(tokenAmbAddress common.Address, toAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Eth.Contract.Withdraw(&_Eth.TransactOpts, tokenAmbAddress, toAddress, amount)
+}
+
+// EthRoleAdminChangedIterator is returned from FilterRoleAdminChanged and is used to iterate over the raw logs and unpacked data for RoleAdminChanged events raised by the Eth contract.
+type EthRoleAdminChangedIterator struct {
+	Event *EthRoleAdminChanged // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -337,7 +875,7 @@ type EthWithdrawEventIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *EthWithdrawEventIterator) Next() bool {
+func (it *EthRoleAdminChangedIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -346,7 +884,7 @@ func (it *EthWithdrawEventIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(EthWithdrawEvent)
+			it.Event = new(EthRoleAdminChanged)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -361,7 +899,7 @@ func (it *EthWithdrawEventIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(EthWithdrawEvent)
+		it.Event = new(EthRoleAdminChanged)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -377,61 +915,69 @@ func (it *EthWithdrawEventIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *EthWithdrawEventIterator) Error() error {
+func (it *EthRoleAdminChangedIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *EthWithdrawEventIterator) Close() error {
+func (it *EthRoleAdminChangedIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// EthWithdrawEvent represents a WithdrawEvent event raised by the Eth contract.
-type EthWithdrawEvent struct {
-	From   common.Address
-	To     common.Address
-	Amount *big.Int
-	Raw    types.Log // Blockchain specific contextual infos
+// EthRoleAdminChanged represents a RoleAdminChanged event raised by the Eth contract.
+type EthRoleAdminChanged struct {
+	Role              [32]byte
+	PreviousAdminRole [32]byte
+	NewAdminRole      [32]byte
+	Raw               types.Log // Blockchain specific contextual infos
 }
 
-// FilterWithdrawEvent is a free log retrieval operation binding the contract event 0x93cb7b4ba12c5bb07f02e52c4e43788d8f4db1e66e9d30aaaeffc5ab325b810c.
+// FilterRoleAdminChanged is a free log retrieval operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event WithdrawEvent(address indexed from, address indexed to, uint256 amount)
-func (_Eth *EthFilterer) FilterWithdrawEvent(opts *bind.FilterOpts, from []common.Address, to []common.Address) (*EthWithdrawEventIterator, error) {
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_Eth *EthFilterer) FilterRoleAdminChanged(opts *bind.FilterOpts, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (*EthRoleAdminChangedIterator, error) {
 
-	var fromRule []interface{}
-	for _, fromItem := range from {
-		fromRule = append(fromRule, fromItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
 	}
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
 	}
 
-	logs, sub, err := _Eth.contract.FilterLogs(opts, "WithdrawEvent", fromRule, toRule)
+	logs, sub, err := _Eth.contract.FilterLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
 	if err != nil {
 		return nil, err
 	}
-	return &EthWithdrawEventIterator{contract: _Eth.contract, event: "WithdrawEvent", logs: logs, sub: sub}, nil
+	return &EthRoleAdminChangedIterator{contract: _Eth.contract, event: "RoleAdminChanged", logs: logs, sub: sub}, nil
 }
 
-// WatchWithdrawEvent is a free log subscription operation binding the contract event 0x93cb7b4ba12c5bb07f02e52c4e43788d8f4db1e66e9d30aaaeffc5ab325b810c.
+// WatchRoleAdminChanged is a free log subscription operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event WithdrawEvent(address indexed from, address indexed to, uint256 amount)
-func (_Eth *EthFilterer) WatchWithdrawEvent(opts *bind.WatchOpts, sink chan<- *EthWithdrawEvent, from []common.Address, to []common.Address) (event.Subscription, error) {
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_Eth *EthFilterer) WatchRoleAdminChanged(opts *bind.WatchOpts, sink chan<- *EthRoleAdminChanged, role [][32]byte, previousAdminRole [][32]byte, newAdminRole [][32]byte) (event.Subscription, error) {
 
-	var fromRule []interface{}
-	for _, fromItem := range from {
-		fromRule = append(fromRule, fromItem)
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
 	}
-	var toRule []interface{}
-	for _, toItem := range to {
-		toRule = append(toRule, toItem)
+	var previousAdminRoleRule []interface{}
+	for _, previousAdminRoleItem := range previousAdminRole {
+		previousAdminRoleRule = append(previousAdminRoleRule, previousAdminRoleItem)
+	}
+	var newAdminRoleRule []interface{}
+	for _, newAdminRoleItem := range newAdminRole {
+		newAdminRoleRule = append(newAdminRoleRule, newAdminRoleItem)
 	}
 
-	logs, sub, err := _Eth.contract.WatchLogs(opts, "WithdrawEvent", fromRule, toRule)
+	logs, sub, err := _Eth.contract.WatchLogs(opts, "RoleAdminChanged", roleRule, previousAdminRoleRule, newAdminRoleRule)
 	if err != nil {
 		return nil, err
 	}
@@ -441,8 +987,8 @@ func (_Eth *EthFilterer) WatchWithdrawEvent(opts *bind.WatchOpts, sink chan<- *E
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(EthWithdrawEvent)
-				if err := _Eth.contract.UnpackLog(event, "WithdrawEvent", log); err != nil {
+				event := new(EthRoleAdminChanged)
+				if err := _Eth.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -463,12 +1009,626 @@ func (_Eth *EthFilterer) WatchWithdrawEvent(opts *bind.WatchOpts, sink chan<- *E
 	}), nil
 }
 
-// ParseWithdrawEvent is a log parse operation binding the contract event 0x93cb7b4ba12c5bb07f02e52c4e43788d8f4db1e66e9d30aaaeffc5ab325b810c.
+// ParseRoleAdminChanged is a log parse operation binding the contract event 0xbd79b86ffe0ab8e8776151514217cd7cacd52c909f66475c3af44e129f0b00ff.
 //
-// Solidity: event WithdrawEvent(address indexed from, address indexed to, uint256 amount)
-func (_Eth *EthFilterer) ParseWithdrawEvent(log types.Log) (*EthWithdrawEvent, error) {
-	event := new(EthWithdrawEvent)
-	if err := _Eth.contract.UnpackLog(event, "WithdrawEvent", log); err != nil {
+// Solidity: event RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)
+func (_Eth *EthFilterer) ParseRoleAdminChanged(log types.Log) (*EthRoleAdminChanged, error) {
+	event := new(EthRoleAdminChanged)
+	if err := _Eth.contract.UnpackLog(event, "RoleAdminChanged", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// EthRoleGrantedIterator is returned from FilterRoleGranted and is used to iterate over the raw logs and unpacked data for RoleGranted events raised by the Eth contract.
+type EthRoleGrantedIterator struct {
+	Event *EthRoleGranted // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *EthRoleGrantedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(EthRoleGranted)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(EthRoleGranted)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *EthRoleGrantedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *EthRoleGrantedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// EthRoleGranted represents a RoleGranted event raised by the Eth contract.
+type EthRoleGranted struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleGranted is a free log retrieval operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_Eth *EthFilterer) FilterRoleGranted(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EthRoleGrantedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _Eth.contract.FilterLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &EthRoleGrantedIterator{contract: _Eth.contract, event: "RoleGranted", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleGranted is a free log subscription operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_Eth *EthFilterer) WatchRoleGranted(opts *bind.WatchOpts, sink chan<- *EthRoleGranted, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _Eth.contract.WatchLogs(opts, "RoleGranted", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(EthRoleGranted)
+				if err := _Eth.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleGranted is a log parse operation binding the contract event 0x2f8788117e7eff1d82e926ec794901d17c78024a50270940304540a733656f0d.
+//
+// Solidity: event RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)
+func (_Eth *EthFilterer) ParseRoleGranted(log types.Log) (*EthRoleGranted, error) {
+	event := new(EthRoleGranted)
+	if err := _Eth.contract.UnpackLog(event, "RoleGranted", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// EthRoleRevokedIterator is returned from FilterRoleRevoked and is used to iterate over the raw logs and unpacked data for RoleRevoked events raised by the Eth contract.
+type EthRoleRevokedIterator struct {
+	Event *EthRoleRevoked // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *EthRoleRevokedIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(EthRoleRevoked)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(EthRoleRevoked)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *EthRoleRevokedIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *EthRoleRevokedIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// EthRoleRevoked represents a RoleRevoked event raised by the Eth contract.
+type EthRoleRevoked struct {
+	Role    [32]byte
+	Account common.Address
+	Sender  common.Address
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterRoleRevoked is a free log retrieval operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_Eth *EthFilterer) FilterRoleRevoked(opts *bind.FilterOpts, role [][32]byte, account []common.Address, sender []common.Address) (*EthRoleRevokedIterator, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _Eth.contract.FilterLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return &EthRoleRevokedIterator{contract: _Eth.contract, event: "RoleRevoked", logs: logs, sub: sub}, nil
+}
+
+// WatchRoleRevoked is a free log subscription operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_Eth *EthFilterer) WatchRoleRevoked(opts *bind.WatchOpts, sink chan<- *EthRoleRevoked, role [][32]byte, account []common.Address, sender []common.Address) (event.Subscription, error) {
+
+	var roleRule []interface{}
+	for _, roleItem := range role {
+		roleRule = append(roleRule, roleItem)
+	}
+	var accountRule []interface{}
+	for _, accountItem := range account {
+		accountRule = append(accountRule, accountItem)
+	}
+	var senderRule []interface{}
+	for _, senderItem := range sender {
+		senderRule = append(senderRule, senderItem)
+	}
+
+	logs, sub, err := _Eth.contract.WatchLogs(opts, "RoleRevoked", roleRule, accountRule, senderRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(EthRoleRevoked)
+				if err := _Eth.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseRoleRevoked is a log parse operation binding the contract event 0xf6391f5c32d9c69d2a47ea670b442974b53935d1edc7fd64eb21e047a839171b.
+//
+// Solidity: event RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)
+func (_Eth *EthFilterer) ParseRoleRevoked(log types.Log) (*EthRoleRevoked, error) {
+	event := new(EthRoleRevoked)
+	if err := _Eth.contract.UnpackLog(event, "RoleRevoked", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// EthTestIterator is returned from FilterTest and is used to iterate over the raw logs and unpacked data for Test events raised by the Eth contract.
+type EthTestIterator struct {
+	Event *EthTest // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *EthTestIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(EthTest)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(EthTest)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *EthTestIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *EthTestIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// EthTest represents a Test event raised by the Eth contract.
+type EthTest struct {
+	EventId     *big.Int
+	Unimportant *big.Int
+	Raw         types.Log // Blockchain specific contextual infos
+}
+
+// FilterTest is a free log retrieval operation binding the contract event 0x91916a5e2c96453ddf6b585497262675140eb9f7a774095fb003d93e6dc69216.
+//
+// Solidity: event Test(uint256 indexed event_id, uint256 unimportant)
+func (_Eth *EthFilterer) FilterTest(opts *bind.FilterOpts, event_id []*big.Int) (*EthTestIterator, error) {
+
+	var event_idRule []interface{}
+	for _, event_idItem := range event_id {
+		event_idRule = append(event_idRule, event_idItem)
+	}
+
+	logs, sub, err := _Eth.contract.FilterLogs(opts, "Test", event_idRule)
+	if err != nil {
+		return nil, err
+	}
+	return &EthTestIterator{contract: _Eth.contract, event: "Test", logs: logs, sub: sub}, nil
+}
+
+// WatchTest is a free log subscription operation binding the contract event 0x91916a5e2c96453ddf6b585497262675140eb9f7a774095fb003d93e6dc69216.
+//
+// Solidity: event Test(uint256 indexed event_id, uint256 unimportant)
+func (_Eth *EthFilterer) WatchTest(opts *bind.WatchOpts, sink chan<- *EthTest, event_id []*big.Int) (event.Subscription, error) {
+
+	var event_idRule []interface{}
+	for _, event_idItem := range event_id {
+		event_idRule = append(event_idRule, event_idItem)
+	}
+
+	logs, sub, err := _Eth.contract.WatchLogs(opts, "Test", event_idRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(EthTest)
+				if err := _Eth.contract.UnpackLog(event, "Test", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTest is a log parse operation binding the contract event 0x91916a5e2c96453ddf6b585497262675140eb9f7a774095fb003d93e6dc69216.
+//
+// Solidity: event Test(uint256 indexed event_id, uint256 unimportant)
+func (_Eth *EthFilterer) ParseTest(log types.Log) (*EthTest, error) {
+	event := new(EthTest)
+	if err := _Eth.contract.UnpackLog(event, "Test", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// EthTransferEventIterator is returned from FilterTransferEvent and is used to iterate over the raw logs and unpacked data for TransferEvent events raised by the Eth contract.
+type EthTransferEventIterator struct {
+	Event *EthTransferEvent // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *EthTransferEventIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(EthTransferEvent)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(EthTransferEvent)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *EthTransferEventIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *EthTransferEventIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// EthTransferEvent represents a TransferEvent event raised by the Eth contract.
+type EthTransferEvent struct {
+	EventId *big.Int
+	Queue   []CommonStructsTransfer
+	Raw     types.Log // Blockchain specific contextual infos
+}
+
+// FilterTransferEvent is a free log retrieval operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
+//
+// Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
+func (_Eth *EthFilterer) FilterTransferEvent(opts *bind.FilterOpts, event_id []*big.Int) (*EthTransferEventIterator, error) {
+
+	var event_idRule []interface{}
+	for _, event_idItem := range event_id {
+		event_idRule = append(event_idRule, event_idItem)
+	}
+
+	logs, sub, err := _Eth.contract.FilterLogs(opts, "TransferEvent", event_idRule)
+	if err != nil {
+		return nil, err
+	}
+	return &EthTransferEventIterator{contract: _Eth.contract, event: "TransferEvent", logs: logs, sub: sub}, nil
+}
+
+// WatchTransferEvent is a free log subscription operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
+//
+// Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
+func (_Eth *EthFilterer) WatchTransferEvent(opts *bind.WatchOpts, sink chan<- *EthTransferEvent, event_id []*big.Int) (event.Subscription, error) {
+
+	var event_idRule []interface{}
+	for _, event_idItem := range event_id {
+		event_idRule = append(event_idRule, event_idItem)
+	}
+
+	logs, sub, err := _Eth.contract.WatchLogs(opts, "TransferEvent", event_idRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(EthTransferEvent)
+				if err := _Eth.contract.UnpackLog(event, "TransferEvent", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseTransferEvent is a log parse operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
+//
+// Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
+func (_Eth *EthFilterer) ParseTransferEvent(log types.Log) (*EthTransferEvent, error) {
+	event := new(EthTransferEvent)
+	if err := _Eth.contract.UnpackLog(event, "TransferEvent", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

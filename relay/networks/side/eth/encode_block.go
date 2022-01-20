@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
+	"relay/contracts"
 	"relay/helpers"
 )
 
-func EncodeBlock(header *types.Header, isEventBlock bool) (result BlockInput) {
+func EncodeBlock(header *types.Header, isEventBlock bool) contracts.CheckPoWBlockPoW {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
 	// - Difficulty (for PoW)
@@ -34,13 +35,17 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (result BlockInput) {
 		panic(err)
 	}
 
-	return BlockInput{
+	return contracts.CheckPoWBlockPoW{
 		P1:                    splitted[0],
-		PrevHashOrReceiptRoot: splitEls[0],
+		PrevHashOrReceiptRoot: bytesToBytes32(splitEls[0]),
 		P2:                    splitted[1],
-		Timestamp:             splitEls[1],
+		Difficulty:            splitEls[1],
 		P3:                    splitted[2],
-		Signature:             []byte(header.Signature),
 	}
 
+}
+
+func bytesToBytes32(bytes []byte) (bytes32 [32]byte) {
+	copy(bytes32[:], bytes[:])
+	return
 }

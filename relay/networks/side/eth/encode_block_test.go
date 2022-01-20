@@ -1,10 +1,11 @@
-package enc2sol
+package eth
 
 import (
 	"context"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"relay/enc2sol"
 	"relay/helpers"
 	"testing"
 )
@@ -22,7 +23,7 @@ func Test(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	block, encodedBlock, otherBlocks, proof := Encode(client, receipt.Logs[0])
+	block, encodedBlock, otherBlocks, proof := enc2sol.Encode(client, receipt.Logs[0])
 
 	if common.BytesToHash(encodedBlock[1]) != block.ReceiptHash() {
 		t.Fatal("receiptsHash from encoded block != original")
@@ -37,8 +38,8 @@ func Test(t *testing.T) {
 
 }
 
-func formatBlocks(mainBlock EncodedBlock, otherBlocks []EncodedBlock) string {
-	blocks := append([]EncodedBlock{mainBlock}, otherBlocks...)
+func formatBlocks(mainBlock enc2sol.EncodedBlock, otherBlocks []enc2sol.EncodedBlock) string {
+	blocks := append([]enc2sol.EncodedBlock{mainBlock}, otherBlocks...)
 
 	r := "[\n"
 	for _, e := range blocks {
