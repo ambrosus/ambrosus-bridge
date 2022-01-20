@@ -103,20 +103,31 @@ describe("Contract", () => {
     let [addr1, addr2, _] = await ethers.getSigners();
     await ambBridge.withdraw(addr1.address, addr2.address, 1, {value: 1000});
     await ambBridge.withdraw(addr1.address, addr2.address, 2, {value: 1000});
+    await ethBridge.withdraw(addr1.address, addr2.address, 1, {value: 1000});
+    await ethBridge.withdraw(addr1.address, addr2.address, 2, {value: 1000});
     await nextTimeframe();
-    let tx1: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
+    let tx1Amb: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
+    let tx1Eth: ContractTransaction = await ethBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
     await ambBridge.withdraw(addr1.address, addr2.address, 3, {value: 1000});
     await ambBridge.withdraw(addr1.address, addr2.address, 4, {value: 1000});
+    await ethBridge.withdraw(addr1.address, addr2.address, 3, {value: 1000});
+    await ethBridge.withdraw(addr1.address, addr2.address, 4, {value: 1000});
     await nextTimeframe();
-    let tx2: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
+    let tx2Amb: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
+    let tx2Eth: ContractTransaction = await ethBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
     await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: 1000});
 
-    let receipt1: ContractReceipt = await tx1.wait();
-    let receipt2: ContractReceipt = await tx2.wait();
+    let receipt1Amb: ContractReceipt = await tx1Amb.wait();
+    let receipt1Eth: ContractReceipt = await tx1Eth.wait();
+    let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+    let receipt2Eth: ContractReceipt = await tx2Eth.wait();
 
-    let events1: any = await receipt1.events?.filter((x: any) => {return x.event == "TransferEvent"});
-    let events2: any = await receipt2.events?.filter((x: any) => {return x.event == "TransferEvent"});
-    expect(events2[0].args.event_id).eq(events1[0].args.event_id.add("1"));
+    let events1Amb: any = await receipt1Amb.events?.filter((x: any) => {return x.event == "TransferEvent"});
+    let events2Amb: any = await receipt2Amb.events?.filter((x: any) => {return x.event == "TransferEvent"});
+    let events1Eth: any = await receipt1Eth.events?.filter((x: any) => {return x.event == "TransferEvent"});
+    let events2Eth: any = await receipt2Eth.events?.filter((x: any) => {return x.event == "TransferEvent"});
+    expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+    expect(events2Eth[0].args.event_id).eq(events1Eth[0].args.event_id.add("1"));
   });
 
   it("Test TokenAddresses", async () => {
@@ -125,18 +136,24 @@ describe("Contract", () => {
     let tokenSideAddresses = [ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe")];
     for (let i = 0; i < tokenThisAddresses.length; i++) {
       expect(await ambBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
+      expect(await ethBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
     }
 
     let hashAdmin = await ambBridge.ADMIN_ROLE();
     await ambBridge.grantRole(hashAdmin, addr2.address);
+    await ethBridge.grantRole(hashAdmin, addr2.address);
 
     let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
     let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe")
     await ambBridge.connect(addr2).tokensAdd(first, second);
     expect(await ambBridge.tokenAddresses(first)).eq(second);
+    await ethBridge.connect(addr2).tokensAdd(first, second);
+    expect(await ethBridge.tokenAddresses(first)).eq(second);
 
     await ambBridge.connect(addr2).tokensRemove(first);
     expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
+    await ethBridge.connect(addr2).tokensRemove(first);
+    expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
   });
 
   let currentTimeframe = Math.floor(Date.now() / 14400);
