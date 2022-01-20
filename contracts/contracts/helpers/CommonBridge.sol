@@ -16,7 +16,12 @@ contract CommonBridge is AccessControl {
     event TransferEvent(uint indexed event_id, CommonStructs.Transfer[] queue);
 
 
-    CommonStructs.Transfer[] lockedTransfers;
+    struct lockedTransfers_ {
+        CommonStructs.Transfer[] transfers;
+        uint endTimestamp;
+    }
+
+    lockedTransfers_ public lockedTransfers;
     uint lockTime;
 
     // this network to side network

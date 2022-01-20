@@ -12,8 +12,8 @@ contract EthBridge is CommonBridge, CheckPoA {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timestampSeconds_, uint lockTime_)
-    CommonBridge(_sideBridgeAddress, relayAddress, tokenThisAddresses, tokenSideAddresses, fee_, timestampSeconds_, lockTime_) {}
+        uint fee_, uint timeframeSeconds_, uint lockTime_)
+    CommonBridge(_sideBridgeAddress, relayAddress, tokenThisAddresses, tokenSideAddresses, fee_, timeframeSeconds_, lockTime_) {}
 
     function submitTransfer(
         uint event_id,
@@ -27,7 +27,8 @@ contract EthBridge is CommonBridge, CheckPoA {
         CheckPoA_(blocks, events, proof);
 
         for (uint i = 0; i < events.length; i++) {
-            lockedTransfers.push(events[i]);
+            lockedTransfers.transfers.push(events[i]);
         }
+        lockedTransfers.endTimestamp = block.timestamp + lockTime;
     }
 }
