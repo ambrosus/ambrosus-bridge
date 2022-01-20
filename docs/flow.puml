@@ -1,0 +1,45 @@
+@startuml
+
+actor Frontend
+participant AmbBridgeContract
+participant Relay
+participant EthBridgeContract
+
+
+Frontend ->: get tokens list from github (?)
+Frontend -> EthBridgeContract: check each token availability
+Frontend -> AmbBridgeContract: check each token availability
+note over Frontend: display availabe tokens
+
+...
+...
+
+
+Frontend -> AmbBridgeContract : withdraw(tokenAmbAddress,\n toAddress, amount) + fee
+note right: same timeframe
+AmbBridgeContract -> AmbBridgeContract: add withdraw to queue
+...
+
+Frontend -> AmbBridgeContract : withdraw(tokenAmbAddress,\n toAddress, amount) + fee
+note right: new timeframe
+
+AmbBridgeContract -> Relay : Withdraw(event_id, queue)
+
+
+Relay -> Relay : Wait next 10 blocks (safety blocks)
+
+...
+
+Relay -> EthBridgeContract : SubmitTransfer(Block[] memory blocks, \n Withdraw[] memory events, \n bytes[] memory proof)
+EthBridgeContract -> EthBridgeContract: lock transfers on N seconds
+
+...
+
+Relay -> EthBridgeContract: unlock transfers
+EthBridgeContract ->: call erc20 contracts\n to transfer tokens
+
+
+
+
+@enduml
+

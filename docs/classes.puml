@@ -1,0 +1,88 @@
+@startuml
+
+
+class EthBridge {
+
+}
+class AmbBridge {
+
+}
+
+
+class CheckPoW {
+    +CheckPoW_(BlockPoW[] blocks, Transfer[] events, bytes[] proof)
+}
+
+class CheckPoA {
+    +CheckPoA_(BlockPoA[] blocks, Transfer[] events, bytes[] proof)
+}
+
+
+entity BlockPoW {
+    +bytes p1;
+    +bytes32 prevHashOrReceiptRoot;
+    +bytes p2;
+    +bytes difficulty;
+    +bytes p3;
+}
+
+entity BlockPoA {
+    +bytes p0_seal;
+    +bytes p0_bare;
+
+    +bytes p1;
+    +bytes32 prevHashOrReceiptRoot;
+    +bytes p2;
+    +bytes timestamp;
+    +bytes p3;
+
+    +bytes s1;
+    +bytes signature;
+    +bytes s2;
+}
+
+
+
+class CommonBridge {
+    +mapping(address=>address) tokenAddresses
+    +address sideBridgeAddress
+    +uint fee
+    +uint lockTime
+    +uint timeframe
+
+    -uint lastTimeframe
+    +uint inputEventId
+    -uint outputEventId
+    -Transfer[] withdraw_queue
+    --
+    +withdraw(tokenAddress, toAddress, amount)
+    --admin--
+    +tokenAddresses update methods ()
+    +setFee()
+    +setTimeframe()
+    +setLockTime()
+    +pause() / unpause()
+}
+
+
+entity Transfer {
+    +contractAddress
+    +toAddress
+    +amount
+}
+
+
+AmbBridge --> CheckPoW
+EthBridge --> CheckPoA
+
+CheckPoW --> BlockPoW
+CheckPoA --> BlockPoA
+CheckPoW --> Transfer
+CheckPoA --> Transfer
+
+AmbBridge --> CommonBridge
+EthBridge --> CommonBridge
+CommonBridge --> Transfer
+
+
+@enduml
