@@ -14,4 +14,16 @@ contract EthBridge is CommonBridge, CheckPoA {
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
         uint fee_, uint timestampSeconds)
     CommonBridge(_sideBridgeAddress, relayAddress, tokenThisAddresses, tokenSideAddresses, fee_, timestampSeconds) {}
+
+    function submitTransfer(
+        uint event_id,
+        BlockPoA[] memory blocks,
+        CommonStructs.Transfer[] memory events,
+        bytes[] memory proof) public onlyRole(RELAY_ROLE) {
+
+        require(event_id == inputEventId + 1);
+        inputEventId++;
+
+        CheckPoA_(blocks, events, proof);
+    }
 }
