@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: ["0x295c2707319ad4beca6b5bb4086617fd6f240cfe", "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",
       ["0x195c2707319ad4beca6b5bb4086617fd6f240cfe", "0x295c2707319ad4beca6b5bb4086617fd6f240cfe", "0x395c2707319ad4beca6b5bb4086617fd6f240cfe"],
       ["0x495c2707319ad4beca6b5bb4086617fd6f240cfe", "0x595c2707319ad4beca6b5bb4086617fd6f240cfe", "0x695c2707319ad4beca6b5bb4086617fd6f240cfe"],
-      1000, 14400],
+      1000, 14400, 1000],
     log: true,
   });
 

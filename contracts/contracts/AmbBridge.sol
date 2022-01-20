@@ -9,8 +9,8 @@ contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timestampSeconds)
-    CommonBridge(_sideBridgeAddress, relayAddress, tokenThisAddresses, tokenSideAddresses, fee_, timestampSeconds) {}
+        uint fee_, uint timestampSeconds_, uint lockTime_)
+    CommonBridge(_sideBridgeAddress, relayAddress, tokenThisAddresses, tokenSideAddresses, fee_, timestampSeconds_, lockTime_) {}
 
     function submitTransfer(
         uint event_id,
@@ -18,9 +18,15 @@ contract AmbBridge is CommonBridge, CheckPoW {
         CommonStructs.Transfer[] memory events,
         bytes[] memory proof) public onlyRole(RELAY_ROLE) {
 
+        // todo lock transfers
+
         require(event_id == inputEventId + 1);
         inputEventId++;
 
         CheckPoW_(blocks, events, proof);
+
+        for (uint i = 0; i < events.length; i++) {
+            lockedTransfers.push(events[i]);
+        }
     }
 }

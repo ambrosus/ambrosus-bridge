@@ -16,6 +16,9 @@ contract CommonBridge is AccessControl {
     event TransferEvent(uint indexed event_id, CommonStructs.Transfer[] queue);
 
 
+    CommonStructs.Transfer[] lockedTransfers;
+    uint lockTime;
+
     // this network to side network
     mapping(address => address) public tokenAddresses;
 
@@ -36,7 +39,7 @@ contract CommonBridge is AccessControl {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_)
+        uint fee_, uint timeframeSeconds_, uint lockTime_)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);
@@ -49,6 +52,8 @@ contract CommonBridge is AccessControl {
         fee = fee_;
 
         timeframeSeconds = timeframeSeconds_;
+
+        lockTime = lockTime_;
     }
 
 
@@ -128,5 +133,9 @@ contract CommonBridge is AccessControl {
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
         timeframeSeconds = timeframeSeconds_;
+    }
+
+    function changeLockTime(uint lockTime_) public onlyRole(ADMIN_ROLE) {
+        lockTime = lockTime_;
     }
 }
