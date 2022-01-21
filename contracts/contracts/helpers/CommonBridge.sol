@@ -21,7 +21,7 @@ contract CommonBridge is AccessControl {
         uint endTimestamp;
     }
 
-    lockedTransfers_ public lockedTransfers;
+    lockedTransfers_ lastLockedTransfers;
     uint lockTime;
 
     // this network to side network
@@ -129,6 +129,18 @@ contract CommonBridge is AccessControl {
         for (uint i = 0; i < arrayLength; i++) {
             delete tokenAddresses[tokenThisAddresses[i]];
         }
+    }
+
+
+    function lockTransfers(CommonStructs.Transfer[] memory events) public onlyRole(RELAY_ROLE) {
+        for (uint i = 0; i < events.length; i++) {
+            lastLockedTransfers.transfers.push(events[i]);
+        }
+        lastLockedTransfers.endTimestamp = block.timestamp + lockTime;
+    }
+
+    function unlockTransfer() public onlyRole(RELAY_ROLE) {
+        delete lastLockedTransfers;
     }
 
 

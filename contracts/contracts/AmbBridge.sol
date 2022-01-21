@@ -23,9 +23,6 @@ contract AmbBridge is CommonBridge, CheckPoW {
 
         CheckPoW_(blocks, events, proof);
 
-        for (uint i = 0; i < events.length; i++) {
-            lockedTransfers.transfers.push(events[i]);
-        }
-        lockedTransfers.endTimestamp = block.timestamp + lockTime;
+        lockTransfers(events);
     }
 }
