@@ -40,11 +40,11 @@ contract CommonBridge is AccessControl {
 
     address public sideBridgeAddress;
 
-
+    uint minSafetyBlocks;
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_)
+        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);
@@ -57,6 +57,8 @@ contract CommonBridge is AccessControl {
         fee = fee_;
 
         timeframeSeconds = timeframeSeconds_;
+
+        minSafetyBlocks = minSafetyBLocks_;
 
         lockTime = lockTime_;
     }
@@ -90,11 +92,6 @@ contract CommonBridge is AccessControl {
 
     function eventTest(uint event_id) public {
         emit Test(event_id, 1337);
-    }
-
-
-    function Transfer(CommonStructs.Transfer memory transfer) public {
-        require(IERC20(transfer.tokenAddress).transferFrom(msg.sender, transfer.toAddress, transfer.amount), "Fail transfer coins");
     }
 
 
@@ -133,17 +130,31 @@ contract CommonBridge is AccessControl {
 
 
     function lockTransfers(CommonStructs.Transfer[] memory events, uint event_id) public onlyRole(RELAY_ROLE) {
-        lockedTransfers[event_id].endTimestamp = block.timestamp + lockCount;
+        lockedTransfers[event_id].endTimestamp = block.timestamp + lockTime;
         for (uint i = 0; i < events.length; i++) {
             lockedTransfers[event_id].transfers.push(events[i]);
         }
     }
 
-    function unlockTransfer(uint event_id) public onlyRole(RELAY_ROLE) {
+    function unlockTransfers(uint event_id) public onlyRole(RELAY_ROLE) {
         require(lockedTransfers[event_id].endTimestamp < block.timestamp, "lockTime has not yet passed");
+
+        for (uint i = 0; i < lockedTransfers[event_id].transfers.length; i++) {
+            require(
+                IERC20(lockedTransfers[event_id].transfers[i].tokenAddress)
+                .transferFrom(msg.sender,
+                              lockedTransfers[event_id].transfers[i].toAddress,
+                              lockedTransfers[event_id].transfers[i].amount),
+                              "Fail transfer coins");
+        }
+
         delete lockedTransfers[event_id];
     }
 
+
+    function changeMinSafetyBlocks(uint minSafetyBlocks_) public onlyRole(ADMIN_ROLE) {
+        minSafetyBlocks = minSafetyBlocks_;
+    }
 
     function changeFee(uint fee_) public onlyRole(ADMIN_ROLE) {
         fee = fee_;
