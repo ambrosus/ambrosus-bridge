@@ -110,7 +110,7 @@ contract CommonBridge is AccessControl {
         delete tokenAddresses[tokenThisAddress];
     }
 
-    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE){
+    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
         tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
     }
 
@@ -140,13 +140,10 @@ contract CommonBridge is AccessControl {
     function unlockTransfers(uint event_id) public onlyRole(RELAY_ROLE) {
         require(lockedTransfers[event_id].endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        for (uint i = 0; i < lockedTransfers[event_id].transfers.length; i++) {
-            require(
-                IERC20(lockedTransfers[event_id].transfers[i].tokenAddress)
-                .transferFrom(msg.sender,
-                              lockedTransfers[event_id].transfers[i].toAddress,
-                              lockedTransfers[event_id].transfers[i].amount),
-                              "Fail transfer coins");
+        CommonStructs.Transfer[] memory transfers = lockedTransfers[event_id].transfers;
+
+        for (uint i = 0; i < test.length; i++) {
+            require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
         }
 
         delete lockedTransfers[event_id];

@@ -14,13 +14,15 @@ describe("Contract", () => {
 
   let ethBridge: Contract;
   let ambBridge: Contract;
+  let mockERC20: Contract;
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken"]);
     ({owner} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     ethBridge = await ethers.getContract("EthBridge", ownerS);
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
+    mockERC20 = await ethers.getContract("MockERC20", ownerS);
   });
 
   beforeEach(async () => {
@@ -154,6 +156,39 @@ describe("Contract", () => {
     expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
     await ethBridge.connect(addr2).tokensRemove(first);
     expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
+  });
+
+  it("Test Transfer lock/unlock", async () => {
+    let [addr1, addr2, addr3] = await ethers.getSigners();
+
+    // let hashAdmin = await ambBridge.ADMIN_ROLE();
+    // await ambBridge.grantRole(hashAdmin, addr2.address);
+    // await ambBridge.connect(addr2).tokensAdd(mockERC20.address,
+    //                                          ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe"));
+
+    let hashRelay = await ambBridge.RELAY_ROLE();
+    await ambBridge.grantRole(hashRelay, addr3.address);
+
+    // await mockERC20.transfer(addr3.address, 10000);
+    await mockERC20.mint(ambBridge.address, 900);
+    // await mockERC20.approve(ambBridge.address, 0);
+    // await mockERC20.connect(ownerS).approve(ambBridge.address, 600)
+
+    let data1 = [[mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
+                 [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
+                 [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38]]
+
+    let data2 = [[mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
+                 [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
+                 [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]]
+
+    await ambBridge.connect(addr3).lockTransfers(data1, 1);
+    await ambBridge.connect(addr3).lockTransfers(data2, 2);
+
+    await nextTimeframe();
+
+    await ambBridge.connect(addr3).unlockTransfers(1);
+    await ambBridge.connect(addr3).unlockTransfers(2);
   });
 
   let currentTimeframe = Math.floor(Date.now() / 14400);
