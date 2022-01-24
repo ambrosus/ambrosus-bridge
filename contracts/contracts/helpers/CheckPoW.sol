@@ -22,11 +22,14 @@ contract CheckPoW {
         for (uint i = 0; i < blocks.length; i++) {
             require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
             hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].difficulty, blocks[i].p3));
-
-            require(uint(hash) < bytesToUint(blocks[i].difficulty), "hash must be less than difficulty");
         }
     }
 
+    function testCheckPow(BlockPoW memory block) public {
+        bytes32 hash = keccak256(abi.encodePacked(block.p1, block.prevHashOrReceiptRoot, block.p2, block.difficulty, block.p3));
+        require(uint(hash) < bytesToUint(block.difficulty), "hash must be less than difficulty");
+    }
+    
     function CheckReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
         require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
     }

@@ -142,7 +142,7 @@ contract CommonBridge is AccessControl {
 
         CommonStructs.Transfer[] memory transfers = lockedTransfers[event_id].transfers;
 
-        for (uint i = 0; i < test.length; i++) {
+        for (uint i = 0; i < transfers.length; i++) {
             require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
         }
 
