@@ -18,12 +18,13 @@ contract AmbBridge is CommonBridge, CheckPoW {
         uint event_id,
         BlockPoW[] memory blocks,
         CommonStructs.Transfer[] memory events,
-        bytes[] memory proof) public onlyRole(RELAY_ROLE) {
+        bytes[] memory proof,
+        uint passedBlocks) public onlyRole(RELAY_ROLE) {
 
         require(event_id == inputEventId + 1);
         inputEventId++;
 
-        // blocks > peremennyay
+        require(passedBlocks > minSafetyBlocks, "passedBlocks must be larger than minSafetyBlocks");
 
         CheckPoW_(blocks, events, proof);
 

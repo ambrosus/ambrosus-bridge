@@ -26,6 +26,8 @@ contract EthBridge is CommonBridge, CheckPoA {
         require(event_id == inputEventId + 1);
         inputEventId++;
 
+        require(passedBlocks > minSafetyBlocks, "passedBlocks must be larger than minSafetyBlocks");
+
         CheckPoA_(blocks, events, proof);
 
         lockTransfers(events, event_id);

@@ -41,6 +41,7 @@ contract CommonBridge is AccessControl {
     address public sideBridgeAddress;
 
     uint minSafetyBlocks;
+
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
