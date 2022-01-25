@@ -17,11 +17,11 @@ contract CheckPoW {
         CommonStructs.Transfer[] memory events,
         bytes[] memory proof) public
     {
-        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
+//        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
-            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
-            hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].difficulty, blocks[i].p3));
+//            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
+            bytes32 hash = keccak256(abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].difficulty, blocks[i].p3));
         }
     }
 
