@@ -138,9 +138,10 @@ contract CommonBridge is AccessControl {
     }
 
     function unlockTransfers(uint event_id) public onlyRole(RELAY_ROLE) {
-        require(lockedTransfers[event_id].endTimestamp < block.timestamp, "lockTime has not yet passed");
+        lockedTransfers_ memory transfersLocked = lockedTransfers[event_id];
+        require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        CommonStructs.Transfer[] memory transfers = lockedTransfers[event_id].transfers;
+        CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
 
         for (uint i = 0; i < transfers.length; i++) {
             require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
