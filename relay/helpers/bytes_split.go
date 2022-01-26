@@ -25,3 +25,8 @@ func BytesSplit(input []byte, seps [][]byte) ([][]byte, error) {
 	result[len(seps)] = input
 	return result, nil
 }
+
+func BytesToBytes32(bytes []byte) (bytes32 [32]byte) {
+	copy(bytes32[:], bytes[:])
+	return
+}

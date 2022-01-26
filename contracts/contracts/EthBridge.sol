@@ -24,19 +24,19 @@ contract EthBridge {
     bytes1 constant b1 = bytes1(0x01);
 
     address validator;
+    address ambBridge;
 
     event WithdrawEvent(address indexed from, address indexed to, uint amount);
 
 
 
-    constructor(address validator_) {
+    constructor(address ambBridge_, address validator_) {
         validator = validator_;
+        ambBridge = ambBridge_;
     }
 
 
     function TestAll(Block[] memory blocks, Withdraw[] memory events, bytes[] memory proof) public {
-        TestReceiptsProof(proof, abi.encode(events), blocks[0].prevHashOrReceiptRoot);
-
         bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
@@ -45,9 +45,6 @@ contract EthBridge {
 
             TestSignature(validator, hash, blocks[i].signature);
         }
-
-
-        //        require(!TestBloom(bloom, abi.encode(events_hash)), "Failed to verify bloom");
 
         for (uint i = 0; i < events.length; i++) {
             emit WithdrawEvent(events[i].fromAddress, events[i].toAddress, events[i].amount);
@@ -87,31 +84,4 @@ contract EthBridge {
             "Failed to verify sign");
     }
 
-
-    function TestBloom(bytes memory bloom, bytes memory topicHash) public returns (bool) {
-        bytes32 hashbuf = keccak256(topicHash);
-
-        // todo asm
-        bytes1 v1 = b1 << uint8(hashbuf[1] & 0x07);
-        bytes1 v2 = b1 << uint8(hashbuf[3] & 0x07);
-        bytes1 v3 = b1 << uint8(hashbuf[5] & 0x07);
-
-        uint i1 = 256 - uint((Uint16(hashbuf[0], hashbuf[1]) & 0x7ff) >> 3) - 1;
-        uint i2 = 256 - uint((Uint16(hashbuf[2], hashbuf[3]) & 0x7ff) >> 3) - 1;
-        uint i3 = 256 - uint((Uint16(hashbuf[4], hashbuf[5]) & 0x7ff) >> 3) - 1;
-
-        return
-        v1 == v1 & bloom[i1] &&
-        v2 == v2 & bloom[i2] &&
-        v3 == v3 & bloom[i3];
-    }
-
-
-    function Uint16(bytes2 a, bytes1 b) internal view returns (uint16) {
-        return uint16(a) + uint16(uint8(b));
-    }
-
-    function bytesToUint(bytes memory b) public view returns (uint){
-        return uint(bytes32(b)) >> (256 - b.length * 8);
-    }
 }

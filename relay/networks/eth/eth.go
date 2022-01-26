@@ -4,7 +4,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"relay/config"
 	"relay/contracts"
-	common2 "relay/networks/common"
 )
 
 type Bridge struct {
@@ -12,7 +11,7 @@ type Bridge struct {
 	contract *contracts.Eth
 }
 
-func NewEthBridge(c config.Network) *Bridge {
+func New(c *config.Bridge) *Bridge {
 	client, err := ethclient.Dial(c.Url)
 	if err != nil {
 		panic(err)
@@ -27,8 +26,8 @@ func NewEthBridge(c config.Network) *Bridge {
 	}
 }
 
-func (b *Bridge) SendWithdraw(withdraw *common2.Withdraw) {
-	tx, err := ethBridge.TestAll(nil, withdraw.Blocks, withdraw.Events, withdraw.ReceiptsProof)
+func (b *Bridge) SubmitBlockPoW(eventId uint, blocks contracts.CheckPoWBlockPoW, events contracts.CommonStructsTransfer, proof contracts.ReceiptsProof) {
+	tx, err := contracts.Submit(nil, withdraw.Blocks, withdraw.Events, withdraw.ReceiptsProof)
 }
 
 func (b *Bridge) GetLastEventId() {

@@ -4,11 +4,11 @@ import (
 	"encoding/hex"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"relay/contracts"
 	"relay/helpers"
-	"relay/networks/common"
 )
 
-func EncodeBlock(header *Header, isEventBlock bool) *common.AmbBlock {
+func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
 	// - Timestamp (for AURA)
@@ -29,16 +29,16 @@ func EncodeBlock(header *Header, isEventBlock bool) *common.AmbBlock {
 		panic(err)
 	}
 
-	return &common.AmbBlock{
+	return &contracts.CheckPoABlockPoA{
 		P1:                    splitted[0],
-		PrevHashOrReceiptRoot: splitEls[0],
+		PrevHashOrReceiptRoot: helpers.BytesToBytes32(splitEls[0]),
 		P2:                    splitted[1],
 		Timestamp:             splitEls[1],
 		P3:                    splitted[2],
 		// seal
-		S_P1:      nil,
+		S1:        nil,
 		Signature: []byte(header.Signature),
-		S_P2:      nil,
+		S2:        nil,
 	}
 
 }

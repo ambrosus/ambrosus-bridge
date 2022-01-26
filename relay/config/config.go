@@ -7,47 +7,27 @@ import (
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
-type Network struct {
-	Url          string
-	SafetyBlocks int
-}
-
 type Bridge struct {
+	Url             string
 	ContractAddress ethcommon.Address
 	PrivateKey      *ecdsa.PrivateKey
-}
-
-type BridgePair struct {
-	Amb         *Bridge
-	Side        *Bridge
-	SideNetwork string
+	SafetyBlocks    int
 }
 
 // todo load from json
 
-var Networks = map[string]*Network{
+var Config = map[string]*Bridge{
 	"amb": {
-		Url:          "https://network.ambrosus.io",
-		SafetyBlocks: 10,
+		Url:             "https://network.ambrosus.io",
+		ContractAddress: ethcommon.HexToAddress(""),
+		PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
+		SafetyBlocks:    10,
 	},
 	"eth": {
-		Url:          "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-		SafetyBlocks: 10,
-	},
-}
-
-var Bridges = []BridgePair{
-	{
-		Amb: &Bridge{
-			ContractAddress: ethcommon.HexToAddress(""),
-			PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
-		},
-		Side: &Bridge{
-
-			ContractAddress: ethcommon.HexToAddress(""),
-			PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
-		},
-		SideNetwork: "eth",
+		Url:             "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+		ContractAddress: ethcommon.HexToAddress(""),
+		PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
+		SafetyBlocks:    10,
 	},
 }
 

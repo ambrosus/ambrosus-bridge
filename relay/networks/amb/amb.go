@@ -2,9 +2,10 @@ package amb
 
 import (
 	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 	"relay/config"
 	"relay/contracts"
-	"relay/networks/common"
+	"relay/networks"
 )
 
 type Bridge struct {
@@ -12,7 +13,7 @@ type Bridge struct {
 	contract *contracts.Eth
 }
 
-func New(c config.Network) *Bridge {
+func New(c *config.Bridge) *Bridge {
 	client, err := ethclient.Dial(c.Url)
 	if err != nil {
 		panic(err)
@@ -27,10 +28,27 @@ func New(c config.Network) *Bridge {
 	}
 }
 
-func (b *Bridge) SendDeposit(deposit *common.Deposit) {
-	//tx, err := b.contract.TestAll(nil, deposit.Blocks, deposit.Events, deposit.ReceiptsProof)
-}
-
-func (b *Bridge) GetLastEventId() {
+func (b *Bridge) SubmitBlockPoW(eventId uint, blocks contracts.CheckPoWBlockPoW, events contracts.CommonStructsTransfer, proof contracts.ReceiptsProof) {
 	// todo
 }
+
+func (b *Bridge) GetLastEventId() (*big.Int, error) {
+	return b.contract.InputEventId(nil)
+}
+
+func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
+	// todo first start
+	needId := sideBridge.GetLastEventId()
+	for {
+		needId += 1
+		_ = needId
+
+	}
+
+	for {
+		// todo listen
+
+	}
+}
+
+func (b *Bridge) CheckOldEvents(sideBridge networks.Bridge, submit networks.SubmitPoWF) {

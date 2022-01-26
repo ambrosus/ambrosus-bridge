@@ -15,13 +15,12 @@ contract AmbBridge {
     constructor() {}
 
 
-    function withdraw(address toAddr, uint amount) public {
-        queue.push(Withdraw(msg.sender, toAddr, amount));
-    }
-
-
-    function eventTest() public {
+    function withdraw(address tokenAmb, address toAddr, uint amount) public {
+        // else
         emit Test(keccak256(abi.encode(queue)), queue);
         delete queue;
+
+        // if same timeframe
+        queue.push(Withdraw(msg.sender, toAddr, amount));
     }
 }

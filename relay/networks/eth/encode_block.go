@@ -37,15 +37,10 @@ func EncodeBlock(header *types.Header, isEventBlock bool) contracts.CheckPoWBloc
 
 	return contracts.CheckPoWBlockPoW{
 		P1:                    splitted[0],
-		PrevHashOrReceiptRoot: bytesToBytes32(splitEls[0]),
+		PrevHashOrReceiptRoot: helpers.BytesToBytes32(splitEls[0]),
 		P2:                    splitted[1],
 		Difficulty:            splitEls[1],
 		P3:                    splitted[2],
 	}
 
-}
-
-func bytesToBytes32(bytes []byte) (bytes32 [32]byte) {
-	copy(bytes32[:], bytes[:])
-	return
 }
