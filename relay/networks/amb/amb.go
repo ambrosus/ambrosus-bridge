@@ -36,19 +36,36 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.contract.InputEventId(nil)
 }
 
+// todo code below may be common for all networks?
+
 func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
-	// todo first start
-	needId := sideBridge.GetLastEventId()
+	// todo save args to struct?
+	b.CheckOldEvents()
+	b.Listen()
+}
+
+func (b *Bridge) CheckOldEvents() {
 	for {
-		needId += 1
-		_ = needId
+		needId := sideBridge.GetLastEventId() + 1
+		// todo get event by id `needId`
 
-	}
+		if !event {
+			return
+		}
 
-	for {
-		// todo listen
-
+		b.sendEvent()
 	}
 }
 
-func (b *Bridge) CheckOldEvents(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
+func (b *Bridge) Listen() {
+	// todo listen
+	b.sendEvent(event)
+}
+
+func (b *Bridge) sendEvent(event) {
+	// todo wait for safety blocks
+	// todo encode blocks
+	// todo estimate gas
+	// todo send
+	// todo wait status ok
+}
