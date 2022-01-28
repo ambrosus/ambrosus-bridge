@@ -12,35 +12,31 @@ contract CommonBridge is AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
 
-    event Test(uint indexed event_id, uint unimportant);
-    event TransferEvent(uint indexed event_id, CommonStructs.Transfer[] queue);
-
 
     struct lockedTransfers_ {
         CommonStructs.Transfer[] transfers;
         uint endTimestamp;
     }
-
     mapping(uint => lockedTransfers_) public lockedTransfers;
-    uint lockTime;
-
-    // this network to side network
-    mapping(address => address) public tokenAddresses;
-
-    uint public fee;
-
-    uint public timeframeSeconds;
-
-    uint lastTimeframe;
 
     CommonStructs.Transfer[] queue;
 
-    uint outputEventId;
-    uint public inputEventId;
+    // this network to side network token addresses mapping
+    mapping(address => address) public tokenAddresses;
 
     address public sideBridgeAddress;
+    uint public fee;
+    uint public minSafetyBlocks;
+    uint public timeframeSeconds;
+    uint public lockTime;
 
-    uint minSafetyBlocks;
+    uint public inputEventId;
+    uint outputEventId;
+
+    uint lastTimeframe;
+
+    event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
+
 
     constructor(
         address _sideBridgeAddress, address relayAddress,
@@ -50,49 +46,42 @@ contract CommonBridge is AccessControl {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);
 
-        sideBridgeAddress = _sideBridgeAddress;
-
         // initialise tokenAddresses with start values
         _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
 
+        sideBridgeAddress = _sideBridgeAddress;
         fee = fee_;
-
-        timeframeSeconds = timeframeSeconds_;
-
         minSafetyBlocks = minSafetyBLocks_;
-
+        timeframeSeconds = timeframeSeconds_;
         lockTime = lockTime_;
     }
+
+
+    // todo remove
+    event Test(uint indexed a, address indexed b, string c, uint d);
+    function emitTestEvent() {
+        emit Test(1, address(this), "asd", 123);
+        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        emit Transfer(outputEventId++, queue);
+        delete queue;
+        emit Test(2, address(msg.sender), "dfg", 456);
+    }
+
+
 
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value and fee must be same");
 
-        // вместо 4 часов глобальную переменную
-        uint nowTimeframe = block.timestamp / timeframeSeconds;
+        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
 
+        uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
-            emit TransferEvent(outputEventId, queue);
-            outputEventId += 1;
+            emit Transfer(outputEventId++, queue);
             delete queue;
+
             lastTimeframe = nowTimeframe;
         }
-
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-    }
-
-
-    function acceptBlock() public onlyRole(RELAY_ROLE) {
-
-    }
-
-
-    // todo
-
-
-
-    function eventTest(uint event_id) public {
-        emit Test(event_id, 1337);
     }
 
 
@@ -100,37 +89,7 @@ contract CommonBridge is AccessControl {
 
 
 
-    // token addressed mapping
-
-    function tokensAdd(address tokenThisAddress, address tokenSideAddress) public onlyRole(ADMIN_ROLE) {
-        tokenAddresses[tokenThisAddress] = tokenSideAddress;
-    }
-
-    function tokensRemove(address tokenThisAddress) public onlyRole(ADMIN_ROLE) {
-        delete tokenAddresses[tokenThisAddress];
-    }
-
-    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
-        tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
-    }
-
-    function _tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) private {
-        require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
-        uint arrayLength = tokenThisAddresses.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            tokenAddresses[tokenThisAddresses[i]] = tokenSideAddresses[i];
-        }
-    }
-
-    function tokensRemoveBatch(address[] memory tokenThisAddresses) public onlyRole(ADMIN_ROLE) {
-        uint arrayLength = tokenThisAddresses.length;
-        for (uint i = 0; i < arrayLength; i++) {
-            delete tokenAddresses[tokenThisAddresses[i]];
-        }
-    }
-
-
-    function lockTransfers(CommonStructs.Transfer[] memory events, uint event_id) public onlyRole(RELAY_ROLE) {
+    function lockTransfers(CommonStructs.Transfer[] memory events, uint event_id) internal {
         lockedTransfers[event_id].endTimestamp = block.timestamp + lockTime;
         for (uint i = 0; i < events.length; i++) {
             lockedTransfers[event_id].transfers.push(events[i]);
@@ -151,6 +110,8 @@ contract CommonBridge is AccessControl {
     }
 
 
+    // admin setters
+
     function changeMinSafetyBlocks(uint minSafetyBlocks_) public onlyRole(ADMIN_ROLE) {
         minSafetyBlocks = minSafetyBlocks_;
     }
@@ -166,4 +127,33 @@ contract CommonBridge is AccessControl {
     function changeLockTime(uint lockTime_) public onlyRole(ADMIN_ROLE) {
         lockTime = lockTime_;
     }
+
+
+    // token addressed mapping
+
+    function tokensAdd(address tokenThisAddress, address tokenSideAddress) public onlyRole(ADMIN_ROLE) {
+        tokenAddresses[tokenThisAddress] = tokenSideAddress;
+    }
+
+    function tokensRemove(address tokenThisAddress) public onlyRole(ADMIN_ROLE) {
+        delete tokenAddresses[tokenThisAddress];
+    }
+
+    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
+        tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
+    }
+
+    function _tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) private {
+        require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
+        uint arrayLength = tokenThisAddresses.length;
+        for (uint i = 0; i < arrayLength; i++)
+            tokenAddresses[tokenThisAddresses[i]] = tokenSideAddresses[i];
+    }
+
+    function tokensRemoveBatch(address[] memory tokenThisAddresses) public onlyRole(ADMIN_ROLE) {
+        uint arrayLength = tokenThisAddresses.length;
+        for (uint i = 0; i < arrayLength; i++)
+            delete tokenAddresses[tokenThisAddresses[i]];
+    }
+
 }
