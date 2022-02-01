@@ -4,6 +4,7 @@ import (
 	"math/big"
 	"relay/config"
 	"relay/contracts"
+	"relay/networks"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -36,4 +37,9 @@ func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []*contracts.CheckPoABl
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.contract.InputEventId(nil)
+}
+
+func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
+	// todo watch events in eth
+	// todo submit block on amb
 }
