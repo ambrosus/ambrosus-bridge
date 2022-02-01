@@ -59,7 +59,7 @@ contract CommonBridge is AccessControl {
 
     // todo remove
     event Test(uint indexed a, address indexed b, string c, uint d);
-    function emitTestEvent() {
+    function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount) public {
         emit Test(1, address(this), "asd", 123);
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
         emit Transfer(outputEventId++, queue);
