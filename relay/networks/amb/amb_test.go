@@ -1,16 +1,39 @@
 package amb
 
 import (
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
 	"math/big"
+	"relay/config"
 	"relay/helpers"
 	"relay/receipts_proof/mytrie"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/common"
 )
 
-func Test(t *testing.T) {
-	h, err := HeaderByNumber(big.NewInt(16021709))
+var ambBridge = New(&config.Bridge{Url: "https://network.ambrosus-dev.io"})
+
+func TestHeader(t *testing.T) {
+	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bare, err := h.Rlp(false)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	seal, err := h.Rlp(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	fmt.Printf("%x\n", bare)
+	fmt.Printf("%x\n", seal)
+}
+
+func TestEncoding(t *testing.T) {
+	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
 	if err != nil {
 		t.Fatal(err)
 	}

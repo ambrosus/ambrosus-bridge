@@ -13,8 +13,10 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 	// - receiptHash (for event block) / parentHash (for safety block)
 	// - Timestamp (for AURA)
 
-	rlpHeaderWithSeal := header.Rlp(true)
-	rlpHeaderWithoutSeal := header.Rlp(false)
+	// todo handle errors
+
+	rlpHeaderWithSeal, _ := header.Rlp(true)
+	rlpHeaderWithoutSeal, _ := header.Rlp(false)
 
 	p0Bare := rlpHeaderWithoutSeal[:3]
 	p0Seal := rlpHeaderWithSeal[:3]

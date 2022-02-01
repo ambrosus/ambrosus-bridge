@@ -12,13 +12,13 @@ import (
 	"relay/receipts_proof/mytrie"
 )
 
-type Request struct {
+type request struct {
 	Jsonrpc string        `json:"jsonrpc"`
 	Id      int           `json:"id"`
 	Method  string        `json:"method"`
 	Params  []interface{} `json:"params"`
 }
-type Response struct {
+type response struct {
 	Jsonrpc string `json:"jsonrpc"`
 	Result  Header `json:"result"`
 	Id      int    `json:"id"`
@@ -60,7 +60,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	}
 	defer resp.Body.Close()
 
-	respData := new(Response)
+	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
 		return nil, err
 	}
@@ -68,59 +68,42 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	return &respData.Result, nil
 }
 
-func (h *Header) Rlp(withSeal bool) []byte {
+func (h *Header) Rlp(withSeal bool) ([]byte, error) {
 	headerAsSlice := []interface{}{
-		h.ParentHash,
-		h.UncleHash,
-		h.Coinbase,
-		h.Root,
-		h.TxHash,
-		h.ReceiptHash,
-		h.Bloom,
-		h.Difficulty.ToInt(),
-		h.Number.ToInt(),
-		h.GasLimit,
-		h.GasUsed,
-		h.Time,
-		h.Extra,
+		h.ParentHash, h.UncleHash, h.Coinbase, h.Root,
+		h.TxHash, h.ReceiptHash, h.Bloom, h.Difficulty.ToInt(),
+		h.Number.ToInt(), h.GasLimit, h.GasUsed, h.Time, h.Extra,
 	}
 
 	if withSeal {
+
 		for _, seal := range h.SealFields {
-			sealBytes, _ := hexutil.Decode(seal)
-			sealRlpDecoded := new([]byte)
-			err := rlp.DecodeBytes(sealBytes, sealRlpDecoded)
+			sealRlpDecoded, err := decodeRlpHex(seal)
 			if err != nil {
-				panic(err)
+				return nil, err
 			}
-
 			headerAsSlice = append(headerAsSlice, *sealRlpDecoded)
-			//res = append(res, sealBytes...)
 		}
 	}
-	res, err := rlp.EncodeToBytes(headerAsSlice)
-	if err != nil {
-		panic(err)
-	}
-	return res
-}
 
-func (h *Header) SealRlp() (result []byte, err error) {
-
-	for _, seal := range h.SealFields {
-		sealBytes, _ := hexutil.Decode(seal)
-		sealRlpDecoded := new([]byte)
-
-		err := rlp.DecodeBytes(sealBytes, sealRlpDecoded)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, *sealRlpDecoded...)
-	}
-	return
+	return rlp.EncodeToBytes(headerAsSlice)
 }
 
 func (h *Header) Hash(seal bool) common.Hash {
-	return common.BytesToHash(mytrie.Hash(h.Rlp(seal)))
+	rlp_, err := h.Rlp(seal)
+	if err != nil {
+		return common.Hash{}
+	}
+	return common.BytesToHash(mytrie.Hash(rlp_))
+}
+
+func decodeRlpHex(rlpHex string) (*[]byte, error) {
+	prefixedRlpBytes, err := hexutil.Decode(rlpHex)
+	if err != nil {
+		return nil, err
+	}
+
+	rlpBytes := new([]byte)
+	err = rlp.DecodeBytes(prefixedRlpBytes, rlpBytes)
+	return rlpBytes, err
 }
