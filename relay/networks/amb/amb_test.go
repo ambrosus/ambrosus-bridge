@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-var ambBridge = New(&config.Bridge{Url: "https://network.ambrosus-dev.io"})
+var ambBridge = New(&config.Bridge{Url: "https://network.ambrosus.io"})
 
 func TestHeader(t *testing.T) {
 	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
@@ -33,6 +33,7 @@ func TestHeader(t *testing.T) {
 }
 
 func TestEncoding(t *testing.T) {
+	// todo HeaderByNumber return empty struct on fail but err == nil
 	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
 	if err != nil {
 		t.Fatal(err)
