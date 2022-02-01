@@ -2,7 +2,7 @@ package amb
 
 import (
 	"math/big"
-	"relay/helpers/mytrie"
+	"relay/receipts_proof/mytrie"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"

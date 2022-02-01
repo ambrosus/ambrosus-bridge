@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"math/big"
 	"net/http"
-	"relay/helpers/mytrie"
+	"relay/receipts_proof/mytrie"
 )
 
 type Request struct {

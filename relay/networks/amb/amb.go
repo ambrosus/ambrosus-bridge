@@ -2,22 +2,22 @@ package amb
 
 import (
 	"context"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
-	"relay/helpers"
 	"relay/networks"
+	"relay/receipts_proof"
 	"time"
-
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 type Bridge struct {
-	client     *ethclient.Client
-	contract   *contracts.Amb
-	sideBridge *networks.Bridge
+	Client     *ethclient.Client
+	Contract   *contracts.Amb
+	sideBridge networks.Bridge
 	config     *config.Bridge
 	submitFunc networks.SubmitPoAF
 }
@@ -32,8 +32,8 @@ func New(c *config.Bridge) *Bridge {
 		panic(err)
 	}
 	return &Bridge{
-		client:   client,
-		contract: ambBridge,
+		Client:   client,
+		Contract: ambBridge,
 		config:   c,
 	}
 }
@@ -76,12 +76,12 @@ func (b *Bridge) SubmitBlockPoW(
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
-	return b.contract.InputEventId(nil)
+	return b.Contract.InputEventId(nil)
 }
 
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge *networks.Bridge, submit networks.SubmitPoAF) {
+func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoAF) {
 	// todo save args to struct?
 	b.sideBridge = sideBridge
 	b.submitFunc = submit
@@ -109,7 +109,7 @@ func (b *Bridge) Listen() {
 		Context: context.Background(),
 	}
 	eventChannel := make(chan *contracts.AmbTransferEvent) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.contract.WatchTransferEvent(watchOpts, eventChannel, nil)
+	eventSub, err := b.Contract.WatchTransferEvent(watchOpts, eventChannel, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -135,8 +135,36 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	safetyBlocks := b.getSafetyBlocks(event.Raw.BlockNumber)
 	encodedBlocks := b.encodeSafetyBlocks(safetyBlocks)
 
-	receipts := types.Receipts(helpers.FindReceipts(b.client, event.Raw.BlockHash))
-	proof := contracts.ReceiptsProof(helpers.CalcProof(&receipts, event.Raw.Data))
-
+	receipts, err := b.FindReceipts(event.Raw.BlockHash)
+	if err != nil {
+		// todo
+	}
+	proof_, err := receipts_proof.CalcProof(receipts, &event.Raw)
+	if err != nil {
+		// todo
+	}
+	proof := contracts.ReceiptsProof(proof_)
 	b.submitFunc(event.EventId, encodedBlocks, &event.Queue, &proof)
+}
+
+func (b *Bridge) FindReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
+	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	receipts := make([]*types.Receipt, 0, txsCount)
+
+	for i := uint(0); i < txsCount; i++ {
+		tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
+		if err != nil {
+			return nil, err
+		}
+		receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
+		if err != nil {
+			return nil, err
+		}
+		receipts = append(receipts, receipt)
+	}
+	return receipts, nil
 }
