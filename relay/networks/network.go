@@ -10,5 +10,5 @@ type Bridge interface {
 	// GetEventById() common.WithdrawEvent
 }
 
-type SubmitPoWF func(eventId *big.Int, blocks []*contracts.CheckPoABlockPoA, events *[]contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof)
+type SubmitPoWF func(eventId *big.Int, blocks []*contracts.CheckPoWBlockPoW, events *[]contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof)
 type SubmitPoAF func(eventId *big.Int, blocks []*contracts.CheckPoABlockPoA, events *[]contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof)
