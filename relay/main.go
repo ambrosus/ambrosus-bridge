@@ -11,7 +11,7 @@ func main() {
 	ambBridge := amb.New(config.Config["amb"])
 	ethBridge := eth.New(config.Config["eth"])
 
-	go ambBridge.Run(ethBridge, ethBridge.SubmitBlockPoW)
-	go ethBridge.Run(athBridge, ambBridge.SubmitBlockPoA)
+	go ambBridge.Run(ethBridge, ethBridge.SubmitBlockPoA)
+	go ethBridge.Run(ambBridge, ambBridge.SubmitBlockPoW)
 
 }

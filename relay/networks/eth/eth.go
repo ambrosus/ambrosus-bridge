@@ -1,10 +1,14 @@
 package eth
 
 import (
-	"github.com/ethereum/go-ethereum/ethclient"
+	"math/big"
 	"relay/config"
 	"relay/contracts"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 )
+
+// не дописано
 
 type Bridge struct {
 	client   *ethclient.Client
@@ -16,7 +20,7 @@ func New(c *config.Bridge) *Bridge {
 	if err != nil {
 		panic(err)
 	}
-	ethBridge, err := contracts.NewEth(c.BridgeContractAddress, client)
+	ethBridge, err := contracts.NewEth(c.ContractAddress, client)
 	if err != nil {
 		panic(err)
 	}
@@ -26,10 +30,10 @@ func New(c *config.Bridge) *Bridge {
 	}
 }
 
-func (b *Bridge) SubmitBlockPoW(eventId uint, blocks contracts.CheckPoWBlockPoW, events contracts.CommonStructsTransfer, proof contracts.ReceiptsProof) {
+func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []*contracts.CheckPoABlockPoA, events *[]contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) {
 	tx, err := contracts.Submit(nil, withdraw.Blocks, withdraw.Events, withdraw.ReceiptsProof)
 }
 
-func (b *Bridge) GetLastEventId() {
-	// todo
+func (b *Bridge) GetLastEventId() (*big.Int, error) {
+	return b.contract.InputEventId(nil)
 }

@@ -27,32 +27,10 @@ func TestCalcProof(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	receipts := types.Receipts(findReceipts(client, block.Hash()))
+	receipts := types.Receipts(FindReceipts(client, block.Hash()))
 	proof := CalcProof(&receipts, receipt.Logs[0].Data)
 
 	if !CheckProof(receipt.Logs[0].Data, proof, block.ReceiptHash()) {
 		t.Fatal("proof check failed")
 	}
-}
-
-func findReceipts(client *ethclient.Client, blockHash common.Hash) []*types.Receipt {
-	txsCount, err := client.TransactionCount(context.Background(), blockHash)
-	if err != nil {
-		panic(err)
-	}
-
-	receipts := make([]*types.Receipt, 0, txsCount)
-
-	for i := uint(0); i < txsCount; i++ {
-		tx, err := client.TransactionInBlock(context.Background(), blockHash, i)
-		if err != nil {
-			panic(err)
-		}
-		receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-		if err != nil {
-			panic(err)
-		}
-		receipts = append(receipts, receipt)
-	}
-	return receipts
 }

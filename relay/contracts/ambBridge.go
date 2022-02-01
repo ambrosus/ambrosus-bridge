@@ -1522,13 +1522,6 @@ func (it *AmbTransferEventIterator) Close() error {
 	return nil
 }
 
-// AmbTransferEvent represents a TransferEvent event raised by the Amb contract.
-type AmbTransferEvent struct {
-	EventId *big.Int
-	Queue   []CommonStructsTransfer
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
 // FilterTransferEvent is a free log retrieval operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
 //
 // Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
