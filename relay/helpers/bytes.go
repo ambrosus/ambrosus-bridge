@@ -30,3 +30,17 @@ func BytesToBytes32(bytes []byte) (bytes32 [32]byte) {
 	copy(bytes32[:], bytes[:])
 	return
 }
+
+func BytesConcat(slices ...[]byte) []byte {
+	var totalLen int
+	for _, s := range slices {
+		totalLen += len(s)
+	}
+
+	res := make([]byte, totalLen)
+	var i int
+	for _, s := range slices {
+		i += copy(res[i:], s)
+	}
+	return res
+}
