@@ -27,7 +27,7 @@ func TestCalcProof(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	receipts, err := ambBridge.FindReceipts(log.BlockHash)
+	receipts, err := ambBridge.GetReceipts(log.BlockHash)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -43,8 +43,8 @@ type Header struct {
 	Signature  string   `json:"signature"`
 }
 
-func HeaderByNumber(number *big.Int) (*Header, error) {
-	body := &Request{
+func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
+	body := &request{
 		Jsonrpc: "2.0",
 		Id:      1,
 		Method:  "eth_getBlockByNumber",
@@ -54,7 +54,7 @@ func HeaderByNumber(number *big.Int) (*Header, error) {
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
 		return nil, err
 	}
-	resp, err := http.Post("https://network.ambrosus.io", "application/json", payloadBuf)
+	resp, err := http.Post(b.config.Url, "application/json", payloadBuf)
 	if err != nil {
 		return nil, err
 	}

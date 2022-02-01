@@ -11,7 +11,7 @@ type Bridge struct {
 	Url             string
 	ContractAddress ethcommon.Address
 	PrivateKey      *ecdsa.PrivateKey
-	SafetyBlocks    int
+	SafetyBlocks    uint64
 }
 
 // todo load from json

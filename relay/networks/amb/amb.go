@@ -11,7 +11,6 @@ import (
 	"relay/contracts"
 	"relay/networks"
 	"relay/receipts_proof"
-	"time"
 )
 
 type Bridge struct {
@@ -36,32 +35,6 @@ func New(c *config.Bridge) *Bridge {
 		Contract: ambBridge,
 		config:   c,
 	}
-}
-
-func (b Bridge) getSafetyBlocks(offset uint64) []*Header {
-	blocks := make([]*Header, b.config.SafetyBlocks)
-	var i uint64
-	for i = 0; i < b.config.SafetyBlocks; i++ {
-		block, err := HeaderByNumber(big.NewInt(int64(i + offset)))
-		if err != nil {
-			panic(err)
-		}
-		blocks = append(blocks, block)
-	}
-
-	return blocks
-}
-
-func (b Bridge) encodeSafetyBlocks(safetyBlocks []*Header) []*contracts.CheckPoABlockPoA {
-	encodedBlocks := make([]*contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
-	encodedBlocks = append(encodedBlocks, EncodeBlock(safetyBlocks[0], true))
-
-	var i uint64
-	for i = 1; i < b.config.SafetyBlocks; i++ {
-		encodedBlocks = append(encodedBlocks, EncodeBlock(safetyBlocks[i], false))
-	}
-
-	return encodedBlocks
 }
 
 func (b *Bridge) SubmitBlockPoW(
@@ -92,14 +65,14 @@ func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoAF) {
 // не дописано
 func (b *Bridge) CheckOldEvents() {
 	for {
-		needId := sideBridge.GetLastEventId() + 1
-		// todo get event by id `needId
-
-		if !event {
-			return
-		}
-
-		b.sendEvent()
+		//needId := sideBridge.GetLastEventId() + 1
+		//// todo get event by id `needId
+		//
+		//if !event {
+		//	return
+		//}
+		//
+		//b.sendEvent()
 	}
 }
 
@@ -128,14 +101,14 @@ func (b *Bridge) Listen() {
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	// todo wait for safety blocks
-	sleepTime := b.config.SafetyBlocks * b.config.BlockTime
-	time.Sleep(time.Duration(sleepTime) * time.Second)
+	//sleepTime := b.config.SafetyBlocks * b.config.BlockTime
+	//time.Sleep(time.Duration(sleepTime) * time.Second)
 
 	// todo encode blocks
 	safetyBlocks := b.getSafetyBlocks(event.Raw.BlockNumber)
 	encodedBlocks := b.encodeSafetyBlocks(safetyBlocks)
 
-	receipts, err := b.FindReceipts(event.Raw.BlockHash)
+	receipts, err := b.GetReceipts(event.Raw.BlockHash)
 	if err != nil {
 		// todo
 	}
@@ -147,7 +120,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	b.submitFunc(event.EventId, encodedBlocks, &event.Queue, &proof)
 }
 
-func (b *Bridge) FindReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
+func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
 		return nil, err
@@ -167,4 +140,28 @@ func (b *Bridge) FindReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 		receipts = append(receipts, receipt)
 	}
 	return receipts, nil
+}
+
+func (b Bridge) getSafetyBlocks(offset uint64) []*Header {
+	blocks := make([]*Header, b.config.SafetyBlocks)
+	for i := uint64(0); i < b.config.SafetyBlocks; i++ {
+		block, err := b.HeaderByNumber(big.NewInt(int64(offset + i)))
+		if err != nil {
+			panic(err)
+		}
+		blocks = append(blocks, block)
+	}
+
+	return blocks
+}
+
+func (b Bridge) encodeSafetyBlocks(safetyBlocks []*Header) []*contracts.CheckPoABlockPoA {
+	encodedBlocks := make([]*contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
+	encodedBlocks = append(encodedBlocks, EncodeBlock(safetyBlocks[0], true))
+
+	for i := uint64(1); i < b.config.SafetyBlocks; i++ {
+		encodedBlocks = append(encodedBlocks, EncodeBlock(safetyBlocks[i], false))
+	}
+
+	return encodedBlocks
 }
