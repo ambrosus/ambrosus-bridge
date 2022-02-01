@@ -31,8 +31,8 @@ func New(c *config.Bridge) *Bridge {
 	}
 }
 
-func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []*contracts.CheckPoABlockPoA, events *[]contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) {
 	//tx, err := contracts.Submit(nil, withdraw.Blocks, withdraw.Events, withdraw.ReceiptsProof)
+func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []contracts.CheckPoABlockPoA, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) {
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {

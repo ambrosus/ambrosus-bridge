@@ -39,8 +39,8 @@ func New(c *config.Bridge) *Bridge {
 
 func (b *Bridge) SubmitBlockPoW(
 	eventId *big.Int,
-	blocks []*contracts.CheckPoWBlockPoW,
-	events *[]contracts.CommonStructsTransfer,
+	blocks []contracts.CheckPoWBlockPoW,
+	events []contracts.CommonStructsTransfer,
 	proof *contracts.ReceiptsProof,
 ) {
 	// todo estimate gas
@@ -117,7 +117,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 		// todo
 	}
 	proof := contracts.ReceiptsProof(proof_)
-	b.submitFunc(event.EventId, encodedBlocks, &event.Queue, &proof)
+	b.submitFunc(event.EventId, encodedBlocks, event.Queue, &proof)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
@@ -155,12 +155,12 @@ func (b Bridge) getSafetyBlocks(offset uint64) []*Header {
 	return blocks
 }
 
-func (b Bridge) encodeSafetyBlocks(safetyBlocks []*Header) []*contracts.CheckPoABlockPoA {
-	encodedBlocks := make([]*contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
-	encodedBlocks = append(encodedBlocks, EncodeBlock(safetyBlocks[0], true))
+func (b Bridge) encodeSafetyBlocks(safetyBlocks []*Header) []contracts.CheckPoABlockPoA {
+	encodedBlocks := make([]contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
+	encodedBlocks = append(encodedBlocks, *EncodeBlock(safetyBlocks[0], true))
 
 	for i := uint64(1); i < b.config.SafetyBlocks; i++ {
-		encodedBlocks = append(encodedBlocks, EncodeBlock(safetyBlocks[i], false))
+		encodedBlocks = append(encodedBlocks, *EncodeBlock(safetyBlocks[i], false))
 	}
 
 	return encodedBlocks
