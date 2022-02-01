@@ -1,11 +1,14 @@
 package eth
 
 import (
+	"crypto/ecdsa"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
 	"relay/networks"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -14,6 +17,7 @@ import (
 type Bridge struct {
 	client   *ethclient.Client
 	contract *contracts.Eth
+	config   *config.Bridge
 }
 
 func New(c *config.Bridge) *Bridge {
@@ -28,11 +32,27 @@ func New(c *config.Bridge) *Bridge {
 	return &Bridge{
 		client:   client,
 		contract: ethBridge,
+		config:   c,
 	}
 }
 
-	//tx, err := contracts.Submit(nil, withdraw.Blocks, withdraw.Events, withdraw.ReceiptsProof)
 func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []contracts.CheckPoABlockPoA, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) {
+	// todo вынести создание публичного ключа в отдельную ф-ию
+	publicKey := b.config.PrivateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		panic("error casting public key to ECDSA")
+	}
+
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	opts := &bind.TransactOpts{
+		From: fromAddress,
+	}
+	tx, err := b.contract.CheckPoA(opts, blocks, events, *proof)
+	if err != nil {
+		// todo
+	}
+
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
