@@ -1,21 +1,25 @@
 package eth
 
 import (
+	"context"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
 	"relay/networks"
+	"relay/receipts_proof"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-// не дописано
-
 type Bridge struct {
-	client   *ethclient.Client
-	contract *contracts.Eth
-	config   *config.Bridge
+	Client     *ethclient.Client
+	Contract   *contracts.Eth
+	sideBridge networks.Bridge
+	config     *config.Bridge
+	submitFunc networks.SubmitPoWF
 }
 
 func New(c *config.Bridge) *Bridge {
@@ -28,19 +32,24 @@ func New(c *config.Bridge) *Bridge {
 		panic(err)
 	}
 	return &Bridge{
-		client:   client,
-		contract: ethBridge,
+		Client:   client,
+		Contract: ethBridge,
 		config:   c,
 	}
 }
 
-func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []contracts.CheckPoABlockPoA, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) {
+func (b *Bridge) SubmitBlockPoA(
+	eventId *big.Int,
+	blocks []contracts.CheckPoABlockPoA,
+	events []contracts.CommonStructsTransfer,
+	proof *contracts.ReceiptsProof,
+) {
 	auth, err := b.getAuth()
 	if err != nil {
 		// todo
 	}
 
-	tx, err := b.contract.CheckPoA(auth, blocks, events, *proof)
+	tx, err := b.Contract.CheckPoA(auth, blocks, events, *proof)
 	if err != nil {
 		// todo
 	}
@@ -48,12 +57,120 @@ func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []contracts.CheckPoABlo
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
-	return b.contract.InputEventId(nil)
+	return b.Contract.InputEventId(nil)
 }
 
+// todo code below may be common for all networks?
+
 func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
-	// todo watch events in eth
-	// todo submit block on amb
+	b.sideBridge = sideBridge
+	b.submitFunc = submit
+	b.CheckOldEvents()
+	b.Listen()
+}
+
+// не дописано
+func (b *Bridge) CheckOldEvents() {
+	for {
+		// needId := sideBridge.GetLastEventId() + 1
+		// // todo get event by id `needId
+		//
+		// if !event {
+		//	return
+		// }
+		//
+		// b.sendEvent()
+	}
+}
+
+func (b *Bridge) Listen() {
+	// Subscribe to events
+	watchOpts := &bind.WatchOpts{
+		Context: context.Background(),
+	}
+	eventChannel := make(chan *contracts.EthTransferEvent) // <-- тут я хз как сделать общий(common) тип для канала
+	eventSub, err := b.Contract.WatchTransferEvent(watchOpts, eventChannel, nil)
+	if err != nil {
+		panic(err)
+	}
+
+	// main loop
+	for {
+		select {
+		case err := <-eventSub.Err():
+			panic(err)
+
+		case event := <-eventChannel:
+			go b.sendEvent(&event.TransferEvent)
+		}
+	}
+}
+
+func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
+	// todo wait for safety blocks
+	// sleepTime := b.config.SafetyBlocks * b.config.BlockTime
+	// time.Sleep(time.Duration(sleepTime) * time.Second)
+
+	// todo encode blocks
+	safetyBlocks := b.getSafetyBlocks(event.Raw.BlockNumber)
+	encodedBlocks := b.encodeSafetyBlocks(safetyBlocks)
+
+	receipts, err := b.GetReceipts(event.Raw.BlockHash)
+	if err != nil {
+		// todo
+	}
+	proof_, err := receipts_proof.CalcProof(receipts, &event.Raw)
+	if err != nil {
+		// todo
+	}
+	proof := contracts.ReceiptsProof(proof_)
+	b.submitFunc(event.EventId, encodedBlocks, event.Queue, &proof)
+}
+
+func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
+	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	receipts := make([]*types.Receipt, 0, txsCount)
+
+	for i := uint(0); i < txsCount; i++ {
+		tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
+		if err != nil {
+			return nil, err
+		}
+		receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
+		if err != nil {
+			return nil, err
+		}
+		receipts = append(receipts, receipt)
+	}
+	return receipts, nil
+}
+
+func (b Bridge) getSafetyBlocks(offset uint64) types.Blocks {
+	blocks := make(types.Blocks, b.config.SafetyBlocks)
+	for i := uint64(0); i < b.config.SafetyBlocks; i++ {
+		block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(offset+i)))
+		if err != nil {
+			panic(err)
+		}
+		blocks = append(blocks, block)
+	}
+
+	return blocks
+}
+
+func (b Bridge) encodeSafetyBlocks(safetyBlocks types.Blocks) []contracts.CheckPoWBlockPoW {
+	encodedBlocks := make([]contracts.CheckPoWBlockPoW, b.config.SafetyBlocks)
+	encodedBlocks = append(encodedBlocks, *EncodeBlock(safetyBlocks[0].Header(), true))
+
+	for i := uint64(1); i < b.config.SafetyBlocks; i++ {
+		encodedBlocks = append(encodedBlocks, *EncodeBlock(safetyBlocks[i].Header(), false))
+	}
+
+	return encodedBlocks
 }
 
 func (b Bridge) getAuth() (*bind.TransactOpts, error) {
@@ -62,7 +179,7 @@ func (b Bridge) getAuth() (*bind.TransactOpts, error) {
 		return nil, err
 	}
 
-	nonce, err := b.client.PendingNonceAt(auth.Context, auth.From)
+	nonce, err := b.Client.PendingNonceAt(auth.Context, auth.From)
 	if err != nil {
 		return nil, err
 	}
