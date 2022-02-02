@@ -3,6 +3,8 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"math/big"
+
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -12,6 +14,7 @@ type Bridge struct {
 	ContractAddress ethcommon.Address
 	PrivateKey      *ecdsa.PrivateKey
 	SafetyBlocks    uint64
+	ChainID         *big.Int
 }
 
 // todo load from json
@@ -28,6 +31,7 @@ var Config = map[string]*Bridge{
 		ContractAddress: ethcommon.HexToAddress(""),
 		PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:    10,
+		ChainID:         big.NewInt(1),
 	},
 }
 

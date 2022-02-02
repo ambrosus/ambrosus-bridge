@@ -1,14 +1,12 @@
 package eth
 
 import (
-	"crypto/ecdsa"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
 	"relay/networks"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
@@ -37,18 +35,12 @@ func New(c *config.Bridge) *Bridge {
 }
 
 func (b *Bridge) SubmitBlockPoA(eventId *big.Int, blocks []contracts.CheckPoABlockPoA, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) {
-	// todo вынести создание публичного ключа в отдельную ф-ию
-	publicKey := b.config.PrivateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		panic("error casting public key to ECDSA")
+	auth, err := b.getAuth()
+	if err != nil {
+		// todo
 	}
 
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	opts := &bind.TransactOpts{
-		From: fromAddress,
-	}
-	tx, err := b.contract.CheckPoA(opts, blocks, events, *proof)
+	tx, err := b.contract.CheckPoA(auth, blocks, events, *proof)
 	if err != nil {
 		// todo
 	}
@@ -62,4 +54,19 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
 	// todo watch events in eth
 	// todo submit block on amb
+}
+
+func (b Bridge) getAuth() (*bind.TransactOpts, error) {
+	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, b.config.ChainID)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce, err := b.client.PendingNonceAt(auth.Context, auth.From)
+	if err != nil {
+		return nil, err
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+
+	return auth, nil
 }
