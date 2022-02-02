@@ -2,15 +2,16 @@ package amb
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
 	"relay/networks"
 	"relay/receipts_proof"
+
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 type Bridge struct {
@@ -43,9 +44,15 @@ func (b *Bridge) SubmitBlockPoW(
 	events []contracts.CommonStructsTransfer,
 	proof *contracts.ReceiptsProof,
 ) {
-	// todo estimate gas
-	// todo send
-	// todo wait status ok
+	auth, err := b.getAuth()
+	if err != nil {
+		// todo
+	}
+
+	tx, err := b.Contract.CheckPoW(auth, blocks, events, *proof)
+	if err != nil {
+		// todo
+	}
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
@@ -65,14 +72,14 @@ func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoAF) {
 // не дописано
 func (b *Bridge) CheckOldEvents() {
 	for {
-		//needId := sideBridge.GetLastEventId() + 1
-		//// todo get event by id `needId
+		// needId := sideBridge.GetLastEventId() + 1
+		// // todo get event by id `needId
 		//
-		//if !event {
+		// if !event {
 		//	return
-		//}
+		// }
 		//
-		//b.sendEvent()
+		// b.sendEvent()
 	}
 }
 
@@ -101,8 +108,8 @@ func (b *Bridge) Listen() {
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	// todo wait for safety blocks
-	//sleepTime := b.config.SafetyBlocks * b.config.BlockTime
-	//time.Sleep(time.Duration(sleepTime) * time.Second)
+	// sleepTime := b.config.SafetyBlocks * b.config.BlockTime
+	// time.Sleep(time.Duration(sleepTime) * time.Second)
 
 	// todo encode blocks
 	safetyBlocks := b.getSafetyBlocks(event.Raw.BlockNumber)
@@ -164,4 +171,19 @@ func (b Bridge) encodeSafetyBlocks(safetyBlocks []*Header) []contracts.CheckPoAB
 	}
 
 	return encodedBlocks
+}
+
+func (b Bridge) getAuth() (*bind.TransactOpts, error) {
+	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, b.config.ChainID)
+	if err != nil {
+		return nil, err
+	}
+
+	nonce, err := b.Client.PendingNonceAt(auth.Context, auth.From)
+	if err != nil {
+		return nil, err
+	}
+	auth.Nonce = big.NewInt(int64(nonce))
+
+	return auth, nil
 }
