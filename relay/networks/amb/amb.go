@@ -107,14 +107,34 @@ func (b *Bridge) Listen() {
 }
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
-	// todo wait for safety blocks
-	// sleepTime := b.config.SafetyBlocks * b.config.BlockTime
-	// time.Sleep(time.Duration(sleepTime) * time.Second)
+	// wait for safety blocks
+	blockChannel := make(chan *types.Header)
+	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
+	if err != nil {
+		// todo
+	}
+	var i uint64
+	for i <= b.config.SafetyBlocks {
+		select {
+		case err := <-blockSub.Err():
+			// todo
+			panic(err)
 
-	// todo encode blocks
+		case _ = <-blockChannel:
+			i++
+		}
+	}
+	// check if the event has been removed
+	isEventRemoved, err := b.isEventRemoved(event.EventId)
+	if isEventRemoved {
+		// todo
+	}
+
+	// encode safety blocks
 	safetyBlocks := b.getSafetyBlocks(event.Raw.BlockNumber)
 	encodedBlocks := b.encodeSafetyBlocks(safetyBlocks)
 
+	// calculate receipt proof
 	receipts, err := b.GetReceipts(event.Raw.BlockHash)
 	if err != nil {
 		// todo
@@ -124,6 +144,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 		// todo
 	}
 	proof := contracts.ReceiptsProof(proof_)
+
 	b.submitFunc(event.EventId, encodedBlocks, event.Queue, &proof)
 }
 
@@ -186,4 +207,27 @@ func (b Bridge) getAuth() (*bind.TransactOpts, error) {
 	auth.Nonce = big.NewInt(int64(nonce))
 
 	return auth, nil
+}
+
+func (b *Bridge) isEventRemoved(eventId *big.Int) (bool, error) {
+	event, err := b.GetEventById(eventId)
+	if err != nil {
+		return false, err
+	}
+	return event.Raw.Removed, nil
+}
+
+func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
+	opts := &bind.FilterOpts{
+		Context: context.Background(),
+	}
+	logs, err := b.Contract.FilterTransferEvent(opts, []*big.Int{eventId})
+	if err != nil {
+		return nil, err
+	}
+
+	if logs.Next() {
+		return &logs.Event.TransferEvent, nil
+	}
+	return nil, nil
 }
