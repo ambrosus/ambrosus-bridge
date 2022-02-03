@@ -12,7 +12,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_)
     CommonBridge(_sideBridgeAddress, relayAddress,
                  tokenThisAddresses, tokenSideAddresses,
-                 fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_) {}
+                 fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_) { emitTestEvent(address(this), msg.sender, 10); }
 
     function submitTransfer(
         uint event_id,

@@ -7,5 +7,5 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "declarationMap": true
-  }
+  },
 }

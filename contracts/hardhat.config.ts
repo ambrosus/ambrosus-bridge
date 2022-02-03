@@ -23,10 +23,9 @@ module.exports = {
             accounts: PK,
         },
         amb: {
-            url: "https://network.ambrosus-test.io",
+            url: "https://network.ambrosus-dev.io",
             accounts: PK,
             hardfork: "byzantium"
-
         }
     },
     namedAccounts: {
@@ -45,7 +44,7 @@ module.exports = {
                         enabled: true,
                         runs: 200,
                     },
-                    // evmVersion: "byzantium"
+                    evmVersion: "byzantium"
                 },
             },
         ],
