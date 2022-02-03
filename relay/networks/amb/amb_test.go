@@ -40,7 +40,10 @@ func TestEncoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	encodedBlockPoA := EncodeBlock(h, true)
+	encodedBlockPoA, err := EncodeBlock(h, true)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	rlpBase := helpers.BytesConcat(encodedBlockPoA.P1, encodedBlockPoA.PrevHashOrReceiptRoot[:], encodedBlockPoA.P2)
 

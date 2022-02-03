@@ -185,10 +185,18 @@ func (b Bridge) getSafetyBlocks(offset uint64) []*Header {
 
 func (b Bridge) encodeSafetyBlocks(safetyBlocks []*Header) []contracts.CheckPoABlockPoA {
 	encodedBlocks := make([]contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
-	encodedBlocks = append(encodedBlocks, *EncodeBlock(safetyBlocks[0], true))
+	encodedEventBlock, err := EncodeBlock(safetyBlocks[0], true)
+	if err != nil {
+		// todo
+	}
+	encodedBlocks = append(encodedBlocks, *encodedEventBlock)
 
 	for i := uint64(1); i < b.config.SafetyBlocks; i++ {
-		encodedBlocks = append(encodedBlocks, *EncodeBlock(safetyBlocks[i], false))
+		encodedBlock, err := EncodeBlock(safetyBlocks[i], false)
+		if err != nil {
+			// todo
+		}
+		encodedBlocks = append(encodedBlocks, *encodedBlock)
 	}
 
 	return encodedBlocks

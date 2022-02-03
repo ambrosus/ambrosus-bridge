@@ -10,15 +10,21 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA {
+func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
 	// - Timestamp (for AURA)
 
 	// todo handle errors
 
-	rlpHeaderWithSeal, _ := header.Rlp(true)
-	rlpHeaderWithoutSeal, _ := header.Rlp(false)
+	rlpHeaderWithSeal, err := header.Rlp(true)
+	if err != nil {
+		return nil, err
+	}
+	rlpHeaderWithoutSeal, err := header.Rlp(false)
+	if err != nil {
+		return nil, err
+	}
 
 	p0Bare := rlpHeaderWithoutSeal[:3]
 	p0Seal := rlpHeaderWithSeal[:3]
@@ -32,18 +38,30 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 		splitEls[0] = header.ParentHash.Bytes()
 	}
 
-	splitEls[1], _ = hexutil.Decode(header.SealFields[0])
+	splitEls[1], err = hexutil.Decode(header.SealFields[0])
+	if err != nil {
+		return nil, err
+	}
 
 	splitted, err := helpers.BytesSplit(rlpHeaderWithSeal, splitEls)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
 	stepHex := fmt.Sprintf("%x", header.Step)
-	stepHexBytes, _ := hex.DecodeString(stepHex)
-	signatureBytes, _ := hex.DecodeString(header.Signature)
+	stepHexBytes, err := hex.DecodeString(stepHex)
+	if err != nil {
+		return nil, err
+	}
+	signatureBytes, err := hex.DecodeString(header.Signature)
+	if err != nil {
+		return nil, err
+	}
 
-	stepPrefix, signaturePrefix := getStepSignPrefix(header, stepHex)
+	stepPrefix, signaturePrefix, err := getStepSignPrefix(header, stepHex)
+	if err != nil {
+		return nil, err
+	}
 
 	return &contracts.CheckPoABlockPoA{
 		P0Bare:                p0Bare,
@@ -55,13 +73,19 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 		Step:                  stepHexBytes,
 		S2:                    signaturePrefix,
 		Signature:             signatureBytes,
-	}
+	}, nil
 }
 
-func getStepSignPrefix(header *Header, stepHex string) ([]byte, []byte) {
-	stepPrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[0], stepHex))
-	signaturePrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[1], header.Signature))
-	return stepPrefix, signaturePrefix
+func getStepSignPrefix(header *Header, stepHex string) ([]byte, []byte, error) {
+	stepPrefix, err := hexutil.Decode(strings.TrimSuffix(header.SealFields[0], stepHex))
+	if err != nil {
+		return nil, nil, err
+	}
+	signaturePrefix, err := hexutil.Decode(strings.TrimSuffix(header.SealFields[1], header.Signature))
+	if err != nil {
+		return nil, nil, err
+	}
+	return stepPrefix, signaturePrefix, nil
 }
 
 func uint64ToBytes(i *hexutil.Uint64) []byte {
