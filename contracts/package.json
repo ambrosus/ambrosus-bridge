@@ -7,9 +7,9 @@
   "private": false,
   "scripts": {
     "test": "hardhat test",
-
     "build": "hardhat compile",
-    "deploy": "hardhat deploy --network rinkeby && hardhat deploy --network amb",
+    "deployamb": "hardhat deploy --network amb",
+    "deployrinkeby": "hardhat deploy --network rinkeby",
     "verify": "hardhat etherscan-verify --network rinkeby",
     "sourcify": "hardhat sourcify --network rinkeby",
     "coverage": "hardhat coverage",

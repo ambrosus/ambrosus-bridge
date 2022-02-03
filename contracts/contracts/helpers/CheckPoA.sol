@@ -23,10 +23,10 @@ contract CheckPoA {
 
 
     function CheckPoA_(BlockPoA[] memory blocks, CommonStructs.Transfer[] memory events, bytes[] memory proof) public {
-        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
+//        bytes32 hash = calcReceiptsRoot(proof, abi.encode(events));
 
         for (uint i = 0; i < blocks.length; i++) {
-            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
+//            require(blocks[i].prevHashOrReceiptRoot == hash, "prevHash or receiptRoot wrong");
 
             bytes memory rlp = abi.encodePacked(blocks[i].p1, blocks[i].prevHashOrReceiptRoot, blocks[i].p2, blocks[i].timestamp, blocks[i].p3);
 
@@ -36,7 +36,7 @@ contract CheckPoA {
             CheckSignature(validator, bare_hash, blocks[i].signature);
 
             // hash with seal, for prev_hash check
-            hash = keccak256(abi.encodePacked(blocks[i].p0_seal, rlp, blocks[i].s1, blocks[i].signature, blocks[i].s2));
+//            hash = keccak256(abi.encodePacked(blocks[i].p0_seal, rlp, blocks[i].s1, blocks[i].signature, blocks[i].s2));
         }
     }
 
