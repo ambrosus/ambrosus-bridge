@@ -41,15 +41,19 @@ type CheckPoWBlockPoW struct {
 
 // CheckPoABlockPoA is an auto generated low-level Go binding around an user-defined struct.
 type CheckPoABlockPoA struct {
-	P0Seal                []byte
-	P0Bare                []byte
-	P1                    []byte
-	PrevHashOrReceiptRoot [32]byte
-	P2                    []byte
-	S1                    []byte
-	Step                  []byte
-	S2                    []byte
-	Signature             []byte
+	P0Seal []byte // header prefix when encoded with seal
+	P0Bare []byte // header prefix when encoded without seal
+
+	// common (for bare and seal headers) part
+	P1                    []byte   // bytes after header prefix and before prev_hash or receipt_root
+	PrevHashOrReceiptRoot [32]byte // receipt_root for main block, prev_hash for safety blocks
+	P2                    []byte   // bytes after prev_hash or receipt_root and before seal part
+
+	// seal part
+	S1        []byte // step prefix
+	Step      []byte
+	S2        []byte // signature prefix
+	Signature []byte
 }
 
 type ReceiptsProof [][]byte
