@@ -56,7 +56,7 @@ func TestEncoding(t *testing.T) {
 	}
 
 	// with seal
-	rlpWithSeal := helpers.BytesConcat(encodedBlockPoA.P0Seal, rlpBase, encodedBlockPoA.Step, encodedBlockPoA.S1, encodedBlockPoA.Signature)
+	rlpWithSeal := helpers.BytesConcat(encodedBlockPoA.P0Seal, rlpBase, encodedBlockPoA.S1, encodedBlockPoA.Step, encodedBlockPoA.S2, encodedBlockPoA.Signature)
 	hashWithSeal := common.BytesToHash(mytrie.Hash(rlpWithSeal))
 
 	if hashWithSeal != h.Hash(true) {
