@@ -1,11 +1,11 @@
 package amb
 
 import (
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"relay/contracts"
 	"relay/helpers"
-	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -49,20 +49,12 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 	}
 
 	stepHex := fmt.Sprintf("%x", header.Step)
-	stepHexBytes, err := hex.DecodeString(stepHex)
-	if err != nil {
-		return nil, err
-	}
-	signatureBytes, err := hex.DecodeString(header.Signature)
+	stepHexBytes, signatureBytes, err := getStepNSignBytes(header, stepHex)
 	if err != nil {
 		return nil, err
 	}
 
-	stepPrefix, err := rlpPrefix(header.SealFields[0], stepHex)
-	if err != nil {
-		return nil, err
-	}
-	signaturePrefix, err := rlpPrefix(header.SealFields[1], header.Signature)
+	stepPrefix, signaturePrefix, err := getStepNSignPrefixes(header, stepHex)
 	if err != nil {
 		return nil, err
 	}
@@ -80,12 +72,46 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 	}, nil
 }
 
-func rlpPrefix(withPrefix string, withoutPrefix string) ([]byte, error) {
-	res, err := hexutil.Decode(strings.TrimSuffix(withPrefix, withoutPrefix))
+func getStepNSignBytes(header *Header, stepHex string) ([]byte, []byte, error) {
+	stepHexBytes, err := hex.DecodeString(stepHex)
+	if err != nil {
+		return nil, nil, err
+	}
+	signatureBytes, err := hex.DecodeString(header.Signature)
+	if err != nil {
+		return nil, nil, err
+	}
+	return stepHexBytes, signatureBytes, nil
+}
+
+func getStepNSignPrefixes(header *Header, stepHex string) ([]byte, []byte, error) {
+	stepPrefix, err := rlpPrefixFromStrings(header.SealFields[0], stepHex)
+	if err != nil {
+		return nil, nil, err
+	}
+	signaturePrefix, err := rlpPrefixFromStrings(header.SealFields[1], header.Signature)
+	if err != nil {
+		return nil, nil, err
+	}
+	return stepPrefix, signaturePrefix, nil
+}
+
+func rlpPrefixFromStrings(encodedHexValue string, hexValue string) ([]byte, error) {
+	encodedValue, err := hexutil.Decode(encodedHexValue)
 	if err != nil {
 		return nil, err
 	}
-	return res, nil
+	value, err := hexutil.Decode(hexValue)
+	if err != nil {
+		return nil, err
+	}
+
+	return rlpPrefix(encodedValue, value), nil
+}
+
+func rlpPrefix(encodedValue []byte, value []byte) []byte {
+	res := bytes.TrimSuffix(encodedValue, value)
+	return res
 }
 
 func uint64ToBytes(i *hexutil.Uint64) []byte {
