@@ -13,7 +13,7 @@ import (
 func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
-	// - Timestamp (for AURA)
+	// - Step, signature (for AURA)
 
 	// todo handle errors
 
