@@ -41,9 +41,9 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 
 	stepHex := fmt.Sprintf("%x", header.Step)
 	stepHexBytes, _ := hex.DecodeString(stepHex)
-	stepPrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[0], stepHex))
-	signaturePrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[1], header.Signature))
 	signatureBytes, _ := hex.DecodeString(header.Signature)
+
+	stepPrefix, signaturePrefix := getStepSignPrefix(header, stepHex)
 
 	return &contracts.CheckPoABlockPoA{
 		P0Bare:                p0Bare,
@@ -56,6 +56,12 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 		S2:                    signaturePrefix,
 		Signature:             signatureBytes,
 	}
+}
+
+func getStepSignPrefix(header *Header, stepHex string) ([]byte, []byte) {
+	stepPrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[0], stepHex))
+	signaturePrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[1], header.Signature))
+	return stepPrefix, signaturePrefix
 }
 
 func uint64ToBytes(i *hexutil.Uint64) []byte {
