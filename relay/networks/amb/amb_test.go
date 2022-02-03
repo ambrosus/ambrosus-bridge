@@ -2,12 +2,13 @@ package amb
 
 import (
 	"fmt"
-	"github.com/ethereum/go-ethereum/common"
 	"math/big"
 	"relay/config"
 	"relay/helpers"
 	"relay/receipts_proof/mytrie"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var ambBridge = New(&config.Bridge{Url: "https://network.ambrosus.io"})
@@ -41,7 +42,7 @@ func TestEncoding(t *testing.T) {
 
 	encodedBlockPoA := EncodeBlock(h, true)
 
-	rlpBase := helpers.BytesConcat(encodedBlockPoA.P1, encodedBlockPoA.PrevHashOrReceiptRoot[:], encodedBlockPoA.P2, encodedBlockPoA.Timestamp, encodedBlockPoA.P3)
+	rlpBase := helpers.BytesConcat(encodedBlockPoA.P1, encodedBlockPoA.PrevHashOrReceiptRoot[:], encodedBlockPoA.P2)
 
 	// without seal
 	rlpWithoutSeal := helpers.BytesConcat(encodedBlockPoA.P0Bare, rlpBase)
@@ -52,7 +53,7 @@ func TestEncoding(t *testing.T) {
 	}
 
 	// with seal
-	rlpWithSeal := helpers.BytesConcat(encodedBlockPoA.P0Seal, rlpBase, encodedBlockPoA.S1, encodedBlockPoA.Signature, encodedBlockPoA.S2)
+	rlpWithSeal := helpers.BytesConcat(encodedBlockPoA.P0Seal, rlpBase, encodedBlockPoA.Step, encodedBlockPoA.S1, encodedBlockPoA.Signature)
 	hashWithSeal := common.BytesToHash(mytrie.Hash(rlpWithSeal))
 
 	if hashWithSeal != h.Hash(true) {
