@@ -46,8 +46,9 @@ type CheckPoABlockPoA struct {
 	P1                    []byte
 	PrevHashOrReceiptRoot [32]byte
 	P2                    []byte
-	Step                  []byte
 	S1                    []byte
+	Step                  []byte
+	S2                    []byte
 	Signature             []byte
 }
 

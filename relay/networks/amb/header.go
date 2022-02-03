@@ -41,6 +41,7 @@ type Header struct {
 
 	SealFields []string `json:"sealFields"`
 	Signature  string   `json:"signature"`
+	Step       uint64   `json:"step,string"`
 }
 
 func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {

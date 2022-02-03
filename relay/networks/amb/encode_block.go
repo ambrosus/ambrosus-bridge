@@ -2,8 +2,10 @@ package amb
 
 import (
 	"encoding/hex"
+	"fmt"
 	"relay/contracts"
 	"relay/helpers"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
@@ -22,7 +24,7 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 	p0Seal := rlpHeaderWithSeal[:3]
 	rlpHeaderWithSeal = rlpHeaderWithSeal[3:] // we'll work without prefix
 
-	splitEls := make([][]byte, 3)
+	splitEls := make([][]byte, 2)
 
 	if isEventBlock {
 		splitEls[0] = header.ReceiptHash.Bytes()
@@ -31,12 +33,17 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 	}
 
 	splitEls[1], _ = hexutil.Decode(header.SealFields[0])
-	splitEls[2], _ = hex.DecodeString(header.Signature)
 
 	splitted, err := helpers.BytesSplit(rlpHeaderWithSeal, splitEls)
 	if err != nil {
 		panic(err)
 	}
+
+	stepHex := fmt.Sprintf("%x", header.Step)
+	stepHexBytes, _ := hex.DecodeString(stepHex)
+	stepPrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[0], stepHex))
+	signaturePrefix, _ := hexutil.Decode(strings.TrimSuffix(header.SealFields[1], header.Signature))
+	signatureBytes, _ := hex.DecodeString(header.Signature)
 
 	return &contracts.CheckPoABlockPoA{
 		P0Bare:                p0Bare,
@@ -44,9 +51,10 @@ func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA 
 		P1:                    splitted[0],
 		PrevHashOrReceiptRoot: helpers.BytesToBytes32(splitEls[0]),
 		P2:                    splitted[1],
-		Step:                  splitEls[1],
-		S1:                    splitted[2],
-		Signature:             splitEls[2],
+		S1:                    stepPrefix,
+		Step:                  stepHexBytes,
+		S2:                    signaturePrefix,
+		Signature:             signatureBytes,
 	}
 }
 
