@@ -58,7 +58,11 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 		return nil, err
 	}
 
-	stepPrefix, signaturePrefix, err := getStepSignPrefix(header, stepHex)
+	stepPrefix, err := rlpPrefix(header.SealFields[0], stepHex)
+	if err != nil {
+		return nil, err
+	}
+	signaturePrefix, err := rlpPrefix(header.SealFields[1], header.Signature)
 	if err != nil {
 		return nil, err
 	}
@@ -76,16 +80,12 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 	}, nil
 }
 
-func getStepSignPrefix(header *Header, stepHex string) ([]byte, []byte, error) {
-	stepPrefix, err := hexutil.Decode(strings.TrimSuffix(header.SealFields[0], stepHex))
+func rlpPrefix(withPrefix string, withoutPrefix string) ([]byte, error) {
+	res, err := hexutil.Decode(strings.TrimSuffix(withPrefix, withoutPrefix))
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	signaturePrefix, err := hexutil.Decode(strings.TrimSuffix(header.SealFields[1], header.Signature))
-	if err != nil {
-		return nil, nil, err
-	}
-	return stepPrefix, signaturePrefix, nil
+	return res, nil
 }
 
 func uint64ToBytes(i *hexutil.Uint64) []byte {
