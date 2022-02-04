@@ -203,7 +203,7 @@ func (st *ModifiedStackTrie) insert(key, value []byte) {
 			st.Children[idx].keyOffset = st.keyOffset + 1
 		}
 		st.Children[idx].insert(key, value)
-	case extNode: /* Ext */
+	case extNode: /* Side */
 		// Compare both Key chunks and see where they differ
 		diffidx := st.getDiffIndex(key)
 
@@ -213,7 +213,7 @@ func (st *ModifiedStackTrie) insert(key, value []byte) {
 		// representing the two differing path, and 3) a leaf
 		// for each of the differentiated subtrees.
 		if diffidx == len(st.Key) {
-			// Ext Key and Key segment are identical, recurse into
+			// Side Key and Key segment are identical, recurse into
 			// the child node.
 			st.Children[0].insert(key, value)
 			return

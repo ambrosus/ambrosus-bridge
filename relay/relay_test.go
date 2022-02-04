@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"relay/enc2sol"
+	"relay/networks/amb"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -27,7 +27,7 @@ func Test(t *testing.T) {
 
 func TestHeaderHash(t *testing.T) {
 	number := big.NewInt(16021709)
-	h, _ := enc2sol.HeaderByNumber(number)
+	h, _ := amb.HeaderByNumber(number)
 
 	t.Log(h.Hash(false).Hex())
 	t.Log(h.Hash(true).Hex())
