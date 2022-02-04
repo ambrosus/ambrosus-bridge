@@ -37,7 +37,7 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 		prevHashOrReceiptRoot = header.ParentHash.Bytes()
 	}
 
-	rlpParts := bytes.Split(rlpHeader, prevHashOrReceiptRoot)
+	rlpParts := bytes.SplitN(rlpHeader, prevHashOrReceiptRoot, 2)
 	if len(rlpParts) != 2 {
 		return nil, fmt.Errorf("split result length (%v) != 2 ", len(rlpParts))
 	}
