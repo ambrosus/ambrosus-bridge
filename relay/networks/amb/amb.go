@@ -2,6 +2,7 @@ package amb
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
@@ -129,9 +130,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	}
 
 	// check if the event has been removed
-	// todo wrong
-	isEventRemoved, err := b.isEventRemoved(event)
-	if isEventRemoved {
+	if err := b.isEventRemoved; err != nil {
 		// todo
 	}
 
@@ -208,12 +207,16 @@ func (b Bridge) getAuth() (*bind.TransactOpts, error) {
 	return auth, nil
 }
 
-func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) (bool, error) {
+func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
-		return false, err
+		return err
 	}
-	return block.Hash() == event.Raw.BlockHash, nil
+
+	if block.Hash() != event.Raw.BlockHash {
+		return fmt.Errorf("block hash != event's block hash")
+	}
+	return nil
 }
 
 func (b *Bridge) waitForSafetyBlocks(event *contracts.TransferEvent) error {
