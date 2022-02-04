@@ -1,59 +1,79 @@
 package amb
 
 import (
-	"encoding/hex"
+	"bytes"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/rlp"
 	"relay/contracts"
 	"relay/helpers"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
-func EncodeBlock(header *Header, isEventBlock bool) *contracts.CheckPoABlockPoA {
+func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
-	// - Timestamp (for AURA)
+	// - Step, Signature (for AURA)
 
-	// todo handle errors
-
-	rlpHeaderWithSeal, _ := header.Rlp(true)
-	rlpHeaderWithoutSeal, _ := header.Rlp(false)
-
-	p0Bare := rlpHeaderWithoutSeal[:3]
-	p0Seal := rlpHeaderWithSeal[:3]
-	rlpHeaderWithSeal = rlpHeaderWithSeal[3:] // we'll work without prefix
-
-	splitEls := make([][]byte, 4)
-
-	if isEventBlock {
-		splitEls[0] = header.ReceiptHash.Bytes()
-	} else {
-		splitEls[0] = header.ParentHash.Bytes()
+	rlpHeader, err := header.Rlp(false)
+	if err != nil {
+		return nil, err
+	}
+	rlpHeaderSeal, err := header.Rlp(true)
+	if err != nil {
+		return nil, err
 	}
 
-	splitEls[1] = uint64ToBytes(header.Time)
-	splitEls[2], _ = hexutil.Decode(header.SealFields[0])
-	splitEls[3], _ = hex.DecodeString(header.Signature)
+	// rlpHeader length about 508 bytes => rlp prefix always 3 bytes length
+	p0Bare := rlpHeader[:3]
+	p0Seal := rlpHeaderSeal[:3]
 
-	splitted, err := helpers.BytesSplit(rlpHeaderWithSeal, splitEls)
+	rlpHeader = rlpHeader[3:] // we'll work without prefix further
+
+	// common part
+	var prevHashOrReceiptRoot []byte
+	if isEventBlock {
+		prevHashOrReceiptRoot = header.ReceiptHash.Bytes()
+	} else {
+		prevHashOrReceiptRoot = header.ParentHash.Bytes()
+	}
+
+	rlpParts := bytes.Split(rlpHeader, prevHashOrReceiptRoot)
+	if len(rlpParts) != 2 {
+		return nil, fmt.Errorf("split result length (%v) != 2 ", len(rlpParts))
+	}
+
+	// seal part
+	step := common.Hex2Bytes(fmt.Sprintf("%x", header.Step)) // int -> bytes
+	signature := common.Hex2Bytes(header.Signature)
+
+	stepPrefix, err := rlpPrefix(step)
 	if err != nil {
-		panic(err)
+		return nil, err
+	}
+	signaturePrefix, err := rlpPrefix(signature)
+	if err != nil {
+		return nil, err
 	}
 
 	return &contracts.CheckPoABlockPoA{
-		P0Bare:                p0Bare,
-		P0Seal:                p0Seal,
-		P1:                    splitted[0],
-		PrevHashOrReceiptRoot: helpers.BytesToBytes32(splitEls[0]),
-		P2:                    splitted[1],
-		Timestamp:             splitEls[1],
-		P3:                    splitted[2],
-		// seal
-		S1:        append(splitEls[2], splitted[3]...),
-		Signature: splitEls[3],
-	}
+		P0Bare: p0Bare,
+		P0Seal: p0Seal,
+
+		P1:                    rlpParts[0],
+		PrevHashOrReceiptRoot: helpers.BytesToBytes32(prevHashOrReceiptRoot),
+		P2:                    rlpParts[1],
+
+		S1:        stepPrefix,
+		Step:      step,
+		S2:        signaturePrefix,
+		Signature: signature,
+	}, nil
 }
 
-func uint64ToBytes(i *hexutil.Uint64) []byte {
-	b, _ := hexutil.Decode(i.String())
-	return b
+func rlpPrefix(value []byte) ([]byte, error) {
+	prefixedValue, err := rlp.EncodeToBytes(value)
+	if err != nil {
+		return nil, err
+	}
+	return bytes.TrimSuffix(prefixedValue, value), nil
 }

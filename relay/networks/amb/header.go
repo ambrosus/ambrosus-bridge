@@ -3,6 +3,7 @@ package amb
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -40,6 +41,7 @@ type Header struct {
 	Extra       *hexutil.Bytes  `json:"extraData"`
 
 	SealFields []string `json:"sealFields"`
+	Step       uint64   `json:"step,string"`
 	Signature  string   `json:"signature"`
 }
 
@@ -76,14 +78,10 @@ func (h *Header) Rlp(withSeal bool) ([]byte, error) {
 	}
 
 	if withSeal {
-
-		for _, seal := range h.SealFields {
-			sealRlpDecoded, err := decodeRlpHex(seal)
-			if err != nil {
-				return nil, err
-			}
-			headerAsSlice = append(headerAsSlice, *sealRlpDecoded)
-		}
+		headerAsSlice = append(headerAsSlice,
+			common.Hex2Bytes(fmt.Sprintf("%x", h.Step)), // int -> bytes
+			common.Hex2Bytes(h.Signature),
+		)
 	}
 
 	return rlp.EncodeToBytes(headerAsSlice)
@@ -95,15 +93,4 @@ func (h *Header) Hash(seal bool) common.Hash {
 		return common.Hash{}
 	}
 	return common.BytesToHash(mytrie.Hash(rlp_))
-}
-
-func decodeRlpHex(rlpHex string) (*[]byte, error) {
-	prefixedRlpBytes, err := hexutil.Decode(rlpHex)
-	if err != nil {
-		return nil, err
-	}
-
-	rlpBytes := new([]byte)
-	err = rlp.DecodeBytes(prefixedRlpBytes, rlpBytes)
-	return rlpBytes, err
 }
