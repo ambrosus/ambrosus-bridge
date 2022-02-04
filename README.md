@@ -30,9 +30,9 @@ Smart contracts structure
     }
     ```
 
-3. пока вызовы transfer происходят в одном таймфрейме - трансферы просто добавляются в очередь.  
+3. пока вызовы `withdraw` происходят в одном таймфрейме - трансферы просто добавляются в очередь.  
 как только очередной вызов `withdraw` происходит в новом таймфрейме:
-   - создается эвент `Withdraw(event_id, withdraw_queue)`
+   - создается эвент `Transfer(event_id, withdraw_queue)`
    - withdraw_queue очищается
    - event_id инкрементируется на 1
 
@@ -41,19 +41,19 @@ Smart contracts structure
 
 ### relay
 
-1. relay получает ивент `Withdraw(event_id, withdraw_queue)` c AmbBridge
-2. сверяет что `event_id == EthBridge.inputEventId + 1`, иначе ищет Withdraw c подходящим event_id
+1. relay получает ивент `Transfer(event_id, withdraw_queue)` c AmbBridge
+2. сверяет что `event_id == EthBridge.inputEventId + 1`, иначе ищет Transfer c подходящим event_id
 3. ждет N следующих блоков (safety blocks)
 4. создает receipts proof (см ниже)
 5. кодирует блоки (блок с эвентом и safety) в зависимости от консенсуса сети: BlockPoA или BlockPoW (см ниже)
-6. вызывает у EthBridge метод `submitTransfer`
+6. вызывает у EthBridge метод `submitTransfers`
     
 
-### bridge submitTransfer
+### bridge submitTransfers
 ```
-submitTransfer(
+submitTransfers(
     uint event_id,
-    BlockPoW[] memory blocks,
+    BlockPoA[] memory blocks,
     Transfer[] memory events,
     bytes[] memory proof
 )
@@ -65,10 +65,10 @@ submitTransfer(
 2. считается receiptsRoot, в следующей функции проверяется что блок с таким receiptsRoot валидный 
 
 3. вызывается _CheckPoW или _CheckPoA в зависимости от консенсуса сети с которой пришли блоки:
-   - для PoA проверяется что подписан именно этот блок и подпись сделана правильным адресом (определяется по timestamp блока) 
-   - для PoW проверяется что хеш блока < block.Difficulty
+   - для PoA проверяется что подписан именно этот блок и подпись сделана правильным адресом (определяется по полю step) 
+   - PoW проверяется с использованием ethash (_coming soon_)
    
-    всегда проверяется что `hash(blocks[i]) == blocks[i+1].prev_hash`
+    неявно проверяется что `hash(blocks[i]) == blocks[i+1].prev_hash`
 
 4. трансферы сохраняются в пул залоченных транзакций
 
@@ -82,12 +82,41 @@ submitTransfer(
 ## Extra
 
 
-### Receipts proof
+### Block pre-encoding
+
+Что бы доказать что блок правильный нужно считать его хеш.
+
+```
+blockHeader = {
+    ParentHash, UncleHash, Coinbase, Root, TxHash,
+    ReceiptHash, 
+    Bloom, Difficulty, Number, GasLimit, GasUsed,
+    Time, Extra, MixDigest, Nonce
+}
+
+blockHash = keccak256(rlpEncode(blockHeader))
+assert blockHash == needHash
+```
+
+Хешируемое значение почти всегда сначала кодируется в RLP (Recursive Length Prefix).   
+Эта кодировка только добавляет к входному значению префикс, а значит входное значение с каким то смещением содержится в выходном.  
+=> `rlpEncode(value) = rlpPrefix(value) + value`, где + означает конкатенацию байт.
+
+
+Для экономии газа relay будет подготавливать блоки для смарт контракта таким образом, 
+что бы вместо `rlpEncode` использовать конкатенацию (`abi.encodePacked`).
+
+Например, relay может разбить `rlpEncode(header)` по разделителю `receiptRoot`  
+`rlpParts := bytes.Split(rlpHeader, receiptRoot)`, тогда  
+`keccak256(abi.encodePacked(rlpParts[0], receiptRoot, rlpParts[1]) == needHash`
+
+
+### Receipts proof (todo)
 
 
 simplified example of merkle patricia tree:
 ```
-root = hash(rlpEncode(childrens)
+receiptsRoot = hash(rlpEncode(childrens)
 ├── path1 = hash(rlpEncode(childrens)
 │   ├── receipt1
 │   ├── receipt2
@@ -99,7 +128,7 @@ root = hash(rlpEncode(childrens)
 │   ├── receipt...
 │   ├── receipt6
 │   │   ├── someReceiptInfo
-│   │   ├── eventData
+│   │   ├── **eventData**
 │   │   └── someMoreReceiptInfo
 │   ├── receipt...
 │   └── receipt16
@@ -109,29 +138,30 @@ root = hash(rlpEncode(childrens)
     └── receipt16
 ```
 
-smartcontract have `eventData` and `root` as `blocks[0].prevHashOrReceiptRoot`,  
+smart contract have `eventData` as function argument and `receiptsRoot` as `blocks[0].prevHashOrReceiptRoot`,  
 so we need to provide other data to check if `eventData` was in trie.
 
 simplify trie
 
 ```
-root
-├── p3 == path1
-│   ├── p1 = rlpEncode(receipt1-receip5) + rlpEncode(someReceipt6Info)
-│   │   └── eventData
-│   └── p2 = rlpEncode(someMoreReceipt6Info) + rlpEncode(receipt7-receipt16)
-└── p4 == path3
-
-where
-
-path2 = hash(p1 + eventData + p2)
-root = hash(p3 + path2 + p4)
+receiptsRoot = hash(path1 + path2 + path3)
+├── path1 = hash(rlpEncode(childrens)
+├── path2 = hash(rlpEncode(p1 + eventData + p2)
+│   ├── p1 = rlpEncode(receipt1-receip5) + someReceipt6InfoRLP
+│   ├───── eventData
+│   └── p2 = someMoreReceipt6InfoRLP + rlpEncode(receipt7-receipt16)
+└── path3 = hash(rlpEncode(childrens)
 
 ```
 
-so
+=>
 
-```bytes[] proof = [p1, p2, p3, p4, ...]```
+path2 = hash(p1 + eventData + p2)
+receiptsRoot = hash(path1 + path2 + path3)
+
+=>
+
+```bytes[] proof = [p1, p2, path1, path3, ...]```
 
 check
 
@@ -151,77 +181,4 @@ hash(abi.encodePacked(
 ) == header.receiptsRoot
 ```
 
-
-
-### Block pre-encoding
-
-```
-BlockHeader = {
-    ParentHash,
-    UncleHash, Coinbase, Root, TxHash,
-    ReceiptHash,
-    Bloom, Difficulty, Number, GasLimit, GasUsed,
-    Time,
-    Extra, MixDigest, Nonce
-}
-```
-
-```BlockHash = keccak256(rlpEncode(BlockHeader))```
-
-rlpEncode in solidity cost much gas, so pre-encode block in relay:
-
-```
-encodedBlock = {
-    p1: rlpPrefix(ParentHash)
-    parentHash: ParentHash
-    p2: rlpEncode(UncleHash, Coinbase, Root, TxHash) + rlpPrefix(ReceiptHash)
-    receiptHash: ReceiptHash
-    p3: rlpEncode(Bloom, Difficulty, Number, GasLimit, GasUsed) + rlpPrefix(Time)
-    time: Time
-    p4: rlpEncode(Extra, MixDigest, Nonce)
-}
-
-// parentHash, receiptHash - not encoded bytes32 values
-// time - int2bytes witout leading zeros
-
-mainBlock = {
-    (p1+parentHash+p2) - bytes
-    receiptHash - bytes32
-    p3 - bytes
-    time - bytes
-    p4 - bytes
-}
-
-safetyBlock = {
-    p1 - bytes
-    prevHash - bytes32
-    (p2+receiptHash+p3) - bytes
-    time - bytes
-    p3 - bytes
-}
-
-```
-
-=>
-
-```
-struct Block {
-    bytes p1;
-    bytes32 prevHashOrReceiptRoot;  // receipt for main block, prevHash for others
-    bytes p2;
-    bytes timestamp;
-    bytes p3;
-
-    bytes signature;
-}
-
-bytes32 hash = keccak256(abi.encodePacked(
-    blocks[i].p1,
-    blocks[i].prevHashOrReceiptRoot,
-    blocks[i].p2,
-    blocks[i].timestamp,
-    blocks[i].p3
-));
-
-```
 
