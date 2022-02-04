@@ -124,23 +124,8 @@ func (b *Bridge) Listen() {
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	// wait for safety blocks
-	// todo move to sub-func
-	// todo wrong
-	blockChannel := make(chan *types.Header)
-	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
-	if err != nil {
+	if err := b.waitForSafetyBlocks(event); err != nil {
 		// todo
-	}
-	var i uint64
-	for i <= b.config.SafetyBlocks {
-		select {
-		case err := <-blockSub.Err():
-			// todo
-			panic(err)
-
-		case _ = <-blockChannel:
-			i++
-		}
 	}
 
 	// check if the event has been removed
@@ -229,4 +214,32 @@ func (b *Bridge) isEventRemoved(eventId *big.Int) (bool, error) {
 		return false, err
 	}
 	return event.Raw.Removed, nil
+}
+
+func (b *Bridge) waitForSafetyBlocks(event *contracts.TransferEvent) error {
+	blockChannel := make(chan *types.Header)
+	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
+	if err != nil {
+		return err
+	}
+
+	// init block num
+	currentBlockNum, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		return err
+	}
+
+	// if current block's number - event's block's number less or equal than number of safety blocks...
+	// 0 <= 10 -> 1 <= 10 -> 2 <= 10 -> ... -> 11 !<= 10 -> exit from loop
+	for currentBlockNum-event.Raw.BlockNumber <= b.config.SafetyBlocks {
+		select {
+		case err := <-blockSub.Err():
+			return err
+
+		case block := <-blockChannel:
+			currentBlockNum = block.Number.Uint64()
+		}
+	}
+
+	return nil
 }
