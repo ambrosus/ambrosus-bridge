@@ -130,7 +130,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 
 	// check if the event has been removed
 	// todo wrong
-	isEventRemoved, err := b.isEventRemoved(event.EventId)
+	isEventRemoved, err := b.isEventRemoved(event)
 	if isEventRemoved {
 		// todo
 	}
@@ -208,12 +208,12 @@ func (b Bridge) getAuth() (*bind.TransactOpts, error) {
 	return auth, nil
 }
 
-func (b *Bridge) isEventRemoved(eventId *big.Int) (bool, error) {
-	event, err := b.GetEventById(eventId)
+func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) (bool, error) {
+	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
 		return false, err
 	}
-	return event.Raw.Removed, nil
+	return block.Hash() == event.Raw.BlockHash, nil
 }
 
 func (b *Bridge) waitForSafetyBlocks(event *contracts.TransferEvent) error {
