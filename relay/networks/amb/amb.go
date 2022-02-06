@@ -172,7 +172,7 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 	return receipts, nil
 }
 
-func (b Bridge) encodeBlocks(offset uint64) []contracts.CheckPoABlockPoA {
+func (b *Bridge) encodeBlocks(offset uint64) []contracts.CheckPoABlockPoA {
 	encodedBlocks := make([]contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
 
 	for i := uint64(0); i < b.config.SafetyBlocks; i++ {
@@ -191,7 +191,7 @@ func (b Bridge) encodeBlocks(offset uint64) []contracts.CheckPoABlockPoA {
 	return encodedBlocks
 }
 
-func (b Bridge) getAuth() (*bind.TransactOpts, error) {
+func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
 	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, b.config.ChainID)
 	if err != nil {
 		return nil, err
