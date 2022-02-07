@@ -1,0 +1,28 @@
+name: default
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+
+  gp-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.17
+
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Change directory
+        uses: cd relay
+
+      - name: Unit Tests
+        run: go test --short ./...
