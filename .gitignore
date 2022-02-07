@@ -128,3 +128,6 @@ pnpm-lock.yaml
 artifacts/
 cache/
 deployments/
+
+# Mac OS
+.DS_Store
