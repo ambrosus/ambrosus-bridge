@@ -10,7 +10,7 @@ on:
 
 jobs:
 
-  gp-tests:
+  go-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Install Go
@@ -19,7 +19,7 @@ jobs:
           go-version: 1.17
 
       - name: Checkout Code
-        uses: actions/checkout@v2
+        run: actions/checkout@v2
 
       - name: Change directory
         uses: cd relay
