@@ -10,7 +10,32 @@ on:
 
 jobs:
 
+  ts-test:
+    name: Type Script Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./contracts
+    steps:
+      - name: Install Node JS
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14.18.3
+
+      - name: Checkout Code
+      - uses: actions/checkout@v2
+
+      - name: Install
+        run: yarn --frozen-lockfile
+
+      - name: Build
+        run: yarn build
+
+      - name: Run tests
+        run: yarn test
+
   go-tests:
+    name: Golang Tests
     runs-on: ubuntu-latest
     defaults:
       run:
