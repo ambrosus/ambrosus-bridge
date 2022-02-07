@@ -19,10 +19,10 @@ jobs:
           go-version: 1.17
 
       - name: Checkout Code
-        run: actions/checkout@v2
+        uses: actions/checkout@v2
 
       - name: Change directory
-        uses: cd relay
+        run: cd relay
 
       - name: Unit Tests
         run: go test --short ./...
