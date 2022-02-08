@@ -156,7 +156,7 @@ receiptsRoot = hash(path1 + path2 + path3)
 
 =>
 
-path2 = hash(p1 + eventData + p2)
+path2 = hash(p1 + eventData + p2)  
 receiptsRoot = hash(path1 + path2 + path3)
 
 =>
