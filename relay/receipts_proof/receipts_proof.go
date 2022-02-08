@@ -16,7 +16,7 @@ func CheckProof(proof [][]byte, log *types.Log) common.Hash {
 		proof[0],
 		log.Address.Bytes(),
 		proof[1],
-		log.Topics[0].Bytes(), // event id
+		log.Topics[1].Bytes(), // event id
 		proof[2],
 		log.Data, //transfers
 		proof[3],
@@ -58,7 +58,7 @@ func encodeLog(log *types.Log) (rlpLog []byte, result [][]byte, err error) {
 
 	splitEls := [][]byte{
 		log.Address.Bytes(),
-		log.Topics[0].Bytes(),
+		log.Topics[1].Bytes(),
 		log.Data,
 	}
 	result, err = helpers.BytesSplit(rlpLog, splitEls)
