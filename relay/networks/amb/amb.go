@@ -86,17 +86,28 @@ func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoAF) {
 	b.Listen()
 }
 
-// не дописано
 func (b *Bridge) CheckOldEvents() {
+	lastEventId, err := b.sideBridge.GetLastEventId()
+	if err != nil {
+		// todo
+		panic(err)
+	}
+
+	i := big.NewInt(1)
 	for {
-		// needId := sideBridge.GetLastEventId() + 1
-		// // todo get event by id `needId
-		//
-		// if !event {
-		//	return
-		// }
-		//
-		// b.sendEvent()
+		nextEventId := big.NewInt(0).Add(lastEventId, i)
+		nextEvent, err := b.GetEventById(nextEventId)
+		if err != nil {
+			// todo
+			panic(err)
+		}
+
+		if nextEvent == nil {
+			return
+		}
+
+		go b.sendEvent(nextEvent)
+		i = big.NewInt(0).Add(i, big.NewInt(1))
 	}
 }
 
