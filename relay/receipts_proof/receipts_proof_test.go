@@ -1,68 +1,73 @@
-package test
+package receipts_proof
 
 import (
-	"context"
-	"relay/config"
-	"relay/networks/amb"
-	"relay/receipts_proof"
+	"encoding/json"
+	"io/ioutil"
 	"testing"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-const url = "https://network.ambrosus-dev.io"
+// Data file structure.
+type Data struct {
+	Log      *types.Log
+	Header   *types.Header
+	Receipts []*types.Receipt
+}
 
-func TestCalcProof(t *testing.T) {
+// Testing receipts proof.
+func TestReceiptsProof(t *testing.T) {
+	// Testing args.
+	type args struct{ path string }
 
-	ambBridge := amb.New(&config.Bridge{
-		Url:             url,
-		ContractAddress: common.HexToAddress("0x8b12C2C9C61Ae2081567a01091654B21a018db29"),
-		PrivateKey:      nil,
-		SafetyBlocks:    10,
-	})
-
-	log := getLog2(ambBridge, t)
-
-	block, err := ambBridge.Client.BlockByHash(context.Background(), log.BlockHash)
-	if err != nil {
-		t.Fatal(err)
-	}
-	receipts, err := ambBridge.GetReceipts(log.BlockHash)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	proof, err := receipts_proof.CalcProof(receipts, log)
-	if err != nil {
-		t.Fatal(err)
+	// Tests structures.
+	tests := []struct {
+		name    string
+		args    args
+		want    string
+		wantErr bool
+	}{
+		{name: "OK", args: args{path: "fixtures/data.json"}},
 	}
 
-	receiptsRoot := receipts_proof.CheckProof(proof, log)
-	if receiptsRoot != block.ReceiptHash() {
-		t.Fatal("proof check failed")
+	// Conducting tests in various structures.
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Loafing data file.
+			data, err := loadDataFile(tt.args.path)
+			if err != nil {
+				t.Fatalf("error loading data file: %s", err.Error())
+			}
+
+			// Calculate proof.
+			proof, err := CalcProof(data.Receipts, data.Log)
+			if err != nil {
+				t.Errorf("error calculate proof: %s", err.Error())
+			}
+
+			// Check for similarity of a receipt hash.
+			receipt := CheckProof(proof, data.Log)
+			if receipt != data.Header.ReceiptHash {
+				t.Error("error proof check failed")
+			}
+		})
 	}
 }
 
-func getLog1(ambBridge *amb.Bridge, t *testing.T) *types.Log {
-	transfers, err := ambBridge.Contract.FilterTransferEvent(nil, nil)
+// Loading data file.
+func loadDataFile(path string) (*Data, error) {
+	var data Data
+
+	// Reading data file.
+	file, err := ioutil.ReadFile(path)
 	if err != nil {
-		t.Fatal(err)
+		return nil, err
 	}
 
-	if !transfers.Next() {
-		if err := transfers.Error(); err != nil {
-			t.Fatal(err)
-		}
-		t.Fatal("no transfers")
+	// Unmarsahl data file.
+	if err = json.Unmarshal([]byte(file), &data); err != nil {
+		return nil, err
 	}
-	return &transfers.Event.Raw
-}
 
-func getLog2(ambBridge *amb.Bridge, t *testing.T) *types.Log {
-	receipt, err := ambBridge.Client.TransactionReceipt(context.Background(), common.HexToHash("0xfe802d29486f3648fd082ecad8c8455aa751b18f36be7cff3cfd65245253233a"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	return receipt.Logs[1]
+	return &data, nil
 }
