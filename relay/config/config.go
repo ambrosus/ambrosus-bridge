@@ -23,19 +23,19 @@ var Config = map[string]*Bridge{
 	"amb": {
 		Url:             "https://network.ambrosus.io",
 		ContractAddress: ethcommon.HexToAddress(""),
-		PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
+		PrivateKey:      ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:    10,
 	},
 	"eth": {
 		Url:             "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
 		ContractAddress: ethcommon.HexToAddress(""),
-		PrivateKey:      parsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
+		PrivateKey:      ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:    10,
 		ChainID:         big.NewInt(1),
 	},
 }
 
-func parsePK(pk string) *ecdsa.PrivateKey {
+func ParsePK(pk string) *ecdsa.PrivateKey {
 	b, err := hex.DecodeString(pk)
 	if err != nil {
 		panic(err)

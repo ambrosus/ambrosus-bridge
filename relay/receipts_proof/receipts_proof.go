@@ -3,11 +3,12 @@ package receipts_proof
 import (
 	"bytes"
 	"fmt"
+	"relay/helpers"
+	"relay/receipts_proof/mytrie"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
-	"relay/helpers"
-	"relay/receipts_proof/mytrie"
 )
 
 func CheckProof(proof [][]byte, log *types.Log) common.Hash {
@@ -59,7 +60,8 @@ func encodeLog(rlpReceipt []byte, log *types.Log) ([][]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(log.Topics) != 1 {
+
+	if len(log.Topics) != 2 {
 		return nil, fmt.Errorf("log.Topics length != 1 (only event_id must be indexed)")
 	}
 
