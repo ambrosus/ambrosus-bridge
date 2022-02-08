@@ -17,24 +17,17 @@ type Data struct {
 
 // Testing receipts proof.
 func TestReceiptsProof(t *testing.T) {
-	// Testing args.
-	type args struct{ path string }
-
 	// Tests structures.
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{name: "OK", args: args{path: "fixtures/data.json"}},
+	tests := []struct{ name, fixtures string }{
+		{name: "AMB", fixtures: "fixtures/amb-data.json"},
+		{name: "ETH", fixtures: "fixtures/eth-data.json"},
 	}
 
 	// Conducting tests in various structures.
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Loading data file.
-			data, err := loadDataFile(tt.args.path)
+			data, err := loadDataFile(tt.fixtures)
 			if err != nil {
 				t.Fatalf("error loading data file: %s", err.Error())
 			}
