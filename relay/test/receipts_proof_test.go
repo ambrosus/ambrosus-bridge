@@ -1,9 +1,12 @@
-package receipts_proof
+package test
 
 import (
 	"context"
+	"encoding/json"
+	"io/ioutil"
 	"relay/config"
 	"relay/networks/amb"
+	"relay/receipts_proof"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -16,7 +19,7 @@ func TestCalcProof(t *testing.T) {
 
 	ambBridge := amb.New(&config.Bridge{
 		Url:             url,
-		ContractAddress: common.HexToAddress("0xE3A1f4Af2c71957033BaD65771f59C4e797C0693"),
+		ContractAddress: common.HexToAddress("0x8b12C2C9C61Ae2081567a01091654B21a018db29"),
 		PrivateKey:      nil,
 		SafetyBlocks:    10,
 	})
@@ -32,15 +35,32 @@ func TestCalcProof(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	proof, err := CalcProof(receipts, log)
+	proof, err := receipts_proof.CalcProof(receipts, log)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	receiptsRoot := CheckProof(proof, log)
+	receiptsRoot := receipts_proof.CheckProof(proof, log)
 	if receiptsRoot != block.ReceiptHash() {
 		t.Fatal("proof check failed")
 	}
+
+	// tests...
+	type Data struct {
+		log      *types.Log
+		block    *types.Block
+		receipts []*types.Receipt
+	}
+
+	data := Data{
+		log:      log,
+		block:    block,
+		receipts: receipts,
+	}
+
+	file, _ := json.MarshalIndent(data, "", "")
+
+	_ = ioutil.WriteFile("data.json", file, 0644)
 }
 
 func getLog1(ambBridge *amb.Bridge, t *testing.T) *types.Log {
@@ -59,9 +79,9 @@ func getLog1(ambBridge *amb.Bridge, t *testing.T) *types.Log {
 }
 
 func getLog2(ambBridge *amb.Bridge, t *testing.T) *types.Log {
-	receipt, err := ambBridge.Client.TransactionReceipt(context.Background(), common.HexToHash("0xeff82a20a691eb2d9fd3fe726ef09731b11aa12e56960544abb4612eb2c73ab3"))
+	receipt, err := ambBridge.Client.TransactionReceipt(context.Background(), common.HexToHash("0xfe802d29486f3648fd082ecad8c8455aa751b18f36be7cff3cfd65245253233a"))
 	if err != nil {
 		t.Fatal(err)
 	}
-	return receipt.Logs[0]
+	return receipt.Logs[1]
 }
