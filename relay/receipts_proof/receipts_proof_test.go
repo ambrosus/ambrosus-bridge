@@ -2,8 +2,6 @@ package test
 
 import (
 	"context"
-	"encoding/json"
-	"io/ioutil"
 	"relay/config"
 	"relay/networks/amb"
 	"relay/receipts_proof"
@@ -44,23 +42,6 @@ func TestCalcProof(t *testing.T) {
 	if receiptsRoot != block.ReceiptHash() {
 		t.Fatal("proof check failed")
 	}
-
-	// tests...
-	type Data struct {
-		log      *types.Log
-		block    *types.Block
-		receipts []*types.Receipt
-	}
-
-	data := Data{
-		log:      log,
-		block:    block,
-		receipts: receipts,
-	}
-
-	file, _ := json.MarshalIndent(data, "", "")
-
-	_ = ioutil.WriteFile("data.json", file, 0644)
 }
 
 func getLog1(ambBridge *amb.Bridge, t *testing.T) *types.Log {
