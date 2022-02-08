@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("error getting block by hash: %s", err.Error())
 	}
 
-	// Getting bridge receipts.
+	// Getting receipts from block.
 	receipts, err := bridge.GetReceipts(logs.BlockHash)
 	if err != nil {
 		log.Fatalf("error getting receipts: %s", err.Error())

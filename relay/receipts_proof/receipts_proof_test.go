@@ -33,7 +33,7 @@ func TestReceiptsProof(t *testing.T) {
 	// Conducting tests in various structures.
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Loafing data file.
+			// Loading data file.
 			data, err := loadDataFile(tt.args.path)
 			if err != nil {
 				t.Fatalf("error loading data file: %s", err.Error())
