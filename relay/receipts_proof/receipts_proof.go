@@ -24,45 +24,36 @@ func CheckProof(proof [][]byte, log *types.Log) common.Hash {
 
 	for i := 4; i < len(proof); i += 2 {
 		el = helpers.BytesConcat(proof[i], el, proof[i+1])
-		//fmt.Printf("%x\n", el)
 		if len(el) > 32 {
 			el = mytrie.Hash(el)
 		}
-		//fmt.Printf("%x\n", el)
 	}
 
 	return common.BytesToHash(el)
 }
 
 func CalcProof(receipts []*types.Receipt, log *types.Log) ([][]byte, error) {
-	// rlp encoded receipt with given log in it
-	rlpReceipt, err := rlpBytes(receipts[log.TxIndex])
-	if err != nil {
-		panic(err)
-	}
-
-	logPart, err := encodeLog(rlpReceipt, log)
-	if err != nil {
-		return nil, err
-	}
-	triePart, err := encodeTrie(rlpReceipt, receipts)
+	rlpLog, logResult, err := encodeLog(log)
 	if err != nil {
 		return nil, err
 	}
 
-	return append(logPart, triePart...), nil
+	trieResult, err := encodeTrie(receipts, rlpLog)
+	if err != nil {
+		return nil, err
+	}
 
+	return append(logResult, trieResult...), nil
 }
 
-func encodeLog(rlpReceipt []byte, log *types.Log) ([][]byte, error) {
-	// encode log first (log is part of receipt) for accuracy
-	rlpLog, err := rlpBytes(log)
-	if err != nil {
-		return nil, err
+func encodeLog(log *types.Log) (rlpLog []byte, result [][]byte, err error) {
+	if len(log.Topics) != 2 { // topic[0] always here, topic[1] must be event_id
+		return nil, nil, fmt.Errorf("log.Topics length != 2 (only event_id must be indexed)")
 	}
 
-	if len(log.Topics) != 2 {
-		return nil, fmt.Errorf("log.Topics length != 1 (only event_id must be indexed)")
+	rlpLog, err = rlp.EncodeToBytes(log)
+	if err != nil {
+		return
 	}
 
 	splitEls := [][]byte{
@@ -70,79 +61,57 @@ func encodeLog(rlpReceipt []byte, log *types.Log) ([][]byte, error) {
 		log.Topics[0].Bytes(),
 		log.Data,
 	}
-	splittedLog, err := helpers.BytesSplit(rlpLog, splitEls)
-	if err != nil {
-		return nil, err
-	}
-
-	// wrap log with receipt:
-	// (receipt1, log1), address, log2, event_id, log3, data, (log4, receipt2)
-
-	splittedReceipt := bytes.Split(rlpReceipt, rlpLog)
-	if len(splittedReceipt) != 2 {
-		panic("split not 2")
-	}
-
-	splittedLog[0] = append(splittedReceipt[0], splittedLog[0]...)
-	splittedLog[2] = append(splittedLog[2], splittedReceipt[1]...)
-
-	return splittedLog, nil
+	result, err = helpers.BytesSplit(rlpLog, splitEls)
+	return
 }
 
 type trieProof struct {
 	whatSearch []byte
-	result     [][]byte
-	err        error
+	path       [][]byte
 }
 
-func encodeTrie(rlpReceipt []byte, receipts []*types.Receipt) ([][]byte, error) {
+func encodeTrie(receipts []*types.Receipt, rlpLog []byte) ([][]byte, error) {
 	trie := mytrie.NewStackTrie()
 	types.DeriveSha(types.Receipts(receipts), trie)
 
-	p := trieProof{whatSearch: rlpReceipt, result: [][]byte{}}
-	r := p.trieProof(trie)
-	if p.err != nil {
-		return nil, p.err
-	}
-	if !r {
+	p := trieProof{whatSearch: rlpLog, path: [][]byte{}}
+	if !p.findTriePath(trie) {
 		return nil, fmt.Errorf("rlpReceipt not found in trie")
 	}
-	return p.result, nil
+	return p.makeTrieProof()
 }
 
-// trieProof try to find p.whatSearch in receipt tree
-// when found - return to the root of the tree, writing the result along the way:
-// push to result node.UnhashedVal splitted by child.Val => push some_bytes_before and some_bytes_after
-// ex.: node.UnhashedVal is {some_bytes_before + child.Val + some_bytes_after}
-func (p *trieProof) trieProof(node *mytrie.ModifiedStackTrie) bool {
+// findTriePath try to find trie node with p.whatSearch in node.UnhashedVal
+// when found - return to the root of the tree, saving node.UnhashedVal to path along the way
+// return true if found
+func (p *trieProof) findTriePath(node *mytrie.ModifiedStackTrie) bool {
 	if node == nil {
 		return false
 	}
-	if bytes.Equal(node.UnhashedVal, p.whatSearch) {
+	if bytes.Contains(node.UnhashedVal, p.whatSearch) {
+		p.path = append(p.path, node.UnhashedVal)
 		return true
 	}
-
 	for _, child := range node.Children {
-		if p.trieProof(child) {
-
-			r := bytes.Split(child.Val, node.UnhashedVal)
-			if len(r) != 2 {
-				p.err = fmt.Errorf("split not 2")
-				return false
-			}
-			p.result = append(p.result, r[0], r[1])
-
+		if p.findTriePath(child) {
+			p.path = append(p.path, node.UnhashedVal)
 			return true
 		}
 	}
-
 	return false
 }
 
-func rlpBytes(item rlp.Encoder) ([]byte, error) {
-	buf := new(bytes.Buffer)
-	if err := item.EncodeRLP(buf); err != nil {
-		return nil, err
+func (p *trieProof) makeTrieProof() ([][]byte, error) {
+	result := make([][]byte, 0, len(p.path)*2)
+	whatSearch := p.whatSearch
+
+	for _, unhashedVal := range p.path {
+		r := bytes.Split(unhashedVal, whatSearch)
+		if len(r) != 2 {
+			return nil, fmt.Errorf("split result length (%v) != 2", len(r)) // todo pass split args here
+		}
+		result = append(result, r[0], r[1])
+		whatSearch = mytrie.Hash(unhashedVal)
 	}
-	return buf.Bytes(), nil
+	return result, nil
 }
