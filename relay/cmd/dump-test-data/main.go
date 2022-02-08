@@ -18,7 +18,7 @@ const (
 	// Nerwork URL.
 	url string = "https://network.ambrosus-dev.io"
 	// Default path to save tests data file.
-	defaultPath string = "receipts_proof/data.json"
+	defaultPath string = "receipts_proof/fixtures/data.json"
 )
 
 var (
@@ -50,7 +50,7 @@ func main() {
 		log.Fatalf("error getting log receipts: %s", err.Error())
 	}
 
-	logs := logReceipt.Logs[1]
+	logs := logReceipt.Logs[3]
 
 	// Getting block by hash.
 	block, err := bridge.Client.BlockByHash(context.Background(), logs.BlockHash)
@@ -58,7 +58,7 @@ func main() {
 		log.Fatalf("error getting block by hash: %s", err.Error())
 	}
 
-	// Getting brodge receipts.
+	// Getting receipts from block.
 	receipts, err := bridge.GetReceipts(logs.BlockHash)
 	if err != nil {
 		log.Fatalf("error getting receipts: %s", err.Error())

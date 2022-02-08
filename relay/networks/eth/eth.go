@@ -49,7 +49,7 @@ func (b *Bridge) SubmitBlockPoA(
 		// todo
 	}
 
-	tx, err := b.Contract.CheckPoA(auth, blocks, events, *proof)
+	_, err = b.Contract.CheckPoA(auth, blocks, events, *proof)
 	if err != nil {
 		// todo
 	}
