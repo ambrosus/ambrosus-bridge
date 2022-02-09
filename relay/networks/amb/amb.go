@@ -9,6 +9,7 @@ import (
 	"relay/networks"
 	"relay/receipts_proof"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -256,4 +257,25 @@ func (b *Bridge) waitForSafetyBlocks(event *contracts.TransferEvent) error {
 	}
 
 	return nil
+}
+
+// maybe move the functions below to helpers pkg
+func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction, blockNumber *big.Int) (string, error) {
+	code, err := client.CallContract(context.Background(), createCallMsgFromTransaction(from, tx), blockNumber)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(string(code[67:])), nil
+}
+
+func createCallMsgFromTransaction(from common.Address, tx *types.Transaction) ethereum.CallMsg {
+	return ethereum.CallMsg{
+		From:     from,
+		To:       tx.To(),
+		Gas:      tx.Gas(),
+		GasPrice: tx.GasPrice(),
+		Value:    tx.Value(),
+		Data:     tx.Data(),
+	}
 }
