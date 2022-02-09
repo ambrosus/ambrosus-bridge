@@ -65,7 +65,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	opts := &bind.FilterOpts{
 		Context: context.Background(),
 	}
-	logs, err := b.Contract.FilterTransferEvent(opts, []*big.Int{eventId})
+	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +116,8 @@ func (b *Bridge) Listen() {
 	watchOpts := &bind.WatchOpts{
 		Context: context.Background(),
 	}
-	eventChannel := make(chan *contracts.AmbTransferEvent) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.Contract.WatchTransferEvent(watchOpts, eventChannel, nil)
+	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
+	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		panic(err)
 	}
