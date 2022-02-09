@@ -2,7 +2,8 @@ package networks
 
 import (
 	"math/big"
-	"relay/contracts"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 )
 
 type Bridge interface {

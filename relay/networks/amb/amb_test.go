@@ -2,14 +2,15 @@ package amb
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"math/big"
-	"relay/config"
-	"relay/helpers"
-	"relay/receipts_proof/mytrie"
 	"testing"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
+	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
+
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/stretchr/testify/assert"
 )
 
 var ambBridge = New(&config.Bridge{Url: "https://network.ambrosus.io"})
