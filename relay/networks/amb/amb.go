@@ -55,7 +55,20 @@ func (b *Bridge) SubmitBlockPoW(
 	if err != nil {
 		// todo
 	}
-	_ = tx
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
+	if err != nil {
+		// todo
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		reason, err := getFailureReason(b.Client, auth.From, tx, receipt.BlockNumber)
+		// todo
+		if err != nil {
+			panic(err)
+		}
+		panic(reason)
+	}
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
