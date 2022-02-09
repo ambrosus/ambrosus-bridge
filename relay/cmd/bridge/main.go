@@ -7,11 +7,11 @@ import (
 )
 
 func main() {
-
+	// Creating a new ambrosus bridge.
 	ambBridge := amb.New(config.Config["amb"])
+	// Creating a new ethereum bridge.
 	ethBridge := eth.New(config.Config["eth"])
 
 	go ambBridge.Run(ethBridge, ethBridge.SubmitBlockPoA)
 	go ethBridge.Run(ambBridge, ambBridge.SubmitBlockPoW)
-
 }
