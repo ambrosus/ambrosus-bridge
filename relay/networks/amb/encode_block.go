@@ -3,10 +3,12 @@ package amb
 import (
 	"bytes"
 	"fmt"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rlp"
-	"relay/contracts"
-	"relay/helpers"
 )
 
 func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA, error) {

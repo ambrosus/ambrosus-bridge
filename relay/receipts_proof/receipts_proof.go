@@ -3,8 +3,9 @@ package receipts_proof
 import (
 	"bytes"
 	"fmt"
-	"relay/helpers"
-	"relay/receipts_proof/mytrie"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
+	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

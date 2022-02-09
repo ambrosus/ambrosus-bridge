@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"log"
 
-	"relay/config"
-	"relay/networks/amb"
+	"github.com/ambrosus/ambrosus-bridge/relay/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/networks/amb"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"

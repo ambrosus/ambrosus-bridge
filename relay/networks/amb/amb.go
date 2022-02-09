@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"relay/config"
-	"relay/contracts"
-	"relay/networks"
-	"relay/receipts_proof"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"

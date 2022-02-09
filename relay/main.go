@@ -1,9 +1,9 @@
 package main
 
 import (
-	"relay/config"
-	"relay/networks/amb"
-	"relay/networks/eth"
+	"github.com/ambrosus/ambrosus-bridge/relay/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/networks/amb"
+	"github.com/ambrosus/ambrosus-bridge/relay/networks/eth"
 )
 
 func main() {
