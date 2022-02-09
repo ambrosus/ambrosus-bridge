@@ -30,7 +30,7 @@ var (
 
 // AmbMetaData contains all meta data concerning the Amb contract.
 var AmbMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sideBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"relayAddress\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"unimportant\",\"type\":\"uint256\"}],\"name\":\"Test\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"queue\",\"type\":\"tuple[]\"}],\"name\":\"TransferEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"prevHashOrReceiptRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"}],\"internalType\":\"structCheckPoW.BlockPoW[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"events\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"}],\"name\":\"CheckPoW_\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"RELAY_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer\",\"name\":\"transfer\",\"type\":\"tuple\"}],\"name\":\"Transfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"acceptBlock\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"b\",\"type\":\"bytes\"}],\"name\":\"bytesToUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"}],\"name\":\"calcReceiptsRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"name\":\"changeFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"eventTest\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inputEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sideBridgeAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenSideAddress\",\"type\":\"address\"}],\"name\":\"tokensAdd\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensAddBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"}],\"name\":\"tokensRemove\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensRemoveBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAmbAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sideBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"relayAddress\",\"type\":\"address\"},{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"},{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"timeframeSeconds_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"lockTime_\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"minSafetyBlocks_\",\"type\":\"uint256\"}],\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"a\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"b\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"string\",\"name\":\"c\",\"type\":\"string\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"d\",\"type\":\"uint256\"}],\"name\":\"Test\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"queue\",\"type\":\"tuple[]\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"prevHashOrReceiptRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"}],\"internalType\":\"structCheckPoW.BlockPoW[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"events\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"}],\"name\":\"CheckPoW_\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"receiptsRoot\",\"type\":\"bytes32\"}],\"name\":\"CheckReceiptsProof\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"RELAY_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes\",\"name\":\"b\",\"type\":\"bytes\"}],\"name\":\"bytesToUint\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes\",\"name\":\"eventToSearch\",\"type\":\"bytes\"}],\"name\":\"calcReceiptsRoot\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"name\":\"changeFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"lockTime_\",\"type\":\"uint256\"}],\"name\":\"changeLockTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minSafetyBlocks_\",\"type\":\"uint256\"}],\"name\":\"changeMinSafetyBlocks\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timeframeSeconds_\",\"type\":\"uint256\"}],\"name\":\"changeTimeframeSeconds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAmbAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"emitTestEvent\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inputEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"lockedTransfers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"endTimestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minSafetyBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sideBridgeAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"prevHashOrReceiptRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"}],\"internalType\":\"structCheckPoW.BlockPoW[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"events\",\"type\":\"tuple[]\"},{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"passedBlocks\",\"type\":\"uint256\"}],\"name\":\"submitTransfer\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"prevHashOrReceiptRoot\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"}],\"internalType\":\"structCheckPoW.BlockPoW\",\"name\":\"block\",\"type\":\"tuple\"}],\"name\":\"testCheckPow\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"timeframeSeconds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenSideAddress\",\"type\":\"address\"}],\"name\":\"tokensAdd\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensAddBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"}],\"name\":\"tokensRemove\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensRemoveBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"unlockTransfers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenAmbAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"}]",
 }
 
 // AmbABI is the input ABI used to generate the binding from.
@@ -458,6 +458,99 @@ func (_Amb *AmbCallerSession) InputEventId() (*big.Int, error) {
 	return _Amb.Contract.InputEventId(&_Amb.CallOpts)
 }
 
+// LockTime is a free data retrieval call binding the contract method 0x0d668087.
+//
+// Solidity: function lockTime() view returns(uint256)
+func (_Amb *AmbCaller) LockTime(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Amb.contract.Call(opts, &out, "lockTime")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// LockTime is a free data retrieval call binding the contract method 0x0d668087.
+//
+// Solidity: function lockTime() view returns(uint256)
+func (_Amb *AmbSession) LockTime() (*big.Int, error) {
+	return _Amb.Contract.LockTime(&_Amb.CallOpts)
+}
+
+// LockTime is a free data retrieval call binding the contract method 0x0d668087.
+//
+// Solidity: function lockTime() view returns(uint256)
+func (_Amb *AmbCallerSession) LockTime() (*big.Int, error) {
+	return _Amb.Contract.LockTime(&_Amb.CallOpts)
+}
+
+// LockedTransfers is a free data retrieval call binding the contract method 0x4a1856de.
+//
+// Solidity: function lockedTransfers(uint256 ) view returns(uint256 endTimestamp)
+func (_Amb *AmbCaller) LockedTransfers(opts *bind.CallOpts, arg0 *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _Amb.contract.Call(opts, &out, "lockedTransfers", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// LockedTransfers is a free data retrieval call binding the contract method 0x4a1856de.
+//
+// Solidity: function lockedTransfers(uint256 ) view returns(uint256 endTimestamp)
+func (_Amb *AmbSession) LockedTransfers(arg0 *big.Int) (*big.Int, error) {
+	return _Amb.Contract.LockedTransfers(&_Amb.CallOpts, arg0)
+}
+
+// LockedTransfers is a free data retrieval call binding the contract method 0x4a1856de.
+//
+// Solidity: function lockedTransfers(uint256 ) view returns(uint256 endTimestamp)
+func (_Amb *AmbCallerSession) LockedTransfers(arg0 *big.Int) (*big.Int, error) {
+	return _Amb.Contract.LockedTransfers(&_Amb.CallOpts, arg0)
+}
+
+// MinSafetyBlocks is a free data retrieval call binding the contract method 0x924cf6e0.
+//
+// Solidity: function minSafetyBlocks() view returns(uint256)
+func (_Amb *AmbCaller) MinSafetyBlocks(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Amb.contract.Call(opts, &out, "minSafetyBlocks")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// MinSafetyBlocks is a free data retrieval call binding the contract method 0x924cf6e0.
+//
+// Solidity: function minSafetyBlocks() view returns(uint256)
+func (_Amb *AmbSession) MinSafetyBlocks() (*big.Int, error) {
+	return _Amb.Contract.MinSafetyBlocks(&_Amb.CallOpts)
+}
+
+// MinSafetyBlocks is a free data retrieval call binding the contract method 0x924cf6e0.
+//
+// Solidity: function minSafetyBlocks() view returns(uint256)
+func (_Amb *AmbCallerSession) MinSafetyBlocks() (*big.Int, error) {
+	return _Amb.Contract.MinSafetyBlocks(&_Amb.CallOpts)
+}
+
 // SideBridgeAddress is a free data retrieval call binding the contract method 0xf33fe10f.
 //
 // Solidity: function sideBridgeAddress() view returns(address)
@@ -520,6 +613,37 @@ func (_Amb *AmbCallerSession) SupportsInterface(interfaceId [4]byte) (bool, erro
 	return _Amb.Contract.SupportsInterface(&_Amb.CallOpts, interfaceId)
 }
 
+// TimeframeSeconds is a free data retrieval call binding the contract method 0xbaeebe75.
+//
+// Solidity: function timeframeSeconds() view returns(uint256)
+func (_Amb *AmbCaller) TimeframeSeconds(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Amb.contract.Call(opts, &out, "timeframeSeconds")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// TimeframeSeconds is a free data retrieval call binding the contract method 0xbaeebe75.
+//
+// Solidity: function timeframeSeconds() view returns(uint256)
+func (_Amb *AmbSession) TimeframeSeconds() (*big.Int, error) {
+	return _Amb.Contract.TimeframeSeconds(&_Amb.CallOpts)
+}
+
+// TimeframeSeconds is a free data retrieval call binding the contract method 0xbaeebe75.
+//
+// Solidity: function timeframeSeconds() view returns(uint256)
+func (_Amb *AmbCallerSession) TimeframeSeconds() (*big.Int, error) {
+	return _Amb.Contract.TimeframeSeconds(&_Amb.CallOpts)
+}
+
 // TokenAddresses is a free data retrieval call binding the contract method 0xb6d3385e.
 //
 // Solidity: function tokenAddresses(address ) view returns(address)
@@ -572,46 +696,25 @@ func (_Amb *AmbTransactorSession) CheckPoW(blocks []CheckPoWBlockPoW, events []C
 	return _Amb.Contract.CheckPoW(&_Amb.TransactOpts, blocks, events, proof)
 }
 
-// Transfer is a paid mutator transaction binding the contract method 0xc6f666c8.
+// CheckReceiptsProof is a paid mutator transaction binding the contract method 0xd44d273c.
 //
-// Solidity: function Transfer((address,address,uint256) transfer) returns()
-func (_Amb *AmbTransactor) Transfer(opts *bind.TransactOpts, transfer CommonStructsTransfer) (*types.Transaction, error) {
-	return _Amb.contract.Transact(opts, "Transfer", transfer)
+// Solidity: function CheckReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
+func (_Amb *AmbTransactor) CheckReceiptsProof(opts *bind.TransactOpts, proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "CheckReceiptsProof", proof, eventToSearch, receiptsRoot)
 }
 
-// Transfer is a paid mutator transaction binding the contract method 0xc6f666c8.
+// CheckReceiptsProof is a paid mutator transaction binding the contract method 0xd44d273c.
 //
-// Solidity: function Transfer((address,address,uint256) transfer) returns()
-func (_Amb *AmbSession) Transfer(transfer CommonStructsTransfer) (*types.Transaction, error) {
-	return _Amb.Contract.Transfer(&_Amb.TransactOpts, transfer)
+// Solidity: function CheckReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
+func (_Amb *AmbSession) CheckReceiptsProof(proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
+	return _Amb.Contract.CheckReceiptsProof(&_Amb.TransactOpts, proof, eventToSearch, receiptsRoot)
 }
 
-// Transfer is a paid mutator transaction binding the contract method 0xc6f666c8.
+// CheckReceiptsProof is a paid mutator transaction binding the contract method 0xd44d273c.
 //
-// Solidity: function Transfer((address,address,uint256) transfer) returns()
-func (_Amb *AmbTransactorSession) Transfer(transfer CommonStructsTransfer) (*types.Transaction, error) {
-	return _Amb.Contract.Transfer(&_Amb.TransactOpts, transfer)
-}
-
-// AcceptBlock is a paid mutator transaction binding the contract method 0x54583364.
-//
-// Solidity: function acceptBlock() returns()
-func (_Amb *AmbTransactor) AcceptBlock(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Amb.contract.Transact(opts, "acceptBlock")
-}
-
-// AcceptBlock is a paid mutator transaction binding the contract method 0x54583364.
-//
-// Solidity: function acceptBlock() returns()
-func (_Amb *AmbSession) AcceptBlock() (*types.Transaction, error) {
-	return _Amb.Contract.AcceptBlock(&_Amb.TransactOpts)
-}
-
-// AcceptBlock is a paid mutator transaction binding the contract method 0x54583364.
-//
-// Solidity: function acceptBlock() returns()
-func (_Amb *AmbTransactorSession) AcceptBlock() (*types.Transaction, error) {
-	return _Amb.Contract.AcceptBlock(&_Amb.TransactOpts)
+// Solidity: function CheckReceiptsProof(bytes[] proof, bytes eventToSearch, bytes32 receiptsRoot) returns()
+func (_Amb *AmbTransactorSession) CheckReceiptsProof(proof [][]byte, eventToSearch []byte, receiptsRoot [32]byte) (*types.Transaction, error) {
+	return _Amb.Contract.CheckReceiptsProof(&_Amb.TransactOpts, proof, eventToSearch, receiptsRoot)
 }
 
 // ChangeFee is a paid mutator transaction binding the contract method 0x6a1db1bf.
@@ -635,25 +738,88 @@ func (_Amb *AmbTransactorSession) ChangeFee(fee_ *big.Int) (*types.Transaction, 
 	return _Amb.Contract.ChangeFee(&_Amb.TransactOpts, fee_)
 }
 
-// EventTest is a paid mutator transaction binding the contract method 0x94fb3d29.
+// ChangeLockTime is a paid mutator transaction binding the contract method 0x96cf5227.
 //
-// Solidity: function eventTest(uint256 event_id) returns()
-func (_Amb *AmbTransactor) EventTest(opts *bind.TransactOpts, event_id *big.Int) (*types.Transaction, error) {
-	return _Amb.contract.Transact(opts, "eventTest", event_id)
+// Solidity: function changeLockTime(uint256 lockTime_) returns()
+func (_Amb *AmbTransactor) ChangeLockTime(opts *bind.TransactOpts, lockTime_ *big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "changeLockTime", lockTime_)
 }
 
-// EventTest is a paid mutator transaction binding the contract method 0x94fb3d29.
+// ChangeLockTime is a paid mutator transaction binding the contract method 0x96cf5227.
 //
-// Solidity: function eventTest(uint256 event_id) returns()
-func (_Amb *AmbSession) EventTest(event_id *big.Int) (*types.Transaction, error) {
-	return _Amb.Contract.EventTest(&_Amb.TransactOpts, event_id)
+// Solidity: function changeLockTime(uint256 lockTime_) returns()
+func (_Amb *AmbSession) ChangeLockTime(lockTime_ *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.ChangeLockTime(&_Amb.TransactOpts, lockTime_)
 }
 
-// EventTest is a paid mutator transaction binding the contract method 0x94fb3d29.
+// ChangeLockTime is a paid mutator transaction binding the contract method 0x96cf5227.
 //
-// Solidity: function eventTest(uint256 event_id) returns()
-func (_Amb *AmbTransactorSession) EventTest(event_id *big.Int) (*types.Transaction, error) {
-	return _Amb.Contract.EventTest(&_Amb.TransactOpts, event_id)
+// Solidity: function changeLockTime(uint256 lockTime_) returns()
+func (_Amb *AmbTransactorSession) ChangeLockTime(lockTime_ *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.ChangeLockTime(&_Amb.TransactOpts, lockTime_)
+}
+
+// ChangeMinSafetyBlocks is a paid mutator transaction binding the contract method 0xfd5d2ef3.
+//
+// Solidity: function changeMinSafetyBlocks(uint256 minSafetyBlocks_) returns()
+func (_Amb *AmbTransactor) ChangeMinSafetyBlocks(opts *bind.TransactOpts, minSafetyBlocks_ *big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "changeMinSafetyBlocks", minSafetyBlocks_)
+}
+
+// ChangeMinSafetyBlocks is a paid mutator transaction binding the contract method 0xfd5d2ef3.
+//
+// Solidity: function changeMinSafetyBlocks(uint256 minSafetyBlocks_) returns()
+func (_Amb *AmbSession) ChangeMinSafetyBlocks(minSafetyBlocks_ *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.ChangeMinSafetyBlocks(&_Amb.TransactOpts, minSafetyBlocks_)
+}
+
+// ChangeMinSafetyBlocks is a paid mutator transaction binding the contract method 0xfd5d2ef3.
+//
+// Solidity: function changeMinSafetyBlocks(uint256 minSafetyBlocks_) returns()
+func (_Amb *AmbTransactorSession) ChangeMinSafetyBlocks(minSafetyBlocks_ *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.ChangeMinSafetyBlocks(&_Amb.TransactOpts, minSafetyBlocks_)
+}
+
+// ChangeTimeframeSeconds is a paid mutator transaction binding the contract method 0x42180fb8.
+//
+// Solidity: function changeTimeframeSeconds(uint256 timeframeSeconds_) returns()
+func (_Amb *AmbTransactor) ChangeTimeframeSeconds(opts *bind.TransactOpts, timeframeSeconds_ *big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "changeTimeframeSeconds", timeframeSeconds_)
+}
+
+// ChangeTimeframeSeconds is a paid mutator transaction binding the contract method 0x42180fb8.
+//
+// Solidity: function changeTimeframeSeconds(uint256 timeframeSeconds_) returns()
+func (_Amb *AmbSession) ChangeTimeframeSeconds(timeframeSeconds_ *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.ChangeTimeframeSeconds(&_Amb.TransactOpts, timeframeSeconds_)
+}
+
+// ChangeTimeframeSeconds is a paid mutator transaction binding the contract method 0x42180fb8.
+//
+// Solidity: function changeTimeframeSeconds(uint256 timeframeSeconds_) returns()
+func (_Amb *AmbTransactorSession) ChangeTimeframeSeconds(timeframeSeconds_ *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.ChangeTimeframeSeconds(&_Amb.TransactOpts, timeframeSeconds_)
+}
+
+// EmitTestEvent is a paid mutator transaction binding the contract method 0xbc5b8754.
+//
+// Solidity: function emitTestEvent(address tokenAmbAddress, address toAddress, uint256 amount) returns()
+func (_Amb *AmbTransactor) EmitTestEvent(opts *bind.TransactOpts, tokenAmbAddress common.Address, toAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "emitTestEvent", tokenAmbAddress, toAddress, amount)
+}
+
+// EmitTestEvent is a paid mutator transaction binding the contract method 0xbc5b8754.
+//
+// Solidity: function emitTestEvent(address tokenAmbAddress, address toAddress, uint256 amount) returns()
+func (_Amb *AmbSession) EmitTestEvent(tokenAmbAddress common.Address, toAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.EmitTestEvent(&_Amb.TransactOpts, tokenAmbAddress, toAddress, amount)
+}
+
+// EmitTestEvent is a paid mutator transaction binding the contract method 0xbc5b8754.
+//
+// Solidity: function emitTestEvent(address tokenAmbAddress, address toAddress, uint256 amount) returns()
+func (_Amb *AmbTransactorSession) EmitTestEvent(tokenAmbAddress common.Address, toAddress common.Address, amount *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.EmitTestEvent(&_Amb.TransactOpts, tokenAmbAddress, toAddress, amount)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
@@ -717,6 +883,48 @@ func (_Amb *AmbSession) RevokeRole(role [32]byte, account common.Address) (*type
 // Solidity: function revokeRole(bytes32 role, address account) returns()
 func (_Amb *AmbTransactorSession) RevokeRole(role [32]byte, account common.Address) (*types.Transaction, error) {
 	return _Amb.Contract.RevokeRole(&_Amb.TransactOpts, role, account)
+}
+
+// SubmitTransfer is a paid mutator transaction binding the contract method 0x76b2e746.
+//
+// Solidity: function submitTransfer(uint256 event_id, (bytes,bytes32,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof, uint256 passedBlocks) returns()
+func (_Amb *AmbTransactor) SubmitTransfer(opts *bind.TransactOpts, event_id *big.Int, blocks []CheckPoWBlockPoW, events []CommonStructsTransfer, proof [][]byte, passedBlocks *big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "submitTransfer", event_id, blocks, events, proof, passedBlocks)
+}
+
+// SubmitTransfer is a paid mutator transaction binding the contract method 0x76b2e746.
+//
+// Solidity: function submitTransfer(uint256 event_id, (bytes,bytes32,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof, uint256 passedBlocks) returns()
+func (_Amb *AmbSession) SubmitTransfer(event_id *big.Int, blocks []CheckPoWBlockPoW, events []CommonStructsTransfer, proof [][]byte, passedBlocks *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.SubmitTransfer(&_Amb.TransactOpts, event_id, blocks, events, proof, passedBlocks)
+}
+
+// SubmitTransfer is a paid mutator transaction binding the contract method 0x76b2e746.
+//
+// Solidity: function submitTransfer(uint256 event_id, (bytes,bytes32,bytes,bytes,bytes)[] blocks, (address,address,uint256)[] events, bytes[] proof, uint256 passedBlocks) returns()
+func (_Amb *AmbTransactorSession) SubmitTransfer(event_id *big.Int, blocks []CheckPoWBlockPoW, events []CommonStructsTransfer, proof [][]byte, passedBlocks *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.SubmitTransfer(&_Amb.TransactOpts, event_id, blocks, events, proof, passedBlocks)
+}
+
+// TestCheckPow is a paid mutator transaction binding the contract method 0x808ae169.
+//
+// Solidity: function testCheckPow((bytes,bytes32,bytes,bytes,bytes) block) returns()
+func (_Amb *AmbTransactor) TestCheckPow(opts *bind.TransactOpts, block CheckPoWBlockPoW) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "testCheckPow", block)
+}
+
+// TestCheckPow is a paid mutator transaction binding the contract method 0x808ae169.
+//
+// Solidity: function testCheckPow((bytes,bytes32,bytes,bytes,bytes) block) returns()
+func (_Amb *AmbSession) TestCheckPow(block CheckPoWBlockPoW) (*types.Transaction, error) {
+	return _Amb.Contract.TestCheckPow(&_Amb.TransactOpts, block)
+}
+
+// TestCheckPow is a paid mutator transaction binding the contract method 0x808ae169.
+//
+// Solidity: function testCheckPow((bytes,bytes32,bytes,bytes,bytes) block) returns()
+func (_Amb *AmbTransactorSession) TestCheckPow(block CheckPoWBlockPoW) (*types.Transaction, error) {
+	return _Amb.Contract.TestCheckPow(&_Amb.TransactOpts, block)
 }
 
 // TokensAdd is a paid mutator transaction binding the contract method 0x853890ae.
@@ -801,6 +1009,27 @@ func (_Amb *AmbSession) TokensRemoveBatch(tokenThisAddresses []common.Address) (
 // Solidity: function tokensRemoveBatch(address[] tokenThisAddresses) returns()
 func (_Amb *AmbTransactorSession) TokensRemoveBatch(tokenThisAddresses []common.Address) (*types.Transaction, error) {
 	return _Amb.Contract.TokensRemoveBatch(&_Amb.TransactOpts, tokenThisAddresses)
+}
+
+// UnlockTransfers is a paid mutator transaction binding the contract method 0xf862b7eb.
+//
+// Solidity: function unlockTransfers(uint256 event_id) returns()
+func (_Amb *AmbTransactor) UnlockTransfers(opts *bind.TransactOpts, event_id *big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "unlockTransfers", event_id)
+}
+
+// UnlockTransfers is a paid mutator transaction binding the contract method 0xf862b7eb.
+//
+// Solidity: function unlockTransfers(uint256 event_id) returns()
+func (_Amb *AmbSession) UnlockTransfers(event_id *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.UnlockTransfers(&_Amb.TransactOpts, event_id)
+}
+
+// UnlockTransfers is a paid mutator transaction binding the contract method 0xf862b7eb.
+//
+// Solidity: function unlockTransfers(uint256 event_id) returns()
+func (_Amb *AmbTransactorSession) UnlockTransfers(event_id *big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.UnlockTransfers(&_Amb.TransactOpts, event_id)
 }
 
 // Withdraw is a paid mutator transaction binding the contract method 0xd9caed12.
@@ -1379,39 +1608,49 @@ func (it *AmbTestIterator) Close() error {
 
 // AmbTest represents a Test event raised by the Amb contract.
 type AmbTest struct {
-	EventId     *big.Int
-	Unimportant *big.Int
-	Raw         types.Log // Blockchain specific contextual infos
+	A   *big.Int
+	B   common.Address
+	C   string
+	D   *big.Int
+	Raw types.Log // Blockchain specific contextual infos
 }
 
-// FilterTest is a free log retrieval operation binding the contract event 0x91916a5e2c96453ddf6b585497262675140eb9f7a774095fb003d93e6dc69216.
+// FilterTest is a free log retrieval operation binding the contract event 0xf690cc04b54c126882a8927cb940bececfeabf9b0b4b0069db2427fbf9e86dd6.
 //
-// Solidity: event Test(uint256 indexed event_id, uint256 unimportant)
-func (_Amb *AmbFilterer) FilterTest(opts *bind.FilterOpts, event_id []*big.Int) (*AmbTestIterator, error) {
+// Solidity: event Test(uint256 indexed a, address indexed b, string c, uint256 d)
+func (_Amb *AmbFilterer) FilterTest(opts *bind.FilterOpts, a []*big.Int, b []common.Address) (*AmbTestIterator, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var aRule []interface{}
+	for _, aItem := range a {
+		aRule = append(aRule, aItem)
+	}
+	var bRule []interface{}
+	for _, bItem := range b {
+		bRule = append(bRule, bItem)
 	}
 
-	logs, sub, err := _Amb.contract.FilterLogs(opts, "Test", event_idRule)
+	logs, sub, err := _Amb.contract.FilterLogs(opts, "Test", aRule, bRule)
 	if err != nil {
 		return nil, err
 	}
 	return &AmbTestIterator{contract: _Amb.contract, event: "Test", logs: logs, sub: sub}, nil
 }
 
-// WatchTest is a free log subscription operation binding the contract event 0x91916a5e2c96453ddf6b585497262675140eb9f7a774095fb003d93e6dc69216.
+// WatchTest is a free log subscription operation binding the contract event 0xf690cc04b54c126882a8927cb940bececfeabf9b0b4b0069db2427fbf9e86dd6.
 //
-// Solidity: event Test(uint256 indexed event_id, uint256 unimportant)
-func (_Amb *AmbFilterer) WatchTest(opts *bind.WatchOpts, sink chan<- *AmbTest, event_id []*big.Int) (event.Subscription, error) {
+// Solidity: event Test(uint256 indexed a, address indexed b, string c, uint256 d)
+func (_Amb *AmbFilterer) WatchTest(opts *bind.WatchOpts, sink chan<- *AmbTest, a []*big.Int, b []common.Address) (event.Subscription, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var aRule []interface{}
+	for _, aItem := range a {
+		aRule = append(aRule, aItem)
+	}
+	var bRule []interface{}
+	for _, bItem := range b {
+		bRule = append(bRule, bItem)
 	}
 
-	logs, sub, err := _Amb.contract.WatchLogs(opts, "Test", event_idRule)
+	logs, sub, err := _Amb.contract.WatchLogs(opts, "Test", aRule, bRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1443,9 +1682,9 @@ func (_Amb *AmbFilterer) WatchTest(opts *bind.WatchOpts, sink chan<- *AmbTest, e
 	}), nil
 }
 
-// ParseTest is a log parse operation binding the contract event 0x91916a5e2c96453ddf6b585497262675140eb9f7a774095fb003d93e6dc69216.
+// ParseTest is a log parse operation binding the contract event 0xf690cc04b54c126882a8927cb940bececfeabf9b0b4b0069db2427fbf9e86dd6.
 //
-// Solidity: event Test(uint256 indexed event_id, uint256 unimportant)
+// Solidity: event Test(uint256 indexed a, address indexed b, string c, uint256 d)
 func (_Amb *AmbFilterer) ParseTest(log types.Log) (*AmbTest, error) {
 	event := new(AmbTest)
 	if err := _Amb.contract.UnpackLog(event, "Test", log); err != nil {
@@ -1455,9 +1694,9 @@ func (_Amb *AmbFilterer) ParseTest(log types.Log) (*AmbTest, error) {
 	return event, nil
 }
 
-// AmbTransferEventIterator is returned from FilterTransferEvent and is used to iterate over the raw logs and unpacked data for TransferEvent events raised by the Amb contract.
-type AmbTransferEventIterator struct {
-	Event *AmbTransferEvent // Event containing the contract specifics and raw log
+// AmbTransferIterator is returned from FilterTransfer and is used to iterate over the raw logs and unpacked data for Transfer events raised by the Amb contract.
+type AmbTransferIterator struct {
+	Event *AmbTransfer // Event containing the contract specifics and raw log
 
 	contract *bind.BoundContract // Generic contract to use for unpacking event data
 	event    string              // Event name to use for unpacking event data
@@ -1471,7 +1710,7 @@ type AmbTransferEventIterator struct {
 // Next advances the iterator to the subsequent event, returning whether there
 // are any more events found. In case of a retrieval or parsing error, false is
 // returned and Error() can be queried for the exact failure.
-func (it *AmbTransferEventIterator) Next() bool {
+func (it *AmbTransferIterator) Next() bool {
 	// If the iterator failed, stop iterating
 	if it.fail != nil {
 		return false
@@ -1480,7 +1719,7 @@ func (it *AmbTransferEventIterator) Next() bool {
 	if it.done {
 		select {
 		case log := <-it.logs:
-			it.Event = new(AmbTransferEvent)
+			it.Event = new(AmbTransfer)
 			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 				it.fail = err
 				return false
@@ -1495,7 +1734,7 @@ func (it *AmbTransferEventIterator) Next() bool {
 	// Iterator still in progress, wait for either a data or an error event
 	select {
 	case log := <-it.logs:
-		it.Event = new(AmbTransferEvent)
+		it.Event = new(AmbTransfer)
 		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
 			it.fail = err
 			return false
@@ -1511,45 +1750,45 @@ func (it *AmbTransferEventIterator) Next() bool {
 }
 
 // Error returns any retrieval or parsing error occurred during filtering.
-func (it *AmbTransferEventIterator) Error() error {
+func (it *AmbTransferIterator) Error() error {
 	return it.fail
 }
 
 // Close terminates the iteration process, releasing any pending underlying
 // resources.
-func (it *AmbTransferEventIterator) Close() error {
+func (it *AmbTransferIterator) Close() error {
 	it.sub.Unsubscribe()
 	return nil
 }
 
-// FilterTransferEvent is a free log retrieval operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
+// FilterTransfer is a free log retrieval operation binding the contract event 0xe15729a2f427aa4572dab35eb692c902fcbce57d41642013259c741380809ae2.
 //
-// Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
-func (_Amb *AmbFilterer) FilterTransferEvent(opts *bind.FilterOpts, event_id []*big.Int) (*AmbTransferEventIterator, error) {
+// Solidity: event Transfer(uint256 indexed event_id, (address,address,uint256)[] queue)
+func (_Amb *AmbFilterer) FilterTransfer(opts *bind.FilterOpts, event_id []*big.Int) (*AmbTransferIterator, error) {
 
 	var event_idRule []interface{}
 	for _, event_idItem := range event_id {
 		event_idRule = append(event_idRule, event_idItem)
 	}
 
-	logs, sub, err := _Amb.contract.FilterLogs(opts, "TransferEvent", event_idRule)
+	logs, sub, err := _Amb.contract.FilterLogs(opts, "Transfer", event_idRule)
 	if err != nil {
 		return nil, err
 	}
-	return &AmbTransferEventIterator{contract: _Amb.contract, event: "TransferEvent", logs: logs, sub: sub}, nil
+	return &AmbTransferIterator{contract: _Amb.contract, event: "Transfer", logs: logs, sub: sub}, nil
 }
 
-// WatchTransferEvent is a free log subscription operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
+// WatchTransfer is a free log subscription operation binding the contract event 0xe15729a2f427aa4572dab35eb692c902fcbce57d41642013259c741380809ae2.
 //
-// Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
-func (_Amb *AmbFilterer) WatchTransferEvent(opts *bind.WatchOpts, sink chan<- *AmbTransferEvent, event_id []*big.Int) (event.Subscription, error) {
+// Solidity: event Transfer(uint256 indexed event_id, (address,address,uint256)[] queue)
+func (_Amb *AmbFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *AmbTransfer, event_id []*big.Int) (event.Subscription, error) {
 
 	var event_idRule []interface{}
 	for _, event_idItem := range event_id {
 		event_idRule = append(event_idRule, event_idItem)
 	}
 
-	logs, sub, err := _Amb.contract.WatchLogs(opts, "TransferEvent", event_idRule)
+	logs, sub, err := _Amb.contract.WatchLogs(opts, "Transfer", event_idRule)
 	if err != nil {
 		return nil, err
 	}
@@ -1559,8 +1798,8 @@ func (_Amb *AmbFilterer) WatchTransferEvent(opts *bind.WatchOpts, sink chan<- *A
 			select {
 			case log := <-logs:
 				// New log arrived, parse the event and forward to the user
-				event := new(AmbTransferEvent)
-				if err := _Amb.contract.UnpackLog(event, "TransferEvent", log); err != nil {
+				event := new(AmbTransfer)
+				if err := _Amb.contract.UnpackLog(event, "Transfer", log); err != nil {
 					return err
 				}
 				event.Raw = log
@@ -1581,12 +1820,12 @@ func (_Amb *AmbFilterer) WatchTransferEvent(opts *bind.WatchOpts, sink chan<- *A
 	}), nil
 }
 
-// ParseTransferEvent is a log parse operation binding the contract event 0xf81cdc6472b697220bc91c185dc3a1e3faec8c316a022f46a5a284d94b4cd8ce.
+// ParseTransfer is a log parse operation binding the contract event 0xe15729a2f427aa4572dab35eb692c902fcbce57d41642013259c741380809ae2.
 //
-// Solidity: event TransferEvent(uint256 indexed event_id, (address,address,uint256)[] queue)
-func (_Amb *AmbFilterer) ParseTransferEvent(log types.Log) (*AmbTransferEvent, error) {
-	event := new(AmbTransferEvent)
-	if err := _Amb.contract.UnpackLog(event, "TransferEvent", log); err != nil {
+// Solidity: event Transfer(uint256 indexed event_id, (address,address,uint256)[] queue)
+func (_Amb *AmbFilterer) ParseTransfer(log types.Log) (*AmbTransfer, error) {
+	event := new(AmbTransfer)
+	if err := _Amb.contract.UnpackLog(event, "Transfer", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

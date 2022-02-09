@@ -13,13 +13,13 @@ type TransferEvent struct {
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// EthTransferEvent represents a TransferEvent event raised by the Eth contract.
-type EthTransferEvent struct {
+// EthTransfer represents a Transfer event raised by the Eth contract.
+type EthTransfer struct {
 	TransferEvent
 }
 
-// AmbTransferEvent represents a TransferEvent event raised by the Amb contract.
-type AmbTransferEvent struct {
+// AmbTransfer represents a Transfer event raised by the Amb contract.
+type AmbTransfer struct {
 	TransferEvent
 }
 
