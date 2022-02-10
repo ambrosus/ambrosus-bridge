@@ -43,7 +43,7 @@ func (b *Bridge) SubmitBlockPoA(
 	blocks []contracts.CheckPoABlockPoA,
 	events []contracts.CommonStructsTransfer,
 	proof *contracts.ReceiptsProof,
-) {
+) error {
 	auth, err := b.getAuth()
 	if err != nil {
 		// todo
@@ -54,6 +54,7 @@ func (b *Bridge) SubmitBlockPoA(
 		// todo
 	}
 
+	return nil
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {

@@ -45,7 +45,7 @@ func (b *Bridge) SubmitBlockPoW(
 	blocks []contracts.CheckPoWBlockPoW,
 	events []contracts.CommonStructsTransfer,
 	proof *contracts.ReceiptsProof,
-) {
+) error {
 	auth, err := b.getAuth()
 	if err != nil {
 		// todo
@@ -69,6 +69,8 @@ func (b *Bridge) SubmitBlockPoW(
 		}
 		panic(reason)
 	}
+
+	return nil
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
@@ -172,7 +174,10 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	}
 	proof := contracts.ReceiptsProof(proof_)
 
-	b.submitFunc(event.EventId, blocks, event.Queue, &proof)
+	err = b.submitFunc(event.EventId, blocks, event.Queue, &proof)
+	if err != nil {
+		// todo
+	}
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
