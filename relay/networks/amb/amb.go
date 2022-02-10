@@ -16,6 +16,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
+// maybe move to helpers pkg
+type JsonError interface {
+	Error() string
+	ErrorCode() int
+	ErrorData() interface{}
+}
+
 type Bridge struct {
 	Client      *ethclient.Client
 	Contract    *contracts.Amb
@@ -280,22 +287,20 @@ func (b *Bridge) waitForSafetyBlocks(event *contracts.TransferEvent) error {
 }
 
 // maybe move the functions below to helpers pkg
-func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction, blockNumber *big.Int) (string, error) {
-	code, err := client.CallContract(context.Background(), createCallMsgFromTransaction(from, tx), blockNumber)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf(string(code[67:])), nil
-}
-
-func createCallMsgFromTransaction(from common.Address, tx *types.Transaction) ethereum.CallMsg {
-	return ethereum.CallMsg{
+func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction) error {
+	_, err := client.CallContract(context.Background(), ethereum.CallMsg{
 		From:     from,
 		To:       tx.To(),
 		Gas:      tx.Gas(),
 		GasPrice: tx.GasPrice(),
 		Value:    tx.Value(),
 		Data:     tx.Data(),
-	}
+	}, nil)
+
+	return err
+}
+
+func getJsonErrData(err error) string {
+	var jsonErr = err.(JsonError)
+	return jsonErr.ErrorData().(string)
 }
