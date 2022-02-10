@@ -2,12 +2,14 @@ package amb
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"relay/config"
 	"relay/contracts"
 	"relay/networks"
 	"relay/receipts_proof"
+	"strings"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -57,26 +59,54 @@ func (b *Bridge) SubmitBlockPoW(
 ) error {
 	auth, err := b.getAuth()
 	if err != nil {
-		// todo
+		return err
 	}
 
-	tx, err := b.Contract.CheckPoW(auth, blocks, events, *proof)
-	if err != nil {
-		// todo
+	tx, txErr := b.Contract.SubmitTransfer(auth, eventId, blocks, events, *proof, big.NewInt(int64(len(blocks))))
+
+	if txErr != nil {
+		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
+		// openethereum doesn't give us a full error message
+		// so, make low-level call method to get the full error message
+		err = b.ContractRaw.Call(&bind.CallOpts{
+			From: auth.From,
+		}, nil, "submitTransfer", eventId, blocks, events, *proof, big.NewInt(int64(len(blocks))))
+
+		if err != nil {
+			errStr := getJsonErrData(err)
+
+			if strings.HasPrefix(errStr, "Reverted") {
+				errBytes, err := hex.DecodeString(errStr[11:])
+				if err != nil {
+					return err
+				}
+				errStr = string(errBytes)
+			}
+
+			return fmt.Errorf("%s", errStr)
+		} else {
+			// врятли такой кейс будет.
+			// но если и будет, то шото странно: при вызове контракта норм способом ошибка есть
+			// а при вызове через ненорм способ - нету.
+			// ну тогда вернём ту ошибку, которая при норм способе
+			errStr := getJsonErrData(txErr)
+			return fmt.Errorf("%s", errStr)
+		}
 	}
 
 	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
 	if err != nil {
-		// todo
+		return err
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		reason, err := getFailureReason(b.Client, auth.From, tx, receipt.BlockNumber)
-		// todo
+		// we've got here probably due to low gas limit,
+		// and revert() that hasn't been caught at eth_estimateGas
+		err := getFailureReason(b.Client, auth.From, tx)
 		if err != nil {
-			panic(err)
+			errStr := getJsonErrData(err)
+			return fmt.Errorf("%s", errStr)
 		}
-		panic(reason)
 	}
 
 	return nil
