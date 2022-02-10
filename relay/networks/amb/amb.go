@@ -17,11 +17,12 @@ import (
 )
 
 type Bridge struct {
-	Client     *ethclient.Client
-	Contract   *contracts.Amb
-	sideBridge networks.Bridge
-	config     *config.Bridge
-	submitFunc networks.SubmitPoAF
+	Client      *ethclient.Client
+	Contract    *contracts.Amb
+	ContractRaw *contracts.AmbRaw
+	sideBridge  networks.Bridge
+	config      *config.Bridge
+	submitFunc  networks.SubmitPoAF
 }
 
 func New(c *config.Bridge) *Bridge {
@@ -34,9 +35,10 @@ func New(c *config.Bridge) *Bridge {
 		panic(err)
 	}
 	return &Bridge{
-		Client:   client,
-		Contract: ambBridge,
-		config:   c,
+		Client:      client,
+		Contract:    ambBridge,
+		ContractRaw: &contracts.AmbRaw{Contract: ambBridge},
+		config:      c,
 	}
 }
 
