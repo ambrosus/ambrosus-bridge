@@ -11,9 +11,9 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA, error) {
+func EncodeBlock(header *Header) (*contracts.CheckPoABlockPoA, error) {
 	// split rlp encoded header (bytes) by
-	// - receiptHash (for event block) / parentHash (for safety block)
+	// - receiptHash, parentHash
 	// - Step, Signature (for AURA)
 
 	rlpHeader, err := header.Rlp(false)
@@ -32,16 +32,13 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 	rlpHeader = rlpHeader[3:] // we'll work without prefix further
 
 	// common part
-	var prevHashOrReceiptRoot []byte
-	if isEventBlock {
-		prevHashOrReceiptRoot = header.ReceiptHash.Bytes()
-	} else {
-		prevHashOrReceiptRoot = header.ParentHash.Bytes()
+	splitEls := [][]byte{
+		header.ParentHash.Bytes(),
+		header.ReceiptHash.Bytes(),
 	}
-
-	rlpParts := bytes.SplitN(rlpHeader, prevHashOrReceiptRoot, 2)
-	if len(rlpParts) != 2 {
-		return nil, fmt.Errorf("split result length (%v) != 2 ", len(rlpParts))
+	rlpParts, err := helpers.BytesSplit(rlpHeader, splitEls)
+	if err != nil {
+		return nil, err
 	}
 
 	// seal part
@@ -61,9 +58,11 @@ func EncodeBlock(header *Header, isEventBlock bool) (*contracts.CheckPoABlockPoA
 		P0Bare: p0Bare,
 		P0Seal: p0Seal,
 
-		P1:                    rlpParts[0],
-		PrevHashOrReceiptRoot: helpers.BytesToBytes32(prevHashOrReceiptRoot),
-		P2:                    rlpParts[1],
+		P1:          rlpParts[0],
+		ParentHash:  helpers.BytesToBytes32(splitEls[0]),
+		P2:          rlpParts[1],
+		ReceiptHash: helpers.BytesToBytes32(splitEls[1]),
+		P3:          rlpParts[2],
 
 		S1:        stepPrefix,
 		Step:      step,

@@ -193,7 +193,7 @@ func (b *Bridge) encodeBlocks(offset uint64) []contracts.CheckPoABlockPoA {
 			// todo
 			panic(err)
 		}
-		encodedBlock, err := EncodeBlock(block, i == 0) // first block main, others safety
+		encodedBlock, err := EncodeBlock(block)
 		if err != nil {
 			// todo
 		}

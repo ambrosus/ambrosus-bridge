@@ -45,9 +45,11 @@ type CheckPoABlockPoA struct {
 	P0Bare []byte // header prefix when encoded without seal
 
 	// common (for bare and seal headers) part
-	P1                    []byte   // bytes after header prefix and before prev_hash or receipt_root
-	PrevHashOrReceiptRoot [32]byte // receipt_root for main block, prev_hash for safety blocks
-	P2                    []byte   // bytes after prev_hash or receipt_root and before seal part
+	P1          []byte // bytes after header prefix and before ParentHash (de facto ParentHash prefix)
+	ParentHash  [32]byte
+	P2          []byte // bytes between ParentHash and ReceiptHash
+	ReceiptHash [32]byte
+	P3          []byte // bytes after ReceiptHash and before seal part
 
 	// seal part
 	S1        []byte // step prefix
