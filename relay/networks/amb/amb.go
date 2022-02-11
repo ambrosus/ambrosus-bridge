@@ -137,7 +137,7 @@ func (b *Bridge) Listen() {
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	// wait for safety blocks
-	if err := b.waitForSafetyBlocks(event); err != nil {
+	if err := b.waitForBlock(event.Raw.BlockNumber); err != nil {
 		// todo
 	}
 
@@ -231,22 +231,21 @@ func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	return nil
 }
 
-func (b *Bridge) waitForSafetyBlocks(event *contracts.TransferEvent) error {
+func (b *Bridge) waitForBlock(blockNumber uint64) error {
+	targetBlockNum := blockNumber + b.config.SafetyBlocks
+
 	blockChannel := make(chan *types.Header)
 	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
 	if err != nil {
 		return err
 	}
 
-	// init block num
 	currentBlockNum, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
 		return err
 	}
 
-	// if current block's number - event's block's number less or equal than number of safety blocks...
-	// 0 <= 10 -> 1 <= 10 -> 2 <= 10 -> ... -> 11 !<= 10 -> exit from loop
-	for currentBlockNum-event.Raw.BlockNumber <= b.config.SafetyBlocks {
+	for currentBlockNum < targetBlockNum {
 		select {
 		case err := <-blockSub.Err():
 			return err
