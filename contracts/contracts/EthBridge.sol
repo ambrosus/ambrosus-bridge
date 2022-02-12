@@ -2,8 +2,8 @@
 pragma solidity 0.8.6;
 
 import "hardhat/console.sol";
-import "./helpers/CommonBridge.sol";
-import "./helpers/CheckPoA.sol";
+import "./common/CommonBridge.sol";
+import "./common/CheckPoA.sol";
 
 
 contract EthBridge is CommonBridge, CheckPoA {

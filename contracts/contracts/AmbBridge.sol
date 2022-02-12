@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "./helpers/CommonBridge.sol";
-import "./helpers/CheckPoW.sol";
-import "./helpers/CommonStructs.sol";
+import "./common/CommonBridge.sol";
+import "./common/CheckPoW.sol";
+import "./common/CommonStructs.sol";
 
 contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
