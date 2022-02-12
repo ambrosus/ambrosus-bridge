@@ -21,7 +21,7 @@ contract CheckPoA {
         bytes s2;
         bytes signature;
 
-        uint type_;
+        int type_;
     }
 
 
@@ -39,14 +39,19 @@ contract CheckPoA {
     }
 
 
-    function CheckPoA_(BlockPoA[] memory blocks, Transfer_Event memory transfer, ValidatorSet_Event[] memory vs_changes) public {
+    function CheckPoA_(
+        BlockPoA[] memory blocks,
+        Transfer_Event memory transfer, ValidatorSet_Event[] memory vs_changes,
+        uint minSafetyBlocks
+    ) public {
         uint safetyChainLength;
 
         for (uint i = 0; i < blocks.length; i++) {
+            BlockPoA memory block = blocks[i];
             // check signature, calc hash
-            bytes32 block_hash = CheckBlock(blocks[i]);
+            bytes32 block_hash = CheckBlock(block);
 
-            if (blocks[i].type_ == -3) {  // end of safety chain
+            if (block.type_ == -3) {  // end of safety chain
                 require(safetyChainLength >= minSafetyBlocks, "safety chain too short");
                 safetyChainLength = 0;
             } else {
@@ -66,15 +71,15 @@ contract CheckPoA {
     }
 
     function CheckBlock(BlockPoA memory block) internal view returns (bytes32) {
-        bytes memory common_rlp = abi.encodePacked(blocks[i].p1, block.parent_hash, blocks[i].p2, blocks[i].receipts_hash, blocks[i].p3);
+        bytes memory common_rlp = abi.encodePacked(block.p1, block.parent_hash, block.p2, block.receipts_hash, block.p3);
 
         // hash without seal for signature check
-        bytes32 bare_hash = keccak256(abi.encodePacked(blocks[i].p0_bare, common_rlp));
-        address validator = GetValidator(bytesToUint(blocks[i].step));
-        CheckSignature(validator, bare_hash, blocks[i].signature);  // revert if wrong
+        bytes32 bare_hash = keccak256(abi.encodePacked(block.p0_bare, common_rlp));
+        address validator = GetValidator(bytesToUint(block.step));
+        CheckSignature(validator, bare_hash, block.signature);  // revert if wrong
 
         // hash with seal, for prev_hash check
-        return keccak256(abi.encodePacked(blocks[i].p0_seal, common_rlp, blocks[i].s1, blocks[i].step, blocks[i].s2, blocks[i].signature));
+        return keccak256(abi.encodePacked(block.p0_seal, common_rlp, block.s1, block.step, block.s2, block.signature));
 
     }
 

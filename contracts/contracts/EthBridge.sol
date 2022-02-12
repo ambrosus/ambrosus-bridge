@@ -12,25 +12,24 @@ contract EthBridge is CommonBridge, CheckPoA {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_)
-    CommonBridge(_sideBridgeAddress, relayAddress,
+        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+    )
+    CommonBridge(
+        _sideBridgeAddress, relayAddress,
         tokenThisAddresses, tokenSideAddresses,
-        fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_) {}
+        fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
+    )
+    {}
 
     function submitTransfer(
-        uint event_id,
-        BlockPoA[] memory blocks,
-        CommonStructs.Transfer[] memory events,
-        bytes[] memory proof,
-        uint passedBlocks) public onlyRole(RELAY_ROLE) {
+        BlockPoA[] memory blocks, Transfer_Event memory transfer, ValidatorSet_Event[] memory vs_changes
+    ) public onlyRole(RELAY_ROLE) {
 
-        require(event_id == inputEventId + 1);
+        require(transfer.event_id == inputEventId + 1);
         inputEventId++;
 
-        require(passedBlocks > minSafetyBlocks, "passedBlocks must be larger than minSafetyBlocks");
+        CheckPoA_(blocks, transfer, vs_changes, minSafetyBlocks);
 
-        CheckPoA_(blocks, events, proof);
-
-        lockTransfers(events, event_id);
+//        lockTransfers(events, event_id);
     }
 }
