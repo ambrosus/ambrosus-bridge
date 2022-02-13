@@ -30,17 +30,15 @@ type CommonStructsTransfer struct {
 	Amount       *big.Int
 }
 
-// CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
-type CheckPoWBlockPoW struct {
-	P1                    []byte
-	PrevHashOrReceiptRoot [32]byte
-	P2                    []byte
-	Difficulty            []byte
-	P3                    []byte
+// CommonStructsTransferProof is an auto generated low-level Go binding around an user-defined struct.
+type CommonStructsTransferProof struct {
+	ReceiptProof [][]byte
+	EventId      *big.Int
+	Transfers    []CommonStructsTransfer
 }
 
-// CheckPoABlockPoA is an auto generated low-level Go binding around an user-defined struct.
-type CheckPoABlockPoA struct {
+// CheckAuraBlockAura is an auto generated low-level Go binding around an user-defined struct.
+type CheckAuraBlockAura struct {
 	P0Seal []byte // header prefix when encoded with seal
 	P0Bare []byte // header prefix when encoded without seal
 
@@ -57,7 +55,36 @@ type CheckPoABlockPoA struct {
 	S2        []byte // signature prefix
 	Signature []byte
 
-	Type int
+	Type int64
+}
+
+// CheckAuraValidatorSetProof is an auto generated low-level Go binding around an user-defined struct.
+type CheckAuraValidatorSetProof struct {
+	ReceiptProof [][]byte
+	DeltaAddress common.Address
+	DeltaIndex   uint64
+}
+
+// CheckAuraAuraProof is an auto generated low-level Go binding around an user-defined struct.
+type CheckAuraAuraProof struct {
+	Blocks    []*CheckAuraBlockAura
+	Transfer  *CommonStructsTransferProof
+	VsChanges []*CheckAuraValidatorSetProof
 }
 
 type ReceiptsProof [][]byte
+
+// CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
+type CheckPoWBlockPoW struct {
+	P1                    []byte
+	PrevHashOrReceiptRoot [32]byte
+	P2                    []byte
+	Difficulty            []byte
+	P3                    []byte
+}
+
+// CheckPoWPoWProof is an auto generated low-level Go binding around an user-defined struct.
+type CheckPoWPoWProof struct {
+	Blocks   []*CheckPoWBlockPoW
+	Transfer *CommonStructsTransferProof
+}
