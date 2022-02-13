@@ -8,9 +8,23 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
+)
+
+const (
+	BlTypeSafetyEnd = -3
+	BlTypeSafety    = -2
+	BlTypeTransfer  = -1
+	// type values >= 0 mean the validatorSetEvent index in VsChanges list
 )
 
 // todo эти структуры сгенерируются абигеном и будут в пакете contracts, но пока так
+
+type AmbTransfer struct {
+	Blocks    []*contracts.CheckPoABlockPoA
+	Transfer  *Transfer_Event
+	VsChanges []*ValidatorSet_Event
+}
 
 type ValidatorSet_Event struct {
 	Receipt_proof contracts.ReceiptsProof
@@ -25,28 +39,113 @@ type Transfer_Event struct {
 }
 
 // todo name
-func (b *Bridge) getBlocksAndEvents(event *contracts.TransferEvent) {
-	vsChangeEvents, err := b.getVSChangeEvents(event)
+func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*AmbTransfer, error) {
+	// populated by functions below
+	blocksMap := make(map[uint64]*contracts.CheckPoABlockPoA)
+
+	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
 	if err != nil {
-		// todo
+		return nil, err
 	}
 
-	// encode events
+	vsChangeEvents, err := b.getVSChangeEvents(transferEvent)
+	if err != nil {
+		return nil, err
+	}
+	vsChanges, err := b.encodeVSChangeEvents(blocksMap, vsChangeEvents)
+	if err != nil {
+		return nil, err
+	}
 
-	// get list of block numbers that we need
-	blocksNum := make(map[uint64]*Header)
-	for _, vsChangeEvent := range vsChangeEvents {
-		blockNum := vsChangeEvent.Raw.BlockNumber
-		block, err := b.HeaderByNumber(big.NewInt(int64(blockNum)))
-		if err != nil {
-			// todo
+	// add safety blocks after each event block
+	for blockNum := range blocksMap {
+		for i := uint64(0); i < b.config.SafetyBlocks; i++ {
+			targetBlockNum := blockNum + i
+
+			// set block type == safety; need to explicitly specify if this is the end of safety chain
+			blType := BlTypeSafety
+			if i == b.config.SafetyBlocks {
+				blType = BlTypeSafetyEnd
+			}
+
+			if bl, ok := blocksMap[targetBlockNum]; ok {
+				// if the block existed and was the end of safety chain, then that could change now
+				if bl.Type == BlTypeSafetyEnd {
+					bl.Type = blType
+				}
+			} else {
+				// save block as safety
+				blocksMap[targetBlockNum], err = b.encodeBlockWithType(targetBlockNum, blType)
+				if err != nil {
+					return nil, err
+				}
+			}
+
 		}
-		blocksNum[blockNum] = block
 	}
 
-	// get this blocks, encode, set block type
+	blocks := make([]*contracts.CheckPoABlockPoA, 0, len(blocksMap))
+	for _, block := range blocksMap {
+		blocks = append(blocks, block)
+	}
 
-	// submit(blocks, transfer, vsChanges)
+	return &AmbTransfer{
+		Blocks:    blocks,
+		Transfer:  transfer,
+		VsChanges: vsChanges,
+	}, nil
+}
+
+func (b *Bridge) encodeTransferEvent(blocks map[uint64]*contracts.CheckPoABlockPoA, event *contracts.TransferEvent) (*Transfer_Event, error) {
+	proof, err := b.getProof(&event.Raw)
+	if err != nil {
+		return nil, err
+	}
+
+	blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeTransfer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Transfer_Event{
+		Receipt_proof: proof,
+		Event_id:      event.EventId,
+		Transfers:     event.Queue,
+	}, nil
+}
+
+func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckPoABlockPoA, events []*contracts.InitiateChange) ([]*ValidatorSet_Event, error) {
+	vsChanges := make([]*ValidatorSet_Event, 0, len(events))
+
+	var prev_event *contracts.CheckPoABlockPoA // todo VS_0 state
+
+	for i, event := range events {
+		encodedEvent, err := b.encodeVSChangeEvent(prev_event, event)
+		if err != nil {
+			return nil, err
+		}
+		vsChanges[i] = encodedEvent
+		prev_event = event
+
+		blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, i)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return vsChanges, nil
+}
+
+func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.InitiateChange) (*ValidatorSet_Event, error) {
+	// todo delta
+
+	proof, err := b.getProof(&event.Raw)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ValidatorSet_Event{
+		Receipt_proof: proof,
+	}, nil
 }
 
 func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts.InitiateChange, error) {
@@ -70,8 +169,6 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 	}
 
 	var res []*ValidatorSet_Event
-	// todo add VS0 to res
-
 	for logs.Next() {
 		res = append(res, logs.Event)
 	}
@@ -79,36 +176,23 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 	return res, nil
 }
 
-func (b *Bridge) encodeTransferEvent(event *contracts.TransferEvent) (*Transfer_Event, error) {
-	receipts, err := b.GetReceipts(event.Raw.BlockHash)
+func (b *Bridge) getProof(log *types.Log) ([][]byte, error) {
+	receipts, err := b.GetReceipts(log.BlockHash)
 	if err != nil {
 		return nil, err
 	}
-	proof, err := receipts_proof.CalcProof(receipts, &event.Raw)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Transfer_Event{
-		Receipt_proof: proof,
-		Event_id:      event.EventId,
-		Transfers:     event.Queue,
-	}, nil
+	return receipts_proof.CalcProof(receipts, log)
 }
 
-func (b *Bridge) encodeVSChangeEvent(event *contracts.TransferEvent) (*ValidatorSet_Event, error) {
-	// todo
-
-	receipts, err := b.GetReceipts(event.Raw.BlockHash)
+func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int) (*contracts.CheckPoABlockPoA, error) {
+	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
-		// todo
+		return nil, err
 	}
-	proof, err := receipts_proof.CalcProof(receipts, &event.Raw)
+	encodedBlock, err := EncodeBlock(block)
 	if err != nil {
-		// todo
+		return nil, err
 	}
-
-	return &ValidatorSet_Event{
-		Receipt_proof: proof,
-	}, nil
+	encodedBlock.Type = type_
+	return encodedBlock, nil
 }

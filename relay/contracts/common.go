@@ -57,7 +57,7 @@ type CheckPoABlockPoA struct {
 	S2        []byte // signature prefix
 	Signature []byte
 
-	Type int8
+	Type int
 }
 
 type ReceiptsProof [][]byte

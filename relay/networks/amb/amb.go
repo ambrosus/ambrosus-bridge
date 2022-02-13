@@ -131,26 +131,18 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 		// todo
 	}
 
+	ambTransfer, err := b.getBlocksAndEvents(event)
+	if err != nil {
+		// todo
+	}
+
 	// todo
-	b.getBlocksAndEvents(event)
-
-	//blocks := b.encodeBlocks(event.Raw.BlockNumber)
-	//
-	//// calculate receipt proof
-	//receipts, err := b.GetReceipts(event.Raw.BlockHash)
-	//if err != nil {
-	//	// todo
-	//}
-	//proof_, err := receipts_proof.CalcProof(receipts, &event.Raw)
-	//if err != nil {
-	//	// todo
-	//}
-	//proof := contracts.ReceiptsProof(proof_)
-
+	_ = ambTransfer
 	//b.submitFunc(blocks, transfer, vsChanges)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
+	// todo we can use goroutines here
 	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
 		return nil, err
@@ -170,25 +162,6 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 		receipts = append(receipts, receipt)
 	}
 	return receipts, nil
-}
-
-func (b *Bridge) encodeBlocks(offset uint64) []contracts.CheckPoABlockPoA {
-	encodedBlocks := make([]contracts.CheckPoABlockPoA, b.config.SafetyBlocks)
-
-	for i := uint64(0); i < b.config.SafetyBlocks; i++ {
-		block, err := b.HeaderByNumber(big.NewInt(int64(offset + i)))
-		if err != nil {
-			// todo
-			panic(err)
-		}
-		encodedBlock, err := EncodeBlock(block)
-		if err != nil {
-			// todo
-		}
-		encodedBlocks = append(encodedBlocks, *encodedBlock)
-	}
-
-	return encodedBlocks
 }
 
 func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
