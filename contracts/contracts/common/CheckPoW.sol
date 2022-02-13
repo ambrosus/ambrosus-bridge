@@ -29,22 +29,6 @@ contract CheckPoW {
         bytes32 hash = keccak256(abi.encodePacked(block.p1, block.prevHashOrReceiptRoot, block.p2, block.difficulty, block.p3));
         require(uint(hash) < bytesToUint(block.difficulty), "hash must be less than difficulty");
     }
-    
-    function CheckReceiptsProof(bytes[] memory proof, bytes memory eventToSearch, bytes32 receiptsRoot) public {
-        require(calcReceiptsRoot(proof, eventToSearch) == receiptsRoot, "Failed to verify receipts proof");
-    }
-
-    function calcReceiptsRoot(bytes[] memory proof, bytes memory eventToSearch) public view returns (bytes32){
-        bytes32 el = keccak256(abi.encodePacked(proof[0], eventToSearch, proof[1]));
-        bytes memory s;
-
-        for (uint i = 2; i < proof.length - 1; i += 2) {
-            s = abi.encodePacked(proof[i], el, proof[i + 1]);
-            el = (s.length > 32) ? keccak256(s) : bytes32(s);
-        }
-
-        return el;
-    }
 
     function bytesToUint(bytes memory b) public view returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);

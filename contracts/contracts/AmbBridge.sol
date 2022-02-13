@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "./helpers/CommonBridge.sol";
-import "./helpers/CheckPoW.sol";
-import "./helpers/CommonStructs.sol";
+import "./common/CommonBridge.sol";
+import "./common/CheckPoW.sol";
+import "./common/CommonStructs.sol";
 
 contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
@@ -18,13 +18,11 @@ contract AmbBridge is CommonBridge, CheckPoW {
         uint event_id,
         BlockPoW[] memory blocks,
         CommonStructs.Transfer[] memory events,
-        bytes[] memory proof,
-        uint passedBlocks) public onlyRole(RELAY_ROLE) {
+        bytes[] memory proof
+    ) public onlyRole(RELAY_ROLE) {
 
         require(event_id == inputEventId + 1);
         inputEventId++;
-
-        require(passedBlocks > minSafetyBlocks, "passedBlocks must be larger than minSafetyBlocks");
 
         CheckPoW_(blocks, events, proof);
 
