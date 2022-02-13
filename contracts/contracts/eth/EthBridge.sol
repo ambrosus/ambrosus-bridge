@@ -2,12 +2,11 @@
 pragma solidity 0.8.6;
 
 import "hardhat/console.sol";
-import "./common/CommonBridge.sol";
-import "./common/CheckPoA.sol";
+import "../common/CommonBridge.sol";
+import "../common/CheckAura.sol";
 
 
-contract EthBridge is CommonBridge, CheckPoA {
-    bytes1 constant b1 = bytes1(0x01);
+contract EthBridge is CommonBridge, CheckAura {
 
     constructor(
         address _sideBridgeAddress, address relayAddress,
@@ -18,18 +17,17 @@ contract EthBridge is CommonBridge, CheckPoA {
         _sideBridgeAddress, relayAddress,
         tokenThisAddresses, tokenSideAddresses,
         fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
-    )
-    {}
+    ) {
+        emitTestEvent(address(this), msg.sender, 10);
+    }
 
-    function submitTransfer(
-        BlockPoA[] memory blocks, Transfer_Event memory transfer, ValidatorSet_Event[] memory vs_changes
-    ) public onlyRole(RELAY_ROLE) {
+    function submitTransfer(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) {
 
-        require(transfer.event_id == inputEventId + 1);
+        require(auraProof.transfer.event_id == inputEventId + 1);
         inputEventId++;
 
-        CheckPoA_(blocks, transfer, vs_changes, minSafetyBlocks);
+        CheckAura_(auraProof, minSafetyBlocks);
 
-//        lockTransfers(events, event_id);
+        //        lockTransfers(events, event_id);
     }
 }

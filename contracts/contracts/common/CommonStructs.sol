@@ -6,4 +6,17 @@ library CommonStructs {
         address toAddress;
         uint amount;
     }
+
+    struct TransferProof {
+        bytes[] receipt_proof;
+        uint event_id;
+        Transfer[] transfers;
+    }
+
+    struct LockedTransfers {
+        Transfer[] transfers;
+        uint endTimestamp;
+    }
+
+
 }
