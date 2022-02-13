@@ -8,6 +8,7 @@
   "scripts": {
     "test": "hardhat test",
     "build": "hardhat compile",
+    "abi": "hardhat export-abi",
     "deployamb": "hardhat deploy --network amb",
     "deployrinkeby": "hardhat deploy --network rinkeby",
     "verify": "hardhat etherscan-verify --network rinkeby",
@@ -27,6 +28,7 @@
     "eslint": "^7.26.0",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^3.4.0",
+    "hardhat-abi-exporter": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.4",
     "istanbul": "^0.4.5",
     "mocha": "^8.4.0",
