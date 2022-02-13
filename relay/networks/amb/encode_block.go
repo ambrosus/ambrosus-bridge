@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func EncodeBlock(header *Header) (*contracts.CheckPoABlockPoA, error) {
+func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash, parentHash
 	// - Step, Signature (for AURA)
@@ -54,7 +54,7 @@ func EncodeBlock(header *Header) (*contracts.CheckPoABlockPoA, error) {
 		return nil, err
 	}
 
-	return &contracts.CheckPoABlockPoA{
+	return &contracts.CheckAuraBlockAura{
 		P0Bare: p0Bare,
 		P0Seal: p0Seal,
 
