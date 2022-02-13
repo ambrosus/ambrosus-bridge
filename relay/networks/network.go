@@ -7,9 +7,8 @@ import (
 )
 
 type Bridge interface {
+	// GetLastEventId used by the other side of the bridge for synchronization
 	GetLastEventId() (*big.Int, error)
-	// GetEventById() common.WithdrawEvent
-}
 
-type SubmitPoWF func(eventId *big.Int, blocks []contracts.CheckPoWBlockPoW, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof)
-type SubmitPoAF func(eventId *big.Int, blocks []contracts.CheckPoABlockPoA, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof)
+	SubmitTransfer(contracts.TransferProof) error
+}

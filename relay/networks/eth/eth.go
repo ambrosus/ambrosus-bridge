@@ -14,7 +14,6 @@ type Bridge struct {
 	Contract   *contracts.Eth
 	sideBridge networks.Bridge
 	config     *config.Bridge
-	submitFunc networks.SubmitPoWF
 }
 
 func New(c *config.Bridge) *Bridge {
@@ -33,10 +32,15 @@ func New(c *config.Bridge) *Bridge {
 	}
 }
 
-func (b *Bridge) SubmitBlock(
-	auraProof contracts.CheckAuraAuraProof,
-) {
+func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
+	switch proof.(type) {
+	case *contracts.CheckAuraAuraProof:
+		// todo
+	default:
+		// todo error
 
+	}
+	return nil
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
@@ -45,5 +49,5 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoWF) {
+func (b *Bridge) Run(sideBridge networks.Bridge) {
 }

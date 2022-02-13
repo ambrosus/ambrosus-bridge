@@ -7,6 +7,10 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
+type TransferProof interface {
+	EventId() *big.Int
+}
+
 type TransferEvent struct {
 	EventId *big.Int
 	Queue   []CommonStructsTransfer
@@ -72,8 +76,6 @@ type CheckAuraAuraProof struct {
 	VsChanges []*CheckAuraValidatorSetProof
 }
 
-type ReceiptsProof [][]byte
-
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
 type CheckPoWBlockPoW struct {
 	P1                    []byte
@@ -87,4 +89,12 @@ type CheckPoWBlockPoW struct {
 type CheckPoWPoWProof struct {
 	Blocks   []*CheckPoWBlockPoW
 	Transfer *CommonStructsTransferProof
+}
+
+func (p *CheckAuraAuraProof) EventId() *big.Int {
+	return p.Transfer.EventId
+}
+
+func (p *CheckPoWPoWProof) EventId() *big.Int {
+	return p.Transfer.EventId
 }

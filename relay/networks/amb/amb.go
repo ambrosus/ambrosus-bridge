@@ -19,7 +19,6 @@ type Bridge struct {
 	Contract   *contracts.Amb
 	sideBridge networks.Bridge
 	config     *config.Bridge
-	submitFunc networks.SubmitPoAF
 }
 
 func New(c *config.Bridge) *Bridge {
@@ -38,22 +37,25 @@ func New(c *config.Bridge) *Bridge {
 	}
 }
 
-func (b *Bridge) SubmitBlockPoW(
-	eventId *big.Int,
-	blocks []contracts.CheckPoWBlockPoW,
-	events []contracts.CommonStructsTransfer,
-	proof *contracts.ReceiptsProof,
-) {
-	auth, err := b.getAuth()
-	if err != nil {
+func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
+	switch proof.(type) {
+	case *contracts.CheckPoWPoWProof:
 		// todo
-	}
+	default:
+		// todo error
 
-	tx, err := b.Contract.CheckPoW(auth, blocks, events, *proof)
-	if err != nil {
-		// todo
 	}
-	_ = tx
+	return nil
+	//auth, err := b.getAuth()
+	//if err != nil {
+	//	// todo
+	//}
+
+	//tx, err := b.Contract.CheckPoW(auth, powProof)
+	//if err != nil {
+	//	// todo
+	//}
+	//_ = tx
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
@@ -78,9 +80,8 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoAF) {
+func (b *Bridge) Run(sideBridge networks.Bridge) {
 	b.sideBridge = sideBridge
-	b.submitFunc = submit
 	b.Listen()
 }
 
@@ -121,6 +122,8 @@ func (b *Bridge) Listen() {
 }
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
+	// todo update minSafetyBlocks value from contract
+
 	// wait for safety blocks
 	if err := b.waitForBlock(event.Raw.BlockNumber + b.config.SafetyBlocks); err != nil {
 		// todo

@@ -12,6 +12,6 @@ func main() {
 	// Creating a new ethereum bridge.
 	ethBridge := eth.New(config.Config["eth"])
 
-	go ambBridge.Run(ethBridge, ethBridge.SubmitBlockPoA)
-	go ethBridge.Run(ambBridge, ambBridge.SubmitBlockPoW)
+	go ambBridge.Run(ethBridge)
+	go ethBridge.Run(ambBridge)
 }
