@@ -8,7 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // todo эти структуры сгенерируются абигеном и будут в пакете contracts, но пока так
@@ -16,53 +15,18 @@ import (
 type ValidatorSet_Event struct {
 	Receipt_proof contracts.ReceiptsProof
 	Delta_address common.Address
-	Delta_index   uint64    // 12байт шоб спаковать с 20байт адресом
-	Raw           types.Log // Blockchain specific contextual infos
+	Delta_index   uint64 // 12байт шоб спаковать с 20байт адресом
 }
 
 type Transfer_Event struct {
 	Receipt_proof contracts.ReceiptsProof
 	Event_id      *big.Int
 	Transfers     []contracts.CommonStructsTransfer
-	Raw           types.Log // Blockchain specific contextual infos
-}
-
-func (b *Bridge) listenTransferEvent() {
-	// Subscribe to events
-	watchOpts := &bind.WatchOpts{Context: context.Background()}
-	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
-	if err != nil {
-		panic(err)
-	}
-
-	// main loop
-	for {
-		select {
-		case err := <-eventSub.Err():
-			panic(err)
-
-		case event := <-eventChannel:
-			b.getBlocksAndEvents(&event.TransferEvent)
-		}
-	}
 }
 
 // todo name
 func (b *Bridge) getBlocksAndEvents(event *contracts.TransferEvent) {
-	prevEventId := big.NewInt(0).Sub(event.EventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
-	if err != nil {
-		// todo
-	}
-
-	// start = get blockNum of prev event
-	startSearch := prevEvent.Raw.BlockNumber
-	// stop = blockNum of current event + minSafetyBlocks
-	stopSearch := event.Raw.BlockNumber + b.config.SafetyBlocks
-
-	// get vs change events from start to stop blocks
-	vsChangeEvents, err := b.getVSChangeEvents(startSearch, stopSearch)
+	vsChangeEvents, err := b.getVSChangeEvents(event)
 	if err != nil {
 		// todo
 	}
@@ -85,18 +49,29 @@ func (b *Bridge) getBlocksAndEvents(event *contracts.TransferEvent) {
 	// submit(blocks, transfer, vsChanges)
 }
 
-func (b *Bridge) getVSChangeEvents(start, stop uint64) ([]*ValidatorSet_Event, error) {
+func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts.InitiateChange, error) {
+	prevEventId := big.NewInt(0).Sub(event.EventId, big.NewInt(1))
+	prevEvent, err := b.GetEventById(prevEventId)
+	if err != nil {
+		return nil, err
+	}
+
+	start := prevEvent.Raw.BlockNumber
+	end := event.Raw.BlockNumber + b.config.SafetyBlocks
+
 	opts := &bind.FilterOpts{
 		Start:   start,
-		End:     &stop,
+		End:     &end,
 		Context: context.Background(),
 	}
-	logs, err := b.Contract.FilterValidatorSet_Event(opts)
+	logs, err := b.Contract.FilterInitiateChange(opts)
 	if err != nil {
 		return nil, err
 	}
 
 	var res []*ValidatorSet_Event
+	// todo add VS0 to res
+
 	for logs.Next() {
 		res = append(res, logs.Event)
 	}

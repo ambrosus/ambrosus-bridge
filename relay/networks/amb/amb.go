@@ -8,8 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -74,47 +72,34 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	if logs.Next() {
 		return &logs.Event.TransferEvent, nil
 	}
+	// todo err not found?
 	return nil, nil
 }
 
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.Bridge, submit networks.SubmitPoAF) {
-	// todo save args to struct?
 	b.sideBridge = sideBridge
 	b.submitFunc = submit
-	b.CheckOldEvents()
 	b.Listen()
 }
 
-func (b *Bridge) CheckOldEvents() {
+func (b *Bridge) Listen() {
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
 		// todo
 		panic(err)
 	}
-
-	i := big.NewInt(1)
-	for {
-		nextEventId := big.NewInt(0).Add(lastEventId, i)
-		nextEvent, err := b.GetEventById(nextEventId)
-		if err != nil {
-			// todo
-			panic(err)
-		}
-
-		if nextEvent == nil {
-			return
-		}
-
-		go b.sendEvent(nextEvent)
-		i = big.NewInt(0).Add(i, big.NewInt(1))
+	lastEvent, err := b.GetEventById(lastEventId)
+	if err != nil {
+		// todo
+		panic(err)
 	}
-}
+	startBlock := lastEvent.Raw.BlockNumber + 1
 
-func (b *Bridge) Listen() {
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{
+		Start:   &startBlock,
 		Context: context.Background(),
 	}
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
@@ -130,14 +115,14 @@ func (b *Bridge) Listen() {
 			panic(err)
 
 		case event := <-eventChannel:
-			go b.sendEvent(&event.TransferEvent)
+			b.sendEvent(&event.TransferEvent)
 		}
 	}
 }
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 	// wait for safety blocks
-	if err := b.waitForBlock(event.Raw.BlockNumber); err != nil {
+	if err := b.waitForBlock(event.Raw.BlockNumber + b.config.SafetyBlocks); err != nil {
 		// todo
 	}
 
@@ -146,20 +131,23 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
 		// todo
 	}
 
-	blocks := b.encodeBlocks(event.Raw.BlockNumber)
+	// todo
+	b.getBlocksAndEvents(event)
 
-	// calculate receipt proof
-	receipts, err := b.GetReceipts(event.Raw.BlockHash)
-	if err != nil {
-		// todo
-	}
-	proof_, err := receipts_proof.CalcProof(receipts, &event.Raw)
-	if err != nil {
-		// todo
-	}
-	proof := contracts.ReceiptsProof(proof_)
+	//blocks := b.encodeBlocks(event.Raw.BlockNumber)
+	//
+	//// calculate receipt proof
+	//receipts, err := b.GetReceipts(event.Raw.BlockHash)
+	//if err != nil {
+	//	// todo
+	//}
+	//proof_, err := receipts_proof.CalcProof(receipts, &event.Raw)
+	//if err != nil {
+	//	// todo
+	//}
+	//proof := contracts.ReceiptsProof(proof_)
 
-	b.submitFunc(event.EventId, blocks, event.Queue, &proof)
+	//b.submitFunc(blocks, transfer, vsChanges)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
@@ -231,9 +219,8 @@ func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	return nil
 }
 
-func (b *Bridge) waitForBlock(blockNumber uint64) error {
-	targetBlockNum := blockNumber + b.config.SafetyBlocks
-
+func (b *Bridge) waitForBlock(targetBlockNum uint64) error {
+	// todo maybe timeout (context)
 	blockChannel := make(chan *types.Header)
 	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
 	if err != nil {
