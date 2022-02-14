@@ -6,7 +6,9 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/rs/zerolog/log"
 )
 
 type Bridge struct {
@@ -16,20 +18,21 @@ type Bridge struct {
 	config     *config.Bridge
 }
 
-func New(c *config.Bridge) *Bridge {
-	client, err := ethclient.Dial(c.Url)
+// Creating a new ethereum bridge.
+func New(cfg *config.Bridge) *Bridge {
+	// Creating a new ethereum client.
+	client, err := ethclient.Dial(cfg.Url)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("ethereum client not created")
 	}
-	ethBridge, err := contracts.NewEth(c.ContractAddress, client)
+
+	// Creating a new ethereum bridge contract instance.
+	contract, err := contracts.NewEth(cfg.ContractAddress, client)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("ethereum bridge contract instance not created")
 	}
-	return &Bridge{
-		Client:   client,
-		Contract: ethBridge,
-		config:   c,
-	}
+
+	return &Bridge{Client: client, Contract: contract, config: cfg}
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
@@ -49,5 +52,4 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge networks.Bridge) {
-}
+func (b *Bridge) Run(sideBridge networks.Bridge) {}

@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/rs/zerolog/log"
 )
 
 func EncodeBlock(header *types.Header, isEventBlock bool) *contracts.CheckPoWBlockPoW {
@@ -15,7 +16,7 @@ func EncodeBlock(header *types.Header, isEventBlock bool) *contracts.CheckPoWBlo
 
 	rlpHeader, err := rlp.EncodeToBytes(header)
 	if err != nil {
-		panic(err)
+		log.Error().Err(err).Msg("header not encode to bytes")
 	}
 
 	splitEls := make([][]byte, 2)
@@ -29,7 +30,7 @@ func EncodeBlock(header *types.Header, isEventBlock bool) *contracts.CheckPoWBlo
 
 	splitted, err := helpers.BytesSplit(rlpHeader, splitEls)
 	if err != nil {
-		panic(err)
+		log.Error().Err(err).Msg("rlp header not splited")
 	}
 
 	return &contracts.CheckPoWBlockPoW{
