@@ -8,10 +8,12 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/rs/zerolog/log"
 )
 
 type Bridge struct {
@@ -22,25 +24,27 @@ type Bridge struct {
 	config     *config.Bridge
 }
 
-func New(c *config.Bridge) *Bridge {
-	client, err := ethclient.Dial(c.Url)
+// Creating a new ambrosus bridge.
+func New(cfg *config.Bridge) *Bridge {
+	// Creating a new ethereum client.
+	client, err := ethclient.Dial(cfg.Url)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("ambrosus ethereum client not created")
 	}
-	ambBridge, err := contracts.NewAmb(c.ContractAddress, client)
+
+	// Creating a new ambrosus bridge contract instance.
+	contract, err := contracts.NewAmb(cfg.ContractAddress, client)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("ambrosus bridge contract instance not created")
 	}
-	vsBridge, err := contracts.NewVs(c.VSContractAddress, client)
+
+	// Creating a new ambrosus VS contract instance.
+	vsContract, err := contracts.NewVs(cfg.VSContractAddress, client)
 	if err != nil {
-		panic(err)
+		log.Fatal().Err(err).Msg("ambrosus vs contract instance not created")
 	}
-	return &Bridge{
-		Client:     client,
-		Contract:   ambBridge,
-		VSContract: vsBridge,
-		config:     c,
-	}
+
+	return &Bridge{Client: client, Contract: contract, VSContract: vsContract, config: cfg}
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
@@ -64,14 +68,15 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 	//_ = tx
 }
 
+// Getting last contract event id.
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
 
+// Getting contract event by id.
 func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
-	opts := &bind.FilterOpts{
-		Context: context.Background(),
-	}
+	opts := &bind.FilterOpts{Context: context.Background()}
+
 	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
 	if err != nil {
 		return nil, err
@@ -88,20 +93,23 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 
 func (b *Bridge) Run(sideBridge networks.Bridge) {
 	b.sideBridge = sideBridge
-	b.Listen()
+
+	if err := b.listen(); err != nil {
+		log.Error().Err(err).Msg("listen ambrosus error")
+	}
 }
 
-func (b *Bridge) Listen() {
+func (b *Bridge) listen() error {
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
-		// todo
-		panic(err)
+		return err
 	}
+
 	lastEvent, err := b.GetEventById(lastEventId)
 	if err != nil {
-		// todo
-		panic(err)
+		return err
 	}
+
 	startBlock := lastEvent.Raw.BlockNumber + 1
 
 	// Subscribe to events
@@ -112,42 +120,45 @@ func (b *Bridge) Listen() {
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	// main loop
 	for {
 		select {
 		case err := <-eventSub.Err():
-			panic(err)
-
+			log.Error().Err(err).Msg("event subscribe error")
 		case event := <-eventChannel:
-			b.sendEvent(&event.TransferEvent)
+			if err := b.sendEvent(&event.TransferEvent); err != nil {
+				log.Error().Err(err).Msg("event not send")
+			}
 		}
 	}
 }
 
-func (b *Bridge) sendEvent(event *contracts.TransferEvent) {
+func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// todo update minSafetyBlocks value from contract
 
-	// wait for safety blocks
+	// Wait for safety blocks.
 	if err := b.waitForBlock(event.Raw.BlockNumber + b.config.SafetyBlocks); err != nil {
-		// todo
+		return err
 	}
 
-	// check if the event has been removed
+	// Check if the event has been removed.
 	if err := b.isEventRemoved; err != nil {
-		// todo
+		return err(event)
 	}
 
 	ambTransfer, err := b.getBlocksAndEvents(event)
 	if err != nil {
-		// todo
+		return err
 	}
 
 	// todo
 	_ = ambTransfer
 	//b.submitFunc(blocks, transfer, vsChanges)
+
+	return nil
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
