@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -115,7 +116,14 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 }
 
 func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
-	// todo delta
+	deltaAddress := helpers.DiffAddresses(prev_event.NewSet, event.NewSet)[0]
+
+	var deltaIndex int
+	for i, address := range prev_event.NewSet {
+		if address == deltaAddress {
+			deltaIndex = i
+		}
+	}
 
 	proof, err := b.getProof(&event.Raw)
 	if err != nil {
@@ -124,6 +132,8 @@ func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChan
 
 	return &contracts.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
+		DeltaAddress: deltaAddress,
+		DeltaIndex:   uint64(deltaIndex),
 	}, nil
 }
 
