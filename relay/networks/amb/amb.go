@@ -2,6 +2,7 @@ package amb
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -75,8 +76,10 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 
 // Getting contract event by id.
 func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
+	// Filter contract event transfers options.
 	opts := &bind.FilterOpts{Context: context.Background()}
 
+	// Filter contact event transfers.
 	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
 	if err != nil {
 		return nil, err
@@ -85,28 +88,33 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	if logs.Next() {
 		return &logs.Event.TransferEvent, nil
 	}
-	// todo err not found?
-	return nil, nil
+
+	return nil, fmt.Errorf("error event: '%d' not found", eventId.Uint64())
 }
 
 // todo code below may be common for all networks?
 
+// Running ambrosus bridge.
 func (b *Bridge) Run(sideBridge networks.Bridge) {
 	b.sideBridge = sideBridge
 
 	for {
+		// Listening contract transfer events.
 		if err := b.listen(); err != nil {
 			log.Error().Err(err).Msg("listen ambrosus error")
 		}
 	}
 }
 
+// Listening contract transfer events.
 func (b *Bridge) listen() error {
+	// Getting last contract event id.
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
 		return err
 	}
 
+	// Getting contract event by event id.
 	lastEvent, err := b.GetEventById(lastEventId)
 	if err != nil {
 		return err
@@ -114,31 +122,37 @@ func (b *Bridge) listen() error {
 
 	startBlock := lastEvent.Raw.BlockNumber + 1
 
-	// Subscribe to events
-	watchOpts := &bind.WatchOpts{Start: &startBlock, Context: context.Background()}
-	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
+	// Watching transfer options.
+	opts := &bind.WatchOpts{Start: &startBlock, Context: context.Background()}
+
+	// Create a new channel for transfers.
+	events := make(chan *contracts.AmbTransfer)
+
+	// Subscribe to contract transfer event.
+	sub, err := b.Contract.WatchTransfer(opts, events, nil)
 	if err != nil {
 		return err
 	}
+	defer sub.Unsubscribe()
 
-	defer eventSub.Unsubscribe()
-
-	// main loop
 	for {
 		select {
-		case err := <-eventSub.Err():
+		case err := <-sub.Err():
 			return err
-		case event := <-eventChannel:
-			if err := b.sendEvent(&event.TransferEvent); err != nil {
+		case event := <-events:
+			// Process ambrosus transfer event.
+			if err := b.processEvent(&event.TransferEvent); err != nil {
 				return err
 			}
 		}
 	}
 }
 
-func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
-	// todo update minSafetyBlocks value from contract
+// Process ambrosus transfer event.
+func (b *Bridge) processEvent(event *contracts.TransferEvent) error {
+	log.Info().Str("eventID", event.EventId.String()).Msg("proccessing ambrosus event...")
+
+	// TODO: update minSafetyBlocks value from contract
 
 	// Wait for safety blocks.
 	if err := b.waitForBlock(event.Raw.BlockNumber + b.config.SafetyBlocks); err != nil {
@@ -150,41 +164,54 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err(event)
 	}
 
-	ambTransfer, err := b.getBlocksAndEvents(event)
+	// Getting blocks and events by transfer event.
+	transfer, err := b.getBlocksAndEvents(event)
 	if err != nil {
 		return err
 	}
 
-	// todo
-	_ = ambTransfer
-	//b.submitFunc(blocks, transfer, vsChanges)
+	// TODO
+	_ = transfer
+	// b.submitFunc(blocks, transfer, vsChanges)
 
 	return nil
 }
 
+// Getting receipts by block hash.
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
-	// todo we can use goroutines here
+
+	// TODO: we can use goroutines here
+
+	// Getting transaction count.
 	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
 		return nil, err
 	}
 
+	// Creating a new channel for receipts.
 	receipts := make([]*types.Receipt, 0, txsCount)
 
+	// Transaction processing by index.
 	for i := uint(0); i < txsCount; i++ {
+		// Getting transaction from block by index.
 		tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
 		if err != nil {
 			return nil, err
 		}
+
+		// Getting receipts by transactions hash.
 		receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
 		if err != nil {
 			return nil, err
 		}
-		receipts = append(receipts, receipt)
+
+		receipts[i] = receipt
 	}
+
 	return receipts, nil
 }
 
+// TODO func
 func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
 	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, b.config.ChainID)
 	if err != nil {
@@ -201,37 +228,48 @@ func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
 	return auth, nil
 }
 
+// Check is event removed in contract.
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
+	// Getting block by number.
 	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
 		return err
 	}
 
+	// Check is block hash != event block hash.
 	if block.Hash() != event.Raw.BlockHash {
-		return fmt.Errorf("block hash != event's block hash")
+		return errors.New("block hash != event's block hash")
 	}
+
 	return nil
 }
 
+// Waiting a new block.
 func (b *Bridge) waitForBlock(targetBlockNum uint64) error {
-	// todo maybe timeout (context)
-	blockChannel := make(chan *types.Header)
-	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
+
+	// TODO maybe timeout (context)
+
+	// Creating a new channel for blocks.
+	blocks := make(chan *types.Header)
+
+	// Subscribe to new head.
+	sub, err := b.Client.SubscribeNewHead(context.Background(), blocks)
 	if err != nil {
 		return err
 	}
 
+	// Getting current block number.
 	currentBlockNum, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
 		return err
 	}
 
+	// Waiting a new bloks.
 	for currentBlockNum < targetBlockNum {
 		select {
-		case err := <-blockSub.Err():
+		case err := <-sub.Err():
 			return err
-
-		case block := <-blockChannel:
+		case block := <-blocks:
 			currentBlockNum = block.Number.Uint64()
 		}
 	}
