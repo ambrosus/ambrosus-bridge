@@ -106,7 +106,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 		vsChanges[i] = encodedEvent
 		prev_event = event
 
-		blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, i)
+		blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, int64(i))
 		if err != nil {
 			return nil, err
 		}
