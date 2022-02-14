@@ -2,6 +2,8 @@ import "@nomiclabs/hardhat-waffle";
 import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
+import "hardhat-abi-exporter";
+
 
 import * as dotenv from "dotenv";
 
@@ -49,4 +51,13 @@ module.exports = {
             },
         ],
     },
+    abiExporter: {
+        clear: true,
+        flat: true,
+        only: [
+          "AmbBridge",
+          "EthBridge",
+          "ValidatorSet$",
+        ]
+    }
 };

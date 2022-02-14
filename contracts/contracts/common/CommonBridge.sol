@@ -13,13 +13,11 @@ contract CommonBridge is AccessControl {
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
 
 
-    struct lockedTransfers_ {
-        CommonStructs.Transfer[] transfers;
-        uint endTimestamp;
-    }
-    mapping(uint => lockedTransfers_) public lockedTransfers;
-
+    // queue to be pushed in another network
     CommonStructs.Transfer[] queue;
+    // locked transfers from another network
+    mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
+
 
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
@@ -97,7 +95,7 @@ contract CommonBridge is AccessControl {
     }
 
     function unlockTransfers(uint event_id) public onlyRole(RELAY_ROLE) {
-        lockedTransfers_ memory transfersLocked = lockedTransfers[event_id];
+        CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[event_id];
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
         CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;

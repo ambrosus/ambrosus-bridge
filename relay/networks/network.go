@@ -2,13 +2,13 @@ package networks
 
 import (
 	"math/big"
-	"relay/contracts"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 )
 
 type Bridge interface {
+	// GetLastEventId used by the other side of the bridge for synchronization
 	GetLastEventId() (*big.Int, error)
-	// GetEventById() common.WithdrawEvent
-}
 
-type SubmitPoWF func(eventId *big.Int, blocks []contracts.CheckPoWBlockPoW, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) error
-type SubmitPoAF func(eventId *big.Int, blocks []contracts.CheckPoABlockPoA, events []contracts.CommonStructsTransfer, proof *contracts.ReceiptsProof) error
+	SubmitTransfer(contracts.TransferProof) error
+}

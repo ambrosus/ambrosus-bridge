@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math/big"
+	"net/http"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
-	"math/big"
-	"net/http"
-	"relay/receipts_proof/mytrie"
 )
 
 type request struct {
