@@ -115,15 +115,14 @@ func (b *Bridge) listen() error {
 	startBlock := lastEvent.Raw.BlockNumber + 1
 
 	// Subscribe to events
-	watchOpts := &bind.WatchOpts{
-		Start:   &startBlock,
-		Context: context.Background(),
-	}
+	watchOpts := &bind.WatchOpts{Start: &startBlock, Context: context.Background()}
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return err
 	}
+
+	defer eventSub.Unsubscribe()
 
 	// main loop
 	for {
