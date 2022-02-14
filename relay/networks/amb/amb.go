@@ -17,6 +17,7 @@ import (
 type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Amb
+	VSContract *contracts.Vs
 	sideBridge networks.Bridge
 	config     *config.Bridge
 }
@@ -30,10 +31,15 @@ func New(c *config.Bridge) *Bridge {
 	if err != nil {
 		panic(err)
 	}
+	vsBridge, err := contracts.NewVs(c.VSContractAddress, client)
+	if err != nil {
+		panic(err)
+	}
 	return &Bridge{
-		Client:   client,
-		Contract: ambBridge,
-		config:   c,
+		Client:     client,
+		Contract:   ambBridge,
+		VSContract: vsBridge,
+		config:     c,
 	}
 }
 
