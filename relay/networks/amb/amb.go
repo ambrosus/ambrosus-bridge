@@ -25,26 +25,26 @@ type Bridge struct {
 }
 
 // Creating a new ambrosus bridge.
-func New(cfg *config.Bridge) *Bridge {
+func New(cfg *config.Bridge) (*Bridge, error) {
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.Url)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ambrosus ethereum client not created")
+		return nil, err
 	}
 
 	// Creating a new ambrosus bridge contract instance.
 	contract, err := contracts.NewAmb(cfg.ContractAddress, client)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ambrosus bridge contract instance not created")
+		return nil, err
 	}
 
 	// Creating a new ambrosus VS contract instance.
 	vsContract, err := contracts.NewVs(cfg.VSContractAddress, client)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ambrosus vs contract instance not created")
+		return nil, err
 	}
 
-	return &Bridge{Client: client, Contract: contract, VSContract: vsContract, config: cfg}
+	return &Bridge{Client: client, Contract: contract, VSContract: vsContract, config: cfg}, nil
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
@@ -94,8 +94,10 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 func (b *Bridge) Run(sideBridge networks.Bridge) {
 	b.sideBridge = sideBridge
 
-	if err := b.listen(); err != nil {
-		log.Error().Err(err).Msg("listen ambrosus error")
+	for {
+		if err := b.listen(); err != nil {
+			log.Error().Err(err).Msg("listen ambrosus error")
+		}
 	}
 }
 
@@ -127,10 +129,10 @@ func (b *Bridge) listen() error {
 	for {
 		select {
 		case err := <-eventSub.Err():
-			log.Error().Err(err).Msg("event subscribe error")
+			return err
 		case event := <-eventChannel:
 			if err := b.sendEvent(&event.TransferEvent); err != nil {
-				log.Error().Err(err).Msg("event not send")
+				return err
 			}
 		}
 	}

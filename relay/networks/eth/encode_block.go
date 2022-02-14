@@ -6,17 +6,16 @@ import (
 
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/rs/zerolog/log"
 )
 
-func EncodeBlock(header *types.Header, isEventBlock bool) *contracts.CheckPoWBlockPoW {
+func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
 	// - Difficulty (for PoW)
 
 	rlpHeader, err := rlp.EncodeToBytes(header)
 	if err != nil {
-		log.Error().Err(err).Msg("header not encode to bytes")
+		return nil, err
 	}
 
 	splitEls := make([][]byte, 2)
@@ -30,7 +29,7 @@ func EncodeBlock(header *types.Header, isEventBlock bool) *contracts.CheckPoWBlo
 
 	splitted, err := helpers.BytesSplit(rlpHeader, splitEls)
 	if err != nil {
-		log.Error().Err(err).Msg("rlp header not splited")
+		return nil, err
 	}
 
 	return &contracts.CheckPoWBlockPoW{
@@ -39,6 +38,6 @@ func EncodeBlock(header *types.Header, isEventBlock bool) *contracts.CheckPoWBlo
 		P2:                    splitted[1],
 		Difficulty:            splitEls[1],
 		P3:                    splitted[2],
-	}
+	}, nil
 
 }

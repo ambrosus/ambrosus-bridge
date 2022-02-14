@@ -8,7 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/rs/zerolog/log"
 )
 
 type Bridge struct {
@@ -19,20 +18,20 @@ type Bridge struct {
 }
 
 // Creating a new ethereum bridge.
-func New(cfg *config.Bridge) *Bridge {
+func New(cfg *config.Bridge) (*Bridge, error) {
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.Url)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ethereum client not created")
+		return nil, err
 	}
 
 	// Creating a new ethereum bridge contract instance.
 	contract, err := contracts.NewEth(cfg.ContractAddress, client)
 	if err != nil {
-		log.Fatal().Err(err).Msg("ethereum bridge contract instance not created")
+		return nil, err
 	}
 
-	return &Bridge{Client: client, Contract: contract, config: cfg}
+	return &Bridge{Client: client, Contract: contract, config: cfg}, nil
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
