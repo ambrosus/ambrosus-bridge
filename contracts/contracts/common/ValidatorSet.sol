@@ -4,13 +4,13 @@ pragma solidity ^0.8.0;
 abstract contract ValidatorSetBase {
     event InitiateChange(bytes32 indexed parentHash, address[] newSet);
 
-    function getValidators() virtual public view returns (address[] memory);
+    function getValidators(uint ambBlockNumber) virtual public view returns (address[] memory);
 
-    function finalizeChange() virtual public;
+    function finalizeChange(uint ambBlockNumber) virtual public;
 }
 
 
-abstract contract ValidatorSet is ValidatorSetBase {
+contract ValidatorSet is ValidatorSetBase {
     mapping (uint => address[]) public validators;
     address[] public pendingValidators;
 
@@ -32,7 +32,7 @@ abstract contract ValidatorSet is ValidatorSetBase {
     }
 
 
-    function getValidators(uint ambBlockNumber) public view returns (address[] memory) {
+    function getValidators(uint ambBlockNumber) public view override returns (address[] memory) {
         return validators[ambBlockNumber];
     }
 
@@ -59,7 +59,7 @@ abstract contract ValidatorSet is ValidatorSetBase {
         delete validators[ambBlockNumber];
     }
 
-    function finalizeChange(uint ambBlockNumber) public {
+    function finalizeChange(uint ambBlockNumber) public override {
         validators[ambBlockNumber] = pendingValidators;
     }
 
