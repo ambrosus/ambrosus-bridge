@@ -28,7 +28,7 @@ contract CheckAura {
     struct ValidatorSetProof {
         bytes[] receipt_proof;
         address delta_address;
-        uint64 delta_index; // < 0 ? delete : pass
+        uint64 delta_index; // < 0 ? remove : add
     }
 
     struct AuraProof {
@@ -46,11 +46,13 @@ contract CheckAura {
     }
 
     function addValidator(uint index, address validator) internal {
+        validatorSet.push(validatorSet[index]);
         validatorSet[index] = validator;
     }
 
     function removeValidator(uint index) internal {
-        delete validatorSet[index];
+        validatorSet[index] = validatorSet[validatorSet.length - 1];
+        validatorSet.pop();
     }
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks) public {
