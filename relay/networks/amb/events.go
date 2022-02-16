@@ -191,43 +191,25 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	return encodedBlock, nil
 }
 
-func deltaVS(a, b []common.Address) (*Delta, error) {
-	var (
-		lenMin  int
-		isAdded bool
-	)
-
-	if math.Abs(float64(len(a)-len(b))) > 1 {
-		return nil, fmt.Errorf("delta has more than 1 change")
+func deltaVS(prev, curr []common.Address) (*Delta, error) {
+	d := len(curr) - len(prev)
+	if math.Abs(float64(d)) != 1 {
+		return nil, fmt.Errorf("delta has more (or less) than 1 change")
 	}
 
-	if len(a) < len(b) {
-		lenMin = len(a)
-		isAdded = true
-	} else {
-		lenMin = len(b)
-	}
+	for i, prevEl := range prev {
+		if i >= len(curr) { // deleted at the end
+			return &Delta{prev[i], int64(-i - 1)}, nil
+		}
 
-	for i := 0; i < lenMin; i++ {
-		if a[i] != b[i] {
-			if isAdded {
-				return &Delta{b[i], int64(i)}, nil
-			} else {
-				return &Delta{a[i], int64(i)}, nil
+		if curr[i] != prevEl {
+			if d == 1 { // added
+				return &Delta{curr[i], int64(i)}, nil
+			} else { // deleted
+				return &Delta{prev[i], int64(-i - 1)}, nil
 			}
 		}
 	}
 
-	var longest []common.Address
-	if isAdded {
-		longest = b
-	} else {
-		longest = a
-	}
-
-	for i, v := range longest[lenMin:] {
-		return &Delta{v, int64(i + lenMin)}, nil
-	}
-
-	return nil, fmt.Errorf("slices are the same")
+	return nil, fmt.Errorf("this error shouln't exist")
 }
