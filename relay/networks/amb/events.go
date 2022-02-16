@@ -2,11 +2,14 @@ package amb
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -114,8 +117,11 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 	return vsChanges, nil
 }
 
-func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
-	// todo delta
+func (b *Bridge) encodeVSChangeEvent(prevEvent, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
+	address, index, err := deltaVS(prevEvent.NewSet, event.NewSet)
+	if err != nil {
+		return nil, err
+	}
 
 	proof, err := b.getProof(&event.Raw)
 	if err != nil {
@@ -124,6 +130,8 @@ func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChan
 
 	return &contracts.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
+		DeltaAddress: address,
+		DeltaIndex:   index,
 	}, nil
 }
 
@@ -176,4 +184,27 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	}
 	encodedBlock.Type = type_
 	return encodedBlock, nil
+}
+
+func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
+	d := len(curr) - len(prev)
+	if math.Abs(float64(d)) != 1 {
+		return common.Address{}, 0, fmt.Errorf("delta has more (or less) than 1 change")
+	}
+
+	for i, prevEl := range prev {
+		if i >= len(curr) { // deleted at the end
+			return prev[i], int64(-i - 1), nil
+		}
+
+		if curr[i] != prevEl {
+			if d == 1 { // added
+				return curr[i], int64(i), nil
+			} else { // deleted
+				return prev[i], int64(-i - 1), nil
+			}
+		}
+	}
+
+	return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }

@@ -66,7 +66,7 @@ type CheckAuraBlockAura struct {
 type CheckAuraValidatorSetProof struct {
 	ReceiptProof [][]byte
 	DeltaAddress common.Address
-	DeltaIndex   uint64
+	DeltaIndex   int64
 }
 
 // CheckAuraAuraProof is an auto generated low-level Go binding around an user-defined struct.
