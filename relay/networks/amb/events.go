@@ -5,9 +5,9 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -17,6 +17,11 @@ const (
 	BlTypeTransfer  = -1
 	// type values >= 0 mean the validatorSetEvent index in VsChanges list
 )
+
+type Delta struct {
+	Address common.Address
+	Index   int64
+}
 
 // todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckAuraAuraProof, error) {
@@ -116,14 +121,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 }
 
 func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
-	deltaAddress := helpers.DiffAddresses(prev_event.NewSet, event.NewSet)[0]
-
-	var deltaIndex int
-	for i, address := range prev_event.NewSet {
-		if address == deltaAddress {
-			deltaIndex = i
-		}
-	}
+	delta := deltaVS(prev_event.NewSet, event.NewSet)
 
 	proof, err := b.getProof(&event.Raw)
 	if err != nil {
@@ -132,8 +130,8 @@ func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChan
 
 	return &contracts.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
-		DeltaAddress: deltaAddress,
-		DeltaIndex:   int64(deltaIndex),
+		DeltaAddress: delta.Address,
+		DeltaIndex:   delta.Index,
 	}, nil
 }
 
@@ -186,4 +184,18 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	}
 	encodedBlock.Type = type_
 	return encodedBlock, nil
+}
+
+func deltaVS(a, b []common.Address) *Delta {
+	mb := make(map[common.Address]struct{}, len(b))
+	for _, x := range b {
+		mb[x] = struct{}{}
+	}
+	for i, x := range a {
+		if _, found := mb[x]; !found {
+			delta := &Delta{x, int64(i)}
+			return delta
+		}
+	}
+	return nil
 }
