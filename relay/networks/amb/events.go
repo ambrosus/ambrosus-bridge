@@ -20,11 +20,6 @@ const (
 	// type values >= 0 mean the validatorSetEvent index in VsChanges list
 )
 
-type Delta struct {
-	Address common.Address
-	Index   int64
-}
-
 // todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckAuraAuraProof, error) {
 	// populated by functions below
@@ -122,8 +117,8 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 	return vsChanges, nil
 }
 
-func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
-	delta, err := deltaVS(prev_event.NewSet, event.NewSet)
+func (b *Bridge) encodeVSChangeEvent(prevEvent, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
+	address, index, err := deltaVS(prevEvent.NewSet, event.NewSet)
 	if err != nil {
 		return nil, err
 	}
@@ -135,8 +130,8 @@ func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChan
 
 	return &contracts.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
-		DeltaAddress: delta.Address,
-		DeltaIndex:   delta.Index,
+		DeltaAddress: address,
+		DeltaIndex:   index,
 	}, nil
 }
 
@@ -191,25 +186,25 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	return encodedBlock, nil
 }
 
-func deltaVS(prev, curr []common.Address) (*Delta, error) {
+func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	d := len(curr) - len(prev)
 	if math.Abs(float64(d)) != 1 {
-		return nil, fmt.Errorf("delta has more (or less) than 1 change")
+		return common.Address{}, 0, fmt.Errorf("delta has more (or less) than 1 change")
 	}
 
 	for i, prevEl := range prev {
 		if i >= len(curr) { // deleted at the end
-			return &Delta{prev[i], int64(-i - 1)}, nil
+			return prev[i], int64(-i - 1), nil
 		}
 
 		if curr[i] != prevEl {
 			if d == 1 { // added
-				return &Delta{curr[i], int64(i)}, nil
+				return curr[i], int64(i), nil
 			} else { // deleted
-				return &Delta{prev[i], int64(-i - 1)}, nil
+				return prev[i], int64(-i - 1), nil
 			}
 		}
 	}
 
-	return nil, fmt.Errorf("this error shouln't exist")
+	return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }
