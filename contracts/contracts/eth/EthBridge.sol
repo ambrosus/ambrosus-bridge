@@ -11,12 +11,16 @@ contract EthBridge is CommonBridge, CheckAura {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_,
+        address[] memory initialValidators
     )
     CommonBridge(
         _sideBridgeAddress, relayAddress,
         tokenThisAddresses, tokenSideAddresses,
         fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
+    )
+    CheckAura(
+        initialValidators
     ) {
         emitTestEvent(address(this), msg.sender, 10);
     }
