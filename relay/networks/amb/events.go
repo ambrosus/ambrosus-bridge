@@ -2,6 +2,8 @@ package amb
 
 import (
 	"context"
+	"fmt"
+	"math"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
@@ -121,7 +123,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 }
 
 func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
-	delta := deltaVS(prev_event.NewSet, event.NewSet)
+	delta, err := deltaVS(prev_event.NewSet, event.NewSet)
+	if err != nil {
+		return nil, err
+	}
 
 	proof, err := b.getProof(&event.Raw)
 	if err != nil {
@@ -186,16 +191,31 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	return encodedBlock, nil
 }
 
-func deltaVS(a, b []common.Address) *Delta {
-	mb := make(map[common.Address]struct{}, len(b))
-	for _, x := range b {
-		mb[x] = struct{}{}
+func deltaVS(a, b []common.Address) (*Delta, error) {
+	var (
+		lenMin  int
+		isAdded bool
+	)
+
+	if math.Abs(float64(len(a)-len(b))) > 1 {
+		return nil, fmt.Errorf("delta has more than 1 change")
 	}
-	for i, x := range a {
-		if _, found := mb[x]; !found {
-			delta := &Delta{x, int64(i)}
-			return delta
+
+	if len(a) < len(b) {
+		lenMin = len(a)
+		isAdded = true
+	} else {
+		lenMin = len(b)
+	}
+
+	for i := 0; i < lenMin; i++ {
+		if a[i] != b[i] {
+			if isAdded {
+				return &Delta{b[i], int64(i)}, nil
+			} else {
+				return &Delta{a[i], int64(i)}, nil
+			}
 		}
 	}
-	return nil
+	return nil, fmt.Errorf("slices are the same")
 }
