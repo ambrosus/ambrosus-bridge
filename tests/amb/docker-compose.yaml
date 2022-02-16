@@ -1,0 +1,36 @@
+version: "3.7"
+services:
+  ethereum_node:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+      args:
+        - NETWORK_ID=${NETWORK_ID}
+        - NETWORK_NAME=${NETWORK_NAME}
+        - USER_ID=${USER_ID}
+        - USER_NAME=${USER_NAME}
+        - GROUP_ID=${GROUP_ID}
+        - GROUP_NAME=${GROUP_NAME}
+        - BASE_PATH=${BASE_PATH}
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+        - REWRITE_CONFIG_FILES=${REWRITE_CONFIG_FILES}
+    container_name: openethereum_node
+    ports:
+      - ${JSONRPC_PORT}:8545
+      - ${WS_PORT}:8546
+      - ${NETWORK_PORT}:30303
+    volumes:
+      - ./data:/data
+      - ./config:/config
+  ethereum_explorer:
+    image: alethio/ethereum-lite-explorer
+    container_name: openethereum_explorer
+    environment:
+      - APP_NODE_URL=${JSONRPC_BASE_URL}:${JSONRPC_PORT}
+    ports:
+      - ${EXPLORER_PORT}:80
+volumes:
+  data:
+    driver: local
+  config:
+    driver: local

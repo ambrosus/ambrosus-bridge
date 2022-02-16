@@ -28,6 +28,10 @@ module.exports = {
             url: "https://network.ambrosus-dev.io",
             accounts: PK,
             hardfork: "byzantium"
+        },
+        oelocal: {
+            url: "http://127.0.0.1:8545",
+            accounts: PK,
         }
     },
     namedAccounts: {
