@@ -133,7 +133,7 @@ func (b *Bridge) encodeVSChangeEvent(prev_event, event *contracts.VsInitiateChan
 	return &contracts.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
 		DeltaAddress: deltaAddress,
-		DeltaIndex:   uint64(deltaIndex),
+		DeltaIndex:   int64(deltaIndex),
 	}, nil
 }
 

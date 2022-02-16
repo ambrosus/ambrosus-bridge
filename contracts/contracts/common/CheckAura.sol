@@ -28,7 +28,7 @@ contract CheckAura {
     struct ValidatorSetProof {
         bytes[] receipt_proof;
         address delta_address;
-        uint64 delta_index;
+        int64 delta_index;
     }
 
     struct AuraProof {
