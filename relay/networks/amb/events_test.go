@@ -89,7 +89,7 @@ func Test_deltaVS(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			res, err := deltaVS(tt.args.a, tt.args.b)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("hello() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("deltaVS() error = %v, wantErr = %v", err, tt.wantErr)
 				return
 			}
 			assert.Equalf(t, tt.want, res, "deltaVS(%v, %v)", tt.args.a, tt.args.b)
