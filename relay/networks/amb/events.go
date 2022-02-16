@@ -217,5 +217,17 @@ func deltaVS(a, b []common.Address) (*Delta, error) {
 			}
 		}
 	}
+
+	var longest []common.Address
+	if isAdded {
+		longest = b
+	} else {
+		longest = a
+	}
+
+	for i, v := range longest[lenMin:] {
+		return &Delta{v, int64(i + lenMin)}, nil
+	}
+
 	return nil, fmt.Errorf("slices are the same")
 }

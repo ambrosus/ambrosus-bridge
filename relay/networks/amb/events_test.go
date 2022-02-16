@@ -35,6 +35,22 @@ func Test_deltaVS(t *testing.T) {
 			false,
 		},
 		{
+			"Deleted validator from the end",
+			args{
+				a: []common.Address{
+					common.HexToAddress("0x0000000000000000000000000000000000000000"),
+					common.HexToAddress("0x0000000000000000000000000000000000000001"),
+					common.HexToAddress("0x0000000000000000000000000000000000000002"),
+				},
+				b: []common.Address{
+					common.HexToAddress("0x0000000000000000000000000000000000000000"),
+					common.HexToAddress("0x0000000000000000000000000000000000000001"),
+				},
+			},
+			&Delta{Index: 2, Address: common.HexToAddress("0x0000000000000000000000000000000000000002")},
+			false,
+		},
+		{
 			"Added validator",
 			args{
 				a: []common.Address{
