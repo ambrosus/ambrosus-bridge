@@ -19,7 +19,7 @@ func CheckProof(proof [][]byte, log *types.Log) common.Hash {
 		proof[1],
 		log.Topics[1].Bytes(), // event id
 		proof[2],
-		log.Data, //transfers
+		log.Data, // transfers
 		proof[3],
 	)
 
