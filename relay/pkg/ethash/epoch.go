@@ -3,6 +3,8 @@ package ethash
 import (
 	"fmt"
 	"math/big"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash/merkle"
 )
 
 const (
@@ -21,6 +23,10 @@ func GenerateEpochData(epoch uint64) *EpochData {
 	fullSize := DatasetSize(epoch * epochLength)
 	fullSizeIn128Resolution := fullSize / 128
 	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
+
+	mk := merkle.NewDatasetTree()
+	mk.RegisterStoredLevel(uint32(branchDepth), 10)
+	mk.Finalize()
 
 	return &EpochData{
 		Epoch:                   big.NewInt(int64(epoch)),

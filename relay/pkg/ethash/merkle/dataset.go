@@ -35,6 +35,8 @@ func NewDatasetTree() *DatasetTree {
 			merkleBuf:       merkleBuf,
 			elementHash:     elementHash,
 			exportNodeCount: 0,
+			storedLevel:     0,
+			finalized:       false,
 			indexes:         map[uint32]bool{},
 			exportNodes:     []NodeData{},
 		},
