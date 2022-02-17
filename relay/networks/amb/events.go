@@ -99,15 +99,15 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*contracts.CheckAuraBlock
 func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]*contracts.CheckAuraValidatorSetProof, error) {
 	vsChanges := make([]*contracts.CheckAuraValidatorSetProof, 0, len(events))
 
-	var prev_event *contracts.VsInitiateChange // todo VS_0 state
+	var prevEvent *contracts.VsInitiateChange // todo VS_0 state
 
 	for i, event := range events {
-		encodedEvent, err := b.encodeVSChangeEvent(prev_event, event)
+		encodedEvent, err := b.encodeVSChangeEvent(prevEvent, event)
 		if err != nil {
 			return nil, err
 		}
 		vsChanges[i] = encodedEvent
-		prev_event = event
+		prevEvent = event
 
 		blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, int64(i))
 		if err != nil {
