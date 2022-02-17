@@ -18,7 +18,7 @@ type EpochData struct {
 }
 
 func GenerateEpochData(epoch uint64) *EpochData {
-	fullSize := SizeDAG(epoch * epochLength)
+	fullSize := DatasetSize(epoch * epochLength)
 	fullSizeIn128Resolution := fullSize / 128
 	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
 

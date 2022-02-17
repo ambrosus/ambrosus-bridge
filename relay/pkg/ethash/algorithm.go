@@ -1,8 +1,6 @@
 package ethash
 
-func SizeDAG(blockNum uint64) uint64 {
-	return datasetSizes[blockNum/epochLength]
-}
+func DatasetSize(blockNum uint64) uint64 { return datasetSizes[blockNum/epochLength] }
 
 var datasetSizes = [maxEpoch]uint64{
 	1073739904, 1082130304, 1090514816, 1098906752, 1107293056,
