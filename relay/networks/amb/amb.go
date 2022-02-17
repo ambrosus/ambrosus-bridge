@@ -150,6 +150,11 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	return nil, nil
 }
 
+// todo delete
+func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
+	return nil, nil
+}
+
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.Bridge) {

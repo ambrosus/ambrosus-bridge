@@ -103,6 +103,10 @@ contract CheckAura {
         return address(this);
     }
 
+    function GetValidatorSet() public view returns (address[] memory) {
+        return validatorSet;
+    }
+
     function CheckSignature(address signer, bytes32 message, bytes memory signature) internal view {
         bytes32 r;
         bytes32 s;
