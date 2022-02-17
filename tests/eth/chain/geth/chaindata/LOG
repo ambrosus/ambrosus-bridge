@@ -1,0 +1,30 @@
+=============== Feb 17, 2022 (EET) ===============
+23:22:51.417635 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+23:22:51.422063 db@open opening
+23:22:51.422537 version@stat F·[] S·0B[] Sc·[]
+23:22:51.426065 db@janitor F·2 G·0
+23:22:51.426101 db@open done T·4.007454ms
+23:22:51.426507 db@close closing
+23:22:51.426611 db@close done T·102.42µs
+=============== Feb 17, 2022 (EET) ===============
+23:23:30.012321 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+23:23:30.012471 version@stat F·[] S·0B[] Sc·[]
+23:23:30.012486 db@open opening
+23:23:30.012522 journal@recovery F·1
+23:23:30.014220 journal@recovery recovering @1
+23:23:30.015840 memdb@flush created L0@2 N·10 S·639B "Hu\xe6..Q\xad\xa6,v3":"r\x00\x00..Q\xad\xa6,v5"
+23:23:30.016025 version@stat F·[1] S·639B[639B] Sc·[0.25]
+23:23:30.020028 db@janitor F·3 G·0
+23:23:30.020058 db@open done T·7.563792ms
+23:23:30.021054 db@close closing
+23:23:30.021150 db@close done T·96.331µs
+=============== Feb 17, 2022 (UTC) ===============
+21:23:40.525871 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+21:23:40.526291 version@stat F·[1] S·639B[639B] Sc·[0.25]
+21:23:40.526315 db@open opening
+21:23:40.526403 journal@recovery F·1
+21:23:40.606264 journal@recovery recovering @3
+21:23:40.608053 memdb@flush created L0@5 N·1 S·370B "eth..Q\xad\xa6,v12":"eth..Q\xad\xa6,v12"
+21:23:40.614813 version@stat F·[2] S·1009B[1009B] Sc·[0.50]
+21:23:40.620415 db@janitor F·4 G·0
+21:23:40.620446 db@open done T·94.115365ms

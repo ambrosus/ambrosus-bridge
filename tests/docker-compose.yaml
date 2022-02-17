@@ -1,0 +1,27 @@
+version: '2.4'
+services:
+  ambrosus:
+    image: unclemakson/openethereum:latest
+    command: --config /app/config.toml
+    working_dir: /app
+    user: root
+    restart: unless-stopped
+    ports:
+      - '8555:8545/tcp'
+      - '30303:30303/tcp'
+      - '30303:30303/udp'
+    volumes:
+      - ./amb/:/app/
+
+  ethereum:
+    image: ethereum/client-go:latest
+    command: --config /app/config.toml
+    working_dir: /app
+    user: root
+    ports:
+      - '8545:8545/tcp'
+      - '30303:30303/tcp'
+      - '30303:30303/udp'
+    volumes:
+      - ./eth/:/app/
+
