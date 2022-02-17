@@ -10,7 +10,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 const (
@@ -79,7 +78,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*contracts.CheckAuraBlockAura, event *contracts.TransferEvent) (*contracts.CommonStructsTransferProof, error) {
-	proof, err := b.getProof(&event.Raw)
+	proof, err := b.getProof(event)
 	if err != nil {
 		return nil, err
 	}
@@ -123,7 +122,7 @@ func (b *Bridge) encodeVSChangeEvent(prevEvent, event *contracts.VsInitiateChang
 		return nil, err
 	}
 
-	proof, err := b.getProof(&event.Raw)
+	proof, err := b.getProof(event)
 	if err != nil {
 		return nil, err
 	}
@@ -165,12 +164,12 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 	return res, nil
 }
 
-func (b *Bridge) getProof(log *types.Log) ([][]byte, error) {
-	receipts, err := b.GetReceipts(log.BlockHash)
+func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
+	receipts, err := b.GetReceipts(event.Log().BlockHash)
 	if err != nil {
 		return nil, err
 	}
-	return receipts_proof.CalcProof(receipts, log)
+	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
 func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contracts.CheckAuraBlockAura, error) {
