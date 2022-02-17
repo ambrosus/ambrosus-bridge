@@ -22,7 +22,10 @@ func Test(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	encodedBlock := EncodeBlock(block.Header(), true)
+	encodedBlock, err := EncodeBlock(block.Header(), true)
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	if common.BytesToHash(encodedBlock.PrevHashOrReceiptRoot[:]) != block.ReceiptHash() {
 		t.Fatal("receiptsHash from encoded block != original")

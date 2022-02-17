@@ -323,9 +323,9 @@
                 "type": "address"
               },
               {
-                "internalType": "uint64",
+                "internalType": "int64",
                 "name": "delta_index",
-                "type": "uint64"
+                "type": "int64"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",
@@ -772,9 +772,9 @@
                 "type": "address"
               },
               {
-                "internalType": "uint64",
+                "internalType": "int64",
                 "name": "delta_index",
-                "type": "uint64"
+                "type": "int64"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",

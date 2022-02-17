@@ -42,7 +42,10 @@ func init() {
 
 func main() {
 	// Creating a new ambrosus bridge.
-	bridge := amb.New(&config.Bridge{Url: url})
+	bridge, err := amb.New(&config.Bridge{Url: url})
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	// Getting log receipts.
 	logReceipt, err := bridge.Client.TransactionReceipt(context.Background(), txHash)
