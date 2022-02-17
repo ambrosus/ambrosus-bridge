@@ -56,16 +56,16 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 
 	}
 	return nil
-	//auth, err := b.getAuth()
-	//if err != nil {
+	// auth, err := b.getAuth()
+	// if err != nil {
 	//	// todo
-	//}
+	// }
 
-	//tx, err := b.Contract.CheckPoW(auth, powProof)
-	//if err != nil {
+	// tx, err := b.Contract.CheckPoW(auth, powProof)
+	// if err != nil {
 	//	// todo
-	//}
-	//_ = tx
+	// }
+	// _ = tx
 }
 
 // Getting last contract event id.
@@ -157,7 +157,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 
 	// todo
 	_ = ambTransfer
-	//b.submitFunc(blocks, transfer, vsChanges)
+	// b.submitFunc(blocks, transfer, vsChanges)
 
 	return nil
 }
