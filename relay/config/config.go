@@ -22,8 +22,8 @@ type Bridge struct {
 
 var Config = map[string]*Bridge{
 	"amb": {
-		Url:             "https://network.ambrosus.io",
-		ContractAddress: ethcommon.HexToAddress(""),
+		Url:               "https://network.ambrosus.io",
+		ContractAddress:   ethcommon.HexToAddress(""),
 		VSContractAddress: ethcommon.HexToAddress(""),
 		PrivateKey:        ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:      10,

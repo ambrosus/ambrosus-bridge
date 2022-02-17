@@ -2,13 +2,15 @@ package amb
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
+	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
-
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -16,12 +18,20 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// maybe move to helpers pkg
+type JsonError interface {
+	Error() string
+	ErrorCode() int
+	ErrorData() interface{}
+}
+
 type Bridge struct {
-	Client     *ethclient.Client
-	Contract   *contracts.Amb
-	VSContract *contracts.Vs
-	sideBridge networks.Bridge
-	config     *config.Bridge
+	Client      *ethclient.Client
+	Contract    *contracts.Amb
+	ContractRaw *contracts.AmbRaw
+	VSContract  *contracts.Vs
+	sideBridge  networks.Bridge
+	config      *config.Bridge
 }
 
 // Creating a new ambrosus bridge.
@@ -44,28 +54,79 @@ func New(cfg *config.Bridge) (*Bridge, error) {
 		return nil, err
 	}
 
-	return &Bridge{Client: client, Contract: contract, VSContract: vsContract, config: cfg}, nil
+	return &Bridge{
+		Client:      client,
+		Contract:    contract,
+		ContractRaw: &contracts.AmbRaw{Contract: contract},
+		VSContract:  vsContract,
+		config:      cfg,
+	}, nil
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
+	var castProof *contracts.CheckPoWPoWProof
 	switch proof.(type) {
 	case *contracts.CheckPoWPoWProof:
 		// todo
+		castProof = proof.(*contracts.CheckPoWPoWProof)
 	default:
 		// todo error
-
+		return fmt.Errorf("")
 	}
-	return nil
-	//auth, err := b.getAuth()
-	//if err != nil {
-	//	// todo
-	//}
 
-	//tx, err := b.Contract.CheckPoW(auth, powProof)
-	//if err != nil {
-	//	// todo
-	//}
-	//_ = tx
+	auth, err := b.getAuth()
+	if err != nil {
+		return err
+	}
+
+	tx, txErr := b.Contract.SubmitTransfer(auth, *castProof)
+
+	if txErr != nil {
+		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
+		// openethereum doesn't give us a full error message
+		// so, make low-level call method to get the full error message
+		err = b.ContractRaw.Call(&bind.CallOpts{
+			From: auth.From,
+		}, nil, "submitTransfer", *castProof)
+
+		if err != nil {
+			errStr := getJsonErrData(err)
+
+			if strings.HasPrefix(errStr, "Reverted") {
+				errBytes, err := hex.DecodeString(errStr[11:])
+				if err != nil {
+					return err
+				}
+				errStr = string(errBytes)
+			}
+
+			return fmt.Errorf("%s", errStr)
+		} else {
+			// врятли такой кейс будет.
+			// но если и будет, то шото странно: при вызове контракта норм способом ошибка есть
+			// а при вызове через ненорм способ - нету.
+			// ну тогда вернём ту ошибку, которая при норм способе
+			errStr := getJsonErrData(txErr)
+			return fmt.Errorf("%s", errStr)
+		}
+	}
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
+	if err != nil {
+		return err
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		// we've got here probably due to low gas limit,
+		// and revert() that hasn't been caught at eth_estimateGas
+		err := getFailureReason(b.Client, auth.From, tx)
+		if err != nil {
+			errStr := getJsonErrData(err)
+			return fmt.Errorf("%s", errStr)
+		}
+	}
+
+	return nil
 }
 
 // Getting last contract event id.
@@ -237,4 +298,23 @@ func (b *Bridge) waitForBlock(targetBlockNum uint64) error {
 	}
 
 	return nil
+}
+
+// maybe move the functions below to helpers pkg
+func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction) error {
+	_, err := client.CallContract(context.Background(), ethereum.CallMsg{
+		From:     from,
+		To:       tx.To(),
+		Gas:      tx.Gas(),
+		GasPrice: tx.GasPrice(),
+		Value:    tx.Value(),
+		Data:     tx.Data(),
+	}, nil)
+
+	return err
+}
+
+func getJsonErrData(err error) string {
+	var jsonErr = err.(JsonError)
+	return jsonErr.ErrorData().(string)
 }
