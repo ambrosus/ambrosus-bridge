@@ -150,7 +150,6 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 		Context: context.Background(),
 	}
 
-	// todo validator set is separate contract
 	logs, err := b.VSContract.FilterInitiateChange(opts, nil)
 	if err != nil {
 		return nil, err
