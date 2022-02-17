@@ -32,15 +32,21 @@ func TestReceiptsProof(t *testing.T) {
 				t.Fatalf("error loading data file: %s", err.Error())
 			}
 
+			logElements := [][]byte{
+				data.Log.Address.Bytes(),
+				data.Log.Topics[1].Bytes(),
+				data.Log.Data,
+			}
+
 			// Calculate proof.
-			proof, err := CalcProof(data.Receipts, data.Log)
+			proof, err := CalcProof(data.Receipts, data.Log, logElements)
 			if err != nil {
 				t.Errorf("error calculate proof: %s", err.Error())
 			}
 
 			// Check for similarity of a receipt hash.
-			receipt := CheckProof(proof, data.Log)
-			if receipt != data.Header.ReceiptHash {
+			receiptHash := CheckProof(proof, logElements)
+			if receiptHash != data.Header.ReceiptHash {
 				t.Error("error proof check failed")
 			}
 		})

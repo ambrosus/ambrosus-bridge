@@ -6,24 +6,25 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
+	"github.com/ethereum/go-ethereum/rlp"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func CheckProof(proof [][]byte, log *types.Log) common.Hash {
-	el := helpers.BytesConcat(
-		proof[0],
-		log.Address.Bytes(),
-		proof[1],
-		log.Topics[1].Bytes(), // event id
-		proof[2],
-		log.Data, //transfers
-		proof[3],
-	)
+func CheckProof(proof [][]byte, proofElements [][]byte) common.Hash {
+	wrapProofsCount := len(proofElements) + 1
+	// wrap proofElements with proof
+	els := make([][]byte, 0, len(proofElements)+wrapProofsCount)
+	for i, le := range proofElements {
+		els = append(els, proof[i], le)
+	}
+	els = append(els, proof[wrapProofsCount-1])
+	// el now == rlpLog from `CalcProf`
+	el := helpers.BytesConcat(els...)
 
-	for i := 4; i < len(proof); i += 2 {
+	// compute trie root
+	for i := wrapProofsCount; i < len(proof); i += 2 {
 		el = helpers.BytesConcat(proof[i], el, proof[i+1])
 		if len(el) > 32 {
 			el = mytrie.Hash(el)
@@ -33,8 +34,13 @@ func CheckProof(proof [][]byte, log *types.Log) common.Hash {
 	return common.BytesToHash(el)
 }
 
-func CalcProof(receipts []*types.Receipt, log *types.Log) ([][]byte, error) {
-	rlpLog, logResult, err := encodeLog(log)
+func CalcProof(receipts []*types.Receipt, log *types.Log, proofElements [][]byte) ([][]byte, error) {
+	rlpLog, err := rlp.EncodeToBytes(log)
+	if err != nil {
+		return nil, err
+	}
+
+	logResult, err := helpers.BytesSplit(rlpLog, proofElements)
 	if err != nil {
 		return nil, err
 	}
@@ -45,25 +51,6 @@ func CalcProof(receipts []*types.Receipt, log *types.Log) ([][]byte, error) {
 	}
 
 	return append(logResult, trieResult...), nil
-}
-
-func encodeLog(log *types.Log) (rlpLog []byte, result [][]byte, err error) {
-	if len(log.Topics) != 2 { // topic[0] always here, topic[1] must be event_id
-		return nil, nil, fmt.Errorf("log.Topics length != 2 (only event_id must be indexed)")
-	}
-
-	rlpLog, err = rlp.EncodeToBytes(log)
-	if err != nil {
-		return
-	}
-
-	splitEls := [][]byte{
-		log.Address.Bytes(),
-		log.Topics[1].Bytes(),
-		log.Data,
-	}
-	result, err = helpers.BytesSplit(rlpLog, splitEls)
-	return
 }
 
 type trieProof struct {
