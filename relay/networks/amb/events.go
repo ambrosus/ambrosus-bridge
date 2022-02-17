@@ -98,15 +98,18 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*contracts.CheckAuraBlock
 func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]*contracts.CheckAuraValidatorSetProof, error) {
 	vsChanges := make([]*contracts.CheckAuraValidatorSetProof, 0, len(events))
 
-	var prevEvent *contracts.VsInitiateChange // todo VS_0 state
+	prevSet, err := b.sideBridge.GetValidatorSet()
+	if err != nil {
+		return nil, err
+	}
 
 	for i, event := range events {
-		encodedEvent, err := b.encodeVSChangeEvent(prevEvent, event)
+		encodedEvent, err := b.encodeVSChangeEvent(prevSet, event)
 		if err != nil {
 			return nil, err
 		}
 		vsChanges[i] = encodedEvent
-		prevEvent = event
+		prevSet = event.NewSet
 
 		blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, int64(i))
 		if err != nil {
@@ -116,8 +119,8 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 	return vsChanges, nil
 }
 
-func (b *Bridge) encodeVSChangeEvent(prevEvent, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
-	address, index, err := deltaVS(prevEvent.NewSet, event.NewSet)
+func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
+	address, index, err := deltaVS(prevSet, event.NewSet)
 	if err != nil {
 		return nil, err
 	}
