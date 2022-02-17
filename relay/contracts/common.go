@@ -4,27 +4,10 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 )
 
 type TransferProof interface {
 	EventId() *big.Int
-}
-
-type TransferEvent struct {
-	EventId *big.Int
-	Queue   []CommonStructsTransfer
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// EthTransfer represents a Transfer event raised by the Eth contract.
-type EthTransfer struct {
-	TransferEvent
-}
-
-// AmbTransfer represents a Transfer event raised by the Amb contract.
-type AmbTransfer struct {
-	TransferEvent
 }
 
 // CommonStructsTransfer is an auto generated low-level Go binding around an user-defined struct.

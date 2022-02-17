@@ -506,13 +506,6 @@ func (it *VsInitiateChangeIterator) Close() error {
 	return nil
 }
 
-// VsInitiateChange represents a InitiateChange event raised by the Vs contract.
-type VsInitiateChange struct {
-	ParentHash [32]byte
-	NewSet     []common.Address
-	Raw        types.Log // Blockchain specific contextual infos
-}
-
 // FilterInitiateChange is a free log retrieval operation binding the contract event 0x55252fa6eee4741b4e24a74a70e9c11fd2c2281df8d6ea13126ff845f7825c89.
 //
 // Solidity: event InitiateChange(bytes32 indexed parentHash, address[] newSet)
