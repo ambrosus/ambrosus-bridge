@@ -28,13 +28,31 @@ contract CheckAura {
     struct ValidatorSetProof {
         bytes[] receipt_proof;
         address delta_address;
-        uint64 delta_index;
+        uint64 delta_index; // < 0 ? remove : add
     }
 
     struct AuraProof {
         BlockAura[] blocks;
         CommonStructs.TransferProof transfer;
         ValidatorSetProof[] vs_changes;
+    }
+
+    address[] public validatorSet;
+
+
+    constructor(address[] memory _initialValidators) {
+        require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
+        validatorSet = _initialValidators;
+    }
+
+    function addValidator(uint index, address validator) internal {
+        validatorSet.push(validatorSet[index]);
+        validatorSet[index] = validator;
+    }
+
+    function removeValidator(uint index) internal {
+        validatorSet[index] = validatorSet[validatorSet.length - 1];
+        validatorSet.pop();
     }
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks) public {
@@ -55,6 +73,7 @@ contract CheckAura {
 
             if (block.type_ >= 0) {// validator set change event
                 // todo check vs event
+                // val set
             }
             else if (block.type_ == - 1) {// transfer event
                 // todo check transfers event
