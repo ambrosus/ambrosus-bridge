@@ -33,7 +33,7 @@ var Config = map[string]*Bridge{
 	},
 	"eth": {
 		Url:             "wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-		ContractAddress: ethcommon.HexToAddress("0x74586F2646faf275D1c90b4F347BF9C0c5E9E3a1"),
+		ContractAddress: ethcommon.HexToAddress(""),
 		PrivateKey:      ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:    10,
 		ChainID:         big.NewInt(1),
