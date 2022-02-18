@@ -38,15 +38,6 @@ var Config = map[string]*Bridge{
 		SafetyBlocks:    10,
 		ChainID:         big.NewInt(1),
 	},
-	"oelocal": {
-		Url:               "ws://127.0.0.1:8546",
-		HttpUrl:           "http://127.0.0.1:8545",
-		ContractAddress:   ethcommon.HexToAddress(""),
-		VSContractAddress: ethcommon.HexToAddress(""),
-		PrivateKey:        ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
-		SafetyBlocks:      1,
-		ChainID:           big.NewInt(1),
-	},
 }
 
 func ParsePK(pk string) *ecdsa.PrivateKey {
