@@ -28,7 +28,7 @@ contract CheckAura {
     struct ValidatorSetProof {
         bytes[] receipt_proof;
         address delta_address;
-        uint64 delta_index; // < 0 ? remove : add
+        int64 delta_index; // < 0 ? remove : add
     }
 
     struct AuraProof {
@@ -101,6 +101,10 @@ contract CheckAura {
     function GetValidator(uint step) internal view returns (address) {
         // todo
         return address(this);
+    }
+
+    function GetValidatorSet() public view returns (address[] memory) {
+        return validatorSet;
     }
 
     function CheckSignature(address signer, bytes32 message, bytes memory signature) internal view {

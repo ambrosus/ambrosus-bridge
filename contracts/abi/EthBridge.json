@@ -40,6 +40,11 @@
         "internalType": "uint256",
         "name": "minSafetyBlocks_",
         "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "initialValidators",
+        "type": "address[]"
       }
     ],
     "stateMutability": "nonpayable",
@@ -356,6 +361,19 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "GetValidatorSet",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -916,6 +934,25 @@
     "name": "unlockTransfers",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "validatorSet",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
