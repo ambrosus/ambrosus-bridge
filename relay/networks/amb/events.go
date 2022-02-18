@@ -39,13 +39,17 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 	}
 
 	// add safety blocks after each event block
+	safetyBlocks, err := b.getSafetyBlocksNum()
+	if err != nil {
+		return nil, err
+	}
 	for blockNum := range blocksMap {
-		for i := uint64(0); i < b.config.SafetyBlocks; i++ {
+		for i := uint64(0); i < safetyBlocks; i++ {
 			targetBlockNum := blockNum + i
 
 			// set block type == safety; need to explicitly specify if this is the end of safety chain
 			blType := int64(BlTypeSafety)
-			if i == b.config.SafetyBlocks {
+			if i == safetyBlocks {
 				blType = BlTypeSafetyEnd
 			}
 
@@ -144,8 +148,13 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 		return nil, err
 	}
 
+	safetyBlocks, err := b.getSafetyBlocksNum()
+	if err != nil {
+		return nil, err
+	}
+
 	start := prevEvent.Raw.BlockNumber
-	end := event.Raw.BlockNumber + b.config.SafetyBlocks
+	end := event.Raw.BlockNumber + safetyBlocks
 
 	opts := &bind.FilterOpts{
 		Start:   start,
