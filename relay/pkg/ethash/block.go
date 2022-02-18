@@ -71,10 +71,13 @@ func (s *BlockMetaData) DAGProofArray() []*big.Int {
 	if s.DatasetTree == nil {
 		s.buildDagTree()
 	}
+
 	result := []*big.Int{}
+
 	for _, be := range s.DatasetTree.AllBranchesArray() {
 		result = append(result, be.Big())
 	}
+
 	return result
 }
 

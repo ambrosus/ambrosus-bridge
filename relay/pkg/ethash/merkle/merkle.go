@@ -137,7 +137,7 @@ func (m *MerkleTree) RegisterIndex(indexes ...uint32) {
 	}
 }
 
-func (m *MerkleTree) Branches() map[uint32]BranchTree {
+func (m MerkleTree) Branches() map[uint32]BranchTree {
 	if m.finalized {
 		return *(m.merkleBuf.Front().Value.(Node).Branches)
 	}
@@ -145,6 +145,6 @@ func (m *MerkleTree) Branches() map[uint32]BranchTree {
 	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
 }
 
-func (m *MerkleTree) Indices() []uint32 {
+func (m MerkleTree) Indices() []uint32 {
 	return m.orderedIndexes
 }

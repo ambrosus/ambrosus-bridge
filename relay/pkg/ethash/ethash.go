@@ -34,33 +34,35 @@ const (
 var ErrInvalidDumpMagic = errors.New("invalid dump magic")
 
 var (
-	Instance          = New(defaultDir(), 3, 3, defaultDir(), 0, 3)
-	DefaultDir        = defaultDir()
+	Instance   = New(defaultDir(), 3, 3, defaultDir(), 0, 3)
+	DefaultDir = defaultDir()
+
+	// algorithmRevision is the data structure version used for file naming.
 	algorithmRevision = 23
-	dumpMagic         = []uint32{0xbaddcafe, 0xfee1dead}
+
+	// dumpMagic is a dataset dump header to sanity check a data dump.
+	dumpMagic = []uint32{0xbaddcafe, 0xfee1dead}
 )
 
 func defaultDir() string {
 	home := os.Getenv("HOME")
+
 	if user, err := user.Current(); err == nil {
 		home = user.HomeDir
-	}
-	if runtime.GOOS == "windows" {
+	} else if runtime.GOOS == "windows" {
 		return filepath.Join(home, "AppData", "Ethash")
 	}
+
 	return filepath.Join(home, ".ethash")
 }
 
+// dataset wraps an ethash dataset with some metadata to allow easier concurrent use.
 type dataset struct {
-	epoch uint64 // Epoch for which this cache is relevant
-
-	dump *os.File  // File descriptor of the memory mapped cache
-	mmap mmap.MMap // Memory map itself to unmap before releasing
-
-	dataset []uint32   // The actual cache data content
-	used    time.Time  // Timestamp of the last use for smarter eviction
-	once    sync.Once  // Ensures the cache is generated only once
-	lock    sync.Mutex // Ensures thread safety for updating the usage time
+	epoch   uint64    // Epoch for which this cache is relevant
+	dump    *os.File  // File descriptor of the memory mapped cache
+	mmap    mmap.MMap // Memory map itself to unmap before releasing
+	dataset []uint32  // The actual cache data content
+	once    sync.Once // Ensures the cache is generated only once
 }
 
 func MakeDataset(block uint64, dir string) {
@@ -69,6 +71,7 @@ func MakeDataset(block uint64, dir string) {
 	d.release()
 }
 
+// generate ensures that the dataset content is generated before use.
 func (d *dataset) generate(dir string, limit int, test bool) {
 	d.once.Do(func() {
 		// If we have a testing dataset, generate and return
@@ -81,6 +84,7 @@ func (d *dataset) generate(dir string, limit int, test bool) {
 
 			return
 		}
+
 		// If we don't store anything on disk, generate and return
 		csize := cacheSize(d.epoch*epochLength + 1)
 		dsize := datasetSize(d.epoch*epochLength + 1)
@@ -94,6 +98,7 @@ func (d *dataset) generate(dir string, limit int, test bool) {
 			d.dataset = make([]uint32, dsize/4)
 			generateDataset(d.dataset, d.epoch, cache)
 		}
+
 		// Disk storage is needed, this will get fancy
 		var endian string
 		if !isLittleEndian() {
@@ -128,6 +133,7 @@ func (d *dataset) generate(dir string, limit int, test bool) {
 			d.dataset = make([]uint32, dsize/2)
 			generateDataset(d.dataset, d.epoch, cache)
 		}
+
 		// Iterate over all previous instances and delete old ones
 		for ep := int(d.epoch) - limit; ep >= 0; ep-- {
 			seed := seedHash(uint64(ep)*epochLength + 1)
@@ -160,21 +166,13 @@ type EthashMetaData struct {
 	caches   map[uint64]*cache   // In memory caches to avoid regenerating too often
 	fcache   *cache              // Pre-generated cache for the estimated future epoch
 	datasets map[uint64]*dataset // In memory datasets to avoid regenerating too often
-	fdataset *dataset            // Pre-generated dataset for the estimated future epoch
 
 	// Mining related fields
-	rand     *rand.Rand    // Properly seeded random source for nonces
-	threads  int           // Number of threads to mine on if mining
 	update   chan struct{} // Notification channel to update mining parameters
 	hashrate metrics.Meter // Meter tracking the average hashrate
 
 	// The fields below are hooks for testing
-	tester    bool            // Flag whether to use a smaller test dataset
-	shared    *EthashMetaData // Shared PoW verifier to avoid cache regeneration
-	fakeMode  bool            // Flag whether to disable PoW checking
-	fakeFull  bool            // Flag whether to disable all consensus rules
-	fakeFail  uint64          // Block number which fails PoW check even in fake mode
-	fakeDelay time.Duration   // Time delay to sleep for before returning from verify
+	tester bool // Flag whether to use a smaller test dataset
 
 	lock sync.Mutex // Ensures thread safety for the in-memory caches and mining fields
 }
@@ -407,12 +405,11 @@ func memoryMapAndGenerate(path string, size uint64, generator func(buffer []uint
 	return memoryMap(path)
 }
 
+// cache wraps an ethash cache with some metadata to allow easier concurrent use.
 type cache struct {
-	epoch uint64 // Epoch for which this cache is relevant
-
-	dump *os.File  // File descriptor of the memory mapped cache
-	mmap mmap.MMap // Memory map itself to unmap before releasing
-
+	epoch uint64     // Epoch for which this cache is relevant
+	dump  *os.File   // File descriptor of the memory mapped cache
+	mmap  mmap.MMap  // Memory map itself to unmap before releasing
 	cache []uint32   // The actual cache data content (may be memory mapped)
 	used  time.Time  // Timestamp of the last use for smarter eviction
 	once  sync.Once  // Ensures the cache is generated only once
@@ -430,6 +427,7 @@ func (c *cache) release() {
 	}
 }
 
+// generate ensures that the cache content is generated before use.
 func (c *cache) generate(dir string, limit int, test bool) {
 	c.once.Do(func() {
 		// If we have a testing cache, generate and return

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"hash"
+	"math/big"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -20,16 +21,18 @@ import (
 )
 
 const (
-	datasetInitBytes   = 1 << 30
-	datasetGrowthBytes = 1 << 23
-	cacheRounds        = 3
-	cacheGrowthBytes   = 1 << 17
-	cacheInitBytes     = 1 << 24
-	datasetParents     = 256
+	datasetInitBytes   = 1 << 30 // Bytes in dataset at genesis
+	datasetGrowthBytes = 1 << 23 // Dataset growth per epoch
+	cacheRounds        = 3       // Number of rounds in cache production
+	cacheGrowthBytes   = 1 << 17 // Cache growth per epoch
+	cacheInitBytes     = 1 << 24 // Bytes in cache at genesis
+	datasetParents     = 256     // Number of parents of each dataset element
 )
 
 func DatasetSize(blockNum uint64) uint64 { return datasetSizes[blockNum/epochLength] }
 
+// generateDatasetItem combines data from 256 pseudorandomly selected cache nodes,
+// and hashes that to compute a single dataset node.
 func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte {
 	// Calculate the number of thoretical rows (we use one buffer nonetheless)
 	rows := uint32(len(cache) / hashWords)
@@ -48,29 +51,36 @@ func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte 
 	for i := 0; i < len(intMix); i++ {
 		intMix[i] = binary.LittleEndian.Uint32(mix[i*4:])
 	}
+
 	// fnv it with a lot of random cache nodes based on index
 	for i := uint32(0); i < datasetParents; i++ {
 		parent := fnv(index^i, intMix[i%16]) % rows
 		fnvHash(intMix, cache[parent*hashWords:])
 	}
+
 	// Flatten the uint32 mix into a binary one and return
 	for i, val := range intMix {
 		binary.LittleEndian.PutUint32(mix[i*4:], val)
 	}
 	keccak512(mix, mix)
+
 	return mix
 }
 
+// MakeDAG generates a new ethash dataset and optionally stores it to disk.
 func MakeDAG(block uint64, dir string) {
 	MakeDataset(block-30000, dir)
 }
 
 func PathToDAG(epoch uint64, dir string) string {
 	seed := ethash.SeedHash(epoch*epochLength + 1)
+
 	var endian string
+
 	if !isLittleEndian() {
 		endian = ".be"
 	}
+
 	return filepath.Join(dir, fmt.Sprintf("full-R%d-%x%s", 23, seed[:8], endian))
 }
 
@@ -93,13 +103,17 @@ func seedHash(block uint64) []byte {
 	if block < epochLength {
 		return seed
 	}
+
 	keccak256 := makeHasher(sha3.NewLegacyKeccak256())
 	for i := 0; i < int(block/epochLength); i++ {
 		keccak256(seed, seed)
 	}
+
 	return seed
 }
 
+// generateDataset generates the entire ethash dataset for mining.
+// This method places the result into dest in machine byte order.
 func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 	// Print some debug logs to allow analysis on low end devices
 	logger := log.New("epoch", epoch)
@@ -148,6 +162,7 @@ func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 			if limit > size/hashBytes {
 				limit = size / hashBytes
 			}
+
 			// Calculate the dataset segment
 			percent := size / hashBytes / 100
 			for index := first; index < limit; index++ {
@@ -163,10 +178,57 @@ func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 			}
 		}(i)
 	}
+
 	// Wait for all the generators to finish and return
 	pend.Wait()
 }
 
+// cacheSize returns the size of the ethash verification cache that belongs to a certain
+// block number.
+func cacheSize(block uint64) uint64 {
+	// If we have a pre-generated value, use that
+	epoch := int(block / epochLength)
+	if epoch < len(cacheSizes) {
+		return cacheSizes[epoch]
+	}
+
+	// No known cache size, calculate manually (sanity branch only)
+	size := uint64(cacheInitBytes + cacheGrowthBytes*uint64(epoch) - hashBytes)
+	for !new(big.Int).SetUint64(size / hashBytes).ProbablyPrime(1) { // Always accurate for n < 2^64
+		size -= 2 * hashBytes
+	}
+
+	return size
+}
+
+// datasetSize returns the size of the ethash mining dataset that belongs to a certain
+// block number.
+func datasetSize(block uint64) uint64 {
+	epoch := int(block / epochLength)
+	if epoch < maxEpoch {
+		return datasetSizes[epoch]
+	}
+
+	return calcDatasetSize(epoch)
+}
+
+// calcDatasetSize calculates the dataset size for epoch. The dataset size grows linearly,
+// however, we always take the highest prime below the linearly growing threshold in order
+// to reduce the risk of accidental regularities leading to cyclic behavior.
+func calcDatasetSize(epoch int) uint64 {
+	size := datasetInitBytes + datasetGrowthBytes*uint64(epoch) - mixBytes
+	for !new(big.Int).SetUint64(size / mixBytes).ProbablyPrime(1) { // Always accurate for n < 2^64
+		size -= 2 * mixBytes
+	}
+
+	return size
+}
+
+// generateCache creates a verification cache of a given size for an input seed.
+// The cache production process involves first sequentially filling up 32 MB of
+// memory, then performing two passes of Sergio Demian Lerner's RandMemoHash
+// algorithm from Strict Memory Hard Hashing Functions (2014). The output is a
+// set of 524288 64-byte values.
 func generateCache(dest []uint32, epoch uint64, seed []byte) {
 	// Print some debug logs to allow analysis on low end devices
 	logger := log.New("epoch", epoch)
@@ -238,12 +300,15 @@ func generateCache(dest []uint32, epoch uint64, seed []byte) {
 	}
 }
 
+// swap changes the byte order of the buffer assuming a uint32 representation.
 func swap(buffer []byte) {
 	for i := 0; i < len(buffer); i += 4 {
 		binary.BigEndian.PutUint32(buffer[i:], binary.LittleEndian.Uint32(buffer[i:]))
 	}
 }
 
+// datasetSizes is a lookup table for the ethash dataset size for the first 2048
+// epochs (i.e. 61440000 blocks).
 var datasetSizes = [maxEpoch]uint64{
 	1073739904, 1082130304, 1090514816, 1098906752, 1107293056,
 	1115684224, 1124070016, 1132461952, 1140849536, 1149232768,
@@ -657,7 +722,9 @@ var datasetSizes = [maxEpoch]uint64{
 	18228444544, 18236833408, 18245220736,
 }
 
-var cacheSizes = []uint64{
+// cacheSizes is a lookup table for the ethash verification cache size for the
+// first 2048 epochs (i.e. 61440000 blocks).
+var cacheSizes = [maxEpoch]uint64{
 	16776896, 16907456, 17039296, 17170112, 17301056, 17432512, 17563072,
 	17693888, 17824192, 17955904, 18087488, 18218176, 18349504, 18481088,
 	18611392, 18742336, 18874304, 19004224, 19135936, 19267264, 19398208,

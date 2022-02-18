@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	epochLength uint64 = 30000
-	maxEpoch    uint64 = 2048
+	epochLength = 30000
+	maxEpoch    = 2048
 )
 
 type EpochData struct {
