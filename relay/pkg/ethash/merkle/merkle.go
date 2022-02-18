@@ -2,19 +2,6 @@ package merkle
 
 import "container/list"
 
-type BranchNode struct {
-	Hash             NodeData
-	Left             *BranchNode
-	Right            *BranchNode
-	ElementOnTheLeft bool
-}
-
-type BranchTree struct {
-	RawData    ElementData
-	HashedData NodeData
-	Root       *BranchNode
-}
-
 type Node struct {
 	Data      NodeData
 	NodeCount uint32

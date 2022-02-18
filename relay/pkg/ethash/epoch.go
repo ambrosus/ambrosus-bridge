@@ -35,5 +35,6 @@ func GenerateEpochData(epoch uint64, datasetPath string) *EpochData {
 		Epoch:                   big.NewInt(int64(epoch)),
 		FullSizeIn128Resolution: big.NewInt(int64(fullSizeIn128Resolution)),
 		BranchDepth:             big.NewInt(int64(branchDepth - 10)),
+		MerkleNodes:             mt.MerkleNodes(),
 	}
 }

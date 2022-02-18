@@ -2,6 +2,7 @@ package merkle
 
 import (
 	"container/list"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/crypto"
 )
@@ -42,6 +43,30 @@ func NewDatasetTree() *DatasetTree {
 			exportNodes:      []NodeData{},
 		},
 	}
+}
+
+func (m *DatasetTree) MerkleNodes() []*big.Int {
+	if m.finalized {
+		result := []*big.Int{}
+
+		for i := 0; i*2 < len(m.exportNodes); i++ {
+			if i*2+1 >= len(m.exportNodes) {
+				result = append(result, BranchElementFromHash(
+					SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+					SPHash(m.exportNodes[i*2].(DatasetData))).Big(),
+				)
+			} else {
+				result = append(result, BranchElementFromHash(
+					SPHash(m.exportNodes[i*2+1].(DatasetData)),
+					SPHash(m.exportNodes[i*2].(DatasetData))).Big(),
+				)
+			}
+		}
+
+		return result
+	}
+
+	panic("Merkle tree needs to be finalized")
 }
 
 func hash(a, b NodeData) NodeData {
