@@ -199,10 +199,13 @@ func (b *Bridge) listen() error {
 }
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
-	// todo update minSafetyBlocks value from contract
-
 	// Wait for safety blocks.
-	if err := b.waitForBlock(event.Raw.BlockNumber + b.config.SafetyBlocks); err != nil {
+	safetyBlocks, err := b.getSafetyBlocksNum()
+	if err != nil {
+		return err
+	}
+
+	if err := b.waitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
 		return err
 	}
 
