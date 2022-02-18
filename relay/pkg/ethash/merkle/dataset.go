@@ -31,14 +31,15 @@ func NewDatasetTree() *DatasetTree {
 
 	return &DatasetTree{
 		MerkleTree{
-			hash:            hash,
-			merkleBuf:       merkleBuf,
-			elementHash:     elementHash,
-			exportNodeCount: 0,
-			storedLevel:     0,
-			finalized:       false,
-			indexes:         map[uint32]bool{},
-			exportNodes:     []NodeData{},
+			hash:             hash,
+			merkleBuf:        merkleBuf,
+			elementHash:      elementHash,
+			dummyNodeModifie: dummyNodeModifie,
+			exportNodeCount:  0,
+			storedLevel:      0,
+			finalized:        false,
+			indexes:          map[uint32]bool{},
+			exportNodes:      []NodeData{},
 		},
 	}
 }
@@ -89,3 +90,5 @@ func rev(b []byte) []byte {
 
 	return b
 }
+
+func dummyNodeModifie(data NodeData) {}

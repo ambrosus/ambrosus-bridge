@@ -47,7 +47,7 @@ type MerkleTree struct {
 	exportNodes      []NodeData
 }
 
-func (m *MerkleTree) Insert(data, index uint32) {
+func (m *MerkleTree) Insert(data ElementData, index uint32) {
 	node := Node{
 		Data:      m.elementHash(data),
 		NodeCount: 1,
