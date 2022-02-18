@@ -88,7 +88,7 @@ func addr(i string) common.Address {
 
 // for fast creating test addresses
 // set("1") 	 -> [0x0000000000000000000000000000000000000001]
-// set("prev", "curr") -> [0x000000000000000000000000000000000000000a, 0x000000000000000000000000000000000000000b]
+// set("a", "b") -> [0x000000000000000000000000000000000000000a, 0x000000000000000000000000000000000000000b]
 func set(addresses ...string) []common.Address {
 	result := make([]common.Address, 0, len(addresses))
 	for _, i := range addresses {

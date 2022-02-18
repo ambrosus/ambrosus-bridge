@@ -207,8 +207,8 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	}
 
 	// Check if the event has been removed.
-	if err := b.isEventRemoved; err != nil {
-		return err(event)
+	if err := b.isEventRemoved(event); err != nil {
+		return err
 	}
 
 	ambTransfer, err := b.getBlocksAndEvents(event)
@@ -218,7 +218,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 
 	// todo
 	_ = ambTransfer
-	//b.submitFunc(blocks, transfer, vsChanges)
+	// b.submitFunc(blocks, transfer, vsChanges)
 
 	return nil
 }

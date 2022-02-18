@@ -22,4 +22,8 @@ func main() {
 
 	go ambBridge.Run(ethBridge)
 	go ethBridge.Run(ambBridge)
+
+	// не знаю как это правильно делается в го
+	// но для временного решения пойдёть
+	select {}
 }
