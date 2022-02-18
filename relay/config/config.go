@@ -3,7 +3,6 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
-	"math/big"
 
 	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -16,7 +15,6 @@ type Bridge struct {
 	VSContractAddress ethcommon.Address
 	PrivateKey        *ecdsa.PrivateKey
 	SafetyBlocks      uint64
-	ChainID           *big.Int
 }
 
 // todo load from json
@@ -29,14 +27,12 @@ var Config = map[string]*Bridge{
 		VSContractAddress: ethcommon.HexToAddress(""),
 		PrivateKey:        ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:      10,
-		ChainID:           big.NewInt(30741),
 	},
 	"eth": {
 		Url:             "wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
 		ContractAddress: ethcommon.HexToAddress(""),
 		PrivateKey:      ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
 		SafetyBlocks:    10,
-		ChainID:         big.NewInt(1),
 	},
 }
 
