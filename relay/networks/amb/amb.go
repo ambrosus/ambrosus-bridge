@@ -247,7 +247,12 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 }
 
 func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
-	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, b.config.ChainID)
+	chainId, err := b.Client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, chainId)
 	if err != nil {
 		return nil, err
 	}
