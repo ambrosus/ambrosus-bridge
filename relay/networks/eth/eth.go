@@ -6,6 +6,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+	"github.com/ethereum/go-ethereum/common"
 
 	"github.com/ethereum/go-ethereum/ethclient"
 )
@@ -47,6 +48,10 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
+}
+
+func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
+	return b.Contract.GetValidatorSet(nil)
 }
 
 // todo code below may be common for all networks?
