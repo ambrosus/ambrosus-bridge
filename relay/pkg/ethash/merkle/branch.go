@@ -15,11 +15,26 @@ type BranchNode struct {
 	ElementOnTheLeft bool
 }
 
+func (b BranchNode) ToNodeArray() []NodeData {
+	if b.Left == nil && b.Right == nil {
+		return []NodeData{b.Hash}
+	}
+	left := b.Left.ToNodeArray()
+	right := b.Right.ToNodeArray()
+	if b.ElementOnTheLeft {
+		return append(left, right...)
+	} else {
+		return append(right, left...)
+	}
+}
+
 type BranchTree struct {
 	RawData    ElementData
 	HashedData NodeData
 	Root       *BranchNode
 }
+
+func (t BranchTree) ToNodeArray() []NodeData { return t.Root.ToNodeArray() }
 
 func AcceptRightSibling(branch *BranchNode, data NodeData) *BranchNode {
 	return &BranchNode{

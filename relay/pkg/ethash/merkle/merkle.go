@@ -31,8 +31,11 @@ type MerkleTree struct {
 	storedLevel      uint32
 	finalized        bool
 	indexes          map[uint32]bool
+	orderedIndexes   []uint32
 	exportNodes      []NodeData
 }
+
+func (m *MerkleTree) StoredLevel() uint32 { return m.storedLevel }
 
 func (m *MerkleTree) Insert(data ElementData, index uint32) {
 	node := Node{
@@ -125,4 +128,23 @@ func (m *MerkleTree) Finalize() {
 	}
 
 	m.finalized = true
+}
+
+func (m *MerkleTree) RegisterIndex(indexes ...uint32) {
+	for _, i := range indexes {
+		m.indexes[i] = true
+		m.orderedIndexes = append(m.orderedIndexes, i)
+	}
+}
+
+func (m *MerkleTree) Branches() map[uint32]BranchTree {
+	if m.finalized {
+		return *(m.merkleBuf.Front().Value.(Node).Branches)
+	}
+
+	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
+}
+
+func (m *MerkleTree) Indices() []uint32 {
+	return m.orderedIndexes
 }

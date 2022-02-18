@@ -16,6 +16,18 @@ type SPHash [HashLength]byte
 
 type Word [WordLength]byte
 
+func (w Word) ToUint256Array() []*big.Int {
+	result := []*big.Int{}
+	for i := 0; i < WordLength/32; i++ {
+		z := big.NewInt(0)
+		// reverse the bytes because contract expects
+		// big Int is construct in little endian
+		z.SetBytes(rev(w[i*32 : (i+1)*32]))
+		result = append(result, z)
+	}
+	return result
+}
+
 type DatasetData SPHash
 
 func (d DatasetData) Copy() NodeData {
@@ -40,6 +52,7 @@ func NewDatasetTree() *DatasetTree {
 			storedLevel:      0,
 			finalized:        false,
 			indexes:          map[uint32]bool{},
+			orderedIndexes:   []uint32{},
 			exportNodes:      []NodeData{},
 		},
 	}
@@ -67,6 +80,52 @@ func (m *DatasetTree) MerkleNodes() []*big.Int {
 	}
 
 	panic("Merkle tree needs to be finalized")
+}
+
+func (d *DatasetTree) AllDAGElements() []Word {
+	if d.finalized {
+		result := []Word{}
+		branches := d.Branches()
+		for _, k := range d.Indices() {
+			// p := branches[k]
+			// fmt.Printf("Index: %d\nRawData: %s\nHashedData: %s\n", k, hex.EncodeToString(p.RawData[:]), proofs[k].HashedData.Hex())
+			result = append(result, branches[k].RawData.(Word))
+		}
+		return result
+	}
+
+	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
+}
+
+func (d *DatasetTree) AllBranchesArray() []BranchElement {
+	if d.finalized {
+		result := []BranchElement{}
+		branches := d.Branches()
+		for _, k := range d.Indices() {
+			// p := proofs[k]
+			// fmt.Printf("Index: %d\nRawData: %s\nHashedData: %s\n", k, hex.EncodeToString(p.RawData[:]), proofs[k].HashedData.Hex())
+			hh := branches[k].ToNodeArray()[1:]
+			hashes := hh[:len(hh)-int(d.StoredLevel())]
+			// fmt.Printf("Len proofs: %s\n", len(pfs))
+			for i := 0; i*2 < len(hashes); i++ {
+				// for anyone who is courious why i*2 + 1 comes before i * 2
+				// it's agreement between client side and contract side
+				if i*2+1 >= len(hashes) {
+					result = append(result, BranchElementFromHash(
+						SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+						SPHash(hashes[i*2].(DatasetData))))
+				} else {
+					result = append(result, BranchElementFromHash(
+						SPHash(hashes[i*2+1].(DatasetData)),
+						SPHash(hashes[i*2].(DatasetData))))
+				}
+			}
+		}
+
+		return result
+	}
+
+	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
 }
 
 func hash(a, b NodeData) NodeData {
