@@ -272,13 +272,6 @@ func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
 		return nil, err
 	}
 
-	// todo check if nonce can set automatically. if so, remove this function
-	nonce, err := b.Client.PendingNonceAt(auth.Context, auth.From)
-	if err != nil {
-		return nil, err
-	}
-	auth.Nonce = big.NewInt(int64(nonce))
-
 	return auth, nil
 }
 
