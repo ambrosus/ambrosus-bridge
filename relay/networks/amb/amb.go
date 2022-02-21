@@ -16,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/sync/errgroup"
 )
 
 // maybe move to helpers pkg
@@ -228,24 +229,34 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
-	// todo we can use goroutines here
 	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
 		return nil, err
 	}
 
-	receipts := make([]*types.Receipt, 0, txsCount)
+	receipts := make([]*types.Receipt, txsCount)
 
+	errGroup := new(errgroup.Group)
 	for i := uint(0); i < txsCount; i++ {
-		tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
-		if err != nil {
-			return nil, err
-		}
-		receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
-		if err != nil {
-			return nil, err
-		}
-		receipts = append(receipts, receipt)
+		i := i
+		errGroup.Go(func() error {
+			tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
+			if err != nil {
+				return err
+			}
+			receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
+			if err != nil {
+				return err
+			}
+
+			receipts[i] = receipt
+			return nil
+		})
+	}
+
+	err = errGroup.Wait()
+	if err != nil {
+		return nil, err
 	}
 	return receipts, nil
 }
