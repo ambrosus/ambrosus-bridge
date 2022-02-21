@@ -16,6 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/sync/errgroup"
 )
 
 // maybe move to helpers pkg
@@ -67,11 +68,9 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 	var castProof *contracts.CheckPoWPoWProof
 	switch proof.(type) {
 	case *contracts.CheckPoWPoWProof:
-		// todo
 		castProof = proof.(*contracts.CheckPoWPoWProof)
 	default:
-		// todo error
-		return fmt.Errorf("")
+		return fmt.Errorf("unknown proof type %T, expected %T", proof, castProof)
 	}
 
 	auth, err := b.getAuth()
@@ -146,8 +145,8 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	if logs.Next() {
 		return &logs.Event.TransferEvent, nil
 	}
-	// todo err not found?
-	return nil, nil
+
+	return nil, fmt.Errorf("event with id %s not found", eventId)
 }
 
 // todo delete
@@ -224,32 +223,38 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	// todo
-	_ = ambTransfer
-	// b.submitFunc(blocks, transfer, vsChanges)
-
-	return nil
+	return b.sideBridge.SubmitTransfer(ambTransfer)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
-	// todo we can use goroutines here
 	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
 		return nil, err
 	}
 
-	receipts := make([]*types.Receipt, 0, txsCount)
+	receipts := make([]*types.Receipt, txsCount)
 
+	errGroup := new(errgroup.Group)
 	for i := uint(0); i < txsCount; i++ {
-		tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
-		if err != nil {
-			return nil, err
-		}
-		receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
-		if err != nil {
-			return nil, err
-		}
-		receipts = append(receipts, receipt)
+		i := i  // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
+		errGroup.Go(func() error {
+			tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
+			if err != nil {
+				return err
+			}
+			receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
+			if err != nil {
+				return err
+			}
+
+			receipts[i] = receipt
+			return nil
+		})
+	}
+
+	err = errGroup.Wait()
+	if err != nil {
+		return nil, err
 	}
 	return receipts, nil
 }
@@ -264,13 +269,6 @@ func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	// todo check if nonce can set automatically. if so, remove this function
-	nonce, err := b.Client.PendingNonceAt(auth.Context, auth.From)
-	if err != nil {
-		return nil, err
-	}
-	auth.Nonce = big.NewInt(int64(nonce))
 
 	return auth, nil
 }

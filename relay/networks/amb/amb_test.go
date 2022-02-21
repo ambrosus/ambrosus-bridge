@@ -48,7 +48,6 @@ func TestEncoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// todo HeaderByNumber return empty struct on fail but err == nil
 	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
 	if err != nil {
 		t.Fatal(err)

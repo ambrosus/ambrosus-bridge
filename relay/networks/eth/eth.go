@@ -1,6 +1,7 @@
 package eth
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
@@ -36,11 +37,12 @@ func New(cfg *config.Bridge) (*Bridge, error) {
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
+	var castProof *contracts.CheckAuraAuraProof
 	switch proof.(type) {
 	case *contracts.CheckAuraAuraProof:
-		// todo
+		castProof = proof.(*contracts.CheckAuraAuraProof)
 	default:
-		// todo error
+		return fmt.Errorf("unknown proof type %T, expected %T", proof, castProof)
 
 	}
 	return nil

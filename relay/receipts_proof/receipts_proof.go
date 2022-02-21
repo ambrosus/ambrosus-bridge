@@ -7,6 +7,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/rs/zerolog/log"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -96,7 +97,8 @@ func (p *trieProof) makeTrieProof() ([][]byte, error) {
 	for _, unhashedVal := range p.path {
 		r := bytes.Split(unhashedVal, whatSearch)
 		if len(r) != 2 {
-			return nil, fmt.Errorf("split result length (%v) != 2", len(r)) // todo pass split args here
+			log.Debug().Msgf("unhashedVal = 0x%x, whatSearch = 0x%x", unhashedVal, whatSearch)
+			return nil, fmt.Errorf("split result length (%v) != 2", len(r))
 		}
 		result = append(result, r[0], r[1])
 		whatSearch = mytrie.Hash(unhashedVal)
