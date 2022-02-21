@@ -146,8 +146,8 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	if logs.Next() {
 		return &logs.Event.TransferEvent, nil
 	}
-	// todo err not found?
-	return nil, nil
+
+	return nil, fmt.Errorf("event with id %s not found", eventId)
 }
 
 // todo delete
