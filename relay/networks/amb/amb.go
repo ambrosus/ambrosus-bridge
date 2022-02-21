@@ -180,10 +180,6 @@ func (b *Bridge) checkOldEvents() error {
 			return err
 		}
 
-		if nextEvent == nil {
-			return nil
-		}
-
 		err = b.sendEvent(nextEvent)
 		if err != nil {
 			return err
