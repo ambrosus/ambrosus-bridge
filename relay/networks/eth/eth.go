@@ -72,7 +72,7 @@ func (b *Bridge) DisputeBlock(blockHash common.Hash) {
 	copy(blockHeaderHashWithoutNonceLength32[:], blockHeaderHashWithoutNonce)
 
 	blockMetaData := ethash.NewBlockMetaData(
-		block.Header().Nonce.Uint64(), block.Header().Nonce.Uint64(),
+		block.Header().Number.Uint64(), block.Header().Nonce.Uint64(),
 		blockHeaderHashWithoutNonceLength32,
 	)
 
