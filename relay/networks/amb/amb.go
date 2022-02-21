@@ -276,12 +276,12 @@ func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
-	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
+	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
 		return err
 	}
 
-	if block.Hash() != event.Raw.BlockHash {
+	if block.Hash(true) != event.Raw.BlockHash {
 		return fmt.Errorf("block hash != event's block hash")
 	}
 	return nil
