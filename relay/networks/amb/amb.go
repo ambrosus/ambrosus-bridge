@@ -19,6 +19,18 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+type EventNotFoundErr struct {
+	EventId *big.Int
+}
+
+func (e EventNotFoundErr) Error() string {
+	return fmt.Sprintf("event with id %s not found", e.EventId)
+}
+
+func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
+	return &EventNotFoundErr{EventId: eventId}
+}
+
 // maybe move to helpers pkg
 type JsonError interface {
 	Error() string
