@@ -68,11 +68,9 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 	var castProof *contracts.CheckPoWPoWProof
 	switch proof.(type) {
 	case *contracts.CheckPoWPoWProof:
-		// todo
 		castProof = proof.(*contracts.CheckPoWPoWProof)
 	default:
-		// todo error
-		return fmt.Errorf("")
+		return fmt.Errorf("unknown proof type %T, expected %T", proof, castProof)
 	}
 
 	auth, err := b.getAuth()
