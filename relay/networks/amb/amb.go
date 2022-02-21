@@ -166,21 +166,41 @@ func (b *Bridge) Run(sideBridge networks.Bridge) {
 	}
 }
 
-func (b *Bridge) listen() error {
+func (b *Bridge) checkOldEvents() error {
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
 		return err
 	}
 
-	lastEvent, err := b.GetEventById(lastEventId)
+	i := big.NewInt(1)
+	for {
+		nextEventId := big.NewInt(0).Add(lastEventId, i)
+		nextEvent, err := b.GetEventById(nextEventId)
+		if err != nil {
+			return err
+		}
+
+		if nextEvent == nil {
+			return nil
+		}
+
+		err = b.sendEvent(nextEvent)
+		if err != nil {
+			return err
+		}
+
+		i = big.NewInt(0).Add(i, big.NewInt(1))
+	}
+}
+
+func (b *Bridge) listen() error {
+	err := b.checkOldEvents()
 	if err != nil {
 		return err
 	}
 
-	startBlock := lastEvent.Raw.BlockNumber + 1
-
 	// Subscribe to events
-	watchOpts := &bind.WatchOpts{Start: &startBlock, Context: context.Background()}
+	watchOpts := &bind.WatchOpts{Context: context.Background()}
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
