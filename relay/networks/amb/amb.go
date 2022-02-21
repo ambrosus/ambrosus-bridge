@@ -158,7 +158,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 		return &logs.Event.TransferEvent, nil
 	}
 
-	return nil, fmt.Errorf("event with id %s not found", eventId)
+	return nil, NewEventNotFoundErr(eventId)
 }
 
 // todo delete
@@ -189,6 +189,9 @@ func (b *Bridge) checkOldEvents() error {
 		nextEventId := big.NewInt(0).Add(lastEventId, i)
 		nextEvent, err := b.GetEventById(nextEventId)
 		if err != nil {
+			if _, ok := err.(*EventNotFoundErr); ok {
+				return nil
+			}
 			return err
 		}
 
