@@ -45,15 +45,17 @@ var (
 )
 
 func defaultDir() string {
-	home := os.Getenv("HOME")
+	path := os.Getenv("DATASET_PATH")
 
-	if user, err := user.Current(); err == nil {
-		home = user.HomeDir
-	} else if runtime.GOOS == "windows" {
-		return filepath.Join(home, "AppData", "Ethash")
+	if path == "" {
+		if user, err := user.Current(); err == nil {
+			path = user.HomeDir
+		} else if runtime.GOOS == "windows" {
+			return filepath.Join(path, "AppData", "Ethash")
+		}
 	}
 
-	return filepath.Join(home, ".ethash")
+	return filepath.Join(path, ".ethash")
 }
 
 // dataset wraps an ethash dataset with some metadata to allow easier concurrent use.
