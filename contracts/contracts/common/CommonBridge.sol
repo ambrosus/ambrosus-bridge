@@ -33,6 +33,7 @@ contract CommonBridge is AccessControl {
 
     uint lastTimeframe;
 
+    event Withdraw(address indexed from, uint event_id);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
 
 
@@ -57,11 +58,17 @@ contract CommonBridge is AccessControl {
 
     // todo remove
     event Test(uint indexed a, address indexed b, string c, uint d);
-    function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount) public {
+    function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount, bool transferEvent) public {
         emit Test(1, address(this), "asd", 123);
+
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Transfer(outputEventId++, queue);
-        delete queue;
+        emit Withdraw(msg.sender, outputEventId);
+
+        if (transferEvent) {
+            emit Transfer(outputEventId++, queue);
+            delete queue;
+        }
+
         emit Test(2, address(msg.sender), "dfg", 456);
     }
 
@@ -72,6 +79,7 @@ contract CommonBridge is AccessControl {
         require(msg.value == fee, "Sent value and fee must be same");
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        emit Withdraw(msg.sender, outputEventId);
 
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
