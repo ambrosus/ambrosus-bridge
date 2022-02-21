@@ -236,7 +236,7 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 
 	errGroup := new(errgroup.Group)
 	for i := uint(0); i < txsCount; i++ {
-		i := i
+		i := i  // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
 		errGroup.Go(func() error {
 			tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
 			if err != nil {
