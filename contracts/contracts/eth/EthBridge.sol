@@ -22,7 +22,7 @@ contract EthBridge is CommonBridge, CheckAura {
     CheckAura(
         initialValidators
     ) {
-        emitTestEvent(address(this), msg.sender, 10);
+        emitTestEvent(address(this), msg.sender, 10, true);
     }
 
     function submitTransfer(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) {
