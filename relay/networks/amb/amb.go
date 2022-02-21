@@ -224,11 +224,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	// todo
-	_ = ambTransfer
-	// b.submitFunc(blocks, transfer, vsChanges)
-
-	return nil
+	return b.sideBridge.SubmitTransfer(ambTransfer)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
