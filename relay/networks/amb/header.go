@@ -69,6 +69,10 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 		return nil, err
 	}
 
+	// Check if result is empty
+	if respData.Result.Number == nil {
+		return nil, fmt.Errorf("there is no header with number %d", number.Int64())
+	}
 	return &respData.Result, nil
 }
 
