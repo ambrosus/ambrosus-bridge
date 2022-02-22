@@ -366,7 +366,6 @@ contract Ethash is SHA3_512 {
 
     function isEpochDataSet( uint epochIndex ) public view returns(bool) {
         return epochData[epochIndex].fullSizeIn128Resultion != 0;
-
     }
 
     event SetEpochData( address indexed sender, uint error, uint errorInfo );
@@ -541,7 +540,6 @@ contract Ethash is SHA3_512 {
 
     function verifyPoW(uint blockNumber, bytes32 rlpHeaderHashWithoutNonce, uint nonce, uint difficulty,
         uint[] calldata dataSetLookup, uint[] calldata witnessForLookup) private view returns (uint, uint) {
-        console.log(nonce);
         // verify ethash
         uint epoch = blockNumber / EPOCH_LENGTH;
         uint ethash = hashimoto(rlpHeaderHashWithoutNonce, nonce, dataSetLookup, witnessForLookup, epoch);
@@ -550,7 +548,7 @@ contract Ethash is SHA3_512 {
             uint errorCode;
             uint errorInfo;
             if( ethash == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE ) {
-                // Required epoch data not set
+                // Required epoch data-pow not set
                 errorCode = 1;
                 errorInfo = epoch;
             }

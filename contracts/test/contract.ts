@@ -1,5 +1,6 @@
 import {deployments, ethers, getNamedAccounts, network} from "hardhat";
 import type {Contract, ContractReceipt, ContractTransaction, Signer} from "ethers";
+const RLP = require("RLP");
 
 import chai from "chai";
 
@@ -15,18 +16,21 @@ describe("Contract", () => {
   let ethBridge: Contract;
   let ambBridge: Contract;
   let mockERC20: Contract;
+  let ethash: Contract;
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash"]);
     ({owner} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
+
     ethBridge = await ethers.getContract("EthBridge", ownerS);
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
+    ethash = await ethers.getContract("Ethash", ownerS);
   });
 
   beforeEach(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge"]); // reset contracts state
+    await deployments.fixture(["ethbridge", "ambbridge", "ethash"]); // reset contracts state
   });
 
 
@@ -112,6 +116,23 @@ describe("Contract", () => {
     expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
   });
 
+  it("Test Ethash PoW", async () => {
+    const epoch = 269;
+    const fullSizeIn128Resolution = 26017759;
+    const branchDepth = 15;
+
+    const block = require("./data-pow/block-test-pow.json");
+    const datasetLookup = require("./data-pow/dataset-lookup.json");
+    const witnessLookup = require("./data-pow/witness-lookup.json");
+    const merkleNodes = require("./data-pow/epochdata-269.json");
+    await submitEpochData(ethash, epoch, fullSizeIn128Resolution, branchDepth, merkleNodes);
+    expect(await ethash.isEpochDataSet(epoch)).to.be.true;
+
+    let verifyResult = await ethash.Verify(block.number, createRLPHeader(block), block.nonce,
+                                           block.difficulty, datasetLookup, witnessLookup);
+    console.log("verify res:", verifyResult);
+  });
+
   it("Test Transfer lock/unlock", async () => {
     // todo
     /*
@@ -146,4 +167,48 @@ describe("Contract", () => {
     const timestamp = currentTimeframe * 14400 + amount * 14400;
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   }
+
+  const createRLPHeader = (block: any) => {
+    return RLP.encode([
+      block.parentHash,
+      block.sha3Uncles,
+      block.miner,
+      block.stateRoot,
+      block.transactionsRoot,
+      block.receiptsRoot,
+      block.logsBloom,
+      block.difficulty,
+      block.number,
+      block.gasLimit,
+      block.gasUsed,
+      block.timestamp,
+      block.extraData,
+      block.mixHash,
+      block.nonce,
+    ]);
+  };
+
+  const submitEpochData = async (ethashContractInstance: Contract, epoch: Number, fullSizeIn128Resolution: Number, branchDepth: Number, merkleNodes: any) => {
+    let start = 0;
+    let nodes: any = [];
+    let mnlen = 0;
+    let index = 0;
+    for (let mn of merkleNodes) {
+      nodes.push(mn);
+      if (nodes.length === 40 || index === merkleNodes.length - 1) {
+        mnlen = nodes.length;
+        if (index < 440 && epoch === 128) {
+          start = start + mnlen;
+          nodes = [];
+          return;
+        }
+
+        await ethashContractInstance.setEpochData(epoch, fullSizeIn128Resolution, branchDepth, nodes, start, mnlen);
+
+        start = start + mnlen;
+        nodes = [];
+      }
+      index++;
+    }
+  };
 });
