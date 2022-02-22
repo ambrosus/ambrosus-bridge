@@ -26,4 +26,10 @@ contract AmbBridge is CommonBridge, CheckPoW {
 
 //        lockTransfers(events, event_id);
     }
+
+    function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {
+        sideBridgeAddress = _sideBridgeAddress;
+    }
+
+
 }
