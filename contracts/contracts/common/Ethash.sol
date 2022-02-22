@@ -438,8 +438,8 @@ contract Ethash is SHA3_512 {
         for( i = 0 ; i < 64 ; i++ ) {
             uint p = fnv( i ^ s[0], mix[i % 32]) % depthAndFullSize[1];
 
-            console.log(computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0]));
-            console.log(getMerkleLeave( epochIndex, p ));
+            // console.log(computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0]));
+            // console.log(getMerkleLeave( epochIndex, p ));
 
             if( computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0] )  != getMerkleLeave( epochIndex, p ) ) {
                 // PoW failed

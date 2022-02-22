@@ -130,7 +130,7 @@ describe("Contract", () => {
 
     let verifyResult = await ethash.Verify(block.number, createRLPHeader(block), block.nonce,
                                            block.difficulty, datasetLookup, witnessLookup);
-    console.log("verify res:", verifyResult);
+    // console.log("verify res:", verifyResult);
   });
 
   it("Test Transfer lock/unlock", async () => {
