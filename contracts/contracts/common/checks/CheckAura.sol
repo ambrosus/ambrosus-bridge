@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "./CommonStructs.sol";
+import "../CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 
 

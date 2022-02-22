@@ -2,7 +2,7 @@
 pragma solidity 0.8.6;
 
 import "../common/CommonBridge.sol";
-import "../common/CheckPoW.sol";
+import "../common/checks/CheckPoW.sol";
 
 contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
