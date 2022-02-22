@@ -1,6 +1,8 @@
 package eth
 
 import (
+	"bytes"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
 
@@ -40,4 +42,27 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBl
 		P3:                    splitted[2],
 	}, nil
 
+}
+
+func encodeHeaderWithoutNonceToRLP(header *types.Header) ([]byte, error) {
+	buffer := new(bytes.Buffer)
+
+	err := rlp.Encode(buffer, []interface{}{
+		header.ParentHash,
+		header.UncleHash,
+		header.Coinbase,
+		header.Root,
+		header.TxHash,
+		header.ReceiptHash,
+		header.Bloom,
+		header.Difficulty,
+		header.Number,
+		header.GasLimit,
+		header.GasUsed,
+		header.Time,
+		header.Extra,
+		header.BaseFee,
+	})
+
+	return buffer.Bytes(), err
 }
