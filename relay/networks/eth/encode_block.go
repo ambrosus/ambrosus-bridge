@@ -44,7 +44,7 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBl
 
 }
 
-func encodeHeaderWithoutNonceToRLP(header *types.Header) ([]byte, error) {
+func EncodeHeaderWithoutNonceToRLP(header *types.Header) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 
 	err := rlp.Encode(buffer, []interface{}{

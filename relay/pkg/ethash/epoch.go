@@ -19,7 +19,7 @@ type EpochData struct {
 	MerkleNodes             []*big.Int
 }
 
-func GenerateEpochData(epoch uint64, datasetPath string) *EpochData {
+func GenerateEpochData(epoch uint64) *EpochData {
 	fullSize := DatasetSize(epoch * epochLength)
 	fullSizeIn128Resolution := fullSize / 128
 	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
@@ -27,7 +27,7 @@ func GenerateEpochData(epoch uint64, datasetPath string) *EpochData {
 	mt := merkle.NewDatasetTree()
 	mt.RegisterStoredLevel(uint32(branchDepth), 10)
 
-	ProcessDuringRead(datasetPath, mt)
+	ProcessDuringRead(DefaultDir, mt)
 
 	mt.Finalize()
 
