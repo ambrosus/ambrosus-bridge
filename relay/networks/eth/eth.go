@@ -1,19 +1,19 @@
 package eth
 
 import (
-	"context"
 	"fmt"
+	"context"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-	"github.com/rs/zerolog/log"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/rs/zerolog/log"
 )
 
 type Bridge struct {
@@ -41,11 +41,12 @@ func New(cfg *config.Bridge) (*Bridge, error) {
 }
 
 func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
+	var castProof *contracts.CheckAuraAuraProof
 	switch proof.(type) {
 	case *contracts.CheckAuraAuraProof:
-		// todo
+		castProof = proof.(*contracts.CheckAuraAuraProof)
 	default:
-		// todo error
+		return fmt.Errorf("unknown proof type %T, expected %T", proof, castProof)
 
 	}
 	return nil
@@ -81,6 +82,10 @@ func (b *Bridge) DisputeBlock(blockHash common.Hash) {
 
 	fmt.Println(dataSetLookUp)
 	fmt.Println(witnessForLookup)
+}
+
+func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
+	return b.Contract.GetValidatorSet(nil)
 }
 
 // todo code below may be common for all networks?

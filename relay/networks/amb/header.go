@@ -58,7 +58,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
 		return nil, err
 	}
-	resp, err := http.Post(b.config.Url, "application/json", payloadBuf)
+	resp, err := http.Post(b.config.HttpUrl, "application/json", payloadBuf)
 	if err != nil {
 		return nil, err
 	}
@@ -69,6 +69,10 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 		return nil, err
 	}
 
+	// Check if result is empty
+	if respData.Result.Number == nil {
+		return nil, fmt.Errorf("there is no header with number %d", number.Int64())
+	}
 	return &respData.Result, nil
 }
 

@@ -14,7 +14,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         tokenThisAddresses, tokenSideAddresses,
         fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
     ) {
-        emitTestEvent(address(this), msg.sender, 10);
+        emitTestEvent(address(this), msg.sender, 10, true);
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) {

@@ -14,7 +14,7 @@ import (
 )
 
 func TestHeader(t *testing.T) {
-	ambBridge, err := New(&config.Bridge{Url: "https://network.ambrosus.io"})
+	ambBridge, err := New(&config.Bridge{Url: "https://network.ambrosus.io", HttpUrl: "https://network.ambrosus.io"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,12 +43,11 @@ func TestHeader(t *testing.T) {
 }
 
 func TestEncoding(t *testing.T) {
-	ambBridge, err := New(&config.Bridge{Url: "https://network.ambrosus.io"})
+	ambBridge, err := New(&config.Bridge{Url: "https://network.ambrosus.io", HttpUrl: "https://network.ambrosus.io"})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// todo HeaderByNumber return empty struct on fail but err == nil
 	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
 	if err != nil {
 		t.Fatal(err)

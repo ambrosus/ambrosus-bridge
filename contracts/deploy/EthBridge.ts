@@ -16,7 +16,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       1000, // fee
       14400, // timeframeSeconds
       1000, // lockTime
-      10 // minSafetyBlocks
+      10, // minSafetyBlocks
+      ["0x11112707319ad4beca6b5bb4086617fd6f240cfe", "0x22222707319ad4beca6b5bb4086617fd6f240cfe"]
     ],
     log: true,
   });
