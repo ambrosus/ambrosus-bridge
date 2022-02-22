@@ -3,6 +3,7 @@ package amb
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -189,7 +190,8 @@ func (b *Bridge) checkOldEvents() error {
 		nextEventId := big.NewInt(0).Add(lastEventId, i)
 		nextEvent, err := b.GetEventById(nextEventId)
 		if err != nil {
-			if _, ok := err.(*EventNotFoundErr); ok {
+			var eventNotFoundErr *EventNotFoundErr
+			if errors.As(err, &eventNotFoundErr) {
 				return nil
 			}
 			return err
