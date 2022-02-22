@@ -30,7 +30,8 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
     function CheckPoW_(PoWProof memory powProof) public
     {
 
-        address sideBridgeAddress = address (this);  // todo
+        address sideBridgeAddress = address(this);
+        // todo
 
         bytes32 hash = CalcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
         for (uint i = 0; i < powProof.blocks.length; i++) {
@@ -45,17 +46,22 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
 
 
     function blockHash(BlockPoW memory block) public view returns (bytes32) {
+        // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
-                block.p1,
-                block.parentOrReceiptHash,
-                block.p2,
-                block.difficulty,
-                block.p3,
-                block.number,
-                block.p4,
-                block.p5,
-                block.nonce,
-                block.p6
+                abi.encodePacked(
+                    block.p1,
+                    block.parentOrReceiptHash,
+                    block.p2,
+                    block.difficulty,
+                    block.p3
+                ),
+                abi.encodePacked(
+                    block.number,
+                    block.p4,
+                    block.p5,
+                    block.nonce,
+                    block.p6
+                )
             ));
     }
 
