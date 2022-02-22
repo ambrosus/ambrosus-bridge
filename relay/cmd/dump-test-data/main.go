@@ -26,20 +26,20 @@ func main() {
 	}
 	ethCfg := networkConfig{
 		Name: "eth",
-		Url:  "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069",
+		Url:  "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
 		Tx:   common.HexToHash("0x3ccead6d9ce5dba1add833c4b2631ad2066aad6d2ef7bfe278eb259a7355d9e2"),
 	}
 
 	if err := generateNetworkTestData(ambCfg); err != nil {
-		log.Error().Err(err)
+		log.Error().Err(err).Msgf("error generating '%s' test data", ambCfg.Name)
 	}
 
 	if err := generateNetworkTestData(ethCfg); err != nil {
-		log.Error().Err(err)
+		log.Error().Err(err).Msgf("error generating '%s' test data", ethCfg.Name)
 	}
 
 	if err := generateDatasetTestData(ethCfg); err != nil {
-		log.Fatal().Err(err)
+		log.Error().Err(err).Msg("error generating dataset test data")
 	}
 }
 
@@ -88,13 +88,14 @@ func generateNetworkTestData(cfg networkConfig) error {
 }
 
 type datasetData struct {
+	BlockHash        common.Hash
 	EpochData        *ethash.EpochData
 	DataSetLookUp    []*big.Int
 	WitnessForLookup []*big.Int
 }
 
 func generateDatasetTestData(cfg networkConfig) error {
-	bridge, err := eth.New(&config.Bridge{Url: cfg.Url})
+	bridge, err := eth.New(&config.Bridge{Url: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"})
 	if err != nil {
 		return err
 	}
@@ -126,9 +127,13 @@ func generateDatasetTestData(cfg networkConfig) error {
 	witnessForLookup := blockMetaData.DAGProofArray()
 
 	epoch := block.Header().Number.Uint64() / 30000
-	epochData := ethash.GenerateEpochData(epoch)
+	epochData, err := ethash.GenerateEpochData(epoch)
+	if err != nil {
+		return err
+	}
 
 	data := datasetData{
+		BlockHash:        blockHash,
 		EpochData:        epochData,
 		DataSetLookUp:    dataSetLookUp,
 		WitnessForLookup: witnessForLookup,
