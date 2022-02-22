@@ -3,7 +3,7 @@ pragma solidity 0.8.6;
 
 import "hardhat/console.sol";
 import "../common/CommonBridge.sol";
-import "../common/CheckAura.sol";
+import "../common/checks/CheckAura.sol";
 
 
 contract EthBridge is CommonBridge, CheckAura {

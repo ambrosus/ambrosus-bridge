@@ -1,6 +1,6 @@
 import {deployments, ethers, getNamedAccounts, network} from "hardhat";
 import type {Contract, ContractReceipt, ContractTransaction, Signer} from "ethers";
-const RLP = require("RLP");
+import rlp from 'rlp'
 
 import chai from "chai";
 
@@ -169,7 +169,7 @@ describe("Contract", () => {
   }
 
   const createRLPHeader = (block: any) => {
-    return RLP.encode([
+    return rlp.encode([
       block.parentHash,
       block.sha3Uncles,
       block.miner,

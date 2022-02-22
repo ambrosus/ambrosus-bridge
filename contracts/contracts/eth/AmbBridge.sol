@@ -2,7 +2,7 @@
 pragma solidity 0.8.6;
 
 import "../common/CommonBridge.sol";
-import "../common/CheckPoW.sol";
+import "../common/checks/CheckPoW.sol";
 
 contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
@@ -14,7 +14,14 @@ contract AmbBridge is CommonBridge, CheckPoW {
         tokenThisAddresses, tokenSideAddresses,
         fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
     ) {
+
+        // relay uses this event to know from what moment to synchronize the validator set;
+        // side bridge contract must be deployed with validator set actual at the time this event was emitted.
+        emit Transfer(0, queue);
+
+
         emitTestEvent(address(this), msg.sender, 10, true);
+
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) {
@@ -24,6 +31,12 @@ contract AmbBridge is CommonBridge, CheckPoW {
 
         CheckPoW_(powProof);
 
-//        lockTransfers(events, event_id);
+        //        lockTransfers(events, event_id);
     }
+
+    function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {
+        sideBridgeAddress = _sideBridgeAddress;
+    }
+
+
 }
