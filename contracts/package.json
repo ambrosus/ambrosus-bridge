@@ -33,6 +33,7 @@
     "istanbul": "^0.4.5",
     "mocha": "^8.4.0",
     "prettier": "^2.3.0",
+    "rlp": "^3.0.0",
     "solidity-coverage": "https://github.com/SvineruS/solidity-coverage"
   },
   "dependencies": {
