@@ -3,6 +3,7 @@ package amb
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"math/big"
 	"strings"
@@ -18,6 +19,18 @@ import (
 	"github.com/rs/zerolog/log"
 	"golang.org/x/sync/errgroup"
 )
+
+type EventNotFoundErr struct {
+	EventId *big.Int
+}
+
+func (e EventNotFoundErr) Error() string {
+	return fmt.Sprintf("event with id %s not found", e.EventId)
+}
+
+func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
+	return &EventNotFoundErr{EventId: eventId}
+}
 
 // maybe move to helpers pkg
 type JsonError interface {
@@ -146,7 +159,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 		return &logs.Event.TransferEvent, nil
 	}
 
-	return nil, fmt.Errorf("event with id %s not found", eventId)
+	return nil, NewEventNotFoundErr(eventId)
 }
 
 // todo delete
@@ -166,21 +179,41 @@ func (b *Bridge) Run(sideBridge networks.Bridge) {
 	}
 }
 
-func (b *Bridge) listen() error {
+func (b *Bridge) checkOldEvents() error {
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
 		return err
 	}
 
-	lastEvent, err := b.GetEventById(lastEventId)
+	i := big.NewInt(1)
+	for {
+		nextEventId := big.NewInt(0).Add(lastEventId, i)
+		nextEvent, err := b.GetEventById(nextEventId)
+		if err != nil {
+			var eventNotFoundErr *EventNotFoundErr
+			if errors.As(err, &eventNotFoundErr) {
+				return nil
+			}
+			return err
+		}
+
+		err = b.sendEvent(nextEvent)
+		if err != nil {
+			return err
+		}
+
+		i = big.NewInt(0).Add(i, big.NewInt(1))
+	}
+}
+
+func (b *Bridge) listen() error {
+	err := b.checkOldEvents()
 	if err != nil {
 		return err
 	}
 
-	startBlock := lastEvent.Raw.BlockNumber + 1
-
 	// Subscribe to events
-	watchOpts := &bind.WatchOpts{Start: &startBlock, Context: context.Background()}
+	watchOpts := &bind.WatchOpts{Context: context.Background()}
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
