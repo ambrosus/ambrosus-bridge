@@ -14,9 +14,10 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
+func EncodeBlock(header *types.Header) (*contracts.CheckPoWBlockPoW, error) {
 	// split rlp encoded header (bytes) by
-	// - receiptHash (for event block) / parentHash (for safety block)
+	// - Number
+	// - Nonce
 	// - Difficulty (for PoW)
 
 	rlpHeader, err := rlp.EncodeToBytes(header)
@@ -24,26 +25,33 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBl
 		return nil, err
 	}
 
-	splitEls := make([][]byte, 2)
-	if isEventBlock {
-		splitEls[0] = header.ReceiptHash.Bytes()
-	} else {
-		splitEls[0] = header.ParentHash.Bytes()
+	splitEls := [][]byte{
+		header.Difficulty.Bytes(),
+		header.Number.Bytes(),
+		header.Nonce[:],
 	}
-
-	splitEls[1] = header.Difficulty.Bytes()
 
 	splitted, err := helpers.BytesSplit(rlpHeader, splitEls)
 	if err != nil {
 		return nil, err
 	}
 
+	dataSetLookUp, witnessForLookup, err := DisputeBlock(header)
+	if err != nil {
+		return nil, err
+	}
+
 	return &contracts.CheckPoWBlockPoW{
-		P1:                    splitted[0],
-		PrevHashOrReceiptRoot: helpers.BytesToBytes32(splitEls[0]),
-		P2:                    splitted[1],
-		Difficulty:            splitEls[1],
-		P3:                    splitted[2],
+		P1:         splitted[0],
+		Difficulty: splitEls[0],
+		P2:         splitted[1],
+		Number:     splitEls[1],
+		P3:         splitted[2],
+		Nonce:      splitEls[2],
+		P4:         splitted[3],
+
+		DataSetLookUp:    dataSetLookUp,
+		WitnessForLookUp: witnessForLookup,
 	}, nil
 
 }
