@@ -2,17 +2,14 @@ package amb
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -79,52 +76,23 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
+	// todo find way to make this part common for different contract methods
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
+
 		err := b.ContractRaw.Call(&bind.CallOpts{
 			From: b.auth.From,
 		}, nil, "submitTransfer", *proof)
 
 		if err != nil {
-			errStr := getJsonErrData(err)
-
-			if strings.HasPrefix(errStr, "Reverted") {
-				errBytes, err := hex.DecodeString(errStr[11:])
-				if err != nil {
-					return err
-				}
-				errStr = string(errBytes)
-			}
-
-			return fmt.Errorf("%s", errStr)
-		} else {
-			// врятли такой кейс будет.
-			// но если и будет, то шото странно: при вызове контракта норм способом ошибка есть
-			// а при вызове через ненорм способ - нету.
-			// ну тогда вернём ту ошибку, которая при норм способе
-			errStr := getJsonErrData(txErr)
-			return fmt.Errorf("%s", errStr)
+			return fmt.Errorf("%s", parseError(err))
 		}
+		return fmt.Errorf("%s", parseError(txErr))
 	}
 
-	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
-	if err != nil {
-		return err
-	}
-
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		// we've got here probably due to low gas limit,
-		// and revert() that hasn't been caught at eth_estimateGas
-		err := getFailureReason(b.Client, auth.From, tx)
-		if err != nil {
-			errStr := getJsonErrData(err)
-			return fmt.Errorf("%s", errStr)
-		}
-	}
-
-	return nil
+	return b.waitForTxMined(tx)
 }
 
 // Getting last contract event id.
@@ -317,23 +285,4 @@ func (b *Bridge) getSafetyBlocksNum() (uint64, error) {
 		return 0, err
 	}
 	return safetyBlocks.Uint64(), nil
-}
-
-// maybe move the functions below to helpers pkg
-func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction) error {
-	_, err := client.CallContract(context.Background(), ethereum.CallMsg{
-		From:     from,
-		To:       tx.To(),
-		Gas:      tx.Gas(),
-		GasPrice: tx.GasPrice(),
-		Value:    tx.Value(),
-		Data:     tx.Data(),
-	}, nil)
-
-	return err
-}
-
-func getJsonErrData(err error) string {
-	var jsonErr = err.(JsonError)
-	return jsonErr.ErrorData().(string)
 }

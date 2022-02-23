@@ -67,7 +67,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		// we've got here probably due to low gas limit,
 		// and revert() that hasn't been caught at eth_estimateGas
-		return getFailureReason(b.Client, auth.From, tx)
+		return b.getFailureReason(tx)
 	}
 
 	return nil
@@ -269,9 +269,9 @@ func (b *Bridge) getSafetyBlocksNum() (uint64, error) {
 }
 
 // maybe move the functions below to helpers pkg
-func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction) error {
-	_, err := client.CallContract(context.Background(), ethereum.CallMsg{
-		From:     from,
+func (b *Bridge) getFailureReason(tx *types.Transaction) error {
+	_, err := b.Client.CallContract(context.Background(), ethereum.CallMsg{
+		From:     b.auth.From,
 		To:       tx.To(),
 		Gas:      tx.Gas(),
 		GasPrice: tx.GasPrice(),
