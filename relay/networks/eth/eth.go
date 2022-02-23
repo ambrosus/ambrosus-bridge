@@ -1,8 +1,8 @@
 package eth
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -86,6 +87,20 @@ func (b *Bridge) DisputeBlock(blockHash common.Hash) {
 
 func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
 	return b.Contract.GetValidatorSet(nil)
+}
+
+func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
+	chainId, err := b.Client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+
+	return auth, nil
 }
 
 // todo code below may be common for all networks?
