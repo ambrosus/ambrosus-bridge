@@ -62,7 +62,7 @@ func (b *Bridge) DisputeBlock(blockHash common.Hash) {
 		log.Error().Err(err).Msg("block not getting")
 	}
 
-	blockHeaderWithoutNonce, err := encodeHeaderWithoutNonceToRLP(block.Header())
+	blockHeaderWithoutNonce, err := EncodeHeaderWithoutNonceToRLP(block.Header())
 	if err != nil {
 		log.Error().Err(err).Msg("block header not encode")
 	}
