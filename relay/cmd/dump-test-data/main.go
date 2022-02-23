@@ -67,7 +67,7 @@ type networkConfig struct {
 // Generating network testing data.
 func generateNetworkTestData(cfg networkConfig) error {
 	// Creating a new ambrosus bridge client.
-	bridge, err := amb.New(&config.Bridge{Url: cfg.Url})
+	bridge, err := amb.New(&config.AMBConfig{Network: config.Network{URL: cfg.Url}})
 	if err != nil {
 		return err
 	}
@@ -109,7 +109,9 @@ type datasetData struct {
 // Generating dataset testing data.
 func generateDatasetTestData(cfg networkConfig) error {
 	// Creating a new ethereum bridge client.
-	bridge, err := eth.New(&config.Bridge{Url: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"})
+	bridge, err := eth.New(&config.ETHConfig{
+		Network: config.Network{URL: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"},
+	})
 	if err != nil {
 		return err
 	}

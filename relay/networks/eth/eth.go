@@ -9,14 +9,14 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
-	"golang.org/x/sync/errgroup"
-
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/sync/errgroup"
 )
 
 type EventNotFoundErr struct {
@@ -42,19 +42,19 @@ type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Eth
 	sideBridge networks.Bridge
-	config     *config.Bridge
+	config     *config.ETHConfig
 }
 
 // Creating a new ethereum bridge.
-func New(cfg *config.Bridge) (*Bridge, error) {
+func New(cfg *config.ETHConfig) (*Bridge, error) {
 	// Creating a new ethereum client.
-	client, err := ethclient.Dial(cfg.Url)
+	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
 		return nil, err
 	}
 
 	// Creating a new ethereum bridge contract instance.
-	contract, err := contracts.NewEth(cfg.ContractAddress, client)
+	contract, err := contracts.NewEth(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, err
 	}

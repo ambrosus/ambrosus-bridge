@@ -3,44 +3,126 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"errors"
+	"os"
+	"strings"
 
-	ethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
-type Bridge struct {
-	Url               string
-	HttpUrl           string // used for getting header in ambrosus
-	ContractAddress   ethcommon.Address
-	VSContractAddress ethcommon.Address
-	PrivateKey        *ecdsa.PrivateKey
+const defaultConfigPath string = "configs/main"
+
+var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
+
+type (
+	Config struct {
+		AMB AMBConfig
+		ETH ETHConfig
+	}
+
+	Network struct {
+		URL          string `mapstructure:"url"`
+		ContractAddr string `mapstructure:"contract-addr"`
+		PrivateKey   *ecdsa.PrivateKey
+	}
+
+	AMBConfig struct {
+		Network
+		VSContractAddr string `mapstructure:"vs-contract-addr"`
+	}
+
+	ETHConfig struct {
+		Network
+		EthashPath string `mapstructure:"ethash-path"`
+	}
+)
+
+func Init() (*Config, error) {
+	log.Debug().Msg("Initialize config...")
+
+	if err := parseConfigFile(); err != nil {
+		return nil, err
+	}
+
+	var cfg Config
+	if err := unmarshal(&cfg); err != nil {
+		return nil, err
+	}
+
+	if err := setFromEnv(&cfg); err != nil {
+		return nil, err
+	}
+
+	return &cfg, nil
 }
 
-// todo load from json
+func parseConfigFile() error {
+	configPath := os.Getenv("CONFIG_PATH")
 
-var Config = map[string]*Bridge{
-	"amb": {
-		Url:               "wss://network.ambrosus-dev.io",
-		HttpUrl:           "https://network.ambrosus-dev.io",
-		ContractAddress:   ethcommon.HexToAddress(""),
-		VSContractAddress: ethcommon.HexToAddress(""),
-		PrivateKey:        ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
-	},
-	"eth": {
-		Url:             "wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-		ContractAddress: ethcommon.HexToAddress(""),
-		PrivateKey:      ParsePK("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"),
-	},
+	if configPath == "" {
+		configPath = defaultConfigPath
+	}
+
+	log.Debug().Msgf("Parsing config file: %s", configPath)
+
+	path := strings.Split(configPath, "/")
+
+	viper.AddConfigPath(path[0])
+	viper.SetConfigName(path[1])
+
+	return viper.ReadInConfig()
+
 }
 
-func ParsePK(pk string) *ecdsa.PrivateKey {
+func unmarshal(cfg *Config) error {
+	log.Debug().Msg("Unmarshal config keys...")
+
+	if err := viper.UnmarshalKey("network.amb", &cfg.AMB); err != nil {
+		return err
+	}
+	if err := viper.UnmarshalKey("network.amb", &cfg.AMB.Network); err != nil {
+		return err
+	}
+	if err := viper.UnmarshalKey("network.eth", &cfg.ETH); err != nil {
+		return err
+	}
+
+	return viper.UnmarshalKey("network.eth", &cfg.ETH.Network)
+}
+
+func setFromEnv(cfg *Config) error {
+	log.Debug().Msg("Set from environment configurations...")
+
+	ambPrivateKey, err := parsePK(os.Getenv("AMB_PRIVATE_KEY"))
+	if err != nil {
+		return err
+	}
+	ethPrivateKey, err := parsePK(os.Getenv("ETH_PRIVATE_KEY"))
+	if err != nil {
+		return err
+	}
+
+	cfg.AMB.PrivateKey = ambPrivateKey
+	cfg.ETH.PrivateKey = ethPrivateKey
+
+	return nil
+}
+
+func parsePK(pk string) (*ecdsa.PrivateKey, error) {
+	if pk == "" {
+		return nil, ErrPrivateKeyNotFound
+	}
+
 	b, err := hex.DecodeString(pk)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	p, err := crypto.ToECDSA(b)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return p
+
+	return p, nil
 }

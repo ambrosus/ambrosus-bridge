@@ -8,14 +8,17 @@ import (
 )
 
 func main() {
+	// Initialize bridge config.
+	cfg, err := config.Init()
+
 	// Creating a new ambrosus bridge.
-	ambBridge, err := amb.New(config.Config["amb"])
+	ambBridge, err := amb.New(&cfg.AMB)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ambrosus bridge not created")
 	}
 
 	// Creating a new ethereum bridge.
-	ethBridge, err := eth.New(config.Config["eth"])
+	ethBridge, err := eth.New(&cfg.ETH)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ethereum bridge not created")
 	}
