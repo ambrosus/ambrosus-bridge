@@ -34,7 +34,7 @@ func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
 type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Eth
-	sideBridge networks.Bridge
+	sideBridge networks.BridgeReceiveEthash
 	config     *config.ETHConfig
 }
 
@@ -55,22 +55,13 @@ func New(cfg *config.ETHConfig) (*Bridge, error) {
 	return &Bridge{Client: client, Contract: contract, config: cfg}, nil
 }
 
-func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
-	var castProof *contracts.CheckAuraAuraProof
-	switch proof.(type) {
-	case *contracts.CheckAuraAuraProof:
-		castProof = proof.(*contracts.CheckAuraAuraProof)
-	default:
-		return fmt.Errorf("unknown proof type %T, expected %T", proof, castProof)
-
-	}
-
+func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	auth, err := b.getAuth()
 	if err != nil {
 		return err
 	}
 
-	tx, txErr := b.Contract.SubmitTransfer(auth, *castProof)
+	tx, txErr := b.Contract.SubmitTransfer(auth, *proof)
 	if txErr != nil {
 		return err
 	}
@@ -87,6 +78,10 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 	}
 
 	return nil
+}
+
+func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
+	return b.Contract.GetValidatorSet(nil)
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
@@ -109,13 +104,9 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	return nil, NewEventNotFoundErr(eventId)
 }
 
-func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
-	return b.Contract.GetValidatorSet(nil)
-}
-
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge networks.Bridge) {
+func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
 
 	for {
@@ -202,7 +193,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	return b.sideBridge.SubmitTransfer(ambTransfer)
+	return b.sideBridge.SubmitTransferPoW(ambTransfer)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {

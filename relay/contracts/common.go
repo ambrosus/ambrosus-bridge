@@ -6,10 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-type TransferProof interface {
-	EventId() *big.Int
-}
-
 // CommonStructsTransfer is an auto generated low-level Go binding around an user-defined struct.
 type CommonStructsTransfer struct {
 	TokenAddress common.Address
@@ -85,12 +81,4 @@ type CheckPoWBlockPoW struct {
 type CheckPoWPoWProof struct {
 	Blocks   []CheckPoWBlockPoW
 	Transfer CommonStructsTransferProof
-}
-
-func (p *CheckAuraAuraProof) EventId() *big.Int {
-	return p.Transfer.EventId
-}
-
-func (p *CheckPoWPoWProof) EventId() *big.Int {
-	return p.Transfer.EventId
 }

@@ -10,8 +10,16 @@ import (
 type Bridge interface {
 	// GetLastEventId used by the other side of the bridge for synchronization
 	GetLastEventId() (*big.Int, error)
+}
 
+type BridgeReceiveAura interface {
+	Bridge
+	SubmitTransferAura(*contracts.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
+}
 
-	SubmitTransfer(contracts.TransferProof) error
+type BridgeReceiveEthash interface {
+	Bridge
+	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
+	SubmitEpochData() error // todo
 }

@@ -46,8 +46,13 @@ type Bridge struct {
 	ContractRaw *contracts.AmbRaw
 	VSContract  *contracts.Vs
 	HttpUrl     string // TODO: delete this field
-	sideBridge  networks.Bridge
+	sideBridge  networks.BridgeReceiveAura
 	config      *config.AMBConfig
+}
+
+func (b *Bridge) SubmitEpochData() error {
+	//TODO implement me
+	panic("implement me")
 }
 
 // Creating a new ambrosus bridge.
@@ -80,21 +85,13 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 	}, nil
 }
 
-func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
-	var castProof *contracts.CheckPoWPoWProof
-	switch proof.(type) {
-	case *contracts.CheckPoWPoWProof:
-		castProof = proof.(*contracts.CheckPoWPoWProof)
-	default:
-		return fmt.Errorf("unknown proof type %T, expected %T", proof, castProof)
-	}
-
+func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	auth, err := b.getAuth()
 	if err != nil {
 		return err
 	}
 
-	tx, txErr := b.Contract.SubmitTransfer(auth, *castProof)
+	tx, txErr := b.Contract.SubmitTransfer(auth, *proof)
 
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
@@ -102,7 +99,7 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 		// so, make low-level call method to get the full error message
 		err = b.ContractRaw.Call(&bind.CallOpts{
 			From: auth.From,
-		}, nil, "submitTransfer", *castProof)
+		}, nil, "submitTransfer", *proof)
 
 		if err != nil {
 			errStr := getJsonErrData(err)
@@ -172,7 +169,7 @@ func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
 
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge networks.Bridge) {
+func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 
 	for {
@@ -259,7 +256,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	return b.sideBridge.SubmitTransfer(ambTransfer)
+	return b.sideBridge.SubmitTransferAura(ambTransfer)
 }
 
 func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
