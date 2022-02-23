@@ -25,7 +25,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 			return nil, err
 		}
 
-		encodedBlock, err := EncodeBlock(targetBlock.Header())
+		encodedBlock, err := EncodeBlock(targetBlock.Header(), i == 0)
 		if err != nil {
 			return nil, err
 		}
