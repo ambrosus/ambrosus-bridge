@@ -21,25 +21,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type EventNotFoundErr struct {
-	EventId *big.Int
-}
-
-func (e EventNotFoundErr) Error() string {
-	return fmt.Sprintf("event with id %s not found", e.EventId)
-}
-
-func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
-	return &EventNotFoundErr{EventId: eventId}
-}
-
-// maybe move to helpers pkg
-type JsonError interface {
-	Error() string
-	ErrorCode() int
-	ErrorData() interface{}
-}
-
 type Bridge struct {
 	Client      *ethclient.Client
 	Contract    *contracts.Amb
@@ -164,7 +145,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 		return &logs.Event.TransferEvent, nil
 	}
 
-	return nil, NewEventNotFoundErr(eventId)
+	return nil, networks.ErrEventNotFound
 }
 
 // todo code below may be common for all networks?
@@ -190,8 +171,8 @@ func (b *Bridge) checkOldEvents() error {
 		nextEventId := big.NewInt(0).Add(lastEventId, i)
 		nextEvent, err := b.GetEventById(nextEventId)
 		if err != nil {
-			var eventNotFoundErr *EventNotFoundErr
-			if errors.As(err, &eventNotFoundErr) {
+			if errors.Is(err, networks.ErrEventNotFound) {
+				// no more old events
 				return nil
 			}
 			return err
