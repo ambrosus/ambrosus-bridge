@@ -539,60 +539,18 @@ contract Ethash is SHA3_512 {
     }
 
     function verifyPoW(uint blockNumber, bytes32 rlpHeaderHashWithoutNonce, uint nonce, uint difficulty,
-        uint[] calldata dataSetLookup, uint[] calldata witnessForLookup) private view returns (uint, uint) {
-        // verify ethash
+        uint[] memory dataSetLookup, uint[] memory witnessForLookup) internal view {
+
         uint epoch = blockNumber / EPOCH_LENGTH;
         uint ethash = hashimoto(rlpHeaderHashWithoutNonce, nonce, dataSetLookup, witnessForLookup, epoch);
 
         if( ethash > (2**256-1)/difficulty) {
-            uint errorCode;
-            uint errorInfo;
-            if( ethash == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE ) {
-                // Required epoch data-pow not set
-                errorCode = 1;
-                errorInfo = epoch;
-            }
-            else {
-                // ethash difficulty too low
-                errorCode = 2;
-                errorInfo = ethash;
-            }
-            return (errorCode, errorInfo);
+
+            if( ethash == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE )
+                revert("Required epoch data-pow not set");
+            else revert("Ethash difficulty too low");
+
         }
-
-        return (0, 0);
     }
 
-    function Verify(uint blockNumber, bytes memory rlpHeader, uint nonce, uint difficulty,
-        uint[] calldata dataSetLookup, uint[] calldata witnessForLookup) external view returns (uint, uint) {
-        return verifyPoW(blockNumber, getRlpHeaderHashWithoutNonce(rlpHeader), nonce, difficulty,
-            dataSetLookup, witnessForLookup);
-    }
-
-    function getRlpHeaderHashWithoutNonce(bytes memory rlpHeader) private pure returns (bytes32) {
-        // duplicate rlp header and truncate nonce and mixDataHash
-        bytes memory rlpWithoutNonce = copy(rlpHeader, rlpHeader.length-42);  // 42: length of none+mixHash
-        uint16 rlpHeaderWithoutNonceLength = uint16(rlpHeader.length-3-42);  // rlpHeaderLength - 3 prefix bytes (0xf9 + length) - length of nonce and mixHash
-        bytes2 headerLengthBytes = bytes2(rlpHeaderWithoutNonceLength);
-        rlpWithoutNonce[1] = headerLengthBytes[0];
-        rlpWithoutNonce[2] = headerLengthBytes[1];
-
-        return keccak256(rlpWithoutNonce);
-    }
-
-    function copy(bytes memory sourceArray, uint newLength) private pure returns (bytes memory) {
-        uint newArraySize = newLength;
-
-        if (newArraySize > sourceArray.length) {
-            newArraySize = sourceArray.length;
-        }
-
-        bytes memory newArray = new bytes(newArraySize);
-
-        for(uint i = 0; i < newArraySize; i++){
-            newArray[i] = sourceArray[i];
-        }
-
-        return newArray;
-    }
 }

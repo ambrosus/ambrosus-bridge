@@ -125,6 +125,31 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "error",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "errorInfo",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetEpochData",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "uint256",
         "name": "a",
         "type": "uint256"
@@ -188,8 +213,114 @@
     "type": "event"
   },
   {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "event_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "Withdraw",
+    "type": "event"
+  },
+  {
     "inputs": [],
     "name": "ADMIN_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes[]",
+        "name": "proof",
+        "type": "bytes[]"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "el",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "proofStart",
+        "type": "uint256"
+      }
+    ],
+    "name": "CalcReceiptsHash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes[]",
+            "name": "receipt_proof",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "event_id",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "toAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct CommonStructs.Transfer[]",
+            "name": "transfers",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct CommonStructs.TransferProof",
+        "name": "p",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "eventContractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "CalcTransferReceiptsHash",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -213,7 +344,7 @@
               },
               {
                 "internalType": "bytes32",
-                "name": "prevHashOrReceiptRoot",
+                "name": "parentOrReceiptHash",
                 "type": "bytes32"
               },
               {
@@ -230,6 +361,41 @@
                 "internalType": "bytes",
                 "name": "p3",
                 "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "number",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p4",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p5",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "nonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p6",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256[]",
+                "name": "dataSetLookup",
+                "type": "uint256[]"
+              },
+              {
+                "internalType": "uint256[]",
+                "name": "witnessForLookup",
+                "type": "uint256[]"
               }
             ],
             "internalType": "struct CheckPoW.BlockPoW[]",
@@ -315,6 +481,106 @@
   {
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "p1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "parentOrReceiptHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "difficulty",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p3",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "number",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p4",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p5",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "nonce",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p6",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "dataSetLookup",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "witnessForLookup",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct CheckPoW.BlockPoW",
+        "name": "block",
+        "type": "tuple"
+      }
+    ],
+    "name": "blockHash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes",
+        "name": "b",
+        "type": "bytes"
+      }
+    ],
+    "name": "bytesToUint",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "fee_",
         "type": "uint256"
@@ -380,6 +646,11 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "transferEvent",
+        "type": "bool"
       }
     ],
     "name": "emitTestEvent",
@@ -475,6 +746,25 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "epochIndex",
+        "type": "uint256"
+      }
+    ],
+    "name": "isEpochDataSet",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "lockTime",
     "outputs": [
@@ -556,6 +846,57 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "epoch",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "fullSizeIn128Resultion",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "branchDepth",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "merkleNodes",
+        "type": "uint256[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "start",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "numElems",
+        "type": "uint256"
+      }
+    ],
+    "name": "setEpochData",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_sideBridgeAddress",
+        "type": "address"
+      }
+    ],
+    "name": "setSideBridge",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "sideBridgeAddress",
     "outputs": [
@@ -581,7 +922,7 @@
               },
               {
                 "internalType": "bytes32",
-                "name": "prevHashOrReceiptRoot",
+                "name": "parentOrReceiptHash",
                 "type": "bytes32"
               },
               {
@@ -598,6 +939,41 @@
                 "internalType": "bytes",
                 "name": "p3",
                 "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "number",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p4",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p5",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "nonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p6",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256[]",
+                "name": "dataSetLookup",
+                "type": "uint256[]"
+              },
+              {
+                "internalType": "uint256[]",
+                "name": "witnessForLookup",
+                "type": "uint256[]"
               }
             ],
             "internalType": "struct CheckPoW.BlockPoW[]",
@@ -778,6 +1154,81 @@
     "name": "unlockTransfers",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "p1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "parentOrReceiptHash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "difficulty",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p3",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "number",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p4",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p5",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "nonce",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p6",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "dataSetLookup",
+            "type": "uint256[]"
+          },
+          {
+            "internalType": "uint256[]",
+            "name": "witnessForLookup",
+            "type": "uint256[]"
+          }
+        ],
+        "internalType": "struct CheckPoW.BlockPoW",
+        "name": "block",
+        "type": "tuple"
+      }
+    ],
+    "name": "verifyEthash",
+    "outputs": [],
+    "stateMutability": "view",
     "type": "function"
   },
   {
