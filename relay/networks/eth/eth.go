@@ -65,7 +65,26 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 
 	}
 
-	// todo
+	auth, err := b.getAuth()
+	if err != nil {
+		return err
+	}
+
+	tx, txErr := b.Contract.SubmitTransfer(auth, *castProof)
+	if txErr != nil {
+		return err
+	}
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
+	if err != nil {
+		return err
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		// we've got here probably due to low gas limit,
+		// and revert() that hasn't been caught at eth_estimateGas
+		return getFailureReason(b.Client, auth.From, tx)
+	}
 
 	return nil
 }
