@@ -35,7 +35,7 @@ type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Eth
 	sideBridge networks.BridgeReceiveEthash
-	config     *config.ETHConfig
+	auth       *bind.TransactOpts
 }
 
 // Creating a new ethereum bridge.
@@ -52,17 +52,22 @@ func New(cfg *config.ETHConfig) (*Bridge, error) {
 		return nil, err
 	}
 
-	return &Bridge{Client: client, Contract: contract, config: cfg}, nil
+	chainId, err := client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Bridge{Client: client, Contract: contract, auth: auth}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
-	auth, err := b.getAuth()
+	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
 	if err != nil {
-		return err
-	}
-
-	tx, txErr := b.Contract.SubmitTransfer(auth, *proof)
-	if txErr != nil {
 		return err
 	}
 
@@ -227,20 +232,6 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 		return nil, err
 	}
 	return receipts, nil
-}
-
-func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
-	chainId, err := b.Client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, chainId)
-	if err != nil {
-		return nil, err
-	}
-
-	return auth, nil
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {

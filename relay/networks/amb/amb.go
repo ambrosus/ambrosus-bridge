@@ -47,7 +47,7 @@ type Bridge struct {
 	VSContract  *contracts.Vs
 	HttpUrl     string // TODO: delete this field
 	sideBridge  networks.BridgeReceiveAura
-	config      *config.AMBConfig
+	auth        *bind.TransactOpts
 }
 
 func (b *Bridge) SubmitEpochData() error {
@@ -75,30 +75,35 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 		return nil, err
 	}
 
+	chainId, err := client.ChainID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+
+	auth, err := bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Bridge{
 		Client:      client,
 		Contract:    contract,
 		ContractRaw: &contracts.AmbRaw{Contract: contract},
 		VSContract:  vsContract,
 		HttpUrl:     "https://network.ambrosus.io",
-		config:      cfg,
+		auth:        auth,
 	}, nil
 }
 
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
-	auth, err := b.getAuth()
-	if err != nil {
-		return err
-	}
-
-	tx, txErr := b.Contract.SubmitTransfer(auth, *proof)
+	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
-		err = b.ContractRaw.Call(&bind.CallOpts{
-			From: auth.From,
+		err := b.ContractRaw.Call(&bind.CallOpts{
+			From: b.auth.From,
 		}, nil, "submitTransfer", *proof)
 
 		if err != nil {
@@ -160,11 +165,6 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	}
 
 	return nil, NewEventNotFoundErr(eventId)
-}
-
-// todo delete
-func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
-	return nil, nil
 }
 
 // todo code below may be common for all networks?
@@ -290,20 +290,6 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 		return nil, err
 	}
 	return receipts, nil
-}
-
-func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
-	chainId, err := b.Client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, chainId)
-	if err != nil {
-		return nil, err
-	}
-
-	return auth, nil
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
