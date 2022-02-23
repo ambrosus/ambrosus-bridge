@@ -13,7 +13,7 @@ contract CheckAura is CheckReceiptsProof {
         bytes p1;
         bytes32 parent_hash;
         bytes p2;
-        bytes32 receipts_hash;
+        bytes32 receipt_hash;
         bytes p3;
 
         bytes s1;
@@ -81,7 +81,7 @@ contract CheckAura is CheckReceiptsProof {
             }
             else if (block.type_ == - 1) {// transfer event
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
-                require(block.receipts_hash == receiptHash, "Transfer event validation failed");
+                require(block.receipt_hash == receiptHash, "Transfer event validation failed");
             }
 
         }
@@ -89,7 +89,7 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function CheckBlock(BlockAura memory block) internal view returns (bytes32) {
-        bytes memory common_rlp = abi.encodePacked(block.p1, block.parent_hash, block.p2, block.receipts_hash, block.p3);
+        bytes memory common_rlp = abi.encodePacked(block.p1, block.parent_hash, block.p2, block.receipt_hash, block.p3);
 
         // hash without seal for signature check
         bytes32 bare_hash = keccak256(abi.encodePacked(block.p0_bare, common_rlp));
