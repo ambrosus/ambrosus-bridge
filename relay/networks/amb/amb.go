@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -44,26 +45,27 @@ type Bridge struct {
 	Contract    *contracts.Amb
 	ContractRaw *contracts.AmbRaw
 	VSContract  *contracts.Vs
+	HttpUrl     string // TODO: delete this field
 	sideBridge  networks.Bridge
-	config      *config.Bridge
+	config      *config.AMBConfig
 }
 
 // Creating a new ambrosus bridge.
-func New(cfg *config.Bridge) (*Bridge, error) {
+func New(cfg *config.AMBConfig) (*Bridge, error) {
 	// Creating a new ethereum client.
-	client, err := ethclient.Dial(cfg.Url)
+	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
 		return nil, err
 	}
 
 	// Creating a new ambrosus bridge contract instance.
-	contract, err := contracts.NewAmb(cfg.ContractAddress, client)
+	contract, err := contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, err
 	}
 
 	// Creating a new ambrosus VS contract instance.
-	vsContract, err := contracts.NewVs(cfg.VSContractAddress, client)
+	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
 	if err != nil {
 		return nil, err
 	}
@@ -73,6 +75,7 @@ func New(cfg *config.Bridge) (*Bridge, error) {
 		Contract:    contract,
 		ContractRaw: &contracts.AmbRaw{Contract: contract},
 		VSContract:  vsContract,
+		HttpUrl:     "https://network.ambrosus.io",
 		config:      cfg,
 	}, nil
 }
@@ -269,7 +272,7 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 
 	errGroup := new(errgroup.Group)
 	for i := uint(0); i < txsCount; i++ {
-		i := i  // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
+		i := i // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
 		errGroup.Go(func() error {
 			tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
 			if err != nil {

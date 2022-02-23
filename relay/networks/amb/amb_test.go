@@ -14,7 +14,9 @@ import (
 )
 
 func TestHeader(t *testing.T) {
-	ambBridge, err := New(&config.Bridge{Url: "https://network.ambrosus.io", HttpUrl: "https://network.ambrosus.io"})
+	ambBridge, err := New(&config.AMBConfig{
+		Network: config.Network{URL: "https://network.ambrosus.io"},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +45,9 @@ func TestHeader(t *testing.T) {
 }
 
 func TestEncoding(t *testing.T) {
-	ambBridge, err := New(&config.Bridge{Url: "https://network.ambrosus.io", HttpUrl: "https://network.ambrosus.io"})
+	ambBridge, err := New(&config.AMBConfig{
+		Network: config.Network{URL: "https://network.ambrosus.io"},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
