@@ -13,7 +13,7 @@ const PK = [process.env.PRIVATEKEY || "00000000"];
 module.exports = {
     networks: {
         hardhat: {
-            // hardfork: "byzantium"
+            hardfork: "byzantium"
 
         },
         rinkeby: {
@@ -46,7 +46,8 @@ module.exports = {
                         enabled: true,
                         runs: 200,
                     },
-                    // evmVersion: "byzantium"
+                    // Note: for amb deploy
+                    evmVersion: "byzantium"
                 },
             },
         ],

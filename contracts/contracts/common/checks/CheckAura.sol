@@ -5,7 +5,7 @@ import "../CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 
 
-contract CheckAura {
+contract CheckAura is CheckReceiptsProof {
     struct BlockAura {
         bytes p0_seal;
         bytes p0_bare;
@@ -56,7 +56,11 @@ contract CheckAura {
     }
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks) public {
-        uint safetyChainLength;
+        address sideBridgeAddress = address (this);  // todo
+
+
+
+    uint safetyChainLength;
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block = auraProof.blocks[i];
@@ -76,7 +80,8 @@ contract CheckAura {
                 // val set
             }
             else if (block.type_ == - 1) {// transfer event
-                // todo check transfers event
+                bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
+                require(block.receipts_hash == receiptHash, "Transfer event validation failed");
             }
 
         }
