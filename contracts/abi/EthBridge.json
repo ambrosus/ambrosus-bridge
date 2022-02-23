@@ -344,7 +344,7 @@
               },
               {
                 "internalType": "bytes32",
-                "name": "receipts_hash",
+                "name": "receipt_hash",
                 "type": "bytes32"
               },
               {
@@ -811,7 +811,7 @@
               },
               {
                 "internalType": "bytes32",
-                "name": "receipts_hash",
+                "name": "receipt_hash",
                 "type": "bytes32"
               },
               {

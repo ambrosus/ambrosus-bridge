@@ -42,7 +42,7 @@ type CheckAuraBlockAura struct {
 	S2        []byte // signature prefix
 	Signature []byte
 
-	Type int64
+	Type *big.Int
 }
 
 // CheckAuraValidatorSetProof is an auto generated low-level Go binding around an user-defined struct.
@@ -54,9 +54,9 @@ type CheckAuraValidatorSetProof struct {
 
 // CheckAuraAuraProof is an auto generated low-level Go binding around an user-defined struct.
 type CheckAuraAuraProof struct {
-	Blocks    []*CheckAuraBlockAura
-	Transfer  *CommonStructsTransferProof
-	VsChanges []*CheckAuraValidatorSetProof
+	Blocks    []CheckAuraBlockAura
+	Transfer  CommonStructsTransferProof
+	VsChanges []CheckAuraValidatorSetProof
 }
 
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
@@ -83,8 +83,8 @@ type CheckPoWBlockPoW struct {
 
 // CheckPoWPoWProof is an auto generated low-level Go binding around an user-defined struct.
 type CheckPoWPoWProof struct {
-	Blocks   []*CheckPoWBlockPoW
-	Transfer *CommonStructsTransferProof
+	Blocks   []CheckPoWBlockPoW
+	Transfer CommonStructsTransferProof
 }
 
 func (p *CheckAuraAuraProof) EventId() *big.Int {

@@ -31,13 +31,6 @@ func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
 	return &EventNotFoundErr{EventId: eventId}
 }
 
-// maybe move to helpers pkg
-type JsonError interface {
-	Error() string
-	ErrorCode() int
-	ErrorData() interface{}
-}
-
 type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Eth
@@ -72,7 +65,26 @@ func (b *Bridge) SubmitTransfer(proof contracts.TransferProof) error {
 
 	}
 
-	// todo
+	auth, err := b.getAuth()
+	if err != nil {
+		return err
+	}
+
+	tx, txErr := b.Contract.SubmitTransfer(auth, *castProof)
+	if txErr != nil {
+		return err
+	}
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
+	if err != nil {
+		return err
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		// we've got here probably due to low gas limit,
+		// and revert() that hasn't been caught at eth_estimateGas
+		return getFailureReason(b.Client, auth.From, tx)
+	}
 
 	return nil
 }
@@ -298,9 +310,4 @@ func getFailureReason(client *ethclient.Client, from common.Address, tx *types.T
 	}, nil)
 
 	return err
-}
-
-func getJsonErrData(err error) string {
-	var jsonErr = err.(JsonError)
-	return jsonErr.ErrorData().(string)
 }

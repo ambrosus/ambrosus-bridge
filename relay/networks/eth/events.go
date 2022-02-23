@@ -11,7 +11,7 @@ import (
 // todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckPoWPoWProof, error) {
 	safetyBlocks, err := b.getSafetyBlocksNum()
-	blocks := make([]*contracts.CheckPoWBlockPoW, 0, safetyBlocks+1)
+	blocks := make([]contracts.CheckPoWBlockPoW, 0, safetyBlocks+1)
 
 	transfer, err := b.encodeTransferEvent(transferEvent)
 	if err != nil {
@@ -29,12 +29,12 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 		if err != nil {
 			return nil, err
 		}
-		blocks = append(blocks, encodedBlock)
+		blocks = append(blocks, *encodedBlock)
 	}
 
 	return &contracts.CheckPoWPoWProof{
 		Blocks:   blocks,
-		Transfer: transfer,
+		Transfer: *transfer,
 	}, nil
 }
 

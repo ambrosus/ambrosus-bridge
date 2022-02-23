@@ -22,7 +22,7 @@ const (
 // todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckAuraAuraProof, error) {
 	// populated by functions below
-	blocksMap := make(map[uint64]*contracts.CheckAuraBlockAura)
+	blocksMap := make(map[uint64]contracts.CheckAuraBlockAura)
 
 	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
 	if err != nil {
@@ -55,42 +55,44 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 
 			if bl, ok := blocksMap[targetBlockNum]; ok {
 				// if the block existed and was the end of safety chain, then that could change now
-				if bl.Type == BlTypeSafetyEnd {
-					bl.Type = blType
+				if bl.Type.Int64() == BlTypeSafetyEnd {
+					bl.Type = big.NewInt(blType)
 				}
 			} else {
 				// save block as safety
-				blocksMap[targetBlockNum], err = b.encodeBlockWithType(targetBlockNum, blType)
+				encodedBlockWithType, err := b.encodeBlockWithType(targetBlockNum, blType)
 				if err != nil {
 					return nil, err
 				}
+				blocksMap[targetBlockNum] = *encodedBlockWithType
 			}
 
 		}
 	}
 
-	blocks := make([]*contracts.CheckAuraBlockAura, 0, len(blocksMap))
+	blocks := make([]contracts.CheckAuraBlockAura, 0, len(blocksMap))
 	for _, block := range blocksMap {
 		blocks = append(blocks, block)
 	}
 
 	return &contracts.CheckAuraAuraProof{
 		Blocks:    blocks,
-		Transfer:  transfer,
+		Transfer:  *transfer,
 		VsChanges: vsChanges,
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]*contracts.CheckAuraBlockAura, event *contracts.TransferEvent) (*contracts.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockAura, event *contracts.TransferEvent) (*contracts.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
 		return nil, err
 	}
 
-	blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeTransfer)
+	encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeTransfer)
 	if err != nil {
 		return nil, err
 	}
+	blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 
 	return &contracts.CommonStructsTransferProof{
 		ReceiptProof: proof,
@@ -99,8 +101,8 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*contracts.CheckAuraBlock
 	}, nil
 }
 
-func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]*contracts.CheckAuraValidatorSetProof, error) {
-	vsChanges := make([]*contracts.CheckAuraValidatorSetProof, 0, len(events))
+func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]contracts.CheckAuraValidatorSetProof, error) {
+	vsChanges := make([]contracts.CheckAuraValidatorSetProof, 0, len(events))
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
@@ -112,13 +114,14 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*contracts.CheckAuraBloc
 		if err != nil {
 			return nil, err
 		}
-		vsChanges[i] = encodedEvent
+		vsChanges[i] = *encodedEvent
 		prevSet = event.NewSet
 
-		blocks[event.Raw.BlockNumber], err = b.encodeBlockWithType(event.Raw.BlockNumber, int64(i))
+		encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, int64(i))
 		if err != nil {
 			return nil, err
 		}
+		blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 	}
 	return vsChanges, nil
 }
@@ -192,7 +195,7 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	if err != nil {
 		return nil, err
 	}
-	encodedBlock.Type = type_
+	encodedBlock.Type = big.NewInt(type_)
 	return encodedBlock, nil
 }
 
