@@ -3,6 +3,7 @@ package config
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
+	"errors"
 	"os"
 	"strings"
 
@@ -10,6 +11,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
+
+const defaultConfigPath string = "configs/main"
+
+var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
 
 type (
 	Config struct {
@@ -77,8 +82,14 @@ func unmarshal(cfg *Config) error {
 	if err := viper.UnmarshalKey("network.amb", &cfg.AMB); err != nil {
 		return err
 	}
+	if err := viper.UnmarshalKey("network.amb", &cfg.AMB.Network); err != nil {
+		return err
+	}
+	if err := viper.UnmarshalKey("network.eth", &cfg.ETH); err != nil {
+		return err
+	}
 
-	return viper.UnmarshalKey("network.eth", &cfg.ETH)
+	return viper.UnmarshalKey("network.eth", &cfg.ETH.Network)
 }
 
 func setFromEnv(cfg *Config) error {
@@ -100,6 +111,10 @@ func setFromEnv(cfg *Config) error {
 }
 
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {
+	if pk == "" {
+		return nil, ErrPrivateKeyNotFound
+	}
+
 	b, err := hex.DecodeString(pk)
 	if err != nil {
 		return nil, err
