@@ -50,16 +50,16 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBl
 	}
 
 	return &contracts.CheckPoWBlockPoW{
-		P1:                    splitted[0],
-		PrevHashOrReceiptRoot: helpers.BytesToBytes32(splitEls[0]),
-		P2:                    splitted[1],
-		Difficulty:            splitEls[1],
-		P3:                    splitted[2],
-		Number:                splitEls[2],
-		P4:                    splitted[3],
-		P5:                    splitted[4],
-		Nonce:                 splitEls[4],
-		P6:                    splitted[5],
+		P1:                  splitted[0],
+		ParentOrReceiptHash: helpers.BytesToBytes32(splitEls[0]),
+		P2:                  splitted[1],
+		Difficulty:          splitEls[1],
+		P3:                  splitted[2],
+		Number:              splitEls[2],
+		P4:                  splitted[3],
+		P5:                  splitted[4],
+		Nonce:               splitEls[4],
+		P6:                  splitted[5],
 
 		DataSetLookUp:    dataSetLookUp,
 		WitnessForLookUp: witnessForLookup,
