@@ -53,14 +53,18 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 		return nil, err
 	}
 
-	chainId, err := client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
+	var auth *bind.TransactOpts
 
-	auth, err := bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
-	if err != nil {
-		return nil, err
+	if cfg.PrivateKey != nil {
+		chainId, err := client.ChainID(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Bridge{

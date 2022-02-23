@@ -40,14 +40,18 @@ func New(cfg *config.ETHConfig) (*Bridge, error) {
 		return nil, err
 	}
 
-	chainId, err := client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
+	var auth *bind.TransactOpts
 
-	auth, err := bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
-	if err != nil {
-		return nil, err
+	if cfg.PrivateKey != nil {
+		chainId, err := client.ChainID(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &Bridge{Client: client, Contract: contract, auth: auth}, nil
