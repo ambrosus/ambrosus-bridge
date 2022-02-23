@@ -31,13 +31,6 @@ func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
 	return &EventNotFoundErr{EventId: eventId}
 }
 
-// maybe move to helpers pkg
-type JsonError interface {
-	Error() string
-	ErrorCode() int
-	ErrorData() interface{}
-}
-
 type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Eth
@@ -298,9 +291,4 @@ func getFailureReason(client *ethclient.Client, from common.Address, tx *types.T
 	}, nil)
 
 	return err
-}
-
-func getJsonErrData(err error) string {
-	var jsonErr = err.(JsonError)
-	return jsonErr.ErrorData().(string)
 }
