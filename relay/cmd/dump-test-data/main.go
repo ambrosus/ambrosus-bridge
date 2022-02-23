@@ -5,20 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
 )
 
 func main() {
+	// todo как то выбрать шо именно нагенерить
+
 	// Ambrosus configgurations for generating testing data.
 	ambCfg := networkConfig{
 		Name: "amb",
@@ -34,19 +32,16 @@ func main() {
 	}
 
 	// Generating ambrosus testing data.
-	if err := generateNetworkTestData(ambCfg); err != nil {
+	if err := dataForReceiptProof(ambCfg); err != nil {
 		log.Error().Err(err).Msgf("error generating '%s' test data", ambCfg.Name)
 	}
 
 	// Generating ethereum testing data.
-	if err := generateNetworkTestData(ethCfg); err != nil {
+	if err := dataForReceiptProof(ethCfg); err != nil {
 		log.Error().Err(err).Msgf("error generating '%s' test data", ethCfg.Name)
 	}
 
-	// Generating dataset testing data.
-	if err := generateDatasetTestData(ethCfg); err != nil {
-		log.Error().Err(err).Msg("error generating dataset test data")
-	}
+	encodePoWBlock(ethCfg)
 }
 
 // Network testing data.
@@ -65,7 +60,7 @@ type networkConfig struct {
 }
 
 // Generating network testing data.
-func generateNetworkTestData(cfg networkConfig) error {
+func dataForReceiptProof(cfg networkConfig) error {
 	// Creating a new ambrosus bridge client.
 	bridge, err := amb.New(&config.Bridge{Url: cfg.Url})
 	if err != nil {
@@ -98,66 +93,31 @@ func generateNetworkTestData(cfg networkConfig) error {
 	return writeToJSONFile(data, fmt.Sprintf("./receipts_proof/fixtures/%s-data.json", cfg.Name))
 }
 
-// Dataset testing data.
-type datasetData struct {
-	BlockHash        common.Hash
-	EpochData        *ethash.EpochData
-	DataSetLookUp    []*big.Int
-	WitnessForLookup []*big.Int
-}
-
 // Generating dataset testing data.
-func generateDatasetTestData(cfg networkConfig) error {
+func encodePoWBlock(cfg networkConfig) {
 	// Creating a new ethereum bridge client.
 	bridge, err := eth.New(&config.Bridge{Url: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"})
 	if err != nil {
-		return err
+		log.Fatal().Err(err).Msg("block not getting")
 	}
 	defer bridge.Client.Close()
 
 	// Getting block by hash.
 	block, err := bridge.Client.BlockByHash(context.Background(), cfg.Block)
 	if err != nil {
-		log.Error().Err(err).Msg("block not getting")
+		log.Fatal().Err(err).Msg("block not getting")
 	}
 
-	// Encode block header without nonce.
-	blockHeaderWithoutNonce, err := eth.EncodeHeaderWithoutNonceToRLP(block.Header())
+	data, err := eth.EncodeBlock(block.Header(), true)
 	if err != nil {
-		log.Error().Err(err).Msg("block header not encode")
+		log.Fatal().Err(err).Msg("encode pow block err")
 	}
 
-	blockHeaderHashWithoutNonce := crypto.Keccak256(blockHeaderWithoutNonce)
-
-	var blockHeaderHashWithoutNonceLength32 [32]byte
-	copy(blockHeaderHashWithoutNonceLength32[:], blockHeaderHashWithoutNonce)
-
-	// Creating a new meta data block.
-	blockMetaData := ethash.NewBlockMetaData(
-		block.Header().Number.Uint64(), block.Header().Nonce.Uint64(),
-		blockHeaderHashWithoutNonceLength32,
-	)
-
-	// Creating dataset lookup.
-	dataSetLookUp := blockMetaData.DAGElementArray()
-	// Creating witness for lookup
-	witnessForLookup := blockMetaData.DAGProofArray()
-
-	epoch := block.Header().Number.Uint64() / 30000
-	// Generating epoch data.
-	epochData, err := ethash.GenerateEpochData(epoch)
+	err = writeToJSONFile(data, fmt.Sprintf("./assets/testdata/BlockPoW.json"))
 	if err != nil {
-		return err
+		log.Fatal().Err(err).Msg("encode pow block err")
 	}
 
-	data := datasetData{
-		BlockHash:        cfg.Block,
-		EpochData:        epochData,
-		DataSetLookUp:    dataSetLookUp,
-		WitnessForLookup: witnessForLookup,
-	}
-
-	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/epoch-%d.json", epoch))
 }
 
 // Wrire data to json file.
