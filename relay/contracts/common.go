@@ -61,13 +61,16 @@ type CheckAuraAuraProof struct {
 
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
 type CheckPoWBlockPoW struct {
-	P1         []byte
-	Number     []byte
-	P2         []byte
-	Nonce      []byte
-	P3         []byte
-	Difficulty []byte
-	P4         []byte
+	P1                    []byte
+	PrevHashOrReceiptRoot [32]byte
+	P2                    []byte
+	Difficulty            []byte
+	P3                    []byte
+	Number                []byte
+	P4                    []byte // end when extra end
+	P5                    []byte // after extra
+	Nonce                 []byte
+	P6                    []byte
 
 	DataSetLookUp    []*big.Int
 	WitnessForLookUp []*big.Int
