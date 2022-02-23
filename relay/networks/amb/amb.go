@@ -2,17 +2,14 @@ package amb
 
 import (
 	"context"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
-	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -21,25 +18,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type EventNotFoundErr struct {
-	EventId *big.Int
-}
-
-func (e EventNotFoundErr) Error() string {
-	return fmt.Sprintf("event with id %s not found", e.EventId)
-}
-
-func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
-	return &EventNotFoundErr{EventId: eventId}
-}
-
-// maybe move to helpers pkg
-type JsonError interface {
-	Error() string
-	ErrorCode() int
-	ErrorData() interface{}
-}
-
 type Bridge struct {
 	Client      *ethclient.Client
 	Contract    *contracts.Amb
@@ -47,7 +25,7 @@ type Bridge struct {
 	VSContract  *contracts.Vs
 	HttpUrl     string // TODO: delete this field
 	sideBridge  networks.BridgeReceiveAura
-	config      *config.AMBConfig
+	auth        *bind.TransactOpts
 }
 
 func (b *Bridge) SubmitEpochData() error {
@@ -75,70 +53,50 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 		return nil, err
 	}
 
+	var auth *bind.TransactOpts
+
+	if cfg.PrivateKey != nil {
+		chainId, err := client.ChainID(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &Bridge{
 		Client:      client,
 		Contract:    contract,
 		ContractRaw: &contracts.AmbRaw{Contract: contract},
 		VSContract:  vsContract,
 		HttpUrl:     "https://network.ambrosus.io",
-		config:      cfg,
+		auth:        auth,
 	}, nil
 }
 
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
-	auth, err := b.getAuth()
-	if err != nil {
-		return err
-	}
+	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
-	tx, txErr := b.Contract.SubmitTransfer(auth, *proof)
-
+	// todo find way to make this part common for different contract methods
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
-		err = b.ContractRaw.Call(&bind.CallOpts{
-			From: auth.From,
+
+		err := b.ContractRaw.Call(&bind.CallOpts{
+			From: b.auth.From,
 		}, nil, "submitTransfer", *proof)
 
 		if err != nil {
-			errStr := getJsonErrData(err)
-
-			if strings.HasPrefix(errStr, "Reverted") {
-				errBytes, err := hex.DecodeString(errStr[11:])
-				if err != nil {
-					return err
-				}
-				errStr = string(errBytes)
-			}
-
-			return fmt.Errorf("%s", errStr)
-		} else {
-			// врятли такой кейс будет.
-			// но если и будет, то шото странно: при вызове контракта норм способом ошибка есть
-			// а при вызове через ненорм способ - нету.
-			// ну тогда вернём ту ошибку, которая при норм способе
-			errStr := getJsonErrData(txErr)
-			return fmt.Errorf("%s", errStr)
+			return fmt.Errorf("%s", parseError(err))
 		}
+		return fmt.Errorf("%s", parseError(txErr))
 	}
 
-	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
-	if err != nil {
-		return err
-	}
-
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		// we've got here probably due to low gas limit,
-		// and revert() that hasn't been caught at eth_estimateGas
-		err := getFailureReason(b.Client, auth.From, tx)
-		if err != nil {
-			errStr := getJsonErrData(err)
-			return fmt.Errorf("%s", errStr)
-		}
-	}
-
-	return nil
+	return b.waitForTxMined(tx)
 }
 
 // Getting last contract event id.
@@ -159,12 +117,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 		return &logs.Event.TransferEvent, nil
 	}
 
-	return nil, NewEventNotFoundErr(eventId)
-}
-
-// todo delete
-func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
-	return nil, nil
+	return nil, networks.ErrEventNotFound
 }
 
 // todo code below may be common for all networks?
@@ -190,8 +143,8 @@ func (b *Bridge) checkOldEvents() error {
 		nextEventId := big.NewInt(0).Add(lastEventId, i)
 		nextEvent, err := b.GetEventById(nextEventId)
 		if err != nil {
-			var eventNotFoundErr *EventNotFoundErr
-			if errors.As(err, &eventNotFoundErr) {
+			if errors.Is(err, networks.ErrEventNotFound) {
+				// no more old events
 				return nil
 			}
 			return err
@@ -292,20 +245,6 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 	return receipts, nil
 }
 
-func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
-	chainId, err := b.Client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, chainId)
-	if err != nil {
-		return nil, err
-	}
-
-	return auth, nil
-}
-
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
@@ -350,23 +289,4 @@ func (b *Bridge) getSafetyBlocksNum() (uint64, error) {
 		return 0, err
 	}
 	return safetyBlocks.Uint64(), nil
-}
-
-// maybe move the functions below to helpers pkg
-func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction) error {
-	_, err := client.CallContract(context.Background(), ethereum.CallMsg{
-		From:     from,
-		To:       tx.To(),
-		Gas:      tx.Gas(),
-		GasPrice: tx.GasPrice(),
-		Value:    tx.Value(),
-		Data:     tx.Data(),
-	}, nil)
-
-	return err
-}
-
-func getJsonErrData(err error) string {
-	var jsonErr = err.(JsonError)
-	return jsonErr.ErrorData().(string)
 }

@@ -19,23 +19,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-type EventNotFoundErr struct {
-	EventId *big.Int
-}
-
-func (e EventNotFoundErr) Error() string {
-	return fmt.Sprintf("event with id %s not found", e.EventId)
-}
-
-func NewEventNotFoundErr(eventId *big.Int) *EventNotFoundErr {
-	return &EventNotFoundErr{EventId: eventId}
-}
-
 type Bridge struct {
 	Client     *ethclient.Client
 	Contract   *contracts.Eth
 	sideBridge networks.BridgeReceiveEthash
-	config     *config.ETHConfig
+	auth       *bind.TransactOpts
 }
 
 // Creating a new ethereum bridge.
@@ -52,17 +40,26 @@ func New(cfg *config.ETHConfig) (*Bridge, error) {
 		return nil, err
 	}
 
-	return &Bridge{Client: client, Contract: contract, config: cfg}, nil
+	var auth *bind.TransactOpts
+
+	if cfg.PrivateKey != nil {
+		chainId, err := client.ChainID(context.Background())
+		if err != nil {
+			return nil, err
+		}
+
+		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return &Bridge{Client: client, Contract: contract, auth: auth}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
-	auth, err := b.getAuth()
+	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
 	if err != nil {
-		return err
-	}
-
-	tx, txErr := b.Contract.SubmitTransfer(auth, *proof)
-	if txErr != nil {
 		return err
 	}
 
@@ -74,7 +71,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		// we've got here probably due to low gas limit,
 		// and revert() that hasn't been caught at eth_estimateGas
-		return getFailureReason(b.Client, auth.From, tx)
+		return b.getFailureReason(tx)
 	}
 
 	return nil
@@ -101,7 +98,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 		return &logs.Event.TransferEvent, nil
 	}
 
-	return nil, NewEventNotFoundErr(eventId)
+	return nil, networks.ErrEventNotFound
 }
 
 // todo code below may be common for all networks?
@@ -127,8 +124,8 @@ func (b *Bridge) checkOldEvents() error {
 		nextEventId := big.NewInt(0).Add(lastEventId, i)
 		nextEvent, err := b.GetEventById(nextEventId)
 		if err != nil {
-			var eventNotFoundErr *EventNotFoundErr
-			if errors.As(err, &eventNotFoundErr) {
+			if errors.Is(err, networks.ErrEventNotFound) {
+				// no more old events
 				return nil
 			}
 			return err
@@ -229,20 +226,6 @@ func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 	return receipts, nil
 }
 
-func (b *Bridge) getAuth() (*bind.TransactOpts, error) {
-	chainId, err := b.Client.ChainID(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	auth, err := bind.NewKeyedTransactorWithChainID(b.config.PrivateKey, chainId)
-	if err != nil {
-		return nil, err
-	}
-
-	return auth, nil
-}
-
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
@@ -290,9 +273,9 @@ func (b *Bridge) getSafetyBlocksNum() (uint64, error) {
 }
 
 // maybe move the functions below to helpers pkg
-func getFailureReason(client *ethclient.Client, from common.Address, tx *types.Transaction) error {
-	_, err := client.CallContract(context.Background(), ethereum.CallMsg{
-		From:     from,
+func (b *Bridge) getFailureReason(tx *types.Transaction) error {
+	_, err := b.Client.CallContract(context.Background(), ethereum.CallMsg{
+		From:     b.auth.From,
 		To:       tx.To(),
 		Gas:      tx.Gas(),
 		GasPrice: tx.GasPrice(),
