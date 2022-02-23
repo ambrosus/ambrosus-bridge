@@ -68,7 +68,7 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBl
 }
 
 func DisputeBlock(header *types.Header) ([]*big.Int, []*big.Int, error) {
-	blockHeaderWithoutNonce, err := encodeHeaderWithoutNonceToRLP(header)
+	blockHeaderWithoutNonce, err := EncodeHeaderWithoutNonceToRLP(header)
 	if err != nil {
 		log.Error().Err(err).Msg("block header not encode")
 		return nil, nil, err
@@ -90,7 +90,7 @@ func DisputeBlock(header *types.Header) ([]*big.Int, []*big.Int, error) {
 	return dataSetLookUp, witnessForLookup, nil
 }
 
-func encodeHeaderWithoutNonceToRLP(header *types.Header) ([]byte, error) {
+func EncodeHeaderWithoutNonceToRLP(header *types.Header) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 
 	err := rlp.Encode(buffer, []interface{}{
