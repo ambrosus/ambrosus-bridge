@@ -44,7 +44,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 		return nil, err
 	}
 	for blockNum := range blocksMap {
-		for i := uint64(0); i < safetyBlocks; i++ {
+		for i := uint64(0); i <= safetyBlocks; i++ {
 			targetBlockNum := blockNum + i
 
 			// set block type == safety; need to explicitly specify if this is the end of safety chain
