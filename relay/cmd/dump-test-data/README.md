@@ -5,11 +5,12 @@
 go run cmd/dump-test-data/main.go [comamnd] [arg]
 
 ### Comamnds:
-+ receipts-proof [network]
++ receipts-proof [network tag]
 + pow-block [block number]
 + poa-block [block number]
++ epoch [epoch number]
 
-Networks:
+Network tags:
 + amb
 + eth
 
