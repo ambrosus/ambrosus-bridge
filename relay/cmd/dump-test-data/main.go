@@ -188,16 +188,16 @@ func encodePoWBlock(cfg networkConfig) error {
 	}
 
 	data := powData{
-		P1:                  common.Bytes2Hex(bd.P1),
-		ParentOrReceiptHash: common.Bytes2Hex(bd.ParentOrReceiptHash[:]),
-		P2:                  common.Bytes2Hex(bd.P2),
-		Difficulty:          common.Bytes2Hex(bd.Difficulty),
-		P3:                  common.Bytes2Hex(bd.P3),
-		Number:              common.Bytes2Hex(bd.Number),
-		P4:                  common.Bytes2Hex(bd.P4),
-		P5:                  common.Bytes2Hex(bd.P5),
-		Nonce:               common.Bytes2Hex(bd.Nonce),
-		P6:                  common.Bytes2Hex(bd.P6),
+		P1:                  "0x" + common.Bytes2Hex(bd.P1),
+		ParentOrReceiptHash: "0x" + common.Bytes2Hex(bd.ParentOrReceiptHash[:]),
+		P2:                  "0x" + common.Bytes2Hex(bd.P2),
+		Difficulty:          "0x" + common.Bytes2Hex(bd.Difficulty),
+		P3:                  "0x" + common.Bytes2Hex(bd.P3),
+		Number:              "0x" + common.Bytes2Hex(bd.Number),
+		P4:                  "0x" + common.Bytes2Hex(bd.P4),
+		P5:                  "0x" + common.Bytes2Hex(bd.P5),
+		Nonce:               "0x" + common.Bytes2Hex(bd.Nonce),
+		P6:                  "0x" + common.Bytes2Hex(bd.P6),
 		DataSetLookUp:       bigIntArrayToStringArray(bd.DataSetLookUp),
 		WitnessForLookUp:    bigIntArrayToStringArray(bd.WitnessForLookUp),
 	}
@@ -253,17 +253,17 @@ func encodePoABlock(cfg networkConfig) error {
 	}
 
 	data := poaData{
-		P0Seal:      common.Bytes2Hex(bd.P0Seal),
-		P0Bare:      common.Bytes2Hex(bd.P0Bare),
-		P1:          common.Bytes2Hex(bd.P1),
-		ParentHash:  common.Bytes2Hex(bd.ParentHash[:]),
-		P2:          common.Bytes2Hex(bd.P2),
-		ReceiptHash: common.Bytes2Hex(bd.ReceiptHash[:]),
-		P3:          common.Bytes2Hex(bd.P3),
-		S1:          common.Bytes2Hex(bd.S1),
-		Step:        common.Bytes2Hex(bd.Step),
-		S2:          common.Bytes2Hex(bd.S2),
-		Signature:   common.Bytes2Hex(bd.Signature),
+		P0Seal:      "0x" + common.Bytes2Hex(bd.P0Seal),
+		P0Bare:      "0x" + common.Bytes2Hex(bd.P0Bare),
+		P1:          "0x" + common.Bytes2Hex(bd.P1),
+		ParentHash:  "0x" + common.Bytes2Hex(bd.ParentHash[:]),
+		P2:          "0x" + common.Bytes2Hex(bd.P2),
+		ReceiptHash: "0x" + common.Bytes2Hex(bd.ReceiptHash[:]),
+		P3:          "0x" + common.Bytes2Hex(bd.P3),
+		S1:          "0x" + common.Bytes2Hex(bd.S1),
+		Step:        "0x" + common.Bytes2Hex(bd.Step),
+		S2:          "0x" + common.Bytes2Hex(bd.S2),
+		Signature:   "0x" + common.Bytes2Hex(bd.Signature),
 		Type:        bd.Type,
 	}
 
