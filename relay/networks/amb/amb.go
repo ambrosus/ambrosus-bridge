@@ -9,13 +9,12 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/sync/errgroup"
 )
 
 type Bridge struct {
@@ -195,7 +194,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	if err := b.waitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
+	if err := ethereum.WaitForBlock(b.Client, event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return err
 	}
 
@@ -212,39 +211,6 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	return b.sideBridge.SubmitTransferAura(ambTransfer)
 }
 
-func (b *Bridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
-	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
-	if err != nil {
-		return nil, err
-	}
-
-	receipts := make([]*types.Receipt, txsCount)
-
-	errGroup := new(errgroup.Group)
-	for i := uint(0); i < txsCount; i++ {
-		i := i // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
-		errGroup.Go(func() error {
-			tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
-			if err != nil {
-				return err
-			}
-			receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
-			if err != nil {
-				return err
-			}
-
-			receipts[i] = receipt
-			return nil
-		})
-	}
-
-	err = errGroup.Wait()
-	if err != nil {
-		return nil, err
-	}
-	return receipts, nil
-}
-
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
@@ -254,32 +220,6 @@ func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	if block.Hash(true) != event.Raw.BlockHash {
 		return fmt.Errorf("block hash != event's block hash")
 	}
-	return nil
-}
-
-func (b *Bridge) waitForBlock(targetBlockNum uint64) error {
-	// todo maybe timeout (context)
-	blockChannel := make(chan *types.Header)
-	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
-	if err != nil {
-		return err
-	}
-
-	currentBlockNum, err := b.Client.BlockNumber(context.Background())
-	if err != nil {
-		return err
-	}
-
-	for currentBlockNum < targetBlockNum {
-		select {
-		case err := <-blockSub.Err():
-			return err
-
-		case block := <-blockChannel:
-			currentBlockNum = block.Number.Uint64()
-		}
-	}
-
 	return nil
 }
 
