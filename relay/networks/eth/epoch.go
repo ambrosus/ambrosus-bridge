@@ -23,8 +23,7 @@ func (b *Bridge) SetEpochData(epochData ethash.EpochData) error {
 				continue
 			}
 
-			// TODO
-			err := sideBridgeSetEpochDataMock(
+			err := b.sideBridge.SubmitEpochData(
 				epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth,
 				nodes, start, merkelNodesNumber,
 			)
@@ -37,9 +36,5 @@ func (b *Bridge) SetEpochData(epochData ethash.EpochData) error {
 		}
 	}
 
-	return nil
-}
-
-func sideBridgeSetEpochDataMock(*big.Int, *big.Int, *big.Int, []*big.Int, *big.Int, *big.Int) error {
 	return nil
 }

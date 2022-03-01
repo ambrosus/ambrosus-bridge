@@ -24,5 +24,5 @@ type BridgeReceiveAura interface {
 type BridgeReceiveEthash interface {
 	Bridge
 	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
-	SubmitEpochData() error // todo
+	SubmitEpochData(*big.Int, *big.Int, *big.Int, []*big.Int, *big.Int, *big.Int) error
 }

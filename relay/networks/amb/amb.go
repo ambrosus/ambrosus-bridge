@@ -27,9 +27,29 @@ type Bridge struct {
 	auth        *bind.TransactOpts
 }
 
-func (b *Bridge) SubmitEpochData() error {
-	//TODO implement me
-	panic("implement me")
+func (b *Bridge) SubmitEpochData(
+	epoch *big.Int,
+	fullSizeIn128Resultion *big.Int,
+	branchDepth *big.Int,
+	nodes []*big.Int,
+	start *big.Int,
+	merkelNodesNumber *big.Int,
+) error {
+	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
+	if txErr != nil {
+		return b.getFailureReasonViaCall(
+			txErr,
+			"setEpochData",
+			epoch,
+			fullSizeIn128Resultion,
+			branchDepth,
+			nodes,
+			start,
+			merkelNodesNumber,
+		)
+	}
+
+	return b.waitForTxMined(tx)
 }
 
 // Creating a new ambrosus bridge.
