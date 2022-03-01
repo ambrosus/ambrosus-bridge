@@ -13,6 +13,7 @@ var ErrEventNotFound = errors.New("event not found")
 type Bridge interface {
 	// GetLastEventId used by the other side of the bridge for synchronization
 	GetLastEventId() (*big.Int, error)
+	GetMinSafetyBlocksNum() (uint64, error)
 }
 
 type BridgeReceiveAura interface {

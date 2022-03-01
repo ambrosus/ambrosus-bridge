@@ -11,7 +11,7 @@ import (
 
 // todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckPoWPoWProof, error) {
-	safetyBlocks, err := b.getSafetyBlocksNum()
+	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	blocks := make([]contracts.CheckPoWBlockPoW, 0, safetyBlocks+1)
 
 	transfer, err := b.encodeTransferEvent(transferEvent)

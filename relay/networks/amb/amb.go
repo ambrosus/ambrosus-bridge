@@ -189,7 +189,7 @@ func (b *Bridge) listen() error {
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// Wait for safety blocks.
-	safetyBlocks, err := b.getSafetyBlocksNum()
+	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return err
 	}
@@ -223,7 +223,7 @@ func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	return nil
 }
 
-func (b *Bridge) getSafetyBlocksNum() (uint64, error) {
+func (b *Bridge) GetMinSafetyBlocksNum() (uint64, error) {
 	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
 	if err != nil {
 		return 0, err

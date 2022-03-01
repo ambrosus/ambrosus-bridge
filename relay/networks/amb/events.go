@@ -40,7 +40,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 	}
 
 	// add safety blocks after each event block
-	safetyBlocks, err := b.getSafetyBlocksNum()
+	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +152,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 		return nil, err
 	}
 
-	safetyBlocks, err := b.getSafetyBlocksNum()
+	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, err
 	}
