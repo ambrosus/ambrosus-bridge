@@ -27,6 +27,17 @@ func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 	return nil
 }
 
+func (b *Bridge) getFailureReasonViaCall(txErr error, funcName string, params ...interface{}) error {
+	err := b.ContractRaw.Call(&bind.CallOpts{
+		From: b.auth.From,
+	}, nil, funcName, params...)
+
+	if err != nil {
+		return fmt.Errorf("%s", parseError(err))
+	}
+	return fmt.Errorf("%s", parseError(txErr))
+}
+
 type JsonError interface {
 	ErrorData() interface{}
 }

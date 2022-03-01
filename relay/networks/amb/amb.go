@@ -79,20 +79,11 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
-	// todo find way to make this part common for different contract methods
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
-
-		err := b.ContractRaw.Call(&bind.CallOpts{
-			From: b.auth.From,
-		}, nil, "submitTransfer", *proof)
-
-		if err != nil {
-			return fmt.Errorf("%s", parseError(err))
-		}
-		return fmt.Errorf("%s", parseError(txErr))
+		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
 	}
 
 	return b.waitForTxMined(tx)
