@@ -74,6 +74,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 	}
 
 	blocks := make([]contracts.CheckAuraBlockAura, 0, len(blocksMap))
+	blockNums = sortedKeys(blocksMap)
 	for _, blockNum := range blockNums {
 		blocks = append(blocks, blocksMap[blockNum])
 	}
