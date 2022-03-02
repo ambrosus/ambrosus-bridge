@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math"
 	"math/big"
+	"sort"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
@@ -44,7 +45,9 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 	if err != nil {
 		return nil, err
 	}
-	for blockNum := range blocksMap {
+
+	blockNums := sortedKeys(blocksMap)
+	for _, blockNum := range blockNums {
 		for i := uint64(0); i <= safetyBlocks; i++ {
 			targetBlockNum := blockNum + i
 
@@ -72,8 +75,9 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 	}
 
 	blocks := make([]contracts.CheckAuraBlockAura, 0, len(blocksMap))
-	for _, block := range blocksMap {
-		blocks = append(blocks, block)
+	blockNums = sortedKeys(blocksMap)
+	for _, blockNum := range blockNums {
+		blocks = append(blocks, blocksMap[blockNum])
 	}
 
 	return &contracts.CheckAuraAuraProof{
@@ -221,4 +225,18 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	}
 
 	return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
+}
+
+// used for 'ordered' map
+func sortedKeys(m map[uint64]contracts.CheckAuraBlockAura) []uint64 {
+	keys := make([]uint64, len(m))
+	i := 0
+	for k := range m {
+		keys[i] = k
+		i++
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+	return keys
 }
