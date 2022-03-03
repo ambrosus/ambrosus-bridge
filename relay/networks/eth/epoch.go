@@ -2,12 +2,17 @@ package eth
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 )
+
+const epochDataFilePath string = "./assets/epoch/%d.json"
+
+var ErrEpochDataFileNotFound = errors.New("error epoch data file not found")
 
 func (b *Bridge) SetEpochData(epochData ethash.EpochData) error {
 	var nodes []*big.Int
@@ -43,7 +48,7 @@ func (b *Bridge) SetEpochData(epochData ethash.EpochData) error {
 }
 
 func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
-	data, err := os.ReadFile(fmt.Sprintf("./assets/epoch/%d.json", epoch))
+	data, err := os.ReadFile(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +73,7 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 		return nil, err
 	}
 
-	if err := os.WriteFile(fmt.Sprintf("./assets/epoch/%d.json", epoch), file, 0644); err != nil {
+	if err := os.WriteFile(fmt.Sprintf(epochDataFilePath, epoch), file, 0644); err != nil {
 		return nil, err
 	}
 
@@ -76,5 +81,18 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 }
 
 func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
-	return os.Remove(fmt.Sprintf("./assets/epoch/%d.json", epoch))
+	return os.Remove(fmt.Sprintf(epochDataFilePath, epoch))
+}
+
+func (b *Bridge) checkEpochDataFile(epoch uint64) error {
+	_, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return ErrEpochDataFileNotFound
+		} else {
+			return err
+		}
+	}
+
+	return nil
 }
