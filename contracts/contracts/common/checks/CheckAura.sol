@@ -6,6 +6,12 @@ import "./CheckReceiptsProof.sol";
 
 
 contract CheckAura is CheckReceiptsProof {
+    // bitmask
+    uint8 constant BlTypeSafetyEnd = 1;
+    uint8 constant BlTypeSafety = 2;
+    uint8 constant BlTypeTransfer = 4;
+    uint8 constant BlTypeVSChange = 8;
+
     struct BlockAura {
         bytes p0_seal;
         bytes p0_bare;
@@ -68,7 +74,7 @@ contract CheckAura is CheckReceiptsProof {
             // check signature, calc hash
             bytes32 block_hash = CheckBlock(block);
 
-            if (block.type_ == - 3) { // end of safety chain
+            if (block.type_ & BlTypeSafetyEnd != 0) { // end of safety chain
                 require(safetyChainLength >= minSafetyBlocks, "safety chain too short");
                 safetyChainLength = 0;
             } else {
@@ -76,11 +82,11 @@ contract CheckAura is CheckReceiptsProof {
                 safetyChainLength++;
             }
 
-            if (block.type_ >= 0) {// validator set change event
+            if (block.type_ & BlTypeVSChange != 0) {// validator set change event
                 // todo check vs event
                 // val set
             }
-            else if (block.type_ == - 1) {// transfer event
+            if (block.type_ & BlTypeTransfer != 0) {// transfer event
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
                 require(block.receipt_hash == receiptHash, "Transfer event validation failed");
             }

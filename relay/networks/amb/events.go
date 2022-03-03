@@ -14,11 +14,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+// bitmask
 const (
-	BlTypeSafetyEnd = -3
-	BlTypeSafety    = -2
-	BlTypeTransfer  = -1
-	// type values >= 0 mean the validatorSetEvent index in VsChanges list
+	BlTypeSafetyEnd uint8 = 1
+	BlTypeSafety    uint8 = 2
+	BlTypeTransfer  uint8 = 4
+	BlTypeVSChange  uint8 = 8
 )
 
 // todo name
@@ -52,15 +53,15 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 			targetBlockNum := blockNum + i
 
 			// set block type == safety; need to explicitly specify if this is the end of safety chain
-			blType := int64(BlTypeSafety)
+			blType := BlTypeSafety
 			if i == safetyBlocks {
 				blType = BlTypeSafetyEnd
 			}
 
 			if bl, ok := blocksMap[targetBlockNum]; ok {
 				// if the block existed and was the end of safety chain, then that could change now
-				if bl.Type.Int64() == BlTypeSafetyEnd {
-					bl.Type = big.NewInt(blType)
+				if bl.Type&BlTypeSafetyEnd != 0 {
+					bl.Type |= blType
 				}
 			} else {
 				// save block as safety
@@ -122,11 +123,17 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 		vsChanges[i] = *encodedEvent
 		prevSet = event.NewSet
 
-		encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, int64(i))
-		if err != nil {
-			return nil, err
+		if bl, ok := blocks[event.Raw.BlockNumber]; ok {
+			bl.Type |= BlTypeVSChange
+			bl.DeltaIndex = int64(i)
+		} else {
+			encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeVSChange)
+			if err != nil {
+				return nil, err
+			}
+			encodedBlockWithType.DeltaIndex = int64(i)
+			blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 		}
-		blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 	}
 	return vsChanges, nil
 }
@@ -191,7 +198,7 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contracts.CheckAuraBlockAura, error) {
+func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contracts.CheckAuraBlockAura, error) {
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return nil, err
@@ -200,7 +207,7 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ int64) (*contract
 	if err != nil {
 		return nil, err
 	}
-	encodedBlock.Type = big.NewInt(type_)
+	encodedBlock.Type |= type_
 	return encodedBlock, nil
 }
 
