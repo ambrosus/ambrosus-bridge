@@ -21,7 +21,8 @@ contract CheckAura is CheckReceiptsProof {
         bytes s2;
         bytes signature;
 
-        int type_;
+        uint8 type_;
+        int64 delta_index;
     }
 
 
