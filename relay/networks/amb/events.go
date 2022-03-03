@@ -169,7 +169,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 	}
 
 	start := prevEvent.Raw.BlockNumber
-	end := event.Raw.BlockNumber + safetyBlocks
+	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
 
 	opts := &bind.FilterOpts{
 		Start:   start,
