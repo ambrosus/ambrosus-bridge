@@ -1,7 +1,10 @@
 package eth
 
 import (
+	"encoding/json"
+	"fmt"
 	"math/big"
+	"os"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 )
@@ -37,4 +40,41 @@ func (b *Bridge) SetEpochData(epochData ethash.EpochData) error {
 	}
 
 	return nil
+}
+
+func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
+	data, err := os.ReadFile(fmt.Sprintf("./assets/epoch/%d.json", epoch))
+	if err != nil {
+		return nil, err
+	}
+
+	var epochData *ethash.EpochData
+
+	if err := json.Unmarshal(data, &epochData); err != nil {
+		return nil, err
+	}
+
+	return epochData, nil
+}
+
+func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
+	data, err := ethash.GenerateEpochData(epoch)
+	if err != nil {
+		return nil, err
+	}
+
+	file, err := json.MarshalIndent(data, "", " ")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := os.WriteFile(fmt.Sprintf("./assets/epoch/%d.json", epoch), file, 0644); err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
+	return os.Remove(fmt.Sprintf("./assets/epoch/%d.json", epoch))
 }
