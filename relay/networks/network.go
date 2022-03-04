@@ -8,7 +8,10 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-var ErrEventNotFound = errors.New("event not found")
+var (
+	ErrEventNotFound = errors.New("error event not found")
+	ErrEpochData     = errors.New("error epoch data")
+)
 
 type Bridge interface {
 	// GetLastEventId used by the other side of the bridge for synchronization

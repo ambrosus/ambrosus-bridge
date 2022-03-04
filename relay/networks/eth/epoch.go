@@ -14,7 +14,7 @@ const epochDataFilePath string = "./assets/epoch/%d.json"
 
 var ErrEpochDataFileNotFound = errors.New("error epoch data file not found")
 
-func (b *Bridge) SetEpochData(epochData ethash.EpochData) error {
+func (b *Bridge) SetEpochData(epochData *ethash.EpochData) error {
 	var nodes []*big.Int
 	start := big.NewInt(0)
 

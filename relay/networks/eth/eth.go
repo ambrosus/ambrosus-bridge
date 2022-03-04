@@ -189,7 +189,23 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	return b.sideBridge.SubmitTransferPoW(ambTransfer)
+	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
+	if err != nil {
+		if errors.Is(err, networks.ErrEpochData) {
+			epochData, err := b.loadEpochDataFile(event.Raw.BlockNumber / 30000)
+			if err != nil {
+				return err
+			}
+
+			if err := b.SetEpochData(epochData); err != nil {
+				return err
+			}
+
+			return b.sideBridge.SubmitTransferPoW(ambTransfer)
+		}
+	}
+
+	return nil
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
