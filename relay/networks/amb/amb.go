@@ -141,6 +141,11 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	for {
 		if err := b.listen(); err != nil {
 			log.Error().Err(err).Msg("listen ambrosus error")
+
+			err = b.ExternalLogger.LogError(err)
+			if err != nil {
+				log.Error().Err(err).Msg("external logger error")
+			}
 		}
 	}
 }
