@@ -218,7 +218,7 @@ type poaData struct {
 	Step        string
 	S2          string
 	Signature   string
-	Type        *big.Int
+	Type        uint8
 }
 
 // Encoding PoA block.

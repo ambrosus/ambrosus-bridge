@@ -38,7 +38,8 @@ type CheckAuraBlockAura struct {
 	S2        []byte // signature prefix
 	Signature []byte
 
-	Type *big.Int
+	Type       uint8
+	DeltaIndex int64
 }
 
 // CheckAuraValidatorSetProof is an auto generated low-level Go binding around an user-defined struct.
