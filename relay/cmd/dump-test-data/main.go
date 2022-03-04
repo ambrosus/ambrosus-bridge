@@ -109,7 +109,7 @@ func dataForReceiptProof(cfg networkConfig) error {
 	log.Info().Msgf("Generating data for %s receipts proof..", cfg.Name)
 
 	// Creating a new ambrosus bridge client.
-	bridge, err := amb.New(&config.AMBConfig{Network: config.Network{URL: cfg.Url}})
+	bridge, err := amb.New(&config.AMBConfig{Network: config.Network{URL: cfg.Url}}, nil)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func encodePoWBlock(cfg networkConfig) error {
 	// Creating a new ethereum bridge client.
 	bridge, err := eth.New(&config.ETHConfig{
 		Network: config.Network{URL: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"},
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func encodePoABlock(cfg networkConfig) error {
 	// Creating a new ambrosus bridge client.
 	bridge, err := amb.New(&config.AMBConfig{
 		Network: config.Network{URL: "https://network.ambrosus.io"},
-	})
+	}, nil)
 	if err != nil {
 		return err
 	}

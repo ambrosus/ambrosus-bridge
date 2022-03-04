@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,13 +19,14 @@ import (
 )
 
 type Bridge struct {
-	Client      *ethclient.Client
-	Contract    *contracts.Amb
-	ContractRaw *contracts.AmbRaw
-	VSContract  *contracts.Vs
-	HttpUrl     string // TODO: delete this field
-	sideBridge  networks.BridgeReceiveAura
-	auth        *bind.TransactOpts
+	Client         *ethclient.Client
+	Contract       *contracts.Amb
+	ContractRaw    *contracts.AmbRaw
+	VSContract     *contracts.Vs
+	HttpUrl        string // TODO: delete this field
+	sideBridge     networks.BridgeReceiveAura
+	auth           *bind.TransactOpts
+	ExternalLogger external_logger.ExternalLogger
 }
 
 func (b *Bridge) SubmitEpochData(
@@ -53,7 +55,7 @@ func (b *Bridge) SubmitEpochData(
 }
 
 // Creating a new ambrosus bridge.
-func New(cfg *config.AMBConfig) (*Bridge, error) {
+func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
@@ -87,12 +89,13 @@ func New(cfg *config.AMBConfig) (*Bridge, error) {
 	}
 
 	return &Bridge{
-		Client:      client,
-		Contract:    contract,
-		ContractRaw: &contracts.AmbRaw{Contract: contract},
-		VSContract:  vsContract,
-		HttpUrl:     "https://network.ambrosus.io",
-		auth:        auth,
+		Client:         client,
+		Contract:       contract,
+		ContractRaw:    &contracts.AmbRaw{Contract: contract},
+		VSContract:     vsContract,
+		HttpUrl:        "https://network.ambrosus.io",
+		auth:           auth,
+		ExternalLogger: externalLogger,
 	}, nil
 }
 

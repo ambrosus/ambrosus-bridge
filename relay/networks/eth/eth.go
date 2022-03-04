@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,14 +20,15 @@ import (
 )
 
 type Bridge struct {
-	Client     *ethclient.Client
-	Contract   *contracts.Eth
-	sideBridge networks.BridgeReceiveEthash
-	auth       *bind.TransactOpts
+	Client         *ethclient.Client
+	Contract       *contracts.Eth
+	sideBridge     networks.BridgeReceiveEthash
+	auth           *bind.TransactOpts
+	ExternalLogger external_logger.ExternalLogger
 }
 
 // Creating a new ethereum bridge.
-func New(cfg *config.ETHConfig) (*Bridge, error) {
+func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
@@ -53,7 +55,7 @@ func New(cfg *config.ETHConfig) (*Bridge, error) {
 		}
 	}
 
-	return &Bridge{Client: client, Contract: contract, auth: auth}, nil
+	return &Bridge{Client: client, Contract: contract, auth: auth, ExternalLogger: externalLogger}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {

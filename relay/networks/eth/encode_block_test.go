@@ -17,7 +17,7 @@ import (
 func TestEncoding(t *testing.T) {
 	ethBridge, err := New(&config.ETHConfig{
 		Network: config.Network{URL: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
