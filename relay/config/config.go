@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
@@ -67,10 +67,10 @@ func parseConfigFile() error {
 
 	log.Debug().Msgf("Parsing config file: %s", configPath)
 
-	path := strings.Split(configPath, "/")
+	dir, file := filepath.Split(configPath)
 
-	viper.AddConfigPath(path[0])
-	viper.SetConfigName(path[1])
+	viper.AddConfigPath(dir)
+	viper.SetConfigName(file)
 
 	return viper.ReadInConfig()
 
