@@ -105,6 +105,15 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
 
+	blockNumber, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("error getting last block number")
+	}
+
+	if err = b.ensureEpochDataExists(blockNumber / 30000); err != nil {
+		log.Error().Err(err).Msg("error epoch data exists")
+	}
+
 	for {
 		if err := b.listen(); err != nil {
 			log.Error().Err(err).Msg("listen ambrosus error")
@@ -203,6 +212,8 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 
 			return b.sideBridge.SubmitTransferPoW(ambTransfer)
 		}
+
+		return err
 	}
 
 	return nil

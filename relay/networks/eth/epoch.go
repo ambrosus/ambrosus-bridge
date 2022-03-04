@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
+	"github.com/rs/zerolog/log"
 )
 
 const epochDataFilePath string = "./assets/epoch/%d.json"
@@ -63,6 +64,8 @@ func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 }
 
 func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
+	log.Debug().Msgf("creating '%d.json' epoch data file...", epoch)
+
 	data, err := ethash.GenerateEpochData(epoch)
 	if err != nil {
 		return nil, err
@@ -81,17 +84,46 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 }
 
 func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
-	return os.Remove(fmt.Sprintf(epochDataFilePath, epoch))
+	log.Debug().Msgf("Deleting '%d.json' epoch data file...", epoch)
+
+	err := os.Remove(fmt.Sprintf(epochDataFilePath, epoch))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (b *Bridge) checkEpochDataFile(epoch uint64) error {
+	log.Debug().Msgf("Checking '%d.json' epoch data file...", epoch)
+
 	_, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return ErrEpochDataFileNotFound
-		} else {
-			return err
 		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (b *Bridge) ensureEpochDataExists(epoch uint64) error {
+	log.Debug().Msgf("Ensure '%d.json' epoch data exists...", epoch)
+
+	if err := b.checkEpochDataFile(epoch); err != nil {
+		if errors.Is(err, ErrEpochDataFileNotFound) {
+			if _, err := b.createEpochDataFile(epoch); err != nil {
+				return err
+			}
+		}
+
+		return err
 	}
 
 	return nil
