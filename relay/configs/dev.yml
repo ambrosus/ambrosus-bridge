@@ -7,6 +7,7 @@ network:
     url: wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c
     contract-addr:
     ethash-path: ./todo
+    epoch-lenght: 3
 
 external-logger:
   telegram:

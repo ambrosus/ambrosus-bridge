@@ -20,10 +20,11 @@ import (
 )
 
 type Bridge struct {
-	Client         *ethclient.Client
-	Contract       *contracts.Eth
-	sideBridge     networks.BridgeReceiveEthash
-	auth           *bind.TransactOpts
+	Client     *ethclient.Client
+	Contract   *contracts.Eth
+	sideBridge networks.BridgeReceiveEthash
+	auth       *bind.TransactOpts
+	cfg        *config.ETHConfig
 	ExternalLogger external_logger.ExternalLogger
 }
 
@@ -55,7 +56,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		}
 	}
 
-	return &Bridge{Client: client, Contract: contract, auth: auth, ExternalLogger: externalLogger}, nil
+	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
@@ -106,6 +107,15 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
+
+	blockNumber, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("error getting last block number")
+	}
+
+	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLenght); err != nil {
+		log.Error().Err(err).Msg("error checking epoch data dir")
+	}
 
 	for {
 		if err := b.listen(); err != nil {
@@ -196,7 +206,30 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	return b.sideBridge.SubmitTransferPoW(ambTransfer)
+	if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
+		if errors.Is(err, networks.ErrEpochData) {
+			epoch := event.Raw.BlockNumber / 30000
+
+			epochData, err := b.loadEpochDataFile(epoch)
+			if err != nil {
+				return err
+			}
+
+			if err := b.SetEpochData(epochData); err != nil {
+				return err
+			}
+
+			if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
+				return err
+			}
+
+			return b.checkEpochDataDir(epoch, b.cfg.EpochLenght)
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
