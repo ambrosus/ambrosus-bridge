@@ -4,7 +4,7 @@ services:
     image: ghcr.io/ambrosus/openethereum:v3.3.3-amb1.0.1
     command: --config /opt/apollo/config.toml
     networks:
-      apollo:
+      amb-eth-net:
         ipv4_address: 10.0.0.10
     ports:
       - 30303:30303
@@ -17,7 +17,7 @@ services:
     image: ghcr.io/ambrosus/openethereum:v3.3.3-amb1.0.1
     command: --config /opt/apollo/config.toml
     networks:
-      apollo:
+      amb-eth-net:
         ipv4_address: 10.0.0.11
     ports:
       - 30304:30303
@@ -30,7 +30,7 @@ services:
     image: ghcr.io/ambrosus/openethereum:v3.3.3-amb1.0.1
     command: --config /opt/apollo/config.toml
     networks:
-      apollo:
+      amb-eth-net:
         ipv4_address: 10.0.0.12
     ports:
       - 30305:30303
@@ -39,10 +39,117 @@ services:
     volumes:
       - ./amb/apollo2/:/opt/apollo
 
+
+  geth-bootnode:
+    hostname: geth-bootnode
+    env_file:
+      - .env
+    image: geth-client
+    build:
+      context: ./ethereum
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
+    command:
+      --nodekeyhex="b0ac22adcad37213c7c565810a50f1772291e7b0ce53fb73e7ec2a3c75bc13b5"
+      --nodiscover
+      --ipcdisable
+      --networkid ${NETWORK_ID}
+      --netrestrict "10.0.0.0/22"
+      --syncmode "full"
+      --verbosity 5
+      #--datadir data
+      #--keystore ~/.ethereum/keystore
+    ports:
+      - 8551:8545
+      - 8552:8546
+      - 30306:30303
+    networks:
+      amb-eth-net:
+        ipv4_address: 10.0.0.13
+    restart: on-failure
+    volumes:
+      - geth-bootnode-data:/root
+
+  geth-rpc-endpoint:
+    hostname: geth-rpc-endpoint
+    env_file:
+      - .env
+    image: geth-client
+    depends_on:
+      - geth-bootnode    
+    command:
+      --bootnodes "enode://af22c29c316ad069cf48a09a4ad5cf04a251b411e45098888d114c6dd7f489a13786620d5953738762afa13711d4ffb3b19aa5de772d8af72f851f7e9c5b164a@geth-bootnode:30303"
+      --allow-insecure-unlock
+      --http
+      --http.addr "0.0.0.0"
+      --http.api "eth,web3,net,admin,personal"
+      --http.port 8502
+      --http.corsdomain "*"
+      --networkid ${NETWORK_ID}
+      --netrestrict "10.0.0.0/22"
+      --syncmode "full"
+      --verbosity 5
+     #--ws
+     #--ws.port 3434
+     #--ws.api "eth,web3,net,admin,personal"
+     #--ws.addr "0.0.0.0"
+      # --datadir data
+      #--keystore ~/.ethereum/keystore
+    ports:
+      - "8502:8502"
+      - "3434:3434"
+      - 30307:30303
+    networks:
+      amb-eth-net:
+        ipv4_address: 10.0.0.14
+    restart: on-failure
+    volumes:
+      - geth-rpc-data:/root
+
+  geth-miner:
+    hostname: geth-miner
+    env_file:
+      - .env
+    image: geth-client
+    depends_on:
+      - geth-bootnode
+    command:
+      --bootnodes "enode://af22c29c316ad069cf48a09a4ad5cf04a251b411e45098888d114c6dd7f489a13786620d5953738762afa13711d4ffb3b19aa5de772d8af72f851f7e9c5b164a@geth-bootnode:30303"
+      --networkid ${NETWORK_ID}
+      --netrestrict "10.0.0.0/22"
+      --syncmode "full"
+      --ws
+      --ws.port 3535
+      --ws.api "eth,web3,net,admin,personal"
+      --ws.addr "0.0.0.0"
+      --mine
+      --miner.threads 1
+      --verbosity 5
+      # --txpool.locals=${LOCAL_ADDRESS}
+      #--miner.gasprice 10
+      #--miner.etherbase 0xa62D94F13A41F460C3BE1404AA896B393d9EE7FA
+      #--datadir data
+      #--keystore ~/.ethereum/keystore
+    ports:
+      - "3535:3535"
+      - 30308:30303
+    networks:
+      amb-eth-net:
+        ipv4_address: 10.0.0.15
+    restart: on-failure
+    volumes:
+      - geth-miner-data:/root
+
+
 networks:
-  apollo:
+  amb-eth-net:
     driver: bridge
     ipam:
      config:
        - subnet: 10.0.0.0/22
          gateway: 10.0.0.1
+
+volumes:
+  geth-bootnode-data:
+  geth-miner-data:
+  geth-rpc-data:
