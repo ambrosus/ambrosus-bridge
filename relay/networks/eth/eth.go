@@ -199,10 +199,11 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
-	if err != nil {
+	if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
 		if errors.Is(err, networks.ErrEpochData) {
-			epochData, err := b.loadEpochDataFile(event.Raw.BlockNumber / 30000)
+			epoch := event.Raw.BlockNumber / 30000
+
+			epochData, err := b.loadEpochDataFile(epoch)
 			if err != nil {
 				return err
 			}
@@ -211,7 +212,11 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 				return err
 			}
 
-			return b.sideBridge.SubmitTransferPoW(ambTransfer)
+			if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
+				return err
+			}
+
+			return b.checkEpochDataDir(epoch, b.cfg.EpochLenght)
 		}
 
 		return err
