@@ -20,11 +20,11 @@ import (
 )
 
 type Bridge struct {
-	Client     *ethclient.Client
-	Contract   *contracts.Eth
-	sideBridge networks.BridgeReceiveEthash
-	auth       *bind.TransactOpts
-	cfg        *config.ETHConfig
+	Client         *ethclient.Client
+	Contract       *contracts.Eth
+	sideBridge     networks.BridgeReceiveEthash
+	Auth           *bind.TransactOpts
+	cfg        	   *config.ETHConfig
 	ExternalLogger external_logger.ExternalLogger
 }
 
@@ -56,11 +56,11 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		}
 	}
 
-	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
+	return &Bridge{Client: client, Contract: contract, Auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
-	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
+	tx, err := b.Contract.SubmitTransfer(b.Auth, *proof)
 	if err != nil {
 		return err
 	}
@@ -73,7 +73,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		// we've got here probably due to low gas limit,
 		// and revert() that hasn't been caught at eth_estimateGas
-		return ethereum.GetFailureReason(b.Client, b.auth, tx)
+		return ethereum.GetFailureReason(b.Client, b.Auth, tx)
 	}
 
 	return nil
