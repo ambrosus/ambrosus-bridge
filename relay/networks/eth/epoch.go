@@ -107,8 +107,7 @@ func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
 func (b *Bridge) checkEpochDataFile(epoch uint64) error {
 	log.Debug().Msgf("Checking '%d.json' epoch data file...", epoch)
 
-	_, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch))
-	if err != nil {
+	if _, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return ErrEpochDataFileNotFound
 		}
@@ -163,6 +162,8 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, lenght uint64) error {
 				if _, err := b.createEpochDataFile(epoch); err != nil {
 					return err
 				}
+
+				continue
 			}
 
 			return err
