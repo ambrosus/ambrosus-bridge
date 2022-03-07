@@ -18,9 +18,10 @@ var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
 
 type (
 	Config struct {
-		AMB      AMBConfig
-		ETH      ETHConfig
-		Telegram TelegramLogger
+		AMB        AMBConfig
+		ETH        ETHConfig
+		Telegram   TelegramLogger
+		Prometheus Prometheus
 	}
 
 	Network struct {
@@ -43,6 +44,11 @@ type (
 	TelegramLogger struct {
 		Token  string `mapstructure:"token"`
 		ChatId int    `mapstructure:"chat-id"`
+	}
+
+	Prometheus struct {
+		Ip   string `mapstructure:"ip"`
+		Port int    `mapstructure:"port"`
 	}
 )
 
@@ -97,6 +103,10 @@ func unmarshal(cfg *Config) error {
 	}
 
 	if err := viper.UnmarshalKey("external-logger.telegram", &cfg.Telegram); err != nil {
+		return err
+	}
+
+	if err := viper.UnmarshalKey("prometheus", &cfg.Prometheus); err != nil {
 		return err
 	}
 
