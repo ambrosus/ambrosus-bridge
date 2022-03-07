@@ -131,3 +131,8 @@ deployments/
 
 # Mac OS
 .DS_Store
+
+tests/amb/chains
+tests/amb/cache
+tests/amb/signer
+!tests/.env
