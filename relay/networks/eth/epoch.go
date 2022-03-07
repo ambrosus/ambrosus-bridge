@@ -4,14 +4,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"math/big"
 	"os"
+	"strconv"
+	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/rs/zerolog/log"
 )
 
-const epochDataFilePath string = "./assets/epoch/%d.json"
+const (
+	epochDataPath     string = "./assets/epoch/"
+	epochDataFilePath string = epochDataPath + "%d.json"
+)
 
 var ErrEpochDataFileNotFound = errors.New("error epoch data file not found")
 
@@ -113,17 +119,54 @@ func (b *Bridge) checkEpochDataFile(epoch uint64) error {
 	return nil
 }
 
-func (b *Bridge) ensureEpochDataExists(epoch uint64) error {
-	log.Debug().Msgf("Ensure '%d.json' epoch data exists...", epoch)
+func (b *Bridge) getGeneratedEpochNumbers() ([]int, error) {
+	files, err := ioutil.ReadDir(epochDataPath)
+	if err != nil {
+		return nil, err
+	}
 
-	if err := b.checkEpochDataFile(epoch); err != nil {
-		if errors.Is(err, ErrEpochDataFileNotFound) {
-			if _, err := b.createEpochDataFile(epoch); err != nil {
+	var epochs []int
+
+	for _, file := range files {
+		name := strings.Trim(file.Name(), ".json")
+
+		epoch, err := strconv.Atoi(name)
+		if err != nil {
+			return nil, err
+		}
+
+		epochs = append(epochs, epoch)
+	}
+
+	return epochs, nil
+}
+
+func (b *Bridge) checkEpochDataDir(epoch uint64, lenght uint64) error {
+	log.Debug().Msg("Checking epoch data dir...")
+
+	epochs, err := b.getGeneratedEpochNumbers()
+	if err != nil {
+		return err
+	}
+
+	for _, i := range epochs {
+		if uint64(i) < epoch {
+			if err := b.deleteEpochDataFile(uint64(i)); err != nil {
 				return err
 			}
 		}
+	}
 
-		return err
+	for i := epoch; i <= lenght; i++ {
+		if err := b.checkEpochDataFile(i); err != nil {
+			if errors.Is(err, ErrEpochDataFileNotFound) {
+				if _, err := b.createEpochDataFile(epoch); err != nil {
+					return err
+				}
+			}
+
+			return err
+		}
 	}
 
 	return nil

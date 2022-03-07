@@ -35,7 +35,8 @@ type (
 
 	ETHConfig struct {
 		Network
-		EthashPath string `mapstructure:"ethash-path"`
+		EthashPath  string `mapstructure:"ethash-path"`
+		EpochLenght uint64 `mapstructure:"epoch-lenght"`
 	}
 )
 

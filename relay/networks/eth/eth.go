@@ -23,6 +23,7 @@ type Bridge struct {
 	Contract   *contracts.Eth
 	sideBridge networks.BridgeReceiveEthash
 	auth       *bind.TransactOpts
+	cfg        *config.ETHConfig
 }
 
 // Creating a new ethereum bridge.
@@ -53,7 +54,7 @@ func New(cfg *config.ETHConfig) (*Bridge, error) {
 		}
 	}
 
-	return &Bridge{Client: client, Contract: contract, auth: auth}, nil
+	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
@@ -110,8 +111,8 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 		log.Error().Err(err).Msg("error getting last block number")
 	}
 
-	if err = b.ensureEpochDataExists(blockNumber / 30000); err != nil {
-		log.Error().Err(err).Msg("error epoch data exists")
+	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLenght); err != nil {
+		log.Error().Err(err).Msg("error checking epoch data dir")
 	}
 
 	for {
