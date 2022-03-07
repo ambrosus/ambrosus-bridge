@@ -132,7 +132,7 @@ deployments/
 # Mac OS
 .DS_Store
 
-tests/amb/chains
-tests/amb/cache
-tests/amb/signer
+tests/amb/apollo*/chains
+tests/amb/apollo*/cache
+tests/amb/apollo*/signer
 !tests/.env
