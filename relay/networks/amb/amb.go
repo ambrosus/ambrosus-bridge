@@ -11,12 +11,19 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
 )
+
+var ContractBalanceGWeiGauge = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: "bridge_ambrosus_contract_balance_gwei",
+	Help: "Balance of the ambrosus contract in the bridge",
+})
 
 type Bridge struct {
 	Client         *ethclient.Client
@@ -49,6 +56,11 @@ func (b *Bridge) SubmitEpochData(
 			start,
 			merkelNodesNumber,
 		)
+	}
+
+	// Metric
+	if err := metric.SetContractBalance(ContractBalanceGWeiGauge, b.Client, b.Auth.From); err != nil {
+		return err
 	}
 
 	return b.waitForTxMined(tx)
@@ -107,6 +119,11 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
 		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
+	}
+
+	// Metric
+	if err := metric.SetContractBalance(ContractBalanceGWeiGauge, b.Client, b.Auth.From); err != nil {
+		return err
 	}
 
 	return b.waitForTxMined(tx)
