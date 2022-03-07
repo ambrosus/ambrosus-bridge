@@ -5,7 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"os"
-	"strings"
+	"path/filepath"
 
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
@@ -18,8 +18,9 @@ var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
 
 type (
 	Config struct {
-		AMB AMBConfig
-		ETH ETHConfig
+		AMB      AMBConfig
+		ETH      ETHConfig
+		Telegram TelegramLogger
 	}
 
 	Network struct {
@@ -37,6 +38,11 @@ type (
 		Network
 		EthashPath  string `mapstructure:"ethash-path"`
 		EpochLenght uint64 `mapstructure:"epoch-lenght"`
+	}
+
+	TelegramLogger struct {
+		Token  string `mapstructure:"token"`
+		ChatId int    `mapstructure:"chat-id"`
 	}
 )
 
@@ -68,10 +74,10 @@ func parseConfigFile() error {
 
 	log.Debug().Msgf("Parsing config file: %s", configPath)
 
-	path := strings.Split(configPath, "/")
+	dir, file := filepath.Split(configPath)
 
-	viper.AddConfigPath(path[0])
-	viper.SetConfigName(path[1])
+	viper.AddConfigPath(dir)
+	viper.SetConfigName(file)
 
 	return viper.ReadInConfig()
 
@@ -87,6 +93,10 @@ func unmarshal(cfg *Config) error {
 		return err
 	}
 	if err := viper.UnmarshalKey("network.eth", &cfg.ETH); err != nil {
+		return err
+	}
+
+	if err := viper.UnmarshalKey("external-logger.telegram", &cfg.Telegram); err != nil {
 		return err
 	}
 

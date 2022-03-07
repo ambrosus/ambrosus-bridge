@@ -373,9 +373,14 @@
                 "type": "bytes"
               },
               {
-                "internalType": "int256",
+                "internalType": "uint8",
                 "name": "type_",
-                "type": "int256"
+                "type": "uint8"
+              },
+              {
+                "internalType": "int64",
+                "name": "delta_index",
+                "type": "int64"
               }
             ],
             "internalType": "struct CheckAura.BlockAura[]",
@@ -840,9 +845,14 @@
                 "type": "bytes"
               },
               {
-                "internalType": "int256",
+                "internalType": "uint8",
                 "name": "type_",
-                "type": "int256"
+                "type": "uint8"
+              },
+              {
+                "internalType": "int64",
+                "name": "delta_index",
+                "type": "int64"
               }
             ],
             "internalType": "struct CheckAura.BlockAura[]",

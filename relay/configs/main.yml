@@ -8,3 +8,8 @@ network:
     contract-addr:
     ethash-path: ./todo
     epoch-lenght: 3
+
+external-logger:
+  telegram:
+    token:
+    chat-id:
