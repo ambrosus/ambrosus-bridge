@@ -8,11 +8,11 @@ contract AmbBridgeTest is AmbBridge {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
     )
     AmbBridge(_sideBridgeAddress, relayAddress,
         tokenThisAddresses, tokenSideAddresses,
-        fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
+        fee_, feeRecipient_, timeframeSeconds_, lockTime_, minSafetyBlocks_
     ) {}
 
     function getLockedTransferTest(uint event_id, uint index) public view returns (address, address, uint) {

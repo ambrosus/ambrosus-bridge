@@ -7,14 +7,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await hre.deployments.deploy("AmbBridgeTest", {
     from: owner,
     args: [
-      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe", // _sideBridgeAddress
-      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe", // relayAddress
-      ["0x195c2707319ad4beca6b5bb4086617fd6f240cfe", "0x295c2707319ad4beca6b5bb4086617fd6f240cfe", "0x395c2707319ad4beca6b5bb4086617fd6f240cfe"], // tokenThisAddresses
-      ["0x495c2707319ad4beca6b5bb4086617fd6f240cfe", "0x595c2707319ad4beca6b5bb4086617fd6f240cfe", "0x695c2707319ad4beca6b5bb4086617fd6f240cfe"], // tokenSideAddresses
-      1000, // fee
-      14400, // timeframeSeconds
-      1000, // lockTime
-      10 // minSafetyBlocks
+      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",  // _sideBridgeAddress
+      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",  // relayAddress
+      [
+        "0x195c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x395c2707319ad4beca6b5bb4086617fd6f240cfe"
+      ],  // tokenThisAddresses
+      [
+        "0x495c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x595c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x695c2707319ad4beca6b5bb4086617fd6f240cfe"
+      ],  // tokenSideAddresses
+      1000,  // fee
+      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",  // feeRecipient
+      14400,  // timeframeSeconds
+      1000,  // lockTime
+      10  // minSafetyBlocks
     ],
     log: true,
   });

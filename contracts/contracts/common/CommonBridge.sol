@@ -22,8 +22,10 @@ contract CommonBridge is AccessControl {
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
 
-    address public sideBridgeAddress;
     uint public fee;
+    address payable feeRecipient;
+
+    address public sideBridgeAddress;
     uint public minSafetyBlocks;
     uint public timeframeSeconds;
     uint public lockTime;
@@ -40,7 +42,7 @@ contract CommonBridge is AccessControl {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
+        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);
@@ -50,6 +52,7 @@ contract CommonBridge is AccessControl {
 
         sideBridgeAddress = _sideBridgeAddress;
         fee = fee_;
+        feeRecipient = feeRecipient_;
         minSafetyBlocks = minSafetyBLocks_;
         timeframeSeconds = timeframeSeconds_;
         lockTime = lockTime_;
@@ -77,6 +80,7 @@ contract CommonBridge is AccessControl {
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value and fee must be same");
+        feeRecipient.send(msg.value);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId);
@@ -124,6 +128,10 @@ contract CommonBridge is AccessControl {
 
     function changeFee(uint fee_) public onlyRole(ADMIN_ROLE) {
         fee = fee_;
+    }
+
+    function changeFeeRecipient(address payable feeRecipient_) public onlyRole(ADMIN_ROLE) {
+        feeRecipient = feeRecipient_;
     }
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
