@@ -37,6 +37,7 @@ contract CommonBridge is AccessControl {
 
     event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
+    event TransferFinish(uint indexed event_id);
 
 
     constructor(
@@ -115,6 +116,7 @@ contract CommonBridge is AccessControl {
         for (uint i = 0; i < transfers.length; i++) {
             require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
         }
+        emit TransferFinish(event_id);
 
         delete lockedTransfers[event_id];
     }
