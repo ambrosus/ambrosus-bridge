@@ -15,15 +15,10 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/rs/zerolog/log"
 )
 
-var ContractBalanceGWeiGauge = promauto.NewGauge(prometheus.GaugeOpts{
-	Name: "bridge_ambrosus_contract_balance_gwei",
-	Help: "Balance of the ambrosus contract in the bridge",
-})
+const BridgeName = "ambrosus"
 
 type Bridge struct {
 	Client         *ethclient.Client
@@ -59,7 +54,7 @@ func (b *Bridge) SubmitEpochData(
 	}
 
 	// Metric
-	if err := metric.SetContractBalance(ContractBalanceGWeiGauge, b.Client, b.Auth.From); err != nil {
+	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
 		return err
 	}
 
@@ -122,7 +117,7 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	}
 
 	// Metric
-	if err := metric.SetContractBalance(ContractBalanceGWeiGauge, b.Client, b.Auth.From); err != nil {
+	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
 		return err
 	}
 

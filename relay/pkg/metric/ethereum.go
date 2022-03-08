@@ -5,14 +5,20 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
 )
 
-func SetContractBalance(gauge prometheus.Gauge, client *ethclient.Client, contractAddress common.Address) error {
+var ContractBalanceGWeiGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
+	Name: "bridge_contract_balance_gwei",
+	Help: "Balance of a contract in the bridge",
+}, []string{"bridge_name"})
+
+func SetContractBalance(bridgeName string, client *ethclient.Client, contractAddress common.Address) error {
 	balance, err := ethereum.GetBalanceGWei(client, contractAddress)
 	if err != nil {
 		return err
 	}
 
-	gauge.Set(balance)
+	ContractBalanceGWeiGauge.WithLabelValues(bridgeName).Set(balance)
 	return nil
 }

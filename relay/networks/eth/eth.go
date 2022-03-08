@@ -12,15 +12,14 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promauto"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 )
+
+const BridgeName = "ethereum"
 
 type Bridge struct {
 	Client         *ethclient.Client
@@ -30,11 +29,6 @@ type Bridge struct {
 	cfg            *config.ETHConfig
 	ExternalLogger external_logger.ExternalLogger
 }
-
-var ContractBalanceGWeiGauge = promauto.NewGauge(prometheus.GaugeOpts{
-	Name: "bridge_ethereum_contract_balance_gwei",
-	Help: "Balance of the ethereum contract in the bridge",
-})
 
 // Creating a new ethereum bridge.
 func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
@@ -79,7 +73,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	}
 
 	// Metric
-	if err := metric.SetContractBalance(ContractBalanceGWeiGauge, b.Client, b.Auth.From); err != nil {
+	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
 		return err
 	}
 
