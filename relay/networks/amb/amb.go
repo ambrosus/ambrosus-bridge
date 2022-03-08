@@ -32,7 +32,7 @@ type Bridge struct {
 	VSContract     *contracts.Vs
 	HttpUrl        string // TODO: delete this field
 	sideBridge     networks.BridgeReceiveAura
-	Auth           *bind.TransactOpts
+	auth           *bind.TransactOpts
 	ExternalLogger external_logger.ExternalLogger
 }
 
@@ -44,7 +44,7 @@ func (b *Bridge) SubmitEpochData(
 	start *big.Int,
 	merkelNodesNumber *big.Int,
 ) error {
-	tx, txErr := b.Contract.SetEpochData(b.Auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
+	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
 	if txErr != nil {
 		return b.getFailureReasonViaCall(
 			txErr,
@@ -106,13 +106,13 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		ContractRaw:    &contracts.AmbRaw{Contract: contract},
 		VSContract:     vsContract,
 		HttpUrl:        "https://network.ambrosus.io",
-		Auth:           auth,
+		auth:           auth,
 		ExternalLogger: externalLogger,
 	}, nil
 }
 
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
-	tx, txErr := b.Contract.SubmitTransfer(b.Auth, *proof)
+	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())

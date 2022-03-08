@@ -19,7 +19,7 @@ func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		if err = ethereum.GetFailureReason(b.Client, b.Auth, tx); err != nil {
+		if err = ethereum.GetFailureReason(b.Client, b.auth, tx); err != nil {
 			return fmt.Errorf("%s", parseError(err))
 		}
 	}
@@ -29,7 +29,7 @@ func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 
 func (b *Bridge) getFailureReasonViaCall(txErr error, funcName string, params ...interface{}) error {
 	err := b.ContractRaw.Call(&bind.CallOpts{
-		From: b.Auth.From,
+		From: b.auth.From,
 	}, nil, funcName, params...)
 
 	if err != nil {
