@@ -93,6 +93,11 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		if err != nil {
 			return nil, err
 		}
+
+		// Metric
+		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
+			return nil, fmt.Errorf("failed to init metric for ambrosus bridge: %w", err)
+		}
 	}
 
 	return &Bridge{

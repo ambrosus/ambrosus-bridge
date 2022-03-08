@@ -29,17 +29,11 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("ambrosus bridge not created")
 	}
-	if err := metric.SetContractBalance(amb.ContractBalanceGWeiGauge, ambBridge.Client, ambBridge.Auth.From); err != nil {
-		log.Fatal().Err(err).Msg("Failed to init metric for ambrosus bridge")
-	}
 
 	// Creating a new ethereum bridge.
 	ethBridge, err := eth.New(&cfg.ETH, telegramEthLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ethereum bridge not created")
-	}
-	if err := metric.SetContractBalance(eth.ContractBalanceGWeiGauge, ethBridge.Client, ethBridge.Auth.From); err != nil {
-		log.Fatal().Err(err).Msg("Failed to init metric for ambrosus bridge")
 	}
 
 	go ambBridge.Run(ethBridge)

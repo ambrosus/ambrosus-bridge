@@ -56,6 +56,11 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		if err != nil {
 			return nil, err
 		}
+
+		// Metric
+		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
+			return nil, fmt.Errorf("failed to init metric for ethereum bridge: %w", err)
+		}
 	}
 
 	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
