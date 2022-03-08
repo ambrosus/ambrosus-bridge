@@ -15,7 +15,7 @@ Smart contracts structure
 3. фронт делает запросы на смарт контракты бриджей, проверяя что токен по адресу существует и не выключен
 4. юзер вызывает `withdraw(tokenAddress, toAddress, amount, {value: fee})` у контракта бриджа в сети, из которой он хочет вывести деньги
 
-### bridge withdaw
+### bridge withdraw
 
 `withdraw(address tokenAmbAddress, address toAddress, uint amount)`
 

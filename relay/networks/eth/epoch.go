@@ -140,7 +140,7 @@ func (b *Bridge) getGeneratedEpochNumbers() ([]int, error) {
 	return epochs, nil
 }
 
-func (b *Bridge) checkEpochDataDir(epoch uint64, lenght uint64) error {
+func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 	log.Debug().Msg("Checking epoch data dir...")
 
 	epochs, err := b.getGeneratedEpochNumbers()
@@ -156,7 +156,7 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, lenght uint64) error {
 		}
 	}
 
-	for i := epoch; i <= lenght; i++ {
+	for i := epoch; i <= length; i++ {
 		if err := b.checkEpochDataFile(i); err != nil {
 			if errors.Is(err, ErrEpochDataFileNotFound) {
 				if _, err := b.createEpochDataFile(epoch); err != nil {

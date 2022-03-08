@@ -22,13 +22,13 @@ import (
 )
 
 var (
-	// Ambrosus configgurations for generating testing data.
+	// Ambrosus configurations for generating testing data.
 	ambCfg = networkConfig{
 		Name: "amb",
 		Url:  "https://network.ambrosus-dev.io",
 		Tx:   common.HexToHash("0xfe802d29486f3648fd082ecad8c8455aa751b18f36be7cff3cfd65245253233a"),
 	}
-	// Ethereum configgurations for generating testing data.
+	// Ethereum configurations for generating testing data.
 	ethCfg = networkConfig{
 		Name: "eth",
 		Url:  "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
@@ -93,7 +93,7 @@ func receiptsProofInput(args string) {
 
 		return
 	case "eth":
-		// Generating ethereum testing data for receitps proof.
+		// Generating ethereum testing data for receipts proof.
 		if err := dataForReceiptProof(ethCfg); err != nil {
 			log.Fatal().Err(err).Msgf("error generating '%s' test data for receipts proof", ethCfg.Name)
 		}
@@ -306,7 +306,7 @@ func generateEpochData() error {
 	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/epoch-%d.json", number))
 }
 
-// Wrire data to json file.
+// Write data to json file.
 func writeToJSONFile(data interface{}, path string) error {
 	// Marshal data.
 	file, err := json.MarshalIndent(data, "", " ")
