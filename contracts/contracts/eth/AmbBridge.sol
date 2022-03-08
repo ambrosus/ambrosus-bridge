@@ -8,11 +8,11 @@ contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
     )
     CommonBridge(_sideBridgeAddress, relayAddress,
         tokenThisAddresses, tokenSideAddresses,
-        fee_, timeframeSeconds_, lockTime_, minSafetyBlocks_
+        fee_, feeRecipient_, timeframeSeconds_, lockTime_, minSafetyBlocks_
     ) {
 
         // relay uses this event to know from what moment to synchronize the validator set;

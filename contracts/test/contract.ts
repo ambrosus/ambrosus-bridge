@@ -3,6 +3,7 @@ import type {Contract, ContractReceipt, ContractTransaction, Signer} from "ether
 import rlp from 'rlp'
 
 import chai from "chai";
+import {BigNumber} from "ethers";
 
 
 chai.should();
@@ -123,42 +124,63 @@ describe("Contract", () => {
     // todo
   });
 
+  it("Test fee", async () => {
+    const getAccountBalance = async (addr: any) => {
+      return parseInt(await ethers.provider.getBalance(addr.address).then(
+          (BN: BigNumber) => {return BN._hex}), 16);
+    }
+
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const prevBalance = await getAccountBalance(addr4);
+    const feeValue = 1000;
+
+    await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
+
+    const curBalance = await getAccountBalance(addr4);
+
+    expect(curBalance).eq(prevBalance + feeValue);
+  });
+
+
   it("Test Transfer lock/unlock", async () => {
-    it("Test Transfer lock/unlock", async () => {
-      let [_, __, addr3] = await ethers.getSigners();
+    let [_, __, addr3] = await ethers.getSigners();
 
-      let hashRelay = await ambBridgeTest.RELAY_ROLE();
-      await ambBridgeTest.grantRole(hashRelay, addr3.address);
+    let hashRelay = await ambBridgeTest.RELAY_ROLE();
+    await ambBridgeTest.grantRole(hashRelay, addr3.address);
 
-      await mockERC20.mint(ambBridgeTest.address, 900);
+    await mockERC20.mint(ambBridgeTest.address, 900);
 
-      let data1 = [
-        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
-        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
-        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38]
-      ]
+    let data1 = [
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38]
+    ]
 
-      let data2 = [
-        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
-        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
-        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]
-      ]
+    let data2 = [
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]
+    ]
 
-      await ambBridgeTest.connect(addr3).lockTransfersTest(data1, 1);
-      await ambBridgeTest.connect(addr3).lockTransfersTest(data2, 2);
+    await ambBridgeTest.connect(addr3).lockTransfersTest(data1, 1);
+    await ambBridgeTest.connect(addr3).lockTransfersTest(data2, 2);
 
-      for (let i = 0; i < 3; i++) {
-        let answer  = await ambBridgeTest.getLockedTransferTest(1, i);
-        expect(answer[0]).eq(data1[i][0]); // Check tokenAddress is correct
-        expect(answer[1]).eq(data1[i][1]); // Check toAddress is correct
-        expect(parseInt(answer[2]._hex, 16)).eq(data1[i][2]); // Check amount is correct
-      }
+    for (let i = 0; i < 3; i++) {
+      let answer  = await ambBridgeTest.getLockedTransferTest(1, i);
+      expect(answer[0]).eq(data1[i][0]); // Check tokenAddress is correct
+      expect(answer[1]).eq(data1[i][1]); // Check toAddress is correct
+      expect(parseInt(answer[2]._hex, 16)).eq(data1[i][2]); // Check amount is correct
+    }
 
-      await nextTimeframe();
+    await nextTimeframe();
 
-      await ambBridgeTest.connect(addr3).unlockTransfersTest(1);
-      await ambBridgeTest.connect(addr3).unlockTransfersTest(2);
-    });
+    await ambBridgeTest.connect(addr3).unlockTransfersTest(1);
+    await ambBridgeTest.connect(addr3).unlockTransfersTest(2);
   });
 
   let currentTimeframe = Math.floor(Date.now() / 14400);

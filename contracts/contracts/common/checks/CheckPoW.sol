@@ -40,8 +40,6 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
 
             verifyEthash(powProof.blocks[i]);
         }
-
-
     }
 
 

@@ -22,8 +22,10 @@ contract CommonBridge is AccessControl {
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
 
-    address public sideBridgeAddress;
     uint public fee;
+    address payable feeRecipient;
+
+    address public sideBridgeAddress;
     uint public minSafetyBlocks;
     uint public timeframeSeconds;
     uint public lockTime;
@@ -33,14 +35,15 @@ contract CommonBridge is AccessControl {
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, uint event_id);
+    event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
+    event TransferFinish(uint indexed event_id);
 
 
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
+        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);
@@ -50,6 +53,7 @@ contract CommonBridge is AccessControl {
 
         sideBridgeAddress = _sideBridgeAddress;
         fee = fee_;
+        feeRecipient = feeRecipient_;
         minSafetyBlocks = minSafetyBLocks_;
         timeframeSeconds = timeframeSeconds_;
         lockTime = lockTime_;
@@ -62,7 +66,7 @@ contract CommonBridge is AccessControl {
         emit Test(1, address(this), "asd", 123);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId);
+        emit Withdraw(msg.sender, outputEventId, fee);
 
         if (transferEvent) {
             emit Transfer(outputEventId++, queue);
@@ -77,9 +81,10 @@ contract CommonBridge is AccessControl {
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value and fee must be same");
+        feeRecipient.send(msg.value);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId);
+        emit Withdraw(msg.sender, outputEventId, fee);
 
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
@@ -111,6 +116,7 @@ contract CommonBridge is AccessControl {
         for (uint i = 0; i < transfers.length; i++) {
             require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
         }
+        emit TransferFinish(event_id);
 
         delete lockedTransfers[event_id];
     }
@@ -124,6 +130,10 @@ contract CommonBridge is AccessControl {
 
     function changeFee(uint fee_) public onlyRole(ADMIN_ROLE) {
         fee = fee_;
+    }
+
+    function changeFeeRecipient(address payable feeRecipient_) public onlyRole(ADMIN_ROLE) {
+        feeRecipient = feeRecipient_;
     }
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
