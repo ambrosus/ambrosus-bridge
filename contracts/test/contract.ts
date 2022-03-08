@@ -18,8 +18,10 @@ describe("Contract", () => {
   let mockERC20: Contract;
   let ethash: Contract;
 
+  let ambBridgeTest: Contract;
+
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
     ({owner} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
 
@@ -27,10 +29,11 @@ describe("Contract", () => {
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
     ethash = await ethers.getContract("Ethash", ownerS);
+    ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
   });
 
   beforeEach(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "ethash"]); // reset contracts state
+    await deployments.fixture(["ethbridge", "ambbridge", "ethash", "ambbridgetest"]); // reset contracts state
   });
 
 
@@ -117,48 +120,45 @@ describe("Contract", () => {
   });
 
   it("Test Ethash PoW", async () => {
-    const epoch = 269;
-    const fullSizeIn128Resolution = 26017759;
-    const branchDepth = 15;
-
-    const block = require("./data-pow/block-test-pow.json");
-    const datasetLookup = require("./data-pow/dataset-lookup.json");
-    const witnessLookup = require("./data-pow/witness-lookup.json");
-    const merkleNodes = require("./data-pow/epochdata-269.json");
-    await submitEpochData(ethash, epoch, fullSizeIn128Resolution, branchDepth, merkleNodes);
-    expect(await ethash.isEpochDataSet(epoch)).to.be.true;
-
-    let verifyResult = await ethash.Verify(block.number, createRLPHeader(block), block.nonce,
-                                           block.difficulty, datasetLookup, witnessLookup);
-    // console.log("verify res:", verifyResult);
+    // todo
   });
 
   it("Test Transfer lock/unlock", async () => {
-    // todo
-    /*
+    it("Test Transfer lock/unlock", async () => {
       let [_, __, addr3] = await ethers.getSigners();
 
-      let hashRelay = await ambBridge.RELAY_ROLE();
-      await ambBridge.grantRole(hashRelay, addr3.address);
+      let hashRelay = await ambBridgeTest.RELAY_ROLE();
+      await ambBridgeTest.grantRole(hashRelay, addr3.address);
 
-      await mockERC20.mint(ambBridge.address, 900);
+      await mockERC20.mint(ambBridgeTest.address, 900);
 
-      let data1 = [[mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
-                   [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
-                   [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38]]
+      let data1 = [
+        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
+        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
+        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38]
+      ]
 
-      let data2 = [[mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
-                   [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
-                   [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]]
+      let data2 = [
+        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
+        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
+        [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]
+      ]
 
-      await ambBridge.connect(addr3).lockTransfers(data1, 1);
-      await ambBridge.connect(addr3).lockTransfers(data2, 2);
+      await ambBridgeTest.connect(addr3).lockTransfersTest(data1, 1);
+      await ambBridgeTest.connect(addr3).lockTransfersTest(data2, 2);
+
+      for (let i = 0; i < 3; i++) {
+        let answer  = await ambBridgeTest.getLockedTransferTest(1, i);
+        expect(answer[0]).eq(data1[i][0]); // Check tokenAddress is correct
+        expect(answer[1]).eq(data1[i][1]); // Check toAddress is correct
+        expect(parseInt(answer[2]._hex, 16)).eq(data1[i][2]); // Check amount is correct
+      }
 
       await nextTimeframe();
 
-      await ambBridge.connect(addr3).unlockTransfers(1);
-      await ambBridge.connect(addr3).unlockTransfers(2);
-      */
+      await ambBridgeTest.connect(addr3).unlockTransfersTest(1);
+      await ambBridgeTest.connect(addr3).unlockTransfersTest(2);
+    });
   });
 
   let currentTimeframe = Math.floor(Date.now() / 14400);
