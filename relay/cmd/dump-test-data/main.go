@@ -44,14 +44,14 @@ func main() {
 		receiptsProofInput(os.Args[2])
 	case "pow-block":
 		// Encoding PoW block.
-		if err := encodePoWBlock(ethCfg); err != nil {
+		if err := encodePoWBlock(); err != nil {
 			log.Fatal().Err(err).Msg("error encoding pow block")
 		}
 
 		return
 	case "poa-block":
 		// Encoding PoA block.
-		if err := encodePoABlock(ambCfg); err != nil {
+		if err := encodePoABlock(); err != nil {
 			log.Fatal().Err(err).Msg("error encoding poa block")
 		}
 
@@ -156,7 +156,7 @@ type powData struct {
 }
 
 // Encoding PoW block.
-func encodePoWBlock(cfg networkConfig) error {
+func encodePoWBlock() error {
 	log.Info().Msg("Encoding pow block...")
 
 	// Creating a new ethereum bridge client.
@@ -222,7 +222,7 @@ type poaData struct {
 }
 
 // Encoding PoA block.
-func encodePoABlock(cfg networkConfig) error {
+func encodePoABlock() error {
 	log.Info().Msg("Encoding poa block...")
 
 	// Creating a new ambrosus bridge client.
