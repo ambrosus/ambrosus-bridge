@@ -65,7 +65,7 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 		splitEls[0] = header.ParentHash.Bytes()
 	}
 
-	splitted, err := helpers.BytesSplit(rlpHeader, splitEls)
+	split, err := helpers.BytesSplit(rlpHeader, splitEls)
 	if err != nil {
 		return nil, err
 	}
@@ -74,16 +74,16 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 		P0WithNonce:    p0WithNonce,
 		P0WithoutNonce: p0WithoutNonce,
 
-		P1:                  splitted[0],
+		P1:                  split[0],
 		ParentOrReceiptHash: helpers.BytesToBytes32(splitEls[0]),
-		P2:                  splitted[1],
+		P2:                  split[1],
 		Difficulty:          splitEls[1],
-		P3:                  splitted[2],
+		P3:                  split[2],
 		Number:              splitEls[2],
-		P4:                  helpers.BytesConcat(splitted[3], header.Extra),
-		P5:                  splitted[4],
+		P4:                  helpers.BytesConcat(split[3], header.Extra),
+		P5:                  split[4],
 		Nonce:               splitEls[4],
-		P6:                  splitted[5],
+		P6:                  split[5],
 	}, nil
 
 }

@@ -2,9 +2,9 @@
 
 ## Usage:
 
-go run cmd/dump-test-data/main.go [comamnd] [arg]
+go run cmd/dump-test-data/main.go [command] [arg]
 
-### Comamnds:
+### Commands:
 + receipts-proof [network tag]
 + pow-block [block number]
 + poa-block [block number]

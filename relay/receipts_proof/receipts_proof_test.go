@@ -63,8 +63,8 @@ func loadDataFile(path string) (*Data, error) {
 		return nil, err
 	}
 
-	// Unmarsahl data file.
-	if err = json.Unmarshal([]byte(file), &data); err != nil {
+	// Unmarshal data file.
+	if err = json.Unmarshal(file, &data); err != nil {
 		return nil, err
 	}
 

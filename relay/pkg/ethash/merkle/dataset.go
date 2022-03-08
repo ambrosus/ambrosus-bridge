@@ -59,20 +59,20 @@ func NewDatasetTree() *DatasetTree {
 	}
 }
 
-func (m DatasetTree) MerkleNodes() []*big.Int {
-	if m.finalized {
+func (d DatasetTree) MerkleNodes() []*big.Int {
+	if d.finalized {
 		result := []*big.Int{}
 
-		for i := 0; i*2 < len(m.exportNodes); i++ {
-			if i*2+1 >= len(m.exportNodes) {
+		for i := 0; i*2 < len(d.exportNodes); i++ {
+			if i*2+1 >= len(d.exportNodes) {
 				result = append(result, BranchElementFromHash(
 					SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-					SPHash(m.exportNodes[i*2].(DatasetData))).Big(),
+					SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
 				)
 			} else {
 				result = append(result, BranchElementFromHash(
-					SPHash(m.exportNodes[i*2+1].(DatasetData)),
-					SPHash(m.exportNodes[i*2].(DatasetData))).Big(),
+					SPHash(d.exportNodes[i*2+1].(DatasetData)),
+					SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
 				)
 			}
 		}

@@ -193,7 +193,7 @@ func cacheSize(block uint64) uint64 {
 	}
 
 	// No known cache size, calculate manually (sanity branch only)
-	size := uint64(cacheInitBytes + cacheGrowthBytes*uint64(epoch) - hashBytes)
+	size := cacheInitBytes + cacheGrowthBytes*uint64(epoch) - hashBytes
 	for !new(big.Int).SetUint64(size / hashBytes).ProbablyPrime(1) { // Always accurate for n < 2^64
 		size -= 2 * hashBytes
 	}
