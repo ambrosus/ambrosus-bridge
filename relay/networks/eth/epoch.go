@@ -79,11 +79,16 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 
 	file, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
-		return nil, err
+		return data, err
 	}
 
 	if err := os.WriteFile(fmt.Sprintf(epochDataFilePath, epoch), file, 0644); err != nil {
-		return nil, err
+		return data, err
+	}
+
+	path := ethash.PathToDataset(epoch, ethash.DefaultDir)
+	if err := ethash.DeleteDatasetFile(path); err != nil {
+		return data, err
 	}
 
 	return data, nil
@@ -92,8 +97,7 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
 	log.Debug().Msgf("Deleting '%d.json' epoch data file...", epoch)
 
-	err := os.Remove(fmt.Sprintf(epochDataFilePath, epoch))
-	if err != nil {
+	if err := os.Remove(fmt.Sprintf(epochDataFilePath, epoch)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
 		}
