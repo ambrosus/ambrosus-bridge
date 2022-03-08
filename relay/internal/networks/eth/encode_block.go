@@ -3,14 +3,14 @@ package eth
 import (
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/rs/zerolog/log"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/rs/zerolog/log"
 )
 
 func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {

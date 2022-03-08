@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
-	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
-	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/rs/zerolog/log"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof/mytrie"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rlp"
+	"github.com/rs/zerolog/log"
 )
 
 func CheckProof(proof [][]byte, proofElements [][]byte) common.Hash {

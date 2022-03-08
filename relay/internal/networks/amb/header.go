@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof/mytrie"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof/mytrie"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
