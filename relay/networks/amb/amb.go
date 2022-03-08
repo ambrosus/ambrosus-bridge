@@ -54,7 +54,7 @@ func (b *Bridge) SubmitEpochData(
 	return b.waitForTxMined(tx)
 }
 
-// Creating a new ambrosus bridge.
+// New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.URL)
@@ -112,12 +112,12 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	return b.waitForTxMined(tx)
 }
 
-// Getting last contract event id.
+// GetLastEventId gets last contract event id.
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
 
-// Getting contract event by id.
+// GetEventById gets contract event by id.
 func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
 	opts := &bind.FilterOpts{Context: context.Background()}
 
