@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/ambrosus/ambrosus-bridge/relay/config"
 )
 
 type externalLogger struct {
@@ -16,13 +14,13 @@ type externalLogger struct {
 	Prefix     string
 }
 
-func NewExternalLogger(cfg *config.TelegramLogger, prefix string, httpClient *http.Client) *externalLogger {
+func NewExternalLogger(token string, chatId int, prefix string, httpClient *http.Client) *externalLogger {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 	return &externalLogger{
-		Token:      cfg.Token,
-		ChatId:     cfg.ChatId,
+		Token:      token,
+		ChatId:     chatId,
 		HttpClient: httpClient,
 		Prefix:     prefix,
 	}

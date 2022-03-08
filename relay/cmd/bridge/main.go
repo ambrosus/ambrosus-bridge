@@ -16,8 +16,8 @@ func main() {
 	}
 
 	// Creating telegram loggers as an external logger.
-	telegramAmbLogger := telegram.NewExternalLogger(&cfg.Telegram, "<b>[AMB]</b>", nil)
-	telegramEthLogger := telegram.NewExternalLogger(&cfg.Telegram, "<b>[ETH]</b>", nil)
+	telegramAmbLogger := telegram.NewExternalLogger(cfg.Telegram.Token, cfg.Telegram.ChatId, "<b>[AMB]</b>", nil)
+	telegramEthLogger := telegram.NewExternalLogger(cfg.Telegram.Token, cfg.Telegram.ChatId, "<b>[ETH]</b>", nil)
 
 	// Creating a new ambrosus bridge.
 	ambBridge, err := amb.New(&cfg.AMB, telegramAmbLogger)
