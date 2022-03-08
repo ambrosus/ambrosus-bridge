@@ -202,9 +202,9 @@ func New(cachedir string, cachesinmem, cachesondisk int, dagdir string, dagsinme
 	}
 }
 
-func (e *EthashMetaData) GetVerificationIndices(blockNumber uint64, hash common.Hash, nonce uint64) []uint32 {
+func (ethash *EthashMetaData) GetVerificationIndices(blockNumber uint64, hash common.Hash, nonce uint64) []uint32 {
 	// Recompute the digest and PoW value and verify against the header
-	cache := e.cache(blockNumber)
+	cache := ethash.cache(blockNumber)
 
 	size := datasetSize(blockNumber)
 	return hashimotoLightIndices(size, cache, hash.Bytes(), nonce)
