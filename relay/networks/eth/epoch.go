@@ -16,7 +16,7 @@ import (
 
 const (
 	epochDataPath     string = "./assets/epoch/"
-	epochDataFilePath string = epochDataPath + "%d.json"
+	epochDataFilePath        = epochDataPath + "%d.json"
 )
 
 var ErrEpochDataFileNotFound = errors.New("error epoch data file not found")
