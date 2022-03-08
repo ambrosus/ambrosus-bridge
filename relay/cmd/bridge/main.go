@@ -5,6 +5,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger/telegram"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/rs/zerolog/log"
 )
 
@@ -34,7 +35,8 @@ func main() {
 	go ambBridge.Run(ethBridge)
 	go ethBridge.Run(ambBridge)
 
-	// не знаю как это правильно делается в го
-	// но для временного решения пойдёть
-	select {}
+	// Prometheus endpoint
+	if err = metric.ServeEndpoint(cfg.Prometheus.Ip, cfg.Prometheus.Port); err != nil {
+		log.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
+	}
 }

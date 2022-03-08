@@ -11,13 +11,15 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 )
+
+const BridgeName = "ethereum"
 
 type Bridge struct {
 	Client         *ethclient.Client
@@ -54,6 +56,11 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		if err != nil {
 			return nil, err
 		}
+
+		// Metric
+		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
+			return nil, fmt.Errorf("failed to init metric for ethereum bridge: %w", err)
+		}
 	}
 
 	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
@@ -67,6 +74,11 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 
 	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
 	if err != nil {
+		return err
+	}
+
+	// Metric
+	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
 		return err
 	}
 

@@ -11,12 +11,14 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 )
+
+const BridgeName = "ambrosus"
 
 type Bridge struct {
 	Client         *ethclient.Client
@@ -49,6 +51,11 @@ func (b *Bridge) SubmitEpochData(
 			start,
 			merkelNodesNumber,
 		)
+	}
+
+	// Metric
+	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
+		return err
 	}
 
 	return b.waitForTxMined(tx)
@@ -86,6 +93,11 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		if err != nil {
 			return nil, err
 		}
+
+		// Metric
+		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
+			return nil, fmt.Errorf("failed to init metric for ambrosus bridge: %w", err)
+		}
 	}
 
 	return &Bridge{
@@ -107,6 +119,11 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
 		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
+	}
+
+	// Metric
+	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
+		return err
 	}
 
 	return b.waitForTxMined(tx)
