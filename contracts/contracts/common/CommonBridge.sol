@@ -35,7 +35,7 @@ contract CommonBridge is AccessControl {
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, uint event_id);
+    event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
 
 
@@ -65,7 +65,7 @@ contract CommonBridge is AccessControl {
         emit Test(1, address(this), "asd", 123);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId);
+        emit Withdraw(msg.sender, outputEventId, fee);
 
         if (transferEvent) {
             emit Transfer(outputEventId++, queue);
@@ -83,7 +83,7 @@ contract CommonBridge is AccessControl {
         feeRecipient.send(msg.value);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId);
+        emit Withdraw(msg.sender, outputEventId, fee);
 
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
