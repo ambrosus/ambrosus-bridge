@@ -20,11 +20,11 @@ import (
 )
 
 type Bridge struct {
-	Client     *ethclient.Client
-	Contract   *contracts.Eth
-	sideBridge networks.BridgeReceiveEthash
-	auth       *bind.TransactOpts
-	cfg        *config.ETHConfig
+	Client         *ethclient.Client
+	Contract       *contracts.Eth
+	sideBridge     networks.BridgeReceiveEthash
+	auth           *bind.TransactOpts
+	cfg            *config.ETHConfig
 	ExternalLogger external_logger.ExternalLogger
 }
 

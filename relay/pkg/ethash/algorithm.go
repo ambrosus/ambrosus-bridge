@@ -2,10 +2,8 @@ package ethash
 
 import (
 	"encoding/binary"
-	"fmt"
 	"hash"
 	"math/big"
-	"path/filepath"
 	"reflect"
 	"runtime"
 	"sync"
@@ -15,7 +13,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/bitutil"
-	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/log"
 	"golang.org/x/crypto/sha3"
 )
@@ -70,18 +67,6 @@ func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte 
 // MakeDAG generates a new ethash dataset and optionally stores it to disk.
 func MakeDAG(block uint64, dir string) {
 	MakeDataset(block-30000, dir)
-}
-
-func PathToDAG(epoch uint64, dir string) string {
-	seed := ethash.SeedHash(epoch*epochLength + 1)
-
-	var endian string
-
-	if !isLittleEndian() {
-		endian = ".be"
-	}
-
-	return filepath.Join(dir, fmt.Sprintf("full-R%d-%x%s", 23, seed[:8], endian))
 }
 
 func fnv(a, b uint32) uint32 {
