@@ -113,7 +113,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 		log.Error().Err(err).Msg("error getting last block number")
 	}
 
-	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLenght); err != nil {
+	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLength); err != nil {
 		log.Error().Err(err).Msg("error checking epoch data dir")
 	}
 
@@ -223,7 +223,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 				return err
 			}
 
-			return b.checkEpochDataDir(epoch, b.cfg.EpochLenght)
+			return b.checkEpochDataDir(epoch, b.cfg.EpochLength)
 		}
 
 		return err

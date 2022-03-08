@@ -60,7 +60,7 @@ func (s *BlockMetaData) buildDagTree() {
 
 	s.DatasetTree.RegisterStoredLevel(uint32(branchDepth), uint32(10))
 
-	path := PathToDataset(uint64(s.blockNumber/30000), DefaultDir)
+	path := PathToDataset(s.blockNumber/30000, DefaultDir)
 
 	ProcessDuringRead(path, s.DatasetTree)
 
