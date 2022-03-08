@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 )

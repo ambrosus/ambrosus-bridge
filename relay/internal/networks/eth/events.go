@@ -4,9 +4,9 @@ import (
 	"context"
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
-	"github.com/ambrosus/ambrosus-bridge/relay/receipts_proof"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 )
 
 // todo name

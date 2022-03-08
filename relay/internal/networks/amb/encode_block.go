@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/helpers"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rlp"

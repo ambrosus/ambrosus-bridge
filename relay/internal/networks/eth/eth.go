@@ -1,4 +1,4 @@
-package amb
+package eth
 
 import (
 	"context"
@@ -6,77 +6,41 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog/log"
 )
 
-const BridgeName = "ambrosus"
+const BridgeName = "ethereum"
 
 type Bridge struct {
 	Client         *ethclient.Client
-	Contract       *contracts.Amb
-	ContractRaw    *contracts.AmbRaw
-	VSContract     *contracts.Vs
-	HttpUrl        string // TODO: delete this field
-	sideBridge     networks.BridgeReceiveAura
+	Contract       *contracts.Eth
+	sideBridge     networks.BridgeReceiveEthash
 	auth           *bind.TransactOpts
+	cfg            *config.ETHConfig
 	ExternalLogger external_logger.ExternalLogger
 }
 
-func (b *Bridge) SubmitEpochData(
-	epoch *big.Int,
-	fullSizeIn128Resultion *big.Int,
-	branchDepth *big.Int,
-	nodes []*big.Int,
-	start *big.Int,
-	merkelNodesNumber *big.Int,
-) error {
-	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
-	if txErr != nil {
-		return b.getFailureReasonViaCall(
-			txErr,
-			"setEpochData",
-			epoch,
-			fullSizeIn128Resultion,
-			branchDepth,
-			nodes,
-			start,
-			merkelNodesNumber,
-		)
-	}
-
-	// Metric
-	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
-		return err
-	}
-
-	return b.waitForTxMined(tx)
-}
-
-// New creates a new ambrosus bridge.
-func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+// New creates a new ethereum bridge.
+func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
 		return nil, err
 	}
 
-	// Creating a new ambrosus bridge contract instance.
-	contract, err := contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), client)
-	if err != nil {
-		return nil, err
-	}
-
-	// Creating a new ambrosus VS contract instance.
-	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
+	// Creating a new ethereum bridge contract instance.
+	contract, err := contracts.NewEth(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, err
 	}
@@ -96,29 +60,22 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 
 		// Metric
 		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
-			return nil, fmt.Errorf("failed to init metric for ambrosus bridge: %w", err)
+			return nil, fmt.Errorf("failed to init metric for ethereum bridge: %w", err)
 		}
 	}
 
-	return &Bridge{
-		Client:         client,
-		Contract:       contract,
-		ContractRaw:    &contracts.AmbRaw{Contract: contract},
-		VSContract:     vsContract,
-		HttpUrl:        "https://network.ambrosus.io",
-		auth:           auth,
-		ExternalLogger: externalLogger,
-	}, nil
+	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
 }
 
-func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
-	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
+func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
+	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
+	if err != nil {
+		return err
+	}
 
-	if txErr != nil {
-		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
-		// openethereum doesn't give us a full error message
-		// so, make low-level call method to get the full error message
-		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
+	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
+	if err != nil {
+		return err
 	}
 
 	// Metric
@@ -126,10 +83,19 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		return err
 	}
 
-	return b.waitForTxMined(tx)
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		// we've got here probably due to low gas limit,
+		// and revert() that hasn't been caught at eth_estimateGas
+		return ethereum.GetFailureReason(b.Client, b.auth, tx)
+	}
+
+	return nil
 }
 
-// GetLastEventId gets last contract event id.
+func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
+	return b.Contract.GetValidatorSet(nil)
+}
+
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
@@ -152,8 +118,17 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 
 // todo code below may be common for all networks?
 
-func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
+func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
+
+	blockNumber, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("error getting last block number")
+	}
+
+	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLength); err != nil {
+		log.Error().Err(err).Msg("error checking epoch data dir")
+	}
 
 	for {
 		if err := b.listen(); err != nil {
@@ -202,7 +177,7 @@ func (b *Bridge) listen() error {
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
-	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
+	eventChannel := make(chan *contracts.EthTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return err
@@ -244,16 +219,39 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	return b.sideBridge.SubmitTransferAura(ambTransfer)
+	if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
+		if errors.Is(err, networks.ErrEpochData) {
+			epoch := event.Raw.BlockNumber / 30000
+
+			epochData, err := b.loadEpochDataFile(epoch)
+			if err != nil {
+				return err
+			}
+
+			if err := b.SetEpochData(epochData); err != nil {
+				return err
+			}
+
+			if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
+				return err
+			}
+
+			return b.checkEpochDataDir(epoch, b.cfg.EpochLength)
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
-	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
+	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
 		return err
 	}
 
-	if block.Hash(true) != event.Raw.BlockHash {
+	if block.Hash() != event.Raw.BlockHash {
 		return fmt.Errorf("block hash != event's block hash")
 	}
 	return nil

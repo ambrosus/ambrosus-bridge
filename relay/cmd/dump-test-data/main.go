@@ -10,9 +10,9 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/networks/amb"
-	"github.com/ambrosus/ambrosus-bridge/relay/networks/eth"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 
