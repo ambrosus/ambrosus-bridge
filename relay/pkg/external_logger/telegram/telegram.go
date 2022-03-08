@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/ambrosus/ambrosus-bridge/relay/config"
 )
 
 type externalLogger struct {
@@ -16,13 +14,13 @@ type externalLogger struct {
 	Prefix     string
 }
 
-func NewExternalLogger(cfg *config.TelegramLogger, prefix string, httpClient *http.Client) *externalLogger {
+func NewExternalLogger(token string, chatId int, prefix string, httpClient *http.Client) *externalLogger {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 	return &externalLogger{
-		Token:      cfg.Token,
-		ChatId:     cfg.ChatId,
+		Token:      token,
+		ChatId:     chatId,
 		HttpClient: httpClient,
 		Prefix:     prefix,
 	}
@@ -39,7 +37,7 @@ type response struct {
 	ErrorDescription string `json:"description"` // if Ok is false
 }
 
-func (t *externalLogger) LogError(err error) error {
+func (t *externalLogger) LogError(err error) (returningError error) {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Token)
 	body := &request{
 		ChatId:    t.ChatId,
@@ -55,7 +53,9 @@ func (t *externalLogger) LogError(err error) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+	}()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
@@ -64,5 +64,5 @@ func (t *externalLogger) LogError(err error) error {
 	if !respData.Ok {
 		return fmt.Errorf(respData.ErrorDescription)
 	}
-	return nil
+	return err
 }

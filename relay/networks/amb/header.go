@@ -47,7 +47,7 @@ type Header struct {
 	Signature  string   `json:"signature"`
 }
 
-func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
+func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 	body := &request{
 		Jsonrpc: "2.0",
 		Id:      1,
@@ -62,7 +62,9 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err = resp.Body.Close()
+	}()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
@@ -73,7 +75,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	if respData.Result.Number == nil {
 		return nil, fmt.Errorf("there is no header with number %d", number.Int64())
 	}
-	return &respData.Result, nil
+	return &respData.Result, err
 }
 
 func (h *Header) Rlp(withSeal bool) ([]byte, error) {
