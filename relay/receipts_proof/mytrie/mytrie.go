@@ -21,10 +21,11 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
-	"io"
 )
 
 var (
