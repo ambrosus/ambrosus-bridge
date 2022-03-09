@@ -251,6 +251,21 @@ describe("Contract", () => {
     expect(realMinSafetyBlocks).eq(expectedMinSafetyBlocks);
   });
 
+  it("Test changeTimeframeSeconds", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedTimeframeSeconds = 20000;
+
+    await ambBridge.connect(addr3).changeTimeframeSeconds(expectedTimeframeSeconds)
+
+    const realTimeframeSeconds = await ambBridge.timeframeSeconds()
+
+    expect(realTimeframeSeconds).eq(expectedTimeframeSeconds);
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
