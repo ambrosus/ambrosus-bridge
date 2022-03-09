@@ -27,7 +27,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
         CommonStructs.TransferProof transfer;
     }
 
-    function CheckPoW_(PoWProof memory powProof) public
+    function CheckPoW_(PoWProof memory powProof) public view
     {
 
         address sideBridgeAddress = address(this);
@@ -43,48 +43,48 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
     }
 
 
-    function blockHash(BlockPoW memory block) public view returns (bytes32) {
+    function blockHash(BlockPoW memory block_) public pure returns (bytes32) {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
                 abi.encodePacked(
-                    block.p1,
-                    block.parentOrReceiptHash,
-                    block.p2,
-                    block.difficulty,
-                    block.p3
+                    block_.p1,
+                    block_.parentOrReceiptHash,
+                    block_.p2,
+                    block_.difficulty,
+                    block_.p3
                 ),
                 abi.encodePacked(
-                    block.number,
-                    block.p4,
-                    block.p5,
-                    block.nonce,
-                    block.p6
+                    block_.number,
+                    block_.p4,
+                    block_.p5,
+                    block_.nonce,
+                    block_.p6
                 )
             ));
     }
 
-    function verifyEthash(BlockPoW memory block) public view {
+    function verifyEthash(BlockPoW memory block_) public view {
         verifyPoW(
-            bytesToUint(block.number),
-            blockHashWithoutNonce(block),
-            bytesToUint(block.nonce),
-            bytesToUint(block.difficulty),
-            block.dataSetLookup,
-            block.witnessForLookup
+            bytesToUint(block_.number),
+            blockHashWithoutNonce(block_),
+            bytesToUint(block_.nonce),
+            bytesToUint(block_.difficulty),
+            block_.dataSetLookup,
+            block_.witnessForLookup
         );
 
     }
 
-    function blockHashWithoutNonce(BlockPoW memory block) private pure returns (bytes32) {
+    function blockHashWithoutNonce(BlockPoW memory block_) private pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
-            block.p1,
-            block.parentOrReceiptHash,
-            block.p2,
-            block.difficulty,
-            block.p3,
-            block.number,
-            block.p4,
-            block.p6
+            block_.p1,
+            block_.parentOrReceiptHash,
+            block_.p2,
+            block_.difficulty,
+            block_.p3,
+            block_.number,
+            block_.p4,
+            block_.p6
         );
         rlpHeaderHashWithoutNonce[1] = rlpHeaderHashWithoutNonce[0];
         rlpHeaderHashWithoutNonce[2] = rlpHeaderHashWithoutNonce[1];
@@ -93,7 +93,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
     }
 
 
-    function bytesToUint(bytes memory b) public view returns (uint){
+    function bytesToUint(bytes memory b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 }
