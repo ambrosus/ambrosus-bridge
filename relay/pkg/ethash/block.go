@@ -52,7 +52,7 @@ func (s *BlockMetaData) buildDagTree() {
 	s.DatasetTree = merkle.NewDatasetTree()
 	s.DatasetTree.RegisterIndex(indices...)
 
-	MakeDAG(s.blockNumber, DefaultDir)
+	MakeDataset(s.blockNumber, DefaultDir)
 
 	fullSize := DatasetSize(s.blockNumber)
 	fullSizeIn128Resolution := fullSize / 128

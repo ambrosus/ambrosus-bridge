@@ -24,8 +24,8 @@ func GenerateEpochData(epoch uint64) (*EpochData, error) {
 	fullSizeIn128Resolution := fullSize / 128
 	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
 
-	path := PathToDataset(epoch, DefaultDir)
-	if err := CheckDatasetPath(path, epoch, DefaultDir); err != nil {
+	path, err := CheckDatasetFile(epoch, DefaultDir)
+	if err != nil {
 		return &EpochData{}, nil
 	}
 

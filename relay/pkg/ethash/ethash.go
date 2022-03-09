@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"math"
 	"math/rand"
 	"os"
 	"os/user"
@@ -54,105 +53,6 @@ func defaultDir() string {
 	}
 
 	return filepath.Join(home, ".ethash")
-}
-
-// dataset wraps an ethash dataset with some metadata to allow easier concurrent use.
-type dataset struct {
-	epoch   uint64    // Epoch for which this cache is relevant
-	dump    *os.File  // File descriptor of the memory mapped cache
-	mmap    mmap.MMap // Memory map itself to unmap before releasing
-	dataset []uint32  // The actual cache data content
-	once    sync.Once // Ensures the cache is generated only once
-}
-
-func MakeDataset(block uint64, dir string) {
-	d := dataset{epoch: block/epochLength + 1}
-	d.generate(dir, math.MaxInt32, false)
-	d.release()
-}
-
-// generate ensures that the dataset content is generated before use.
-func (d *dataset) generate(dir string, limit int, test bool) {
-	d.once.Do(func() {
-		// If we have a testing dataset, generate and return
-		if test {
-			cache := make([]uint32, 1024/4)
-			generateCache(cache, d.epoch, seedHash(d.epoch*epochLength+1))
-
-			d.dataset = make([]uint32, 32*1024/4)
-			generateDataset(d.dataset, d.epoch, cache)
-
-			return
-		}
-
-		// If we don't store anything on disk, generate and return
-		csize := cacheSize(d.epoch*epochLength + 1)
-		dsize := datasetSize(d.epoch*epochLength + 1)
-		seed := seedHash(d.epoch*epochLength + 1)
-
-		fmt.Printf("here 1\n")
-		if dir == "" {
-			cache := make([]uint32, csize/4)
-			generateCache(cache, d.epoch, seed)
-
-			d.dataset = make([]uint32, dsize/4)
-			generateDataset(d.dataset, d.epoch, cache)
-		}
-
-		// Disk storage is needed, this will get fancy
-		var endian string
-		if !isLittleEndian() {
-			endian = ".be"
-		}
-		path := filepath.Join(dir, fmt.Sprintf("full-R%d-%x%s", algorithmRevision, seed[:8], endian))
-		logger := log.New("epoch", d.epoch)
-
-		fmt.Printf("here 2\n")
-
-		// Try to load the file from disk and memory map it
-		var err error
-		d.dump, d.mmap, d.dataset, err = memoryMap(path)
-		if err == nil {
-			fmt.Printf("loaded from old file: %s\n", path)
-			logger.Debug("Loaded old ethash dataset from disk")
-			return
-		}
-		logger.Debug("Failed to load old ethash dataset", "err", err)
-
-		// No previous dataset available, create a new dataset file to fill
-		cache := make([]uint32, csize/4)
-		generateCache(cache, d.epoch, seed)
-
-		d.dump, d.mmap, d.dataset, err = memoryMapAndGenerate(path, dsize, func(buffer []uint32) { generateDataset(buffer, d.epoch, cache) })
-
-		fmt.Printf("here 3\n")
-
-		if err != nil {
-			logger.Error("Failed to generate mapped ethash dataset", "err", err)
-
-			d.dataset = make([]uint32, dsize/2)
-			generateDataset(d.dataset, d.epoch, cache)
-		}
-
-		// Iterate over all previous instances and delete old ones
-		for ep := int(d.epoch) - limit; ep >= 0; ep-- {
-			seed := seedHash(uint64(ep)*epochLength + 1)
-			path := filepath.Join(dir, fmt.Sprintf("full-R%d-%x%s", algorithmRevision, seed[:8], endian))
-			os.Remove(path)
-		}
-	})
-}
-
-// release closes any file handlers and memory maps open.
-func (d *dataset) release() {
-	if d.mmap != nil {
-		d.mmap.Unmap()
-		d.mmap = nil
-	}
-	if d.dump != nil {
-		d.dump.Close()
-		d.dump = nil
-	}
 }
 
 type EthashMetaData struct {
@@ -206,7 +106,7 @@ func (ethash *EthashMetaData) GetVerificationIndices(blockNumber uint64, hash co
 	// Recompute the digest and PoW value and verify against the header
 	cache := ethash.cache(blockNumber)
 
-	size := datasetSize(blockNumber)
+	size := DatasetSize(blockNumber)
 	return hashimotoLightIndices(size, cache, hash.Bytes(), nonce)
 }
 
