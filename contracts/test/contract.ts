@@ -109,15 +109,35 @@ describe("Contract", () => {
 
     let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
     let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe")
+    let third = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe")
+    let fourth = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe")
+    let fifth = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe")
+    let sixth = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe")
     await ambBridge.connect(addr2).tokensAdd(first, second);
     expect(await ambBridge.tokenAddresses(first)).eq(second);
     await ethBridge.connect(addr2).tokensAdd(first, second);
     expect(await ethBridge.tokenAddresses(first)).eq(second);
 
+    // batch
+    await ambBridge.connect(addr2).tokensAddBatch([third, fourth], [fifth, sixth]);
+    expect(await ambBridge.tokenAddresses(third)).eq(fifth);
+    expect(await ambBridge.tokenAddresses(fourth)).eq(sixth);
+    await ethBridge.connect(addr2).tokensAddBatch([third, fourth], [fifth, sixth]);
+    expect(await ethBridge.tokenAddresses(third)).eq(fifth);
+    expect(await ethBridge.tokenAddresses(fourth)).eq(sixth);
+
     await ambBridge.connect(addr2).tokensRemove(first);
     expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
     await ethBridge.connect(addr2).tokensRemove(first);
     expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
+
+    // batch
+    await ambBridge.connect(addr2).tokensRemoveBatch([third, fourth]);
+    expect(await ambBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
+    expect(await ambBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
+    await ethBridge.connect(addr2).tokensRemoveBatch([third, fourth]);
+    expect(await ethBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
+    expect(await ethBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
   });
 
   it("Test Ethash PoW", async () => {
