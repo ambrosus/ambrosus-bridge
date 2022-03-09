@@ -59,15 +59,18 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		}
 
 		// Metric
-		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
-			return nil, fmt.Errorf("failed to init metric for ethereum bridge: %w", err)
-		}
+		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
 	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
+	// Metric
+	defer func() {
+		metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+	}()
+
 	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
 	if err != nil {
 		return err
@@ -75,11 +78,6 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 
 	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
 	if err != nil {
-		return err
-	}
-
-	// Metric
-	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
 		return err
 	}
 
