@@ -40,6 +40,9 @@ func (b *Bridge) SubmitEpochData(
 	start *big.Int,
 	merkelNodesNumber *big.Int,
 ) error {
+	// Metric
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+
 	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
 	if txErr != nil {
 		return b.getFailureReasonViaCall(
@@ -52,11 +55,6 @@ func (b *Bridge) SubmitEpochData(
 			start,
 			merkelNodesNumber,
 		)
-	}
-
-	// Metric
-	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
-		return err
 	}
 
 	return b.waitForTxMined(tx)
@@ -96,9 +94,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		}
 
 		// Metric
-		if err := metric.SetContractBalance(BridgeName, client, auth.From); err != nil {
-			return nil, fmt.Errorf("failed to init metric for ambrosus bridge: %w", err)
-		}
+		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
 	return &Bridge{
@@ -113,6 +109,9 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 }
 
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
+	// Metric
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+
 	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
 	if txErr != nil {
@@ -120,11 +119,6 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
 		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
-	}
-
-	// Metric
-	if err := metric.SetContractBalance(BridgeName, b.Client, b.auth.From); err != nil {
-		return err
 	}
 
 	return b.waitForTxMined(tx)

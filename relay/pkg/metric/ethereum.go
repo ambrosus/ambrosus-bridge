@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/rs/zerolog/log"
 )
 
 var ContractBalanceGWeiGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
@@ -13,12 +14,12 @@ var ContractBalanceGWeiGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
 	Help: "Balance of a contract in the bridge",
 }, []string{"bridge_name"})
 
-func SetContractBalance(bridgeName string, client *ethclient.Client, contractAddress common.Address) error {
+func SetContractBalance(bridgeName string, client *ethclient.Client, contractAddress common.Address) {
 	balance, err := ethereum.GetBalanceGWei(client, contractAddress)
 	if err != nil {
-		return err
+		log.Error().Err(err).Msg("error when getting contract balance in GWei")
+		return
 	}
 
 	ContractBalanceGWeiGauge.WithLabelValues(bridgeName).Set(balance)
-	return nil
 }
