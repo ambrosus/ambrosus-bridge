@@ -236,6 +236,21 @@ describe("Contract", () => {
     await ambBridgeTest.connect(addr3).unlockTransfersTest(2);
   });
 
+  it("Test changeMinSafetyBlocks", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedMinSafetyBlocks = 20;
+
+    await ambBridge.connect(addr3).changeMinSafetyBlocks(expectedMinSafetyBlocks)
+
+    const realMinSafetyBlocks = await ambBridge.minSafetyBlocks()
+
+    expect(realMinSafetyBlocks).eq(expectedMinSafetyBlocks);
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
