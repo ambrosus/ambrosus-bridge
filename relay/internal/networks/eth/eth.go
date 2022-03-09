@@ -67,9 +67,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	// Metric
-	defer func() {
-		metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
-	}()
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
 	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
 	if err != nil {

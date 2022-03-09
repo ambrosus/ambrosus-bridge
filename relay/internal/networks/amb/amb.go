@@ -41,9 +41,7 @@ func (b *Bridge) SubmitEpochData(
 	merkelNodesNumber *big.Int,
 ) error {
 	// Metric
-	defer func() {
-		metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
-	}()
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
 	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
 	if txErr != nil {
@@ -112,9 +110,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	// Metric
-	defer func() {
-		metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
-	}()
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
 	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
 
