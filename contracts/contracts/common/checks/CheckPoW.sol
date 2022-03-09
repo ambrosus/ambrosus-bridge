@@ -4,9 +4,13 @@ pragma solidity 0.8.6;
 import "../CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "./Ethash.sol";
+import "hardhat/console.sol";
 
 contract CheckPoW is CheckReceiptsProof, Ethash {
     struct BlockPoW {
+        bytes p0withNonce;
+        bytes P0withoutNonce;
+
         bytes p1;
         bytes32 parentOrReceiptHash;
         bytes p2;
@@ -75,7 +79,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
 
     }
 
-    function blockHashWithoutNonce(BlockPoW memory block_) private pure returns (bytes32) {
+    function blockHashWithoutNonce(BlockPoW memory block_) private view returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
             block_.p1,
             block_.parentOrReceiptHash,
@@ -88,6 +92,23 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
         );
         rlpHeaderHashWithoutNonce[1] = rlpHeaderHashWithoutNonce[0];
         rlpHeaderHashWithoutNonce[2] = rlpHeaderHashWithoutNonce[1];
+
+        return keccak256(rlpHeaderHashWithoutNonce);
+    }
+
+    function Foo(BlockPoW memory block_) public view returns(bytes32){
+        bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
+            block_.P0withoutNonce,
+
+            block_.p1,
+            block_.parentOrReceiptHash,
+            block_.p2,
+            block_.difficulty,
+            block_.p3,
+            block_.number,
+            block_.p4,
+            block_.p6
+        );
 
         return keccak256(rlpHeaderHashWithoutNonce);
     }

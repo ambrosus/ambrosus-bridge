@@ -121,7 +121,13 @@ describe("Contract", () => {
   });
 
   it("Test Ethash PoW", async () => {
-    // todo
+    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
+    const epoch = require("../../relay/cmd/dump-test-data/epoch-475.json");
+
+    await submitEpochData(ambBridge, epoch);
+    expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
+
+    console.log(await ambBridge.Foo(blockPoW));
   });
 
   it("Test fee", async () => {
@@ -190,47 +196,45 @@ describe("Contract", () => {
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   }
 
-  const createRLPHeader = (block: any) => {
-    return rlp.encode([
-      block.parentHash,
-      block.sha3Uncles,
-      block.miner,
-      block.stateRoot,
-      block.transactionsRoot,
-      block.receiptsRoot,
-      block.logsBloom,
-      block.difficulty,
-      block.number,
-      block.gasLimit,
-      block.gasUsed,
-      block.timestamp,
-      block.extraData,
-      block.mixHash,
-      block.nonce,
-    ]);
-  };
-
-  const submitEpochData = async (ethashContractInstance: Contract, epoch: Number, fullSizeIn128Resolution: Number, branchDepth: Number, merkleNodes: any) => {
+  const submitEpochData = async (ethashContractInstance: Contract, epoch_: any) => {
+    let epoch = epoch_;
     let start = 0;
     let nodes: any = [];
     let mnlen = 0;
     let index = 0;
-    for (let mn of merkleNodes) {
+    for (let mn of epoch.MerkleNodes) {
       nodes.push(mn);
-      if (nodes.length === 40 || index === merkleNodes.length - 1) {
+      if (nodes.length === 40 || index === epoch.MerkleNodes.length - 1) {
         mnlen = nodes.length;
-        if (index < 440 && epoch === 128) {
+        if (index < 440 && epoch.Number === 128) {
           start = start + mnlen;
           nodes = [];
           return;
         }
-
-        await ethashContractInstance.setEpochData(epoch, fullSizeIn128Resolution, branchDepth, nodes, start, mnlen);
-
+        await ethashContractInstance.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution, epoch.BranchDepth, nodes, start, mnlen);
         start = start + mnlen;
         nodes = [];
       }
       index++;
     }
   };
+
+  const convertBlockIntoArray = (blockJson: any) => {
+    return [
+      blockJson.P1,
+      blockJson.ParentOrReceiptHash,
+      blockJson.P2,
+      blockJson.Difficulty,
+      blockJson.P3,
+      blockJson.Number,
+      blockJson.P4,
+      blockJson.P5,
+      blockJson.Nonce,
+      blockJson.P6,
+
+      blockJson.DataSetLookUp,
+      blockJson.WitnessForLookUp
+    ]
+  };
+
 });
