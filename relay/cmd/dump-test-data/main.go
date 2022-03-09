@@ -140,21 +140,6 @@ func dataForReceiptProof(cfg networkConfig) error {
 	return writeToJSONFile(data, fmt.Sprintf("./receipts_proof/fixtures/%s-data.json", cfg.Name))
 }
 
-type powData struct {
-	P1                  string
-	ParentOrReceiptHash string
-	P2                  string
-	Difficulty          string
-	P3                  string
-	Number              string
-	P4                  string
-	P5                  string
-	Nonce               string
-	P6                  string
-	DataSetLookUp       []string
-	WitnessForLookUp    []string
-}
-
 // Encoding PoW block.
 func encodePoWBlock() error {
 	log.Info().Msg("Encoding pow block...")
@@ -188,37 +173,25 @@ func encodePoWBlock() error {
 		return err
 	}
 
-	data := powData{
-		P1:                  "0x" + common.Bytes2Hex(bd.P1),
-		ParentOrReceiptHash: "0x" + common.Bytes2Hex(bd.ParentOrReceiptHash[:]),
-		P2:                  "0x" + common.Bytes2Hex(bd.P2),
-		Difficulty:          "0x" + common.Bytes2Hex(bd.Difficulty),
-		P3:                  "0x" + common.Bytes2Hex(bd.P3),
-		Number:              "0x" + common.Bytes2Hex(bd.Number),
-		P4:                  "0x" + common.Bytes2Hex(bd.P4),
-		P5:                  "0x" + common.Bytes2Hex(bd.P5),
-		Nonce:               "0x" + common.Bytes2Hex(bd.Nonce),
-		P6:                  "0x" + common.Bytes2Hex(bd.P6),
-		DataSetLookUp:       bigIntArrayToStringArray(bd.DataSetLookUp),
-		WitnessForLookUp:    bigIntArrayToStringArray(bd.WitnessForLookUp),
+	data := []interface{}{
+		"0x" + common.Bytes2Hex(bd.P0WithNonce),
+		"0x" + common.Bytes2Hex(bd.P0WithoutNonce),
+		"0x" + common.Bytes2Hex(bd.P1),
+		"0x" + common.Bytes2Hex(bd.ParentOrReceiptHash[:]),
+		"0x" + common.Bytes2Hex(bd.P2),
+		"0x" + common.Bytes2Hex(bd.Difficulty),
+		"0x" + common.Bytes2Hex(bd.P3),
+		"0x" + common.Bytes2Hex(bd.Number),
+		"0x" + common.Bytes2Hex(bd.P4),
+		"0x" + common.Bytes2Hex(bd.P5),
+		"0x" + common.Bytes2Hex(bd.Nonce),
+		"0x" + common.Bytes2Hex(bd.P6),
+
+		bigIntArrayToStringArray(bd.DataSetLookUp),
+		bigIntArrayToStringArray(bd.WitnessForLookUp),
 	}
 
 	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/BlockPoW-%d.json", block.Header().Number.Uint64()))
-}
-
-type poaData struct {
-	P0Seal      string
-	P0Bare      string
-	P1          string
-	ParentHash  string
-	P2          string
-	ReceiptHash string
-	P3          string
-	S1          string
-	Step        string
-	S2          string
-	Signature   string
-	Type        uint8
 }
 
 // Encoding PoA block.
@@ -253,19 +226,20 @@ func encodePoABlock() error {
 		return err
 	}
 
-	data := poaData{
-		P0Seal:      "0x" + common.Bytes2Hex(bd.P0Seal),
-		P0Bare:      "0x" + common.Bytes2Hex(bd.P0Bare),
-		P1:          "0x" + common.Bytes2Hex(bd.P1),
-		ParentHash:  "0x" + common.Bytes2Hex(bd.ParentHash[:]),
-		P2:          "0x" + common.Bytes2Hex(bd.P2),
-		ReceiptHash: "0x" + common.Bytes2Hex(bd.ReceiptHash[:]),
-		P3:          "0x" + common.Bytes2Hex(bd.P3),
-		S1:          "0x" + common.Bytes2Hex(bd.S1),
-		Step:        "0x" + common.Bytes2Hex(bd.Step),
-		S2:          "0x" + common.Bytes2Hex(bd.S2),
-		Signature:   "0x" + common.Bytes2Hex(bd.Signature),
-		Type:        bd.Type,
+	data := []interface{}{
+		"0x" + common.Bytes2Hex(bd.P0Seal),
+		"0x" + common.Bytes2Hex(bd.P0Bare),
+		"0x" + common.Bytes2Hex(bd.P1),
+		"0x" + common.Bytes2Hex(bd.ParentHash[:]),
+		"0x" + common.Bytes2Hex(bd.P2),
+		"0x" + common.Bytes2Hex(bd.ReceiptHash[:]),
+		"0x" + common.Bytes2Hex(bd.P3),
+		"0x" + common.Bytes2Hex(bd.S1),
+		"0x" + common.Bytes2Hex(bd.Step),
+		"0x" + common.Bytes2Hex(bd.S2),
+		"0x" + common.Bytes2Hex(bd.Signature),
+
+		bd.Type,
 	}
 
 	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/BlockPoA-%d.json", number))
