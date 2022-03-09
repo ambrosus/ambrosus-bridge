@@ -6,7 +6,7 @@ import "../CommonStructs.sol";
 
 contract CheckReceiptsProof {
     // check readme for focs
-    function CalcReceiptsHash(bytes[] memory proof, bytes32 el, uint proofStart) public view returns (bytes32) {
+    function CalcReceiptsHash(bytes[] memory proof, bytes32 el, uint proofStart) public pure returns (bytes32) {
         bytes memory s;
 
         for (uint i = proofStart; i < proof.length; i += 2) {

@@ -60,7 +60,7 @@ contract CommonBridge is AccessControl {
     }
 
 
-    // todo remove
+    // todo removee
     event Test(uint indexed a, address indexed b, string c, uint d);
     function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount, bool transferEvent) public {
         emit Test(1, address(this), "asd", 123);
@@ -81,7 +81,7 @@ contract CommonBridge is AccessControl {
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value and fee must be same");
-        feeRecipient.send(msg.value);
+        feeRecipient.transfer(msg.value);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);

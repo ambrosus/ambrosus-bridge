@@ -63,11 +63,11 @@ contract CheckAura is CheckReceiptsProof {
     uint safetyChainLength;
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
-            BlockAura memory block = auraProof.blocks[i];
+            BlockAura memory block_ = auraProof.blocks[i];
             // check signature, calc hash
-            bytes32 block_hash = CheckBlock(block);
+            bytes32 block_hash = CheckBlock(block_);
 
-            if (block.type_ == - 3) { // end of safety chain
+            if (block_.type_ == - 3) { // end of safety chain
                 require(safetyChainLength >= minSafetyBlocks, "safety chain too short");
                 safetyChainLength = 0;
             } else {
@@ -75,30 +75,30 @@ contract CheckAura is CheckReceiptsProof {
                 safetyChainLength++;
             }
 
-            if (block.type_ >= 0) {// validator set change event
+            if (block_.type_ >= 0) {// validator set change event
                 // todo check vs event
                 // val set
             }
-            else if (block.type_ == - 1) {// transfer event
+            else if (block_.type_ == - 1) {// transfer event
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
-                require(block.receipts_hash == receiptHash, "Transfer event validation failed");
+                require(block_.receipts_hash == receiptHash, "Transfer event validation failed");
             }
 
         }
 
     }
 
-    function CheckBlock(BlockAura memory block) internal view returns (bytes32) {
-        bytes memory common_rlp = abi.encodePacked(block.p1, block.parent_hash, block.p2, block.receipts_hash, block.p3);
+    function CheckBlock(BlockAura memory block_) internal view returns (bytes32) {
+        bytes memory common_rlp = abi.encodePacked(block_.p1, block_.parent_hash, block_.p2, block_.receipts_hash, block_.p3);
 
         // hash without seal for signature check
-        bytes32 bare_hash = keccak256(abi.encodePacked(block.p0_bare, common_rlp));
-        address validator = GetValidator(bytesToUint(block.step));
-        CheckSignature(validator, bare_hash, block.signature);
+        bytes32 bare_hash = keccak256(abi.encodePacked(block_.p0_bare, common_rlp));
+        address validator = GetValidator(bytesToUint(block_.step));
+        CheckSignature(validator, bare_hash, block_.signature);
         // revert if wrong
 
         // hash with seal, for prev_hash check
-        return keccak256(abi.encodePacked(block.p0_seal, common_rlp, block.s1, block.step, block.s2, block.signature));
+        return keccak256(abi.encodePacked(block_.p0_seal, common_rlp, block_.s1, block_.step, block_.s2, block_.signature));
 
     }
 
