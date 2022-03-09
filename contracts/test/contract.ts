@@ -165,11 +165,6 @@ describe("Contract", () => {
   });
 
   it("Test fee", async () => {
-    const getAccountBalance = async (addr: any) => {
-      return parseInt(await ethers.provider.getBalance(addr.address).then(
-          (BN: BigNumber) => {return BN._hex}), 16);
-    }
-
     let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
     let hashAdmin = await ambBridge.ADMIN_ROLE();
@@ -179,6 +174,24 @@ describe("Contract", () => {
     const feeValue = 1000;
 
     await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
+
+    const curBalance = await getAccountBalance(addr4);
+
+    expect(curBalance).eq(prevBalance + feeValue);
+  });
+
+  it("Test fee with changing 'fee' variable", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const prevBalance = await getAccountBalance(addr4);
+    const feeValue = 4000;
+
+    await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
+    await ambBridge.connect(addr3).changeFee(feeValue);
     await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
 
     const curBalance = await getAccountBalance(addr4);
@@ -253,4 +266,8 @@ describe("Contract", () => {
     }
   };
 
+  const getAccountBalance = async (addr: any) => {
+    return parseInt(await ethers.provider.getBalance(addr.address).then(
+        (BN: BigNumber) => {return BN._hex}), 16);
+  }
 });
