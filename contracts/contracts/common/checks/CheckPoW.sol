@@ -47,10 +47,11 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
     }
 
 
-    function blockHash(BlockPoW memory block_) public pure returns (bytes32) {
+    function blockHash(BlockPoW memory block_) private pure returns (bytes32) {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
                 abi.encodePacked(
+                    block_.p0withNonce,
                     block_.p1,
                     block_.parentOrReceiptHash,
                     block_.p2,
