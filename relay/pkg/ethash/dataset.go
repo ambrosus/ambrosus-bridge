@@ -274,6 +274,10 @@ func generateDataset(dest []uint32, epoch uint64, cache []uint32) {
 	pend.Wait()
 }
 
+func fnv(a, b uint32) uint32 {
+	return a*0x01000193 ^ b
+}
+
 // datasetSize returns the size of the ethash mining dataset that belongs to a certain
 // block number.
 func DatasetSize(block uint64) uint64 {

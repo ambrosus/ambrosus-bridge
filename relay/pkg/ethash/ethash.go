@@ -3,7 +3,6 @@ package ethash
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"math/rand"
 	"os"
 	"os/user"
@@ -303,78 +302,4 @@ func memoryMapAndGenerate(path string, size uint64, generator func(buffer []uint
 		return nil, nil, nil, err
 	}
 	return memoryMap(path)
-}
-
-// cache wraps an ethash cache with some metadata to allow easier concurrent use.
-type cache struct {
-	epoch uint64     // Epoch for which this cache is relevant
-	dump  *os.File   // File descriptor of the memory mapped cache
-	mmap  mmap.MMap  // Memory map itself to unmap before releasing
-	cache []uint32   // The actual cache data content (may be memory mapped)
-	used  time.Time  // Timestamp of the last use for smarter eviction
-	once  sync.Once  // Ensures the cache is generated only once
-	lock  sync.Mutex // Ensures thread safety for updating the usage time
-}
-
-func (c *cache) release() {
-	if c.mmap != nil {
-		c.mmap.Unmap()
-		c.mmap = nil
-	}
-	if c.dump != nil {
-		c.dump.Close()
-		c.dump = nil
-	}
-}
-
-// generate ensures that the cache content is generated before use.
-func (c *cache) generate(dir string, limit int, test bool) {
-	c.once.Do(func() {
-		// If we have a testing cache, generate and return
-		if test {
-			c.cache = make([]uint32, 1024/4)
-			generateCache(c.cache, c.epoch, seedHash(c.epoch*epochLength+1))
-			return
-		}
-		// If we don't store anything on disk, generate and return
-		size := cacheSize(c.epoch*epochLength + 1)
-		seed := seedHash(c.epoch*epochLength + 1)
-
-		if dir == "" {
-			c.cache = make([]uint32, size/4)
-			generateCache(c.cache, c.epoch, seed)
-			return
-		}
-		// Disk storage is needed, this will get fancy
-		var endian string
-		if !isLittleEndian() {
-			endian = ".be"
-		}
-		path := filepath.Join(dir, fmt.Sprintf("cache-R%d-%x%s", algorithmRevision, seed[:8], endian))
-		logger := log.New("epoch", c.epoch)
-
-		// Try to load the file from disk and memory map it
-		var err error
-		c.dump, c.mmap, c.cache, err = memoryMap(path)
-		if err == nil {
-			logger.Debug("Loaded old ethash cache from disk")
-			return
-		}
-		logger.Debug("Failed to load old ethash cache", "err", err)
-
-		// No previous cache available, create a new cache file to fill
-		c.dump, c.mmap, c.cache, err = memoryMapAndGenerate(path, size, func(buffer []uint32) { generateCache(buffer, c.epoch, seed) })
-		if err != nil {
-			logger.Error("Failed to generate mapped ethash cache", "err", err)
-
-			c.cache = make([]uint32, size/4)
-			generateCache(c.cache, c.epoch, seed)
-		}
-		// Iterate over all previous instances and delete old ones
-		for ep := int(c.epoch) - limit; ep >= 0; ep-- {
-			seed := seedHash(uint64(ep)*epochLength + 1)
-			path := filepath.Join(dir, fmt.Sprintf("cache-R%d-%x%s", algorithmRevision, seed[:8], endian))
-			os.Remove(path)
-		}
-	})
 }
