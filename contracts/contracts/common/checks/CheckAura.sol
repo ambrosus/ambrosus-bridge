@@ -62,12 +62,8 @@ contract CheckAura is CheckReceiptsProof {
         validatorSet.pop();
     }
 
-    function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks) public {
-        address sideBridgeAddress = address (this);  // todo
-
-
-
-    uint safetyChainLength;
+    function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
+        uint safetyChainLength;
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block = auraProof.blocks[i];
