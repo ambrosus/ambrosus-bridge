@@ -43,7 +43,8 @@ contract CommonBridge is AccessControl {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
+        uint fee_, address payable feeRecipient_,
+        uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, relayAddress);

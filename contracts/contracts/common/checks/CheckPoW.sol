@@ -6,7 +6,7 @@ import "./CheckReceiptsProof.sol";
 import "./Ethash.sol";
 import "hardhat/console.sol";
 
-contract CheckPoW is CheckReceiptsProof, Ethash {
+contract CheckPoW is CheckReceiptsProof, Ethash  {
     struct BlockPoW {
         bytes p0withNonce;
         bytes P0withoutNonce;
@@ -31,12 +31,8 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
         CommonStructs.TransferProof transfer;
     }
 
-    function CheckPoW_(PoWProof memory powProof) public view
+    function CheckPoW_(PoWProof memory powProof, address sideBridgeAddress) public view
     {
-
-        address sideBridgeAddress = address(this);
-        // todo
-
         bytes32 hash = CalcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
         for (uint i = 0; i < powProof.blocks.length; i++) {
             require(powProof.blocks[i].parentOrReceiptHash == hash, "parentHash or receiptHash wrong");

@@ -8,12 +8,14 @@ contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+        uint fee_, address payable feeRecipient_,
+        uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
     )
     CommonBridge(_sideBridgeAddress, relayAddress,
-        tokenThisAddresses, tokenSideAddresses,
-        fee_, feeRecipient_, timeframeSeconds_, lockTime_, minSafetyBlocks_
-    ) {
+                 tokenThisAddresses, tokenSideAddresses,
+                 fee_, feeRecipient_,
+                 timeframeSeconds_, lockTime_, minSafetyBlocks_)
+    {
 
         // relay uses this event to know from what moment to synchronize the validator set;
         // side bridge contract must be deployed with validator set actual at the time this event was emitted.
@@ -29,7 +31,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         require(powProof.transfer.event_id == inputEventId + 1);
         inputEventId++;
 
-        CheckPoW_(powProof);
+        CheckPoW_(powProof, sideBridgeAddress);
 
         //        lockTransfers(events, event_id);
     }
