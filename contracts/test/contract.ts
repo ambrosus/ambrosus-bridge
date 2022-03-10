@@ -280,7 +280,22 @@ describe("Contract", () => {
 
     expect(realLockTime).eq(expectedLockTime);
   });
-  
+
+  it("Test setSideBridge", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedSideBridgeAddress = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
+
+    await ambBridge.connect(addr3).setSideBridge(expectedSideBridgeAddress);
+
+    const realSideBridgeAddress = await ambBridge.sideBridgeAddress();
+
+    expect(realSideBridgeAddress).eq(expectedSideBridgeAddress);
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
