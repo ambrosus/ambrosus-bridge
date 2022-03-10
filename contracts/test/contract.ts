@@ -219,22 +219,4 @@ describe("Contract", () => {
     }
   };
 
-  const convertBlockIntoArray = (blockJson: any) => {
-    return [
-      blockJson.P1,
-      blockJson.ParentOrReceiptHash,
-      blockJson.P2,
-      blockJson.Difficulty,
-      blockJson.P3,
-      blockJson.Number,
-      blockJson.P4,
-      blockJson.P5,
-      blockJson.Nonce,
-      blockJson.P6,
-
-      blockJson.DataSetLookUp,
-      blockJson.WitnessForLookUp
-    ]
-  };
-
 });
