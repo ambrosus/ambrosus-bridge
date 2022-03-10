@@ -4,9 +4,13 @@ pragma solidity 0.8.6;
 import "../CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "./Ethash.sol";
+import "hardhat/console.sol";
 
 contract CheckPoW is CheckReceiptsProof, Ethash {
     struct BlockPoW {
+        bytes p0withNonce;
+        bytes P0withoutNonce;
+
         bytes p1;
         bytes32 parentOrReceiptHash;
         bytes p2;
@@ -43,10 +47,11 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
     }
 
 
-    function blockHash(BlockPoW memory block_) public pure returns (bytes32) {
+    function blockHash(BlockPoW memory block_) private pure returns (bytes32) {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
                 abi.encodePacked(
+                    block_.p0withNonce,
                     block_.p1,
                     block_.parentOrReceiptHash,
                     block_.p2,
@@ -77,6 +82,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
 
     function blockHashWithoutNonce(BlockPoW memory block_) private pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
+            block_.P0withoutNonce,
             block_.p1,
             block_.parentOrReceiptHash,
             block_.p2,
@@ -86,8 +92,6 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
             block_.p4,
             block_.p6
         );
-        rlpHeaderHashWithoutNonce[1] = rlpHeaderHashWithoutNonce[0];
-        rlpHeaderHashWithoutNonce[2] = rlpHeaderHashWithoutNonce[1];
 
         return keccak256(rlpHeaderHashWithoutNonce);
     }
