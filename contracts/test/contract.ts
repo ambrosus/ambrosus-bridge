@@ -127,7 +127,7 @@ describe("Contract", () => {
     await submitEpochData(ambBridge, epoch);
     expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
 
-    console.log(await ambBridge.Foo(blockPoW));
+    await ambBridge.verifyEthash(blockPoW);
   });
 
   it("Test fee", async () => {

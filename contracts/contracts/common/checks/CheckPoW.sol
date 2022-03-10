@@ -79,27 +79,9 @@ contract CheckPoW is CheckReceiptsProof, Ethash {
 
     }
 
-    function blockHashWithoutNonce(BlockPoW memory block_) private view returns (bytes32) {
-        bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
-            block_.p1,
-            block_.parentOrReceiptHash,
-            block_.p2,
-            block_.difficulty,
-            block_.p3,
-            block_.number,
-            block_.p4,
-            block_.p6
-        );
-        rlpHeaderHashWithoutNonce[1] = rlpHeaderHashWithoutNonce[0];
-        rlpHeaderHashWithoutNonce[2] = rlpHeaderHashWithoutNonce[1];
-
-        return keccak256(rlpHeaderHashWithoutNonce);
-    }
-
-    function Foo(BlockPoW memory block_) public view returns(bytes32){
+    function blockHashWithoutNonce(BlockPoW memory block_) private pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
             block_.P0withoutNonce,
-
             block_.p1,
             block_.parentOrReceiptHash,
             block_.p2,
