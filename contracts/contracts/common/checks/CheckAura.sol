@@ -62,8 +62,11 @@ contract CheckAura is CheckReceiptsProof {
         validatorSet.pop();
     }
 
-    function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
+    function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
+                        address sideBridgeAddress, address validatorSetAddress) public {
         uint safetyChainLength;
+
+        address[] memory validatorSet_ = validatorSet;
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block = auraProof.blocks[i];
@@ -79,12 +82,30 @@ contract CheckAura is CheckReceiptsProof {
             }
 
             if (block.type_ & BlTypeVSChange != 0) {// validator set change event
-                // todo check vs event
-                // val set
+                ValidatorSetProof memory vsProof = auraProof.vs_changes[i];
+                uint index;
+
+                if (vsProof.delta_index < 0) {
+                    index = int64ToUint(vsProof.delta_index * (-1) - 1);
+
+                    validatorSet_[index] = validatorSet_[validatorSet_.length - 1];
+                    validatorSet_ = popMemory(validatorSet_);
+                }
+                else {
+                    index = int64ToUint(vsProof.delta_index);
+
+                    validatorSet_ = pushMemory(validatorSet_, validatorSet_[index]);
+                    validatorSet_[index] = vsProof.delta_address;
+                }
+
+                bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet_);
             }
             if (block.type_ & BlTypeTransfer != 0) {// transfer event
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
                 require(block.receipt_hash == receiptHash, "Transfer event validation failed");
+
+                // todo copy error
+                validatorSet = validatorSet_;
             }
 
         }
@@ -129,8 +150,47 @@ contract CheckAura is CheckReceiptsProof {
             "Failed to verify sign");
     }
 
+    function CalcValidatorSetReceiptHash(AuraProof memory auraProof,
+                                         address validatorSetAddress,
+                                         address[] memory vSet) private returns(bytes32) {
 
-    function bytesToUint(bytes memory b) public view returns (uint){
+        bytes32 el = keccak256(abi.encodePacked(
+            auraProof.transfer.receipt_proof[0],
+            validatorSetAddress,
+            auraProof.transfer.receipt_proof[1],
+            abi.encode(vSet),
+            auraProof.transfer.receipt_proof[2]
+        ));
+        return CalcReceiptsHash(auraProof.transfer.receipt_proof, el, 3);
+    }
+
+
+    function int64ToUint(int64 val) private pure returns (uint){
+        return bytesToUint(abi.encode(val));
+    }
+
+    function bytesToUint(bytes memory b) public pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
+    }
+
+    function popMemory(address[] memory arr) private pure returns(address[] memory) {
+        address[] memory result = new address[](arr.length - 1);
+
+        for (uint i = 0; i < arr.length - 1; i++) {
+            result[i] = arr[i];
+        }
+
+        return result;
+    }
+
+    function pushMemory(address[] memory arr, address val) private pure returns(address[] memory) {
+        address[] memory result = new address[](arr.length + 1);
+
+        for (uint i = 0; i < arr.length; i++) {
+            result[i] = arr[i];
+        }
+        result[arr.length] = val;
+
+        return result;
     }
 }

@@ -7,13 +7,15 @@ import "../common/checks/CheckAura.sol";
 
 
 contract EthBridge is CommonBridge, CheckAura {
+    address validatorSetAddress;
 
     constructor(
         address _sideBridgeAddress, address relayAddress,
         address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
         uint fee_, address payable feeRecipient_,
         uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_,
-        address[] memory initialValidators
+        address[] memory initialValidators,
+        address validatorSetAddress_
     )
     CommonBridge(
         _sideBridgeAddress, relayAddress,
@@ -24,6 +26,8 @@ contract EthBridge is CommonBridge, CheckAura {
     CheckAura(initialValidators)
     {
         emitTestEvent(address(this), msg.sender, 10, true);
+
+        validatorSetAddress = validatorSetAddress_;
     }
 
     function submitTransfer(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) {
@@ -31,7 +35,7 @@ contract EthBridge is CommonBridge, CheckAura {
         require(auraProof.transfer.event_id == inputEventId + 1);
         inputEventId++;
 
-        CheckAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
+        CheckAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
 
         //        lockTransfers(events, event_id);
     }
