@@ -389,6 +389,10 @@ contract Ethash is SHA3_512 {
         epochData[epoch].branchDepth = branchDepth;
 
         emit SetEpochData( msg.sender, 0 , 0 );
+
+        // we store only previous and current epochs
+        // so, delete second from the end epoch
+        if (isEpochDataSet(epoch - 2)) delete epochData[epoch - 2];
     }
 
     function getMerkleLeave( uint epochIndex, uint p ) view internal returns(uint) {
