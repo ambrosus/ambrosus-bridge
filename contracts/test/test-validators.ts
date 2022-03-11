@@ -140,4 +140,12 @@ describe("Validators", () => {
       */
   });
 
+  it("Test GetValidatorSet", async () => {
+    // deploy script contains two validators in constructor
+    const validator1 = ethers.utils.getAddress("0x11112707319ad4beca6b5bb4086617fd6f240cfe");
+    const validator2 = ethers.utils.getAddress("0x22222707319ad4beca6b5bb4086617fd6f240cfe");
+    const expectedValidatorSet = [validator1, validator2];
+
+    expect(await ethBridge.GetValidatorSet()).eql(expectedValidatorSet)
+  })
 });
