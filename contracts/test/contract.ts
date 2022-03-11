@@ -296,6 +296,14 @@ describe("Contract", () => {
     expect(realSideBridgeAddress).eq(expectedSideBridgeAddress);
   });
 
+  it("Test blockHash", async () =>{
+    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
+    const expectedBlockHash = "0xc4ca0efd5d528d67691abd9e10e9d4ca570f16235779e1f314b036caa5b455a1"
+
+    const realBlockHash = await ambBridgeTest.blockHashTest(blockPoW);
+    expect(realBlockHash).eq(expectedBlockHash)
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
