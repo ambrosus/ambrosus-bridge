@@ -130,6 +130,20 @@ describe("Contract", () => {
     await ambBridge.verifyEthash(blockPoW);
   });
 
+  it("Test setEpochData deleting old epochs", async () => {
+    const epoch1 = require("../../relay/assets/testdata/epoch-475.json");
+    const epoch2 = require("../../relay/assets/testdata/epoch-476.json");
+    const epoch3 = require("../../relay/assets/testdata/epoch-477.json");
+
+    await submitEpochData(ambBridge, epoch1);
+    await submitEpochData(ambBridge, epoch2);
+    expect(await ambBridge.isEpochDataSet(epoch1.Epoch)).to.be.true;
+    await submitEpochData(ambBridge, epoch3);
+    expect(await ambBridge.isEpochDataSet(epoch1.Epoch)).to.be.false;
+    expect(await ambBridge.isEpochDataSet(epoch2.Epoch)).to.be.true;
+    expect(await ambBridge.isEpochDataSet(epoch3.Epoch)).to.be.true;
+  });
+
   it("Test fee", async () => {
     const getAccountBalance = async (addr: any) => {
       return parseInt(await ethers.provider.getBalance(addr.address).then(
