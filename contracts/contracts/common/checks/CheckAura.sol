@@ -83,7 +83,7 @@ contract CheckAura is CheckReceiptsProof {
                 ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
                 handleVS(vsEvent);
 
-                if (vsEvent.receipt_proof.length == 0) {
+                if (vsEvent.receipt_proof.length != 0) {
                     bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet);
                     require(block_.receipt_hash == receiptHash, "Wrong Hash");
                 }
