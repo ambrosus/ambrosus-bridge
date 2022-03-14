@@ -54,25 +54,13 @@ contract CheckAura is CheckReceiptsProof {
         validatorSet = _initialValidators;
     }
 
-    function addValidator(uint index, address validator) internal {
-        validatorSet.push(validatorSet[index]);
-        validatorSet[index] = validator;
-    }
-
-    function removeValidator(uint index) internal {
-        validatorSet[index] = validatorSet[validatorSet.length - 1];
-        validatorSet.pop();
-    }
-
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
         address sideBridgeAddress, address validatorSetAddress) public {
-        ValidatorSetProof memory vsEvent;
 
         // validator set change event
         uint n = uint(int(auraProof.blocks[0].delta_index));
         for (uint i = 0; i < n; i++) {
-            vsEvent = auraProof.vs_changes[i];
-            handleVS(vsEvent);
+            handleVS(auraProof.vs_changes[i]);
         }
 
         uint safetyChainLength;
@@ -92,8 +80,13 @@ contract CheckAura is CheckReceiptsProof {
             }
 
             if (block_.type_ & BlTypeVSChange != 0) {// validator set change event
-                vsEvent = auraProof.vs_changes[i];
+                ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
                 handleVS(vsEvent);
+
+                if (vsEvent.receipt_proof.length == 0) {
+                    bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet);
+                    require(block_.receipt_hash == receiptHash, "Wrong Hash");
+                }
             }
 
             // transfer event
