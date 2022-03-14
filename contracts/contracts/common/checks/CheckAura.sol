@@ -64,16 +64,15 @@ contract CheckAura is CheckReceiptsProof {
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
                         address sideBridgeAddress, address validatorSetAddress) public {
+
         uint safetyChainLength;
 
-        address[] memory validatorSet_ = validatorSet;
-
         for (uint i = 0; i < auraProof.blocks.length; i++) {
-            BlockAura memory block = auraProof.blocks[i];
+            BlockAura memory block_ = auraProof.blocks[i];
             // check signature, calc hash
-            bytes32 block_hash = CheckBlock(block);
+            bytes32 block_hash = CheckBlock(block_);
 
-            if (block.type_ & BlTypeSafetyEnd != 0) { // end of safety chain
+            if (block_.type_ & BlTypeSafetyEnd != 0) { // end of safety chain
                 require(safetyChainLength >= minSafetyBlocks, "safety chain too short");
                 safetyChainLength = 0;
             } else {
@@ -81,31 +80,29 @@ contract CheckAura is CheckReceiptsProof {
                 safetyChainLength++;
             }
 
-            if (block.type_ & BlTypeVSChange != 0) {// validator set change event
-                ValidatorSetProof memory vsProof = auraProof.vs_changes[i];
+            if (block_.type_ & BlTypeVSChange != 0) {// validator set change event
+                ValidatorSetProof memory vsProof = auraProof.vs_changes[uint(int(block_.delta_index))];
                 uint index;
 
                 if (vsProof.delta_index < 0) {
-                    index = int64ToUint(vsProof.delta_index * (-1) - 1);
+                    index = uint(int(vsProof.delta_index * (-1) - 1));
 
-                    validatorSet_[index] = validatorSet_[validatorSet_.length - 1];
-                    validatorSet_ = popMemory(validatorSet_);
+                    validatorSet[index] = validatorSet[validatorSet.length - 1];
+                    validatorSet.pop();
                 }
                 else {
-                    index = int64ToUint(vsProof.delta_index);
+                    index = uint(int((vsProof.delta_index)));
 
-                    validatorSet_ = pushMemory(validatorSet_, validatorSet_[index]);
-                    validatorSet_[index] = vsProof.delta_address;
+                    validatorSet.push(validatorSet[index]);
+                    validatorSet[index] = vsProof.delta_address;
                 }
 
-                bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet_);
+                bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet);
+                require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
             }
-            if (block.type_ & BlTypeTransfer != 0) {// transfer event
+            if (block_.type_ & BlTypeTransfer != 0) {// transfer event
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
-                require(block.receipt_hash == receiptHash, "Transfer event validation failed");
-
-                // todo copy error
-                validatorSet = validatorSet_;
+                require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
             }
 
         }
@@ -164,33 +161,7 @@ contract CheckAura is CheckReceiptsProof {
         return CalcReceiptsHash(auraProof.transfer.receipt_proof, el, 3);
     }
 
-
-    function int64ToUint(int64 val) private pure returns (uint){
-        return bytesToUint(abi.encode(val));
-    }
-
-    function bytesToUint(bytes memory b) public pure returns (uint){
+    function bytesToUint(bytes memory b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
-    }
-
-    function popMemory(address[] memory arr) private pure returns(address[] memory) {
-        address[] memory result = new address[](arr.length - 1);
-
-        for (uint i = 0; i < arr.length - 1; i++) {
-            result[i] = arr[i];
-        }
-
-        return result;
-    }
-
-    function pushMemory(address[] memory arr, address val) private pure returns(address[] memory) {
-        address[] memory result = new address[](arr.length + 1);
-
-        for (uint i = 0; i < arr.length; i++) {
-            result[i] = arr[i];
-        }
-        result[arr.length] = val;
-
-        return result;
     }
 }
