@@ -102,21 +102,16 @@ contract CheckAura is CheckReceiptsProof {
         }
     }
 
-    function handleVS(AuraProof memory auraProof, uint i) private {
+    function handleVS(ValidatorSetProof memory vsEvent, AuraProof memory auraProof, uint i) private {
         ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
-        uint index;
 
         if (vsEvent.delta_index < 0) {
-            index = uint(int(vsEvent.delta_index * (-1) - 1));
-
-            validatorSet[index] = validatorSet[validatorSet.length - 1];
+            validatorSet[uint(int(vsEvent.delta_index * (-1) - 1))] = validatorSet[validatorSet.length - 1];
             validatorSet.pop();
         }
         else {
-            index = uint(int((vsEvent.delta_index)));
-
-            validatorSet.push(validatorSet[index]);
-            validatorSet[index] = vsEvent.delta_address;
+            validatorSet.push(validatorSet[uint(int((vsEvent.delta_index)))]);
+            validatorSet[uint(int((vsEvent.delta_index)))] = vsEvent.delta_address;
         }
     }
 
@@ -136,8 +131,7 @@ contract CheckAura is CheckReceiptsProof {
 
 
     function GetValidator(uint step) internal view returns (address) {
-        // todo
-        return address(this);
+        return validatorSet[step % validatorSet.length];
     }
 
     function GetValidatorSet() public view returns (address[] memory) {
