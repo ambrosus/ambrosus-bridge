@@ -93,10 +93,10 @@ contract CheckAura is CheckReceiptsProof {
             if (block_.type_ & BlTypeTransfer != 0) {
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
                 require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
-
-                lastProcessedBlock = block_hash;
             }
         }
+
+        lastProcessedBlock = block_hash;
     }
 
     function handleVS(ValidatorSetProof memory vsEvent) private {
