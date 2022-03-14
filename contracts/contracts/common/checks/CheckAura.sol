@@ -12,6 +12,8 @@ contract CheckAura is CheckReceiptsProof {
     uint8 constant BlTypeTransfer = 4;
     uint8 constant BlTypeVSChange = 8;
 
+    bytes32 public lastProcessedBlock;
+
     struct BlockAura {
         bytes p0_seal;
         bytes p0_bare;
@@ -63,10 +65,28 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
-                        address sideBridgeAddress, address validatorSetAddress) public {
+        address sideBridgeAddress, address validatorSetAddress) public {
+
+        // validator set change event
+        for (uint i = 0; i < uint(int(auraProof.blocks[0].delta_index)); i++) {
+            ValidatorSetProof memory vsProof = auraProof.vs_changes[i];
+            uint index;
+
+            if (vsProof.delta_index < 0) {
+                index = uint(int(vsProof.delta_index * (-1) - 1));
+
+                validatorSet[index] = validatorSet[validatorSet.length - 1];
+                validatorSet.pop();
+            }
+            else {
+                index = uint(int((vsProof.delta_index)));
+
+                validatorSet.push(validatorSet[index]);
+                validatorSet[index] = vsProof.delta_address;
+            }
+        }
 
         uint safetyChainLength;
-
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block_ = auraProof.blocks[i];
             // check signature, calc hash
@@ -100,13 +120,14 @@ contract CheckAura is CheckReceiptsProof {
                 bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet);
                 require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
             }
-            if (block_.type_ & BlTypeTransfer != 0) {// transfer event
+
+            // transfer event
+            if (block_.type_ & BlTypeTransfer != 0) {
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
                 require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
+                lastProcessedBlock = block_hash;
             }
-
         }
-
     }
 
     function CheckBlock(BlockAura memory block) internal view returns (bytes32) {
