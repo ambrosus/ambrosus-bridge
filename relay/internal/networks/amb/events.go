@@ -158,22 +158,19 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.
 }
 
 func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts.VsInitiateChange, error) {
-	prevEventId := big.NewInt(0).Sub(event.EventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
-	if err != nil {
-		return nil, err
-	}
-
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, err
 	}
 
-	start := prevEvent.Raw.BlockNumber
+	start, err := b.sideBridge.GetLastProcessedBlockNum()
+	if err != nil {
+		return nil, err
+	}
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
 
 	opts := &bind.FilterOpts{
-		Start:   start,
+		Start:   start.Uint64(),
 		End:     &end,
 		Context: context.Background(),
 	}

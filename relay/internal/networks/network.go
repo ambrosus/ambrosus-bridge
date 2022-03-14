@@ -24,6 +24,7 @@ type BridgeReceiveAura interface {
 	Bridge
 	SubmitTransferAura(*contracts.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
+	GetLastProcessedBlockNum() (*big.Int, error)
 }
 
 type BridgeReceiveEthash interface {
