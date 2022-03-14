@@ -66,10 +66,12 @@ contract CheckAura is CheckReceiptsProof {
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
         address sideBridgeAddress, address validatorSetAddress) public {
+        ValidatorSetProof memory vsEvent;
 
         // validator set change event
         for (uint i = 0; i < uint(int(auraProof.blocks[0].delta_index)); i++) {
-            handleVS(auraProof, i);
+            vsEvent = auraProof.vs_changes[i];
+            handleVS(vsEvent);
         }
 
         uint safetyChainLength;
@@ -89,7 +91,8 @@ contract CheckAura is CheckReceiptsProof {
             }
 
             if (block_.type_ & BlTypeVSChange != 0) {// validator set change event
-                handleVS(auraProof, i);
+                vsEvent = auraProof.vs_changes[i];
+                handleVS(vsEvent);
             }
 
             // transfer event
@@ -102,9 +105,7 @@ contract CheckAura is CheckReceiptsProof {
         }
     }
 
-    function handleVS(ValidatorSetProof memory vsEvent, AuraProof memory auraProof, uint i) private {
-        ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
-
+    function handleVS(ValidatorSetProof memory vsEvent) private {
         if (vsEvent.delta_index < 0) {
             validatorSet[uint(int(vsEvent.delta_index * (-1) - 1))] = validatorSet[validatorSet.length - 1];
             validatorSet.pop();
