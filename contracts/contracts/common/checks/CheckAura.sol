@@ -69,7 +69,8 @@ contract CheckAura is CheckReceiptsProof {
         ValidatorSetProof memory vsEvent;
 
         // validator set change event
-        for (uint i = 0; i < uint(int(auraProof.blocks[0].delta_index)); i++) {
+        uint n = uint(int(auraProof.blocks[0].delta_index));
+        for (uint i = 0; i < n; i++) {
             vsEvent = auraProof.vs_changes[i];
             handleVS(vsEvent);
         }
@@ -107,12 +108,14 @@ contract CheckAura is CheckReceiptsProof {
 
     function handleVS(ValidatorSetProof memory vsEvent) private {
         if (vsEvent.delta_index < 0) {
-            validatorSet[uint(int(vsEvent.delta_index * (-1) - 1))] = validatorSet[validatorSet.length - 1];
+            uint index = uint(int(vsEvent.delta_index * (-1) - 1));
+            validatorSet[index] = validatorSet[validatorSet.length - 1];
             validatorSet.pop();
         }
         else {
-            validatorSet.push(validatorSet[uint(int((vsEvent.delta_index)))]);
-            validatorSet[uint(int((vsEvent.delta_index)))] = vsEvent.delta_address;
+            uint index = uint(int((vsEvent.delta_index)));
+            validatorSet.push(validatorSet[index]);
+            validatorSet[index] = vsEvent.delta_address;
         }
     }
 
