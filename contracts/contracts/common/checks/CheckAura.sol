@@ -69,28 +69,16 @@ contract CheckAura is CheckReceiptsProof {
 
         // validator set change event
         for (uint i = 0; i < uint(int(auraProof.blocks[0].delta_index)); i++) {
-            ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
-            uint index;
-
-            if (vsEvent.delta_index < 0) {
-                index = uint(int(vsEvent.delta_index * (-1) - 1));
-
-                validatorSet[index] = validatorSet[validatorSet.length - 1];
-                validatorSet.pop();
-            }
-            else {
-                index = uint(int((vsEvent.delta_index)));
-
-                validatorSet.push(validatorSet[index]);
-                validatorSet[index] = vsEvent.delta_address;
-            }
+            handleVS(auraProof, i);
         }
 
         uint safetyChainLength;
+        bytes32 block_hash;
+
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block_ = auraProof.blocks[i];
             // check signature, calc hash
-            bytes32 block_hash = CheckBlock(block_);
+            block_hash = CheckBlock(block_);
 
             if (block_.type_ & BlTypeSafetyEnd != 0) { // end of safety chain
                 require(safetyChainLength >= minSafetyBlocks, "safety chain too short");
@@ -101,35 +89,34 @@ contract CheckAura is CheckReceiptsProof {
             }
 
             if (block_.type_ & BlTypeVSChange != 0) {// validator set change event
-                ValidatorSetProof memory vsEvent = auraProof.vs_changes[uint(int(block_.delta_index))];
-                uint index;
-
-                if (vsEvent.delta_index < 0) {
-                    index = uint(int(vsEvent.delta_index * (-1) - 1));
-
-                    validatorSet[index] = validatorSet[validatorSet.length - 1];
-                    validatorSet.pop();
-                }
-                else {
-                    index = uint(int((vsEvent.delta_index)));
-
-                    validatorSet.push(validatorSet[index]);
-                    validatorSet[index] = vsEvent.delta_address;
-                }
-
-                if (vsEvent.receipt_proof.length == 0) {
-                    bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet);
-                    require(block_.receipt_hash == receiptHash, "Wrong Hash");
-
-                    lastProcessedBlock = block_hash;
-                }
+                handleVS(auraProof, i);
             }
 
             // transfer event
             if (block_.type_ & BlTypeTransfer != 0) {
                 bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
                 require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
+
+                lastProcessedBlock = block_hash;
             }
+        }
+    }
+
+    function handleVS(AuraProof memory auraProof, uint i) private {
+        ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
+        uint index;
+
+        if (vsEvent.delta_index < 0) {
+            index = uint(int(vsEvent.delta_index * (-1) - 1));
+
+            validatorSet[index] = validatorSet[validatorSet.length - 1];
+            validatorSet.pop();
+        }
+        else {
+            index = uint(int((vsEvent.delta_index)));
+
+            validatorSet.push(validatorSet[index]);
+            validatorSet[index] = vsEvent.delta_address;
         }
     }
 
