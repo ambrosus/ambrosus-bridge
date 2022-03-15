@@ -19,5 +19,10 @@ library CommonStructs {
         uint endTimestamp;
     }
 
-
+    struct ConstructorArgs {
+        address sideBridgeAddress; address relayAddress;
+        address[] tokenThisAddresses; address[] tokenSideAddresses;
+        uint fee; address payable feeRecipient;
+        uint timeframeSeconds; uint lockTime; uint minSafetyBlocks;
+    }
 }

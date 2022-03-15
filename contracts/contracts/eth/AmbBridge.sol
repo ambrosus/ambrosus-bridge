@@ -3,18 +3,17 @@ pragma solidity 0.8.6;
 
 import "../common/CommonBridge.sol";
 import "../common/checks/CheckPoW.sol";
+import "../common/CommonStructs.sol";
+
 
 contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
-        address _sideBridgeAddress, address relayAddress,
-        address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, address payable feeRecipient_,
-        uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+        CommonStructs.ConstructorArgs memory args
     )
-    CommonBridge(_sideBridgeAddress, relayAddress,
-                 tokenThisAddresses, tokenSideAddresses,
-                 fee_, feeRecipient_,
-                 timeframeSeconds_, lockTime_, minSafetyBlocks_)
+    CommonBridge(args.sideBridgeAddress, args.relayAddress,
+                 args.tokenThisAddresses, args.tokenSideAddresses,
+                 args.fee, args.feeRecipient,
+                 args.timeframeSeconds, args.lockTime, args.minSafetyBlocks)
     {
 
         // relay uses this event to know from what moment to synchronize the validator set;
