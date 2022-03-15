@@ -22,4 +22,8 @@ contract AmbBridgeTest is AmbBridge {
     function unlockTransfersTest(uint event_id) public {
         unlockTransfers(event_id);
     }
+
+    function blockHashTest(BlockPoW memory block_) public pure returns (bytes32) {
+        return blockHash(block_);
+    }
 }

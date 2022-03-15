@@ -157,7 +157,7 @@ contract CommonBridge is AccessControl {
     }
 
     function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
-        tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
+        _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
     }
 
     function _tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) private {

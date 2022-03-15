@@ -109,15 +109,35 @@ describe("Contract", () => {
 
     let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
     let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe")
+    let third = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe")
+    let fourth = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe")
+    let fifth = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe")
+    let sixth = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe")
     await ambBridge.connect(addr2).tokensAdd(first, second);
     expect(await ambBridge.tokenAddresses(first)).eq(second);
     await ethBridge.connect(addr2).tokensAdd(first, second);
     expect(await ethBridge.tokenAddresses(first)).eq(second);
 
+    // batch
+    await ambBridge.connect(addr2).tokensAddBatch([third, fourth], [fifth, sixth]);
+    expect(await ambBridge.tokenAddresses(third)).eq(fifth);
+    expect(await ambBridge.tokenAddresses(fourth)).eq(sixth);
+    await ethBridge.connect(addr2).tokensAddBatch([third, fourth], [fifth, sixth]);
+    expect(await ethBridge.tokenAddresses(third)).eq(fifth);
+    expect(await ethBridge.tokenAddresses(fourth)).eq(sixth);
+
     await ambBridge.connect(addr2).tokensRemove(first);
     expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
     await ethBridge.connect(addr2).tokensRemove(first);
     expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
+
+    // batch
+    await ambBridge.connect(addr2).tokensRemoveBatch([third, fourth]);
+    expect(await ambBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
+    expect(await ambBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
+    await ethBridge.connect(addr2).tokensRemoveBatch([third, fourth]);
+    expect(await ethBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
+    expect(await ethBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
   });
 
   it("Test Ethash PoW", async () => {
@@ -145,11 +165,6 @@ describe("Contract", () => {
   });
 
   it("Test fee", async () => {
-    const getAccountBalance = async (addr: any) => {
-      return parseInt(await ethers.provider.getBalance(addr.address).then(
-          (BN: BigNumber) => {return BN._hex}), 16);
-    }
-
     let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
     let hashAdmin = await ambBridge.ADMIN_ROLE();
@@ -159,6 +174,24 @@ describe("Contract", () => {
     const feeValue = 1000;
 
     await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
+
+    const curBalance = await getAccountBalance(addr4);
+
+    expect(curBalance).eq(prevBalance + feeValue);
+  });
+
+  it("Test fee with changing 'fee' variable", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const prevBalance = await getAccountBalance(addr4);
+    const feeValue = 4000;
+
+    await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
+    await ambBridge.connect(addr3).changeFee(feeValue);
     await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
 
     const curBalance = await getAccountBalance(addr4);
@@ -203,6 +236,74 @@ describe("Contract", () => {
     await ambBridgeTest.connect(addr3).unlockTransfersTest(2);
   });
 
+  it("Test changeMinSafetyBlocks", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedMinSafetyBlocks = 20;
+
+    await ambBridge.connect(addr3).changeMinSafetyBlocks(expectedMinSafetyBlocks)
+
+    const realMinSafetyBlocks = await ambBridge.minSafetyBlocks()
+
+    expect(realMinSafetyBlocks).eq(expectedMinSafetyBlocks);
+  });
+
+  it("Test changeTimeframeSeconds", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedTimeframeSeconds = 20000;
+
+    await ambBridge.connect(addr3).changeTimeframeSeconds(expectedTimeframeSeconds)
+
+    const realTimeframeSeconds = await ambBridge.timeframeSeconds()
+
+    expect(realTimeframeSeconds).eq(expectedTimeframeSeconds);
+  });
+
+  it("Test changeLockTime", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedLockTime = 2000;
+
+    await ambBridge.connect(addr3).changeLockTime(expectedLockTime)
+
+    const realLockTime = await ambBridge.lockTime()
+
+    expect(realLockTime).eq(expectedLockTime);
+  });
+
+  it("Test setSideBridge", async () => {
+    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
+
+    let hashAdmin = await ambBridge.ADMIN_ROLE();
+    await ambBridge.grantRole(hashAdmin, addr3.address);
+
+    const expectedSideBridgeAddress = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
+
+    await ambBridge.connect(addr3).setSideBridge(expectedSideBridgeAddress);
+
+    const realSideBridgeAddress = await ambBridge.sideBridgeAddress();
+
+    expect(realSideBridgeAddress).eq(expectedSideBridgeAddress);
+  });
+
+  it("Test blockHash", async () =>{
+    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
+    const expectedBlockHash = "0xc4ca0efd5d528d67691abd9e10e9d4ca570f16235779e1f314b036caa5b455a1"
+
+    const realBlockHash = await ambBridgeTest.blockHashTest(blockPoW);
+    expect(realBlockHash).eq(expectedBlockHash)
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
@@ -233,4 +334,8 @@ describe("Contract", () => {
     }
   };
 
+  const getAccountBalance = async (addr: any) => {
+    return parseInt(await ethers.provider.getBalance(addr.address).then(
+        (BN: BigNumber) => {return BN._hex}), 16);
+  }
 });
