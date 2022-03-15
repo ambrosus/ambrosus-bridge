@@ -96,6 +96,16 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
 
+func (b *Bridge) GetLastProcessedBlockNum() (*big.Int, error) {
+	blockHash, err := b.Contract.LastProcessedBlock(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	header, err := b.Client.HeaderByHash(context.Background(), blockHash)
+	return header.Number, err
+}
+
 // GetEventById gets contract event by id.
 func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
 	opts := &bind.FilterOpts{Context: context.Background()}

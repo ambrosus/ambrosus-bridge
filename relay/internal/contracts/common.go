@@ -83,3 +83,16 @@ type CheckPoWPoWProof struct {
 	Blocks   []CheckPoWBlockPoW
 	Transfer CommonStructsTransferProof
 }
+
+// CommonStructsConstructorArgs is an auto generated low-level Go binding around an user-defined struct.
+type CommonStructsConstructorArgs struct {
+	SideBridgeAddress  common.Address
+	RelayAddress       common.Address
+	TokenThisAddresses []common.Address
+	TokenSideAddresses []common.Address
+	Fee                *big.Int
+	FeeRecipient       common.Address
+	TimeframeSeconds   *big.Int
+	LockTime           *big.Int
+	MinSafetyBlocks    *big.Int
+}
