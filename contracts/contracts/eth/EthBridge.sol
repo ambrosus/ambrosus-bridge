@@ -4,24 +4,22 @@ pragma solidity 0.8.6;
 import "hardhat/console.sol";
 import "../common/CommonBridge.sol";
 import "../common/checks/CheckAura.sol";
+import "../common/CommonStructs.sol";
 
 
 contract EthBridge is CommonBridge, CheckAura {
     address validatorSetAddress;
 
     constructor(
-        address _sideBridgeAddress, address relayAddress,
-        address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, address payable feeRecipient_,
-        uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_,
+        CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
         address validatorSetAddress_
     )
     CommonBridge(
-        _sideBridgeAddress, relayAddress,
-        tokenThisAddresses, tokenSideAddresses,
-        fee_, feeRecipient_,
-        timeframeSeconds_, lockTime_, minSafetyBlocks_
+        args.sideBridgeAddress, args.relayAddress,
+        args.tokenThisAddresses, args.tokenSideAddresses,
+        args.fee, args.feeRecipient,
+        args.timeframeSeconds, args.lockTime, args.minSafetyBlocks
     )
     CheckAura(initialValidators)
     {

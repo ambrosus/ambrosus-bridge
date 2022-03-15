@@ -6,14 +6,9 @@ import "../common/CommonStructs.sol";
 
 contract AmbBridgeTest is AmbBridge {
     constructor(
-        address _sideBridgeAddress, address relayAddress,
-        address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, address payable feeRecipient_, uint timeframeSeconds_, uint lockTime_, uint minSafetyBlocks_
+        CommonStructs.ConstructorArgs memory args
     )
-    AmbBridge(_sideBridgeAddress, relayAddress,
-        tokenThisAddresses, tokenSideAddresses,
-        fee_, feeRecipient_, timeframeSeconds_, lockTime_, minSafetyBlocks_
-    ) {}
+    AmbBridge(args) {}
 
     function getLockedTransferTest(uint event_id, uint index) public view returns (address, address, uint) {
         CommonStructs.Transfer storage t = lockedTransfers[event_id].transfers[index];
