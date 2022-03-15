@@ -33,6 +33,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         "0x22222707319ad4beca6b5bb4086617fd6f240cfe",
       ], // initial validators
       "0x495c2707319ad4beca6b5bb4086617fd6f240cfe", // validatorSetAddress_
+      "0x4b59fc006ebe9733c339f7e0125b0a3eecc3397a75379d3bb226b4baefb08b3a", // lastProcessedBlock
     ],
     log: true,
   });

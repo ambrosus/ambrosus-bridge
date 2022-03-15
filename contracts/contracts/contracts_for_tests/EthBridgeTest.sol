@@ -8,7 +8,8 @@ contract EthBridgeTest is EthBridge {
     constructor(
         CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
-        address validatorSetAddress_
+        address validatorSetAddress_,
+        bytes32 lastProcessedBlock
     )
-    EthBridge(args, initialValidators, validatorSetAddress_) {}
+    EthBridge(args, initialValidators, validatorSetAddress_, lastProcessedBlock) {}
 }

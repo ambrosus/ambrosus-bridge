@@ -13,7 +13,8 @@ contract EthBridge is CommonBridge, CheckAura {
     constructor(
         CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
-        address validatorSetAddress_
+        address validatorSetAddress_,
+        bytes32 lastProcessedBlock_
     )
     CommonBridge(
         args.sideBridgeAddress, args.relayAddress,
@@ -26,6 +27,7 @@ contract EthBridge is CommonBridge, CheckAura {
         emitTestEvent(address(this), msg.sender, 10, true);
 
         validatorSetAddress = validatorSetAddress_;
+        lastProcessedBlock = lastProcessedBlock_;
     }
 
     function submitTransfer(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) {
