@@ -2,44 +2,56 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_sideBridgeAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "relayAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokenThisAddresses",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "tokenSideAddresses",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "fee_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "timeframeSeconds_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "lockTime_",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minSafetyBlocks_",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "address",
+            "name": "sideBridgeAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "relayAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokenThisAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokenSideAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "feeRecipient",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeframeSeconds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lockTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSafetyBlocks",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.ConstructorArgs",
+        "name": "args",
+        "type": "tuple"
       }
     ],
     "stateMutability": "nonpayable",
@@ -217,6 +229,19 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "uint256",
+        "name": "event_id",
+        "type": "uint256"
+      }
+    ],
+    "name": "TransferFinish",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "from",
         "type": "address"
@@ -225,6 +250,12 @@
         "indexed": false,
         "internalType": "uint256",
         "name": "event_id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "feeAmount",
         "type": "uint256"
       }
     ],
@@ -339,6 +370,16 @@
             "components": [
               {
                 "internalType": "bytes",
+                "name": "p0withNonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "P0withoutNonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
                 "name": "p1",
                 "type": "bytes"
               },
@@ -445,11 +486,16 @@
         "internalType": "struct CheckPoW.PoWProof",
         "name": "powProof",
         "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "sideBridgeAddress",
+        "type": "address"
       }
     ],
     "name": "CheckPoW_",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -481,112 +527,25 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "bytes",
-            "name": "p1",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes32",
-            "name": "parentOrReceiptHash",
-            "type": "bytes32"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p2",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "difficulty",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p3",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "number",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p4",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p5",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "nonce",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p6",
-            "type": "bytes"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "dataSetLookup",
-            "type": "uint256[]"
-          },
-          {
-            "internalType": "uint256[]",
-            "name": "witnessForLookup",
-            "type": "uint256[]"
-          }
-        ],
-        "internalType": "struct CheckPoW.BlockPoW",
-        "name": "block",
-        "type": "tuple"
-      }
-    ],
-    "name": "blockHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes",
-        "name": "b",
-        "type": "bytes"
-      }
-    ],
-    "name": "bytesToUint",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "fee_",
         "type": "uint256"
       }
     ],
     "name": "changeFee",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address payable",
+        "name": "feeRecipient_",
+        "type": "address"
+      }
+    ],
+    "name": "changeFeeRecipient",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -917,6 +876,16 @@
             "components": [
               {
                 "internalType": "bytes",
+                "name": "p0withNonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "P0withoutNonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
                 "name": "p1",
                 "type": "bytes"
               },
@@ -1162,6 +1131,16 @@
         "components": [
           {
             "internalType": "bytes",
+            "name": "p0withNonce",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "P0withoutNonce",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
             "name": "p1",
             "type": "bytes"
           },
@@ -1222,7 +1201,7 @@
           }
         ],
         "internalType": "struct CheckPoW.BlockPoW",
-        "name": "block",
+        "name": "block_",
         "type": "tuple"
       }
     ],

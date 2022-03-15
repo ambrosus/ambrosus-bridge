@@ -65,7 +65,7 @@
       },
       {
         "internalType": "bytes32",
-        "name": "lastProcessedBlock_",
+        "name": "lastProcessedBlock",
         "type": "bytes32"
       }
     ],
