@@ -29,6 +29,15 @@ describe("Contract", () => {
 
   let ambBridgeTest: Contract;
 
+  let tokenThisAddresses: string[];
+  let tokenSideAddresses: string[];
+  let token1: string;
+  let token2: string;
+  let token3: string;
+  let token4: string;
+  let token5: string;
+  let token6: string;
+
   before(async () => {
     await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
     ({ owner, admin, relay, user1, user2, user3 } = await getNamedAccounts());
@@ -109,53 +118,74 @@ describe("Contract", () => {
     expect(events2Eth[0].args.event_id).eq(events1Eth[0].args.event_id.add("1"));
   });
 
-  it("Test TokenAddresses", async () => {
-    let tokenThisAddresses = [
-      ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"),
-      ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"),
-      ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe"),
-    ];
-    let tokenSideAddresses = [
-      ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"),
-      ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"),
-      ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe"),
-    ];
-    for (let i = 0; i < tokenThisAddresses.length; i++) {
-      expect(await ambBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
-      expect(await ethBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
-    }
+  describe("Token addresses", () => {
+    before(async () => {
+      tokenThisAddresses = [
+        ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"),
+        ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"),
+        ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe"),
+      ];
+      tokenSideAddresses = [
+        ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"),
+        ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"),
+        ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe"),
+      ];
+      token1 = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
+      token2 = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe");
+      token3 = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe");
+      token4 = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe");
+      token5 = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe");
+      token6 = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe");
+    });
 
-    let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
-    let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe");
-    let third = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe");
-    let fourth = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe");
-    let fifth = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe");
-    let sixth = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe");
-    await ambBridge.connect(adminS).tokensAdd(first, second);
-    expect(await ambBridge.tokenAddresses(first)).eq(second);
-    await ethBridge.connect(adminS).tokensAdd(first, second);
-    expect(await ethBridge.tokenAddresses(first)).eq(second);
+    it("should token for this address == to token for side address", async () => {
+      for (let i = 0; i < tokenThisAddresses.length; i++) {
+        expect(await ambBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
+        expect(await ethBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
+      }
+    });
 
-    // batch
-    await ambBridge.connect(adminS).tokensAddBatch([third, fourth], [fifth, sixth]);
-    expect(await ambBridge.tokenAddresses(third)).eq(fifth);
-    expect(await ambBridge.tokenAddresses(fourth)).eq(sixth);
-    await ethBridge.connect(adminS).tokensAddBatch([third, fourth], [fifth, sixth]);
-    expect(await ethBridge.tokenAddresses(third)).eq(fifth);
-    expect(await ethBridge.tokenAddresses(fourth)).eq(sixth);
+    it("add tokens", async () => {
+      await ambBridge.connect(adminS).tokensAdd(token1, token2);
+      await ethBridge.connect(adminS).tokensAdd(token1, token2);
 
-    await ambBridge.connect(adminS).tokensRemove(first);
-    expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
-    await ethBridge.connect(adminS).tokensRemove(first);
-    expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
+      expect(await ambBridge.tokenAddresses(token1)).eq(token2);
+      expect(await ethBridge.tokenAddresses(token1)).eq(token2);
+    });
 
-    // batch
-    await ambBridge.connect(adminS).tokensRemoveBatch([third, fourth]);
-    expect(await ambBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
-    expect(await ambBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
-    await ethBridge.connect(adminS).tokensRemoveBatch([third, fourth]);
-    expect(await ethBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
-    expect(await ethBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
+    it("add tokens batch", async () => {
+      await ambBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
+      await ethBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
+
+      expect(await ambBridge.tokenAddresses(token3)).eq(token5);
+      expect(await ambBridge.tokenAddresses(token4)).eq(token6);
+      expect(await ethBridge.tokenAddresses(token3)).eq(token5);
+      expect(await ethBridge.tokenAddresses(token4)).eq(token6);
+    });
+
+    it("remove tokens", async () => {
+      await ambBridge.connect(adminS).tokensAdd(token1, token2);
+      await ethBridge.connect(adminS).tokensAdd(token1, token2);
+
+      await ambBridge.connect(adminS).tokensRemove(token1);
+      await ethBridge.connect(adminS).tokensRemove(token1);
+
+      expect(await ambBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
+      expect(await ethBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
+    });
+
+    it("remove tokens batch", async () => {
+      await ambBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
+      await ethBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
+
+      await ambBridge.connect(adminS).tokensRemoveBatch([token3, token4]);
+      await ethBridge.connect(adminS).tokensRemoveBatch([token3, token4]);
+
+      expect(await ambBridge.tokenAddresses(token3)).eq(ethers.constants.AddressZero);
+      expect(await ambBridge.tokenAddresses(token4)).eq(ethers.constants.AddressZero);
+      expect(await ethBridge.tokenAddresses(token3)).eq(ethers.constants.AddressZero);
+      expect(await ethBridge.tokenAddresses(token4)).eq(ethers.constants.AddressZero);
+    });
   });
 
   it("Test Ethash PoW", async () => {
