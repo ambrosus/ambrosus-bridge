@@ -23,7 +23,7 @@ contract CheckReceiptsProof {
                 p.receipt_proof[0],
                 eventContractAddress,
                 p.receipt_proof[1],
-                p.event_id,
+                toBinary(p.event_id),
                 p.receipt_proof[2],
                 abi.encode(p.transfers),
                 p.receipt_proof[3]
@@ -32,4 +32,21 @@ contract CheckReceiptsProof {
         // start from proof[4]
     }
 
+    function toBinary(uint _x) private pure returns (bytes memory) {
+        bytes memory b = new bytes(32);
+        assembly {
+            mstore(add(b, 32), _x)
+        }
+        uint i;
+        for (i = 0; i < 32; i++) {
+            if (b[i] != 0) {
+                break;
+            }
+        }
+        bytes memory res = new bytes(32 - i);
+        for (uint j = 0; j < res.length; j++) {
+            res[j] = b[i++];
+        }
+        return res;
+    }
 }
