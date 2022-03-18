@@ -46,12 +46,19 @@ func parseError(err error) string {
 	var jsonErr = err.(JsonError)
 	errStr := jsonErr.ErrorData().(string)
 
-	if strings.HasPrefix(errStr, "Reverted") {
-		errBytes, err := hex.DecodeString(errStr[11:])
-		if err == nil {
-			return string(errBytes)
-		}
+	decodedMsg, err := decodeRevertMessage(errStr)
+	if err != nil {
+		return errStr
 	}
+	return decodedMsg
+}
 
-	return errStr
+func decodeRevertMessage(errStr string) (string, error) {
+	res := errStr[138:]
+	res = strings.TrimRight(res, "0")
+	resBytes, err := hex.DecodeString(res)
+	if err != nil {
+		return "", err
+	}
+	return string(resBytes), nil
 }
