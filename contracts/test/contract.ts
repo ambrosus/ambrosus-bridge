@@ -1,14 +1,11 @@
-import {deployments, ethers, getNamedAccounts, network} from "hardhat";
-import type {Contract, ContractReceipt, ContractTransaction, Signer} from "ethers";
-import rlp from 'rlp'
+import { deployments, ethers, getNamedAccounts, network } from "hardhat";
+import type { Contract, ContractReceipt, ContractTransaction, Signer } from "ethers";
+import { BigNumber } from "ethers";
 
 import chai from "chai";
-import {BigNumber} from "ethers";
-
 
 chai.should();
 export const expect = chai.expect;
-
 
 describe("Contract", () => {
   let ownerS: Signer;
@@ -23,7 +20,7 @@ describe("Contract", () => {
 
   before(async () => {
     await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
-    ({owner} = await getNamedAccounts());
+    ({ owner } = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
 
     ethBridge = await ethers.getContract("EthBridge", ownerS);
@@ -37,41 +34,40 @@ describe("Contract", () => {
     await deployments.fixture(["ethbridge", "ambbridge", "ethash", "ambbridgetest"]); // reset contracts state
   });
 
-
-  it('TestSign', async () => {
+  it("TestSign", async () => {
     // amb main net block 16021709
 
-    const hash = "0x6a6249e2d7c2aca375164f7eb233dfa23a8c0ff7046520849894ee23dd026eaf"
+    const hash = "0x6a6249e2d7c2aca375164f7eb233dfa23a8c0ff7046520849894ee23dd026eaf";
     const msg = ethers.utils.arrayify(hash);
-    const signature = "0xe437f2d7a70044b9b7c1d98cde917b28e7e0298ab26abdbeacd3fd81de6100af5a61014a397218b4fb36230867634db0e5e40d4c17dd8b69979e52eb2fb9217e1b";
+    const signature =
+      "0xe437f2d7a70044b9b7c1d98cde917b28e7e0298ab26abdbeacd3fd81de6100af5a61014a397218b4fb36230867634db0e5e40d4c17dd8b69979e52eb2fb9217e1b";
 
     const address = ethers.utils.recoverAddress(msg, signature);
     expect(address).eq("0x7a3599b88EA2068268B763deE8B8703d21700DF3");
   });
 
-
   it("TestWithdraw timeframe", async () => {
     let [addr1, addr2] = await ethers.getSigners();
 
-    await ambBridge.withdraw(addr1.address, addr2.address, 1, {value: 1000});
-    await ambBridge.withdraw(addr1.address, addr2.address, 2, {value: 1000});
-    await ethBridge.withdraw(addr1.address, addr2.address, 1, {value: 1000});
-    await ethBridge.withdraw(addr1.address, addr2.address, 2, {value: 1000});
+    await ambBridge.withdraw(addr1.address, addr2.address, 1, { value: 1000 });
+    await ambBridge.withdraw(addr1.address, addr2.address, 2, { value: 1000 });
+    await ethBridge.withdraw(addr1.address, addr2.address, 1, { value: 1000 });
+    await ethBridge.withdraw(addr1.address, addr2.address, 2, { value: 1000 });
     await nextTimeframe();
 
     // will catch previous txs (because nextTimeframe happened)
-    let tx1Amb: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
-    let tx1Eth: ContractTransaction = await ethBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
-    await ambBridge.withdraw(addr1.address, addr2.address, 3, {value: 1000});
-    await ambBridge.withdraw(addr1.address, addr2.address, 4, {value: 1000});
-    await ethBridge.withdraw(addr1.address, addr2.address, 3, {value: 1000});
-    await ethBridge.withdraw(addr1.address, addr2.address, 4, {value: 1000});
+    let tx1Amb: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, { value: 1000 });
+    let tx1Eth: ContractTransaction = await ethBridge.withdraw(addr1.address, addr2.address, 1337, { value: 1000 });
+    await ambBridge.withdraw(addr1.address, addr2.address, 3, { value: 1000 });
+    await ambBridge.withdraw(addr1.address, addr2.address, 4, { value: 1000 });
+    await ethBridge.withdraw(addr1.address, addr2.address, 3, { value: 1000 });
+    await ethBridge.withdraw(addr1.address, addr2.address, 4, { value: 1000 });
     await nextTimeframe();
 
     // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-    let tx2Amb: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
-    let tx2Eth: ContractTransaction = await ethBridge.withdraw(addr1.address, addr2.address, 1337, {value: 1000});
-    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: 1000});
+    let tx2Amb: ContractTransaction = await ambBridge.withdraw(addr1.address, addr2.address, 1337, { value: 1000 });
+    let tx2Eth: ContractTransaction = await ethBridge.withdraw(addr1.address, addr2.address, 1337, { value: 1000 });
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, { value: 1000 });
 
     let receipt1Amb: ContractReceipt = await tx1Amb.wait();
     let receipt1Eth: ContractReceipt = await tx1Eth.wait();
@@ -80,7 +76,7 @@ describe("Contract", () => {
 
     const getEvents = async (receipt: any) => {
       return receipt.events?.filter((x: any) => {
-        return x.event == "Transfer"
+        return x.event == "Transfer";
       });
     };
 
@@ -96,8 +92,16 @@ describe("Contract", () => {
 
   it("Test TokenAddresses", async () => {
     let [_, addr2] = await ethers.getSigners();
-    let tokenThisAddresses = [ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe")];
-    let tokenSideAddresses = [ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe")];
+    let tokenThisAddresses = [
+      ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"),
+      ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"),
+      ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe"),
+    ];
+    let tokenSideAddresses = [
+      ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"),
+      ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"),
+      ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe"),
+    ];
     for (let i = 0; i < tokenThisAddresses.length; i++) {
       expect(await ambBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
       expect(await ethBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
@@ -108,11 +112,11 @@ describe("Contract", () => {
     await ethBridge.grantRole(hashAdmin, addr2.address);
 
     let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
-    let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe")
-    let third = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe")
-    let fourth = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe")
-    let fifth = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe")
-    let sixth = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe")
+    let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe");
+    let third = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe");
+    let fourth = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe");
+    let fifth = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe");
+    let sixth = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe");
     await ambBridge.connect(addr2).tokensAdd(first, second);
     expect(await ambBridge.tokenAddresses(first)).eq(second);
     await ethBridge.connect(addr2).tokensAdd(first, second);
@@ -174,7 +178,9 @@ describe("Contract", () => {
     const feeValue = 1000;
 
     await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
-    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, {
+      value: feeValue,
+    });
 
     const curBalance = await getAccountBalance(addr4);
 
@@ -192,13 +198,14 @@ describe("Contract", () => {
 
     await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
     await ambBridge.connect(addr3).changeFee(feeValue);
-    await ambBridge.withdraw(addr1.address, addr2.address, 5, {value: feeValue});
+    await ambBridge.withdraw(addr1.address, addr2.address, 5, {
+      value: feeValue,
+    });
 
     const curBalance = await getAccountBalance(addr4);
 
     expect(curBalance).eq(prevBalance + feeValue);
   });
-
 
   it("Test Transfer lock/unlock", async () => {
     let [_, __, addr3] = await ethers.getSigners();
@@ -211,20 +218,20 @@ describe("Contract", () => {
     let data1 = [
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38]
-    ]
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38],
+    ];
 
     let data2 = [
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]
-    ]
+      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41],
+    ];
 
     await ambBridgeTest.connect(addr3).lockTransfersTest(data1, 1);
     await ambBridgeTest.connect(addr3).lockTransfersTest(data2, 2);
 
     for (let i = 0; i < 3; i++) {
-      let answer  = await ambBridgeTest.getLockedTransferTest(1, i);
+      let answer = await ambBridgeTest.getLockedTransferTest(1, i);
       expect(answer[0]).eq(data1[i][0]); // Check tokenAddress is correct
       expect(answer[1]).eq(data1[i][1]); // Check toAddress is correct
       expect(parseInt(answer[2]._hex, 16)).eq(data1[i][2]); // Check amount is correct
@@ -244,9 +251,9 @@ describe("Contract", () => {
 
     const expectedMinSafetyBlocks = 20;
 
-    await ambBridge.connect(addr3).changeMinSafetyBlocks(expectedMinSafetyBlocks)
+    await ambBridge.connect(addr3).changeMinSafetyBlocks(expectedMinSafetyBlocks);
 
-    const realMinSafetyBlocks = await ambBridge.minSafetyBlocks()
+    const realMinSafetyBlocks = await ambBridge.minSafetyBlocks();
 
     expect(realMinSafetyBlocks).eq(expectedMinSafetyBlocks);
   });
@@ -259,9 +266,9 @@ describe("Contract", () => {
 
     const expectedTimeframeSeconds = 20000;
 
-    await ambBridge.connect(addr3).changeTimeframeSeconds(expectedTimeframeSeconds)
+    await ambBridge.connect(addr3).changeTimeframeSeconds(expectedTimeframeSeconds);
 
-    const realTimeframeSeconds = await ambBridge.timeframeSeconds()
+    const realTimeframeSeconds = await ambBridge.timeframeSeconds();
 
     expect(realTimeframeSeconds).eq(expectedTimeframeSeconds);
   });
@@ -274,9 +281,9 @@ describe("Contract", () => {
 
     const expectedLockTime = 2000;
 
-    await ambBridge.connect(addr3).changeLockTime(expectedLockTime)
+    await ambBridge.connect(addr3).changeLockTime(expectedLockTime);
 
-    const realLockTime = await ambBridge.lockTime()
+    const realLockTime = await ambBridge.lockTime();
 
     expect(realLockTime).eq(expectedLockTime);
   });
@@ -296,12 +303,12 @@ describe("Contract", () => {
     expect(realSideBridgeAddress).eq(expectedSideBridgeAddress);
   });
 
-  it("Test blockHash", async () =>{
+  it("Test blockHash", async () => {
     const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
-    const expectedBlockHash = "0xc4ca0efd5d528d67691abd9e10e9d4ca570f16235779e1f314b036caa5b455a1"
+    const expectedBlockHash = "0xc4ca0efd5d528d67691abd9e10e9d4ca570f16235779e1f314b036caa5b455a1";
 
     const realBlockHash = await ambBridgeTest.blockHashTest(blockPoW);
-    expect(realBlockHash).eq(expectedBlockHash)
+    expect(realBlockHash).eq(expectedBlockHash);
   });
 
   let currentTimeframe = Math.floor(Date.now() / 14400);
@@ -309,7 +316,7 @@ describe("Contract", () => {
     currentTimeframe += amount;
     const timestamp = currentTimeframe * 14400 + amount * 14400;
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
-  }
+  };
 
   const submitEpochData = async (ethashContractInstance: Contract, epoch_: any) => {
     let epoch = epoch_;
@@ -326,7 +333,14 @@ describe("Contract", () => {
           nodes = [];
           return;
         }
-        await ethashContractInstance.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution, epoch.BranchDepth, nodes, start, mnlen);
+        await ethashContractInstance.setEpochData(
+          epoch.Epoch,
+          epoch.FullSizeIn128Resolution,
+          epoch.BranchDepth,
+          nodes,
+          start,
+          mnlen
+        );
         start = start + mnlen;
         nodes = [];
       }
@@ -335,7 +349,11 @@ describe("Contract", () => {
   };
 
   const getAccountBalance = async (addr: any) => {
-    return parseInt(await ethers.provider.getBalance(addr.address).then(
-        (BN: BigNumber) => {return BN._hex}), 16);
-  }
+    return parseInt(
+      await ethers.provider.getBalance(addr.address).then((BN: BigNumber) => {
+        return BN._hex;
+      }),
+      16
+    );
+  };
 });
