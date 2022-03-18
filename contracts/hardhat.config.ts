@@ -32,7 +32,11 @@ module.exports = {
     },
     namedAccounts: {
         owner: 0,
-        user: 1,
+        admin: 1,
+        relay: 2,
+        user1: 3,
+        user2: 4,
+        user3: 5,
     },
     etherscan: {
         apiKey: "DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
