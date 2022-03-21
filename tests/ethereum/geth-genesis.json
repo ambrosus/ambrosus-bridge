@@ -13,11 +13,11 @@
     "difficulty": "1",
     "gasLimit": "8000000",
     "alloc": {
-      "0x9b2dc4c3ce1b65cc0e4d7b7264834b52835120ee": { "balance": "300000" },
-      "0xf07d4576abb48b677ff6c6dedf3a78e53582d641": { "balance": "400000" },
-      "0x48c2237dc7c433c5020acc0ef7c6b6e9d541bfdc": { "balance": "500000" },
-      "0x583c2fcbdde52f725729d353ac32513a6cb2d014": { "balance": "600000" },
-      "0xe7c4586950375fc0ed6bb9d0e3259f5e0b9e6e03": { "balance": "700000" },
-      "0x32b6f6794ce719552d740cb2fe0d68db042d09d7": { "balance": "800000" }
+      "0xf68a85eE802c66f05e9E84a91c5A252D85d96Ca1": { "balance": "300000" },
+      "0x895A4Fa73D9b20862FDcc10BE379BBd4B1f5F1a2": { "balance": "400000" },
+      "0xF2e07cC925bcFB24EC17748A163Cb283946A4Aa3": { "balance": "500000" },
+      "0x3dD223BA975Ce63AedA0f13dA3a15Ae52ca6B8a4": { "balance": "600000" },
+      "0xf4ef51f79Be8d44B14CDe988d56E1F0D7D9cF7a5": { "balance": "700000" },
+      "0xFA1d35794e06fE0B82195e371165286A5B7657a6": { "balance": "800000" }
     }
 }
