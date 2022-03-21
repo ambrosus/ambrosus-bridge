@@ -57,6 +57,7 @@ services:
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
       --verbosity 5
+      --keystore /root/keystore
       #--datadir data
       #--keystore ~/.ethereum/keystore
     ports:
@@ -69,6 +70,7 @@ services:
     restart: on-failure
     volumes:
       - geth-bootnode-data:/root
+      - ./ethereum/keystore:/root/keystore
 
   geth-rpc-endpoint:
     hostname: geth-rpc-endpoint
@@ -89,6 +91,7 @@ services:
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
       --verbosity 5
+      --keystore /root/keystore
      #--ws
      #--ws.port 3434
      #--ws.api "eth,web3,net,admin,personal"
@@ -96,8 +99,8 @@ services:
       # --datadir data
       #--keystore ~/.ethereum/keystore
     ports:
-      - "8502:8502"
-      - "3434:3434"
+      - 8502:8502
+      - 3434:3434
       - 30307:30303
     networks:
       amb-eth-net:
@@ -105,6 +108,7 @@ services:
     restart: on-failure
     volumes:
       - geth-rpc-data:/root
+      - ./ethereum/keystore:/root/keystore
 
   geth-miner:
     hostname: geth-miner
@@ -125,13 +129,14 @@ services:
       --mine
       --miner.threads 1
       --verbosity 5
+      --keystore /root/keystore
       # --txpool.locals=${LOCAL_ADDRESS}
       #--miner.gasprice 10
       #--miner.etherbase 0xa62D94F13A41F460C3BE1404AA896B393d9EE7FA
       #--datadir data
       #--keystore ~/.ethereum/keystore
     ports:
-      - "3535:3535"
+      - 3535:3535
       - 30308:30303
     networks:
       amb-eth-net:
@@ -139,6 +144,7 @@ services:
     restart: on-failure
     volumes:
       - geth-miner-data:/root
+      - ./ethereum/keystore:/root/keystore
 
 
 networks:
