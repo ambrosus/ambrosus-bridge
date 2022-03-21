@@ -13,7 +13,11 @@
     "difficulty": "1",
     "gasLimit": "8000000",
     "alloc": {
-      "7df9a875a174b3bc565e6424a0050ebc1b2d1d82": { "balance": "300000" },
-      "f41c74c9ae680c1aa78f42e5647a62f353b7bdde": { "balance": "400000" }
+      "0x9b2dc4c3ce1b65cc0e4d7b7264834b52835120ee": { "balance": "300000" },
+      "0xf07d4576abb48b677ff6c6dedf3a78e53582d641": { "balance": "400000" },
+      "0x48c2237dc7c433c5020acc0ef7c6b6e9d541bfdc": { "balance": "500000" },
+      "0x583c2fcbdde52f725729d353ac32513a6cb2d014": { "balance": "600000" },
+      "0xe7c4586950375fc0ed6bb9d0e3259f5e0b9e6e03": { "balance": "700000" },
+      "0x32b6f6794ce719552d740cb2fe0d68db042d09d7": { "balance": "800000" }
     }
 }
