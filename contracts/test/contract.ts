@@ -311,6 +311,16 @@ describe("Contract", () => {
     expect(realBlockHash).eq(expectedBlockHash)
   });
 
+  it('Withdraw: take tokens from user, they should be burned', async () => {
+    await mockERC20.setBridgeAddressesRole([ambBridge.address]);
+    await mockERC20.mint(owner, 1000);
+    await mockERC20.increaseAllowance(ambBridge.address, 1000);
+    await ambBridge.withdraw(mockERC20.address, ethers.constants.AddressZero, 1, {value: await ambBridge.fee()});
+
+    expect(await mockERC20.balanceOf(owner)).eq(999);
+    expect(await mockERC20.balanceOf(ambBridge.address)).eq(0);
+  });
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
