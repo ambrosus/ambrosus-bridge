@@ -81,7 +81,7 @@ contract CommonBridge is AccessControl {
 
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
-        require(msg.value == fee, "Sent value and fee must be same");
+        require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
