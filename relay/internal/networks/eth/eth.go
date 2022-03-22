@@ -138,7 +138,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	for {
 		if err := b.listen(); err != nil {
-			log.Error().Err(err).Msg("listen ambrosus error")
+			log.Error().Err(err).Msg("listen ethereum error")
 
 			err = b.ExternalLogger.LogError(err)
 			if err != nil {
