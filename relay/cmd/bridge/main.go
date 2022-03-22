@@ -7,10 +7,14 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 
+	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/pkgerrors"
 )
 
 func main() {
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+
 	// Initialize bridge config.
 	cfg, err := config.Init()
 	if err != nil {
