@@ -83,6 +83,7 @@ contract CommonBridge is AccessControl {
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
+        require(IERC20(tokenAmbAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);
