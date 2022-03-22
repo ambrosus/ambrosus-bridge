@@ -3,4 +3,6 @@ pragma solidity >=0.7.3 <0.9.0;
 
 import "../common/CommonBridge.sol";
 
-contract BscBridge is CommonBridge {}
+contract BscBridge is CommonBridge {
+    
+}
