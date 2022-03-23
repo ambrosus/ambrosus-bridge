@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -130,6 +131,9 @@ func (b *Bridge) getGeneratedEpochNumbers() ([]int, error) {
 	var epochs []int
 
 	for _, file := range files {
+		if filepath.Ext(file.Name()) != ".json" {
+			continue
+		}
 		name := strings.Trim(file.Name(), ".json")
 
 		epoch, err := strconv.Atoi(name)
