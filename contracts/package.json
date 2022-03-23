@@ -15,7 +15,9 @@
     "sourcify": "hardhat sourcify --network rinkeby",
     "coverage": "hardhat coverage",
     "lint": "eslint .",
-    "console": "hardhat console"
+    "console": "hardhat console",
+    "deploytokensamb": "hardhat run scripts/deployTokens.ts --network amb",
+    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network rinkeby"
   },
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.4",
