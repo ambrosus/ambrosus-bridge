@@ -42,7 +42,7 @@ contract CheckPoSA is CheckReceiptsProof {
         }
     }
 
-    function CheckBlockHeader(bytes[] memory unsignedHeader, bytes[] memory signedHeader) public {
+    function CheckBlockHeader(bytes memory unsignedHeader, bytes memory signedHeader) public {
         RLPReader.RLPItem[] memory unsignedHeaderItems = unsignedHeader
             .toRlpItem()
             .toList();
