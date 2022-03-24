@@ -14,6 +14,9 @@ contract CheckPoSA is CheckReceiptsProof {
 
     address[] private validatorSet;
 
+    mapping(bytes32 => address[]) private validatorSets;
+    mapping(bytes32 => bytes32) private blockHashes;
+
     bytes32 private longestChainEndpoint;
     uint256 private currentHeight;
 
