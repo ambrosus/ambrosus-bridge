@@ -370,12 +370,12 @@
             "components": [
               {
                 "internalType": "bytes",
-                "name": "p0withNonce",
+                "name": "p0WithNonce",
                 "type": "bytes"
               },
               {
                 "internalType": "bytes",
-                "name": "P0withoutNonce",
+                "name": "p0WithoutNonce",
                 "type": "bytes"
               },
               {
@@ -530,12 +530,12 @@
         "components": [
           {
             "internalType": "bytes",
-            "name": "p0withNonce",
+            "name": "p0WithNonce",
             "type": "bytes"
           },
           {
             "internalType": "bytes",
-            "name": "P0withoutNonce",
+            "name": "p0WithoutNonce",
             "type": "bytes"
           },
           {
@@ -1036,12 +1036,12 @@
             "components": [
               {
                 "internalType": "bytes",
-                "name": "p0withNonce",
+                "name": "p0WithNonce",
                 "type": "bytes"
               },
               {
                 "internalType": "bytes",
-                "name": "P0withoutNonce",
+                "name": "p0WithoutNonce",
                 "type": "bytes"
               },
               {
@@ -1304,12 +1304,12 @@
         "components": [
           {
             "internalType": "bytes",
-            "name": "p0withNonce",
+            "name": "p0WithNonce",
             "type": "bytes"
           },
           {
             "internalType": "bytes",
-            "name": "P0withoutNonce",
+            "name": "p0WithoutNonce",
             "type": "bytes"
           },
           {
