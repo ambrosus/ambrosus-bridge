@@ -187,8 +187,8 @@ func encodePoWBlock() error {
 		"0x" + common.Bytes2Hex(bd.Nonce),
 		"0x" + common.Bytes2Hex(bd.P6),
 
-		bigIntArrayToStringArray(bd.DataSetLookUp),
-		bigIntArrayToStringArray(bd.WitnessForLookUp),
+		bigIntArrayToStringArray(bd.DataSetLookup),
+		bigIntArrayToStringArray(bd.WitnessForLookup),
 	}
 
 	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/BlockPoW-%d.json", block.Header().Number.Uint64()))

@@ -19,7 +19,7 @@ func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBl
 		return nil, err
 	}
 
-	encodedBlock.DataSetLookUp, encodedBlock.WitnessForLookUp, err = getLookupData(header)
+	encodedBlock.DataSetLookup, encodedBlock.WitnessForLookup, err = getLookupData(header)
 	if err != nil {
 		return nil, err
 	}
