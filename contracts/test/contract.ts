@@ -1,6 +1,5 @@
-import {deployments, ethers, getNamedAccounts, network} from "hardhat";
+import {deployments, ethers, network} from "hardhat";
 import type {Contract, ContractReceipt, ContractTransaction, Signer} from "ethers";
-import rlp from 'rlp'
 
 import chai from "chai";
 import {BigNumber} from "ethers";
@@ -13,6 +12,12 @@ export const expect = chai.expect;
 describe("Contract", () => {
   let ownerS: Signer;
   let owner: string;
+  let user2S: Signer;
+  let user2: string;
+  let user3S: Signer;
+  let user3: string;
+  let user4S: Signer;
+  let user4: string;
 
   let ethBridge: Contract;
   let ambBridge: Contract;
@@ -23,8 +28,11 @@ describe("Contract", () => {
 
   before(async () => {
     await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
-    ({owner} = await getNamedAccounts());
-    ownerS = await ethers.getSigner(owner);
+    ([ownerS, user2S, user3S, user4S] = await ethers.getSigners());
+    owner = await ownerS.getAddress();
+    user2 = await user2S.getAddress();
+    user3 = await user3S.getAddress();
+    user4 = await user4S.getAddress();
 
     ethBridge = await ethers.getContract("EthBridge", ownerS);
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
@@ -51,30 +59,29 @@ describe("Contract", () => {
 
 
   it("TestWithdraw timeframe", async () => {
-    let [addr1, addr2] = await ethers.getSigners();
     await mockERC20.mint(owner, 1000000);
     await mockERC20.increaseAllowance(ambBridge.address, 1000000);
     await mockERC20.increaseAllowance(ethBridge.address, 1000000);
 
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 1, {value: 1000});
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 2, {value: 1000});
-    await ethBridge.withdraw(mockERC20.address, addr2.address, 1, {value: 1000});
-    await ethBridge.withdraw(mockERC20.address, addr2.address, 2, {value: 1000});
+    await ambBridge.withdraw(mockERC20.address, user2, 1, {value: 1000});
+    await ambBridge.withdraw(mockERC20.address, user2, 2, {value: 1000});
+    await ethBridge.withdraw(mockERC20.address, user2, 1, {value: 1000});
+    await ethBridge.withdraw(mockERC20.address, user2, 2, {value: 1000});
     await nextTimeframe();
 
     // will catch previous txs (because nextTimeframe happened)
-    let tx1Amb: ContractTransaction = await ambBridge.withdraw(mockERC20.address, addr2.address, 1337, {value: 1000});
-    let tx1Eth: ContractTransaction = await ethBridge.withdraw(mockERC20.address, addr2.address, 1337, {value: 1000});
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 3, {value: 1000});
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 4, {value: 1000});
-    await ethBridge.withdraw(mockERC20.address, addr2.address, 3, {value: 1000});
-    await ethBridge.withdraw(mockERC20.address, addr2.address, 4, {value: 1000});
+    let tx1Amb: ContractTransaction = await ambBridge.withdraw(mockERC20.address, user2, 1337, {value: 1000});
+    let tx1Eth: ContractTransaction = await ethBridge.withdraw(mockERC20.address, user2, 1337, {value: 1000});
+    await ambBridge.withdraw(mockERC20.address, user2, 3, {value: 1000});
+    await ambBridge.withdraw(mockERC20.address, user2, 4, {value: 1000});
+    await ethBridge.withdraw(mockERC20.address, user2, 3, {value: 1000});
+    await ethBridge.withdraw(mockERC20.address, user2, 4, {value: 1000});
     await nextTimeframe();
 
     // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-    let tx2Amb: ContractTransaction = await ambBridge.withdraw(mockERC20.address, addr2.address, 1337, {value: 1000});
-    let tx2Eth: ContractTransaction = await ethBridge.withdraw(mockERC20.address, addr2.address, 1337, {value: 1000});
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 5, {value: 1000});
+    let tx2Amb: ContractTransaction = await ambBridge.withdraw(mockERC20.address, user2, 1337, {value: 1000});
+    let tx2Eth: ContractTransaction = await ethBridge.withdraw(mockERC20.address, user2, 1337, {value: 1000});
+    await ambBridge.withdraw(mockERC20.address, user2, 5, {value: 1000});
 
     let receipt1Amb: ContractReceipt = await tx1Amb.wait();
     let receipt1Eth: ContractReceipt = await tx1Eth.wait();
@@ -98,7 +105,6 @@ describe("Contract", () => {
   });
 
   it("Test TokenAddresses", async () => {
-    let [_, addr2] = await ethers.getSigners();
     let tokenThisAddresses = [ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe")];
     let tokenSideAddresses = [ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"), ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe")];
     for (let i = 0; i < tokenThisAddresses.length; i++) {
@@ -107,8 +113,8 @@ describe("Contract", () => {
     }
 
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr2.address);
-    await ethBridge.grantRole(hashAdmin, addr2.address);
+    await ambBridge.grantRole(hashAdmin, user2);
+    await ethBridge.grantRole(hashAdmin, user2);
 
     let first = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
     let second = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe")
@@ -116,29 +122,29 @@ describe("Contract", () => {
     let fourth = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe")
     let fifth = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe")
     let sixth = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe")
-    await ambBridge.connect(addr2).tokensAdd(first, second);
+    await ambBridge.connect(user2S).tokensAdd(first, second);
     expect(await ambBridge.tokenAddresses(first)).eq(second);
-    await ethBridge.connect(addr2).tokensAdd(first, second);
+    await ethBridge.connect(user2S).tokensAdd(first, second);
     expect(await ethBridge.tokenAddresses(first)).eq(second);
 
     // batch
-    await ambBridge.connect(addr2).tokensAddBatch([third, fourth], [fifth, sixth]);
+    await ambBridge.connect(user2S).tokensAddBatch([third, fourth], [fifth, sixth]);
     expect(await ambBridge.tokenAddresses(third)).eq(fifth);
     expect(await ambBridge.tokenAddresses(fourth)).eq(sixth);
-    await ethBridge.connect(addr2).tokensAddBatch([third, fourth], [fifth, sixth]);
+    await ethBridge.connect(user2S).tokensAddBatch([third, fourth], [fifth, sixth]);
     expect(await ethBridge.tokenAddresses(third)).eq(fifth);
     expect(await ethBridge.tokenAddresses(fourth)).eq(sixth);
 
-    await ambBridge.connect(addr2).tokensRemove(first);
+    await ambBridge.connect(user2S).tokensRemove(first);
     expect(await ambBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
-    await ethBridge.connect(addr2).tokensRemove(first);
+    await ethBridge.connect(user2S).tokensRemove(first);
     expect(await ethBridge.tokenAddresses(first)).eq("0x0000000000000000000000000000000000000000");
 
     // batch
-    await ambBridge.connect(addr2).tokensRemoveBatch([third, fourth]);
+    await ambBridge.connect(user2S).tokensRemoveBatch([third, fourth]);
     expect(await ambBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
     expect(await ambBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
-    await ethBridge.connect(addr2).tokensRemoveBatch([third, fourth]);
+    await ethBridge.connect(user2S).tokensRemoveBatch([third, fourth]);
     expect(await ethBridge.tokenAddresses(third)).eq("0x0000000000000000000000000000000000000000");
     expect(await ethBridge.tokenAddresses(fourth)).eq("0x0000000000000000000000000000000000000000");
   });
@@ -168,50 +174,46 @@ describe("Contract", () => {
   });
 
   it("Test fee", async () => {
-    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
     await mockERC20.mint(owner, 1000000);
     await mockERC20.increaseAllowance(ambBridge.address, 1000000);
 
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr3.address);
+    await ambBridge.grantRole(hashAdmin, user3);
 
-    const prevBalance = await getAccountBalance(addr4);
+    const prevBalance = await getAccountBalance(user4S);
     const feeValue = 1000;
 
-    await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 5, {value: feeValue});
+    await ambBridge.connect(user3S).changeFeeRecipient(user4);
+    await ambBridge.withdraw(mockERC20.address, user2, 5, {value: feeValue});
 
-    const curBalance = await getAccountBalance(addr4);
+    const curBalance = await getAccountBalance(user4S);
 
     expect(curBalance).eq(prevBalance + feeValue);
   });
 
   it("Test fee with changing 'fee' variable", async () => {
-    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
     await mockERC20.mint(owner, 1000000);
     await mockERC20.increaseAllowance(ambBridge.address, 1000000);
 
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr3.address);
+    await ambBridge.grantRole(hashAdmin, user3);
 
-    const prevBalance = await getAccountBalance(addr4);
+    const prevBalance = await getAccountBalance(user4S);
     const feeValue = 4000;
 
-    await ambBridge.connect(addr3).changeFeeRecipient(addr4.address);
-    await ambBridge.connect(addr3).changeFee(feeValue);
-    await ambBridge.withdraw(mockERC20.address, addr2.address, 5, {value: feeValue});
+    await ambBridge.connect(user3S).changeFeeRecipient(user4);
+    await ambBridge.connect(user3S).changeFee(feeValue);
+    await ambBridge.withdraw(mockERC20.address, user2, 5, {value: feeValue});
 
-    const curBalance = await getAccountBalance(addr4);
+    const curBalance = await getAccountBalance(user4S);
 
     expect(curBalance).eq(prevBalance + feeValue);
   });
 
 
   it("Test Transfer lock/unlock", async () => {
-    let [_, __, addr3] = await ethers.getSigners();
-
     let hashRelay = await ambBridgeTest.RELAY_ROLE();
-    await ambBridgeTest.grantRole(hashRelay, addr3.address);
+    await ambBridgeTest.grantRole(hashRelay, user3);
 
     await mockERC20.mint(ambBridgeTest.address, 900);
 
@@ -227,8 +229,8 @@ describe("Contract", () => {
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41]
     ]
 
-    await ambBridgeTest.connect(addr3).lockTransfersTest(data1, 1);
-    await ambBridgeTest.connect(addr3).lockTransfersTest(data2, 2);
+    await ambBridgeTest.connect(user3S).lockTransfersTest(data1, 1);
+    await ambBridgeTest.connect(user3S).lockTransfersTest(data2, 2);
 
     for (let i = 0; i < 3; i++) {
       let answer  = await ambBridgeTest.getLockedTransferTest(1, i);
@@ -239,19 +241,17 @@ describe("Contract", () => {
 
     await nextTimeframe();
 
-    await ambBridgeTest.connect(addr3).unlockTransfersTest(1);
-    await ambBridgeTest.connect(addr3).unlockTransfersTest(2);
+    await ambBridgeTest.connect(user3S).unlockTransfersTest(1);
+    await ambBridgeTest.connect(user3S).unlockTransfersTest(2);
   });
 
   it("Test changeMinSafetyBlocks", async () => {
-    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
-
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr3.address);
+    await ambBridge.grantRole(hashAdmin, user3);
 
     const expectedMinSafetyBlocks = 20;
 
-    await ambBridge.connect(addr3).changeMinSafetyBlocks(expectedMinSafetyBlocks)
+    await ambBridge.connect(user3S).changeMinSafetyBlocks(expectedMinSafetyBlocks)
 
     const realMinSafetyBlocks = await ambBridge.minSafetyBlocks()
 
@@ -259,14 +259,12 @@ describe("Contract", () => {
   });
 
   it("Test changeTimeframeSeconds", async () => {
-    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
-
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr3.address);
+    await ambBridge.grantRole(hashAdmin, user3);
 
     const expectedTimeframeSeconds = 20000;
 
-    await ambBridge.connect(addr3).changeTimeframeSeconds(expectedTimeframeSeconds)
+    await ambBridge.connect(user3S).changeTimeframeSeconds(expectedTimeframeSeconds)
 
     const realTimeframeSeconds = await ambBridge.timeframeSeconds()
 
@@ -274,14 +272,12 @@ describe("Contract", () => {
   });
 
   it("Test changeLockTime", async () => {
-    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
-
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr3.address);
+    await ambBridge.grantRole(hashAdmin, user3);
 
     const expectedLockTime = 2000;
 
-    await ambBridge.connect(addr3).changeLockTime(expectedLockTime)
+    await ambBridge.connect(user3S).changeLockTime(expectedLockTime)
 
     const realLockTime = await ambBridge.lockTime()
 
@@ -289,14 +285,12 @@ describe("Contract", () => {
   });
 
   it("Test setSideBridge", async () => {
-    let [addr1, addr2, addr3, addr4] = await ethers.getSigners();
-
     let hashAdmin = await ambBridge.ADMIN_ROLE();
-    await ambBridge.grantRole(hashAdmin, addr3.address);
+    await ambBridge.grantRole(hashAdmin, user3);
 
     const expectedSideBridgeAddress = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
 
-    await ambBridge.connect(addr3).setSideBridge(expectedSideBridgeAddress);
+    await ambBridge.connect(user3S).setSideBridge(expectedSideBridgeAddress);
 
     const realSideBridgeAddress = await ambBridge.sideBridgeAddress();
 
