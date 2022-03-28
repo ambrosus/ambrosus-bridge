@@ -31,8 +31,39 @@ describe("Validators", () => {
 
 
   it('Test checkpow', async () => {
-// todo
+    const block = require("./data-pow/block-pow-checkpow.json");
+    const block_ = [  // blocks[0]
+      block.P0WithNonce,
+      block.P0WithoutNonce,
+      block.P1,
+      block.PrevHashOrReceiptRoot,
+      block.P2,
+      block.Difficulty,
+      block.P3,
+      block.Number,
+      block.P4,
+      block.P5,
+      block.Nonce,
+      block.P6,
+
+      [0],
+      [0]
+    ]
+
+
+    const receipt_proof = require("./data-pow/receipt-proof-checkpow.json");
+    const transfer = ["0xc4b907fc242097D47eFd47f36eaee5Da2C239aDd", "0x8FC84c829d9cB1982f2121F135624E25aac679A9", 10]
+    const transfer_proof = [receipt_proof, 1, [transfer]]
+
+    const powProof = [
+      [block_],
+      transfer_proof
+    ]
+
+    await ambBridge.CheckPoW_(powProof, ethers.utils.getAddress("0xd34baced0bf45ad4752783ad610450d0167ef6c7"));
     /*
+// todo
+
 
     // all data from go relay, https://rinkeby.etherscan.io/address/0x295C2707319ad4BecA6b5bb4086617fD6F240CfE
 
