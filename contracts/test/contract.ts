@@ -111,29 +111,13 @@ describe("Contract", () => {
   });
 
   describe("Token addresses", () => {
-    const tokenThisAddresses = [
-      "0x195c2707319ad4beca6b5bb4086617fd6f240cfe",
-      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",
-      "0x395c2707319ad4beca6b5bb4086617fd6f240cfe",
-    ];
-    const tokenSideAddresses = [
-      "0x495c2707319ad4beca6b5bb4086617fd6f240cfe",
-      "0x595c2707319ad4beca6b5bb4086617fd6f240cfe",
-      "0x695c2707319ad4beca6b5bb4086617fd6f240cfe",
-    ];
-    const token1 = "0x13372707319ad4beca6b5bb4086617fd6f240cfe";
-    const token2 = "0x12282707319ad4beca6b5bb4086617fd6f240cfe";
-    const token3 = "0x11192707319ad4beca6b5bb4086617fd6f240cfe";
-    const token4 = "0x10002707319ad4beca6b5bb4086617fd6f240cfe";
-    const token5 = "0x99992707319ad4beca6b5bb4086617fd6f240cfe";
-    const token6 = "0x88882707319ad4beca6b5bb4086617fd6f240cfe";
+    const token1 = "0x0000000000000000000000000000000000000001";
+    const token2 = "0x0000000000000000000000000000000000000002";
+    const token3 = "0x0000000000000000000000000000000000000003";
+    const token4 = "0x0000000000000000000000000000000000000004";
 
-    it("should token for this address == to token for side address", async () => {
-      for (let i = 0; i < tokenThisAddresses.length; i++) {
-        expect(await ambBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
-        expect(await ethBridge.tokenAddresses(tokenThisAddresses[i])).eq(tokenSideAddresses[i]);
-      }
-    });
+    // const tokenThisAddresses = [token1, token2];
+    // const tokenSideAddresses = [token3, token4];
 
     it("add tokens", async () => {
       await ambBridge.connect(adminS).tokensAdd(token1, token2);
@@ -144,13 +128,13 @@ describe("Contract", () => {
     });
 
     it("add tokens batch", async () => {
-      await ambBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
-      await ethBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
+      await ambBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
+      await ethBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
 
-      expect(await ambBridge.tokenAddresses(token3)).eq(token5);
-      expect(await ambBridge.tokenAddresses(token4)).eq(token6);
-      expect(await ethBridge.tokenAddresses(token3)).eq(token5);
-      expect(await ethBridge.tokenAddresses(token4)).eq(token6);
+      expect(await ambBridge.tokenAddresses(token1)).eq(token3);
+      expect(await ambBridge.tokenAddresses(token2)).eq(token4);
+      expect(await ethBridge.tokenAddresses(token1)).eq(token3);
+      expect(await ethBridge.tokenAddresses(token2)).eq(token4);
     });
 
     it("remove tokens", async () => {
@@ -165,16 +149,16 @@ describe("Contract", () => {
     });
 
     it("remove tokens batch", async () => {
-      await ambBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
-      await ethBridge.connect(adminS).tokensAddBatch([token3, token4], [token5, token6]);
+      await ambBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
+      await ethBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
 
-      await ambBridge.connect(adminS).tokensRemoveBatch([token3, token4]);
-      await ethBridge.connect(adminS).tokensRemoveBatch([token3, token4]);
+      await ambBridge.connect(adminS).tokensRemoveBatch([token1, token2]);
+      await ethBridge.connect(adminS).tokensRemoveBatch([token1, token2]);
 
-      expect(await ambBridge.tokenAddresses(token3)).eq(ethers.constants.AddressZero);
-      expect(await ambBridge.tokenAddresses(token4)).eq(ethers.constants.AddressZero);
-      expect(await ethBridge.tokenAddresses(token3)).eq(ethers.constants.AddressZero);
-      expect(await ethBridge.tokenAddresses(token4)).eq(ethers.constants.AddressZero);
+      expect(await ambBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
+      expect(await ambBridge.tokenAddresses(token2)).eq(ethers.constants.AddressZero);
+      expect(await ethBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
+      expect(await ethBridge.tokenAddresses(token2)).eq(ethers.constants.AddressZero);
     });
   });
 
