@@ -10,6 +10,8 @@ export const expect = chai.expect;
 const adminRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
 const relayRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
 
+const FEE = 1000;
+
 describe("Contract", () => {
   let ownerS: Signer;
 
@@ -77,25 +79,26 @@ describe("Contract", () => {
   });
 
   it("TestWithdraw timeframe", async () => {
-    await ambBridge.withdraw(user1, user2, 1, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 2, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 1, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 2, { value: 1000 });
+    const doWithdraw = async (bridge: Contract, tokenAddress: string, toAddress: string) => {
+      await bridge.withdraw(tokenAddress, toAddress, 1, { value: FEE });
+      await bridge.withdraw(tokenAddress, toAddress, 2, { value: FEE });
+    }
+
+    await doWithdraw(ambBridge, user1, user2);
+    await doWithdraw(ethBridge, user1, user2);
     await nextTimeframe();
 
     // will catch previous txs (because nextTimeframe happened)
-    let tx1Amb: ContractTransaction = await ambBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    let tx1Eth: ContractTransaction = await ethBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 3, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 4, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 3, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 4, { value: 1000 });
+    let tx1Amb: ContractTransaction = await ambBridge.withdraw(user1, user2, 1337, { value: FEE });
+    let tx1Eth: ContractTransaction = await ethBridge.withdraw(user1, user2, 1337, { value: FEE });
+    await doWithdraw(ambBridge, user1, user2);
+    await doWithdraw(ethBridge, user1, user2);
     await nextTimeframe();
 
     // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-    let tx2Amb: ContractTransaction = await ambBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    let tx2Eth: ContractTransaction = await ethBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 5, { value: 1000 });
+    let tx2Amb: ContractTransaction = await ambBridge.withdraw(user1, user2, 1337, { value: FEE });
+    let tx2Eth: ContractTransaction = await ethBridge.withdraw(user1, user2, 1337, { value: FEE });
+    await ambBridge.withdraw(user1, user2, 5, { value: FEE });
 
     let receipt1Amb: ContractReceipt = await tx1Amb.wait();
     let receipt1Eth: ContractReceipt = await tx1Eth.wait();
