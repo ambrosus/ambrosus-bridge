@@ -48,12 +48,7 @@ func (b *Bridge) SubmitEpochData(
 		return b.getFailureReasonViaCall(
 			txErr,
 			"setEpochData",
-			epoch,
-			fullSizeIn128Resultion,
-			branchDepth,
-			nodes,
-			start,
-			merkelNodesNumber,
+			epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber,
 		)
 	}
 
