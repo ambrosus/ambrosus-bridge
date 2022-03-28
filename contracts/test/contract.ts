@@ -25,18 +25,8 @@ describe("Contract", () => {
   let ethBridge: Contract;
   let ambBridge: Contract;
   let mockERC20: Contract;
-  let ethash: Contract;
-
   let ambBridgeTest: Contract;
 
-  let tokenThisAddresses: string[];
-  let tokenSideAddresses: string[];
-  let token1: string;
-  let token2: string;
-  let token3: string;
-  let token4: string;
-  let token5: string;
-  let token6: string;
 
   before(async () => {
     await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
@@ -48,7 +38,6 @@ describe("Contract", () => {
     ethBridge = await ethers.getContract("EthBridge", ownerS);
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
-    ethash = await ethers.getContract("Ethash", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
 
     await ambBridge.grantRole(ADMIN_ROLE, admin);
@@ -122,24 +111,22 @@ describe("Contract", () => {
   });
 
   describe("Token addresses", () => {
-    before(async () => {
-      tokenThisAddresses = [
-        "0x195c2707319ad4beca6b5bb4086617fd6f240cfe",
-        "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",
-        "0x395c2707319ad4beca6b5bb4086617fd6f240cfe",
-      ];
-      tokenSideAddresses = [
-        "0x495c2707319ad4beca6b5bb4086617fd6f240cfe",
-        "0x595c2707319ad4beca6b5bb4086617fd6f240cfe",
-        "0x695c2707319ad4beca6b5bb4086617fd6f240cfe",
-      ];
-      token1 = "0x13372707319ad4beca6b5bb4086617fd6f240cfe";
-      token2 = "0x12282707319ad4beca6b5bb4086617fd6f240cfe";
-      token3 = "0x11192707319ad4beca6b5bb4086617fd6f240cfe";
-      token4 = "0x10002707319ad4beca6b5bb4086617fd6f240cfe";
-      token5 = "0x99992707319ad4beca6b5bb4086617fd6f240cfe";
-      token6 = "0x88882707319ad4beca6b5bb4086617fd6f240cfe";
-    });
+    const tokenThisAddresses = [
+      "0x195c2707319ad4beca6b5bb4086617fd6f240cfe",
+      "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",
+      "0x395c2707319ad4beca6b5bb4086617fd6f240cfe",
+    ];
+    const tokenSideAddresses = [
+      "0x495c2707319ad4beca6b5bb4086617fd6f240cfe",
+      "0x595c2707319ad4beca6b5bb4086617fd6f240cfe",
+      "0x695c2707319ad4beca6b5bb4086617fd6f240cfe",
+    ];
+    const token1 = "0x13372707319ad4beca6b5bb4086617fd6f240cfe";
+    const token2 = "0x12282707319ad4beca6b5bb4086617fd6f240cfe";
+    const token3 = "0x11192707319ad4beca6b5bb4086617fd6f240cfe";
+    const token4 = "0x10002707319ad4beca6b5bb4086617fd6f240cfe";
+    const token5 = "0x99992707319ad4beca6b5bb4086617fd6f240cfe";
+    const token6 = "0x88882707319ad4beca6b5bb4086617fd6f240cfe";
 
     it("should token for this address == to token for side address", async () => {
       for (let i = 0; i < tokenThisAddresses.length; i++) {
