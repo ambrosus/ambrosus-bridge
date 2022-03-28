@@ -87,10 +87,6 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 		return data, err
 	}
 
-	if err := ethash.DeleteDatasetFile(epoch, ethash.DefaultDir); err != nil {
-		return data, err
-	}
-
 	return data, nil
 }
 

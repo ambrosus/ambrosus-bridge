@@ -52,8 +52,6 @@ func (s *BlockMetaData) buildDagTree() {
 	s.DatasetTree = merkle.NewDatasetTree()
 	s.DatasetTree.RegisterIndex(indices...)
 
-	MakeDataset(s.blockNumber, DefaultDir)
-
 	fullSize := DatasetSize(s.blockNumber)
 	fullSizeIn128Resolution := fullSize / 128
 	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
