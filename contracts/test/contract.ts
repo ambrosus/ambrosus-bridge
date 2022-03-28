@@ -121,21 +121,21 @@ describe("Contract", () => {
   describe("Token addresses", () => {
     before(async () => {
       tokenThisAddresses = [
-        ethers.utils.getAddress("0x195c2707319ad4beca6b5bb4086617fd6f240cfe"),
-        ethers.utils.getAddress("0x295c2707319ad4beca6b5bb4086617fd6f240cfe"),
-        ethers.utils.getAddress("0x395c2707319ad4beca6b5bb4086617fd6f240cfe"),
+        "0x195c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x295c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x395c2707319ad4beca6b5bb4086617fd6f240cfe",
       ];
       tokenSideAddresses = [
-        ethers.utils.getAddress("0x495c2707319ad4beca6b5bb4086617fd6f240cfe"),
-        ethers.utils.getAddress("0x595c2707319ad4beca6b5bb4086617fd6f240cfe"),
-        ethers.utils.getAddress("0x695c2707319ad4beca6b5bb4086617fd6f240cfe"),
+        "0x495c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x595c2707319ad4beca6b5bb4086617fd6f240cfe",
+        "0x695c2707319ad4beca6b5bb4086617fd6f240cfe",
       ];
-      token1 = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
-      token2 = ethers.utils.getAddress("0x12282707319ad4beca6b5bb4086617fd6f240cfe");
-      token3 = ethers.utils.getAddress("0x11192707319ad4beca6b5bb4086617fd6f240cfe");
-      token4 = ethers.utils.getAddress("0x10002707319ad4beca6b5bb4086617fd6f240cfe");
-      token5 = ethers.utils.getAddress("0x99992707319ad4beca6b5bb4086617fd6f240cfe");
-      token6 = ethers.utils.getAddress("0x88882707319ad4beca6b5bb4086617fd6f240cfe");
+      token1 = "0x13372707319ad4beca6b5bb4086617fd6f240cfe";
+      token2 = "0x12282707319ad4beca6b5bb4086617fd6f240cfe";
+      token3 = "0x11192707319ad4beca6b5bb4086617fd6f240cfe";
+      token4 = "0x10002707319ad4beca6b5bb4086617fd6f240cfe";
+      token5 = "0x99992707319ad4beca6b5bb4086617fd6f240cfe";
+      token6 = "0x88882707319ad4beca6b5bb4086617fd6f240cfe";
     });
 
     it("should token for this address == to token for side address", async () => {
@@ -303,7 +303,7 @@ describe("Contract", () => {
   });
 
   it("Test setSideBridge", async () => {
-    const expectedSideBridgeAddress = ethers.utils.getAddress("0x13372707319ad4beca6b5bb4086617fd6f240cfe");
+    const expectedSideBridgeAddress = "0x13372707319ad4beca6b5bb4086617fd6f240cfe";
 
     await ambBridge.connect(adminS).setSideBridge(expectedSideBridgeAddress);
 
