@@ -131,3 +131,8 @@ deployments/
 
 # Mac OS
 .DS_Store
+
+tests/amb/apollo*/chains
+tests/amb/apollo*/cache
+tests/amb/apollo*/signer
+!tests/.env

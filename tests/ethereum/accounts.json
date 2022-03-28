@@ -1,0 +1,28 @@
+{
+    "accounts": [
+        {
+            "address": "0xf68a85eE802c66f05e9E84a91c5A252D85d96Ca1",
+            "private_key": "51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc"
+        },
+        {
+            "address": "0x895A4Fa73D9b20862FDcc10BE379BBd4B1f5F1a2",
+            "private_key": "e7420b6492b8c876d23cd8a1156e35af4bc5dc5703fb4b79b376cb268a718e2e"
+        },
+        {
+            "address": "0xF2e07cC925bcFB24EC17748A163Cb283946A4Aa3",
+            "private_key": "7af1aa43914bbd5c736edde627b96c3be5a3ba9aa22a76466364e4e26e8dbaf6"
+        },
+        {
+            "address": "0x3dD223BA975Ce63AedA0f13dA3a15Ae52ca6B8a4",
+            "private_key": "a8153acfbf881b76ea5fd15832c3dca1673c82b9391f266201314b2309ecf582"
+        },
+        {
+            "address": "0xf4ef51f79Be8d44B14CDe988d56E1F0D7D9cF7a5",
+            "private_key": "5886495a028fe9b2a43e7109d11e8ebe5cb4de50df6209a5b46b2e546a1fd812"
+        },
+        {
+            "address": "0xFA1d35794e06fE0B82195e371165286A5B7657a6",
+            "private_key": "8bce7ea6ab32246950d680841fcdd817e2e33bf3ff0acce391920b663ef16f5a"
+        }
+    ]
+}

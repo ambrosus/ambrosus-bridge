@@ -1,0 +1,35 @@
+[parity]
+base_path = "/opt/apollo"
+mode = "active"
+chain = "/opt/apollo/chain.json"
+
+[footprint]
+cache_size_db = 100
+pruning = "fast"
+
+[network]
+warp = false
+nat = "extip:10.0.0.11"
+reserved_peers = "/opt/apollo/reserved.txt"
+
+[rpc]
+apis = ["web3", "eth", "net", "parity", "traces"]
+interface = "all"
+cors = ["*"]
+
+[websockets]
+apis = ["web3", "eth", "pubsub", "net"]
+interface = "all"
+origins = ["all"]
+
+[ipc]
+disable = true
+
+[account]
+password = ["/opt/apollo/password"]
+
+[mining]
+engine_signer = "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0"
+reseal_on_txs = "none"
+force_sealing = true
+extra_data = "Apollo v3.3.3-amb1.0.1"

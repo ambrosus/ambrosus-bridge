@@ -1,0 +1,25 @@
+{
+    "Accounts": [
+        {
+          "name": "operations",
+          "balance": "350000000000000000000000000",
+          "address": "0x8FC84c829d9cB1982f2121F135624E25aac679A9",
+          "secret": "0xa13544fa635e2bfbdd7bf76df752724a58363778c3ccbc4f04d6fa6b733a9bd9",
+          "private_key": "0xa13544fa635e2bfbdd7bf76df752724a58363778c3ccbc4f04d6fa6b733a9bd9"
+        },
+        {
+          "name": "hermes",
+          "balance": "100000000000000000000000",
+          "address": "0xD643214ba815F461F7bFaD9f214b9132c2a2020b",
+          "secret": "0x92407218d5ea489f569cb03cdce8e1bc736fd7b6c285ac9824ff0d968b83f0fa",
+          "private_key": "0x92407218d5ea489f569cb03cdce8e1bc736fd7b6c285ac9824ff0d968b83f0fa"
+        },
+        {
+          "name": "atlas",
+          "balance": "76000000000000000000000",
+          "address": "0x549dFC6d0585a561ee7BC7F66b7705fd927c169f",
+          "secret": "0x5cc3aa10b8e1b9a9eb251d54112fd134e0358a9ba25ef9a5bf9210c433d05681",
+          "private_key": "0x5cc3aa10b8e1b9a9eb251d54112fd134e0358a9ba25ef9a5bf9210c433d05681"
+        }
+    ]
+}
