@@ -162,30 +162,6 @@ describe("Contract", () => {
     });
   });
 
-  it("Test Ethash PoW", async () => {
-    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
-    const epoch = require("../../relay/cmd/dump-test-data/epoch-475.json");
-
-    await submitEpochData(ambBridge, epoch);
-    expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
-
-    await ambBridge.verifyEthash(blockPoW);
-  });
-
-  it("Test setEpochData deleting old epochs", async () => {
-    const epoch1 = require("../../relay/assets/testdata/epoch-475.json");
-    const epoch2 = require("../../relay/assets/testdata/epoch-476.json");
-    const epoch3 = require("../../relay/assets/testdata/epoch-477.json");
-
-    await submitEpochData(ambBridge, epoch1);
-    await submitEpochData(ambBridge, epoch2);
-    expect(await ambBridge.isEpochDataSet(epoch1.Epoch)).to.be.true;
-    await submitEpochData(ambBridge, epoch3);
-    expect(await ambBridge.isEpochDataSet(epoch1.Epoch)).to.be.false;
-    expect(await ambBridge.isEpochDataSet(epoch2.Epoch)).to.be.true;
-    expect(await ambBridge.isEpochDataSet(epoch3.Epoch)).to.be.true;
-  });
-
   it("Test fee", async () => {
     const prevBalance = await getAccountBalance(user3);
     const feeValue = 1000;
@@ -286,13 +262,6 @@ describe("Contract", () => {
     expect(realSideBridgeAddress).eq(expectedSideBridgeAddress);
   });
 
-  it("Test blockHash", async () => {
-    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
-    const expectedBlockHash = "0xc4ca0efd5d528d67691abd9e10e9d4ca570f16235779e1f314b036caa5b455a1";
-
-    const realBlockHash = await ambBridgeTest.blockHashTest(blockPoW);
-    expect(realBlockHash).eq(expectedBlockHash);
-  });
 
   it('Test CalcTransferReceiptsHash', async () => {
     const receiptProof = require("./data-pow/receipt-proof-checkpow.json");
@@ -306,51 +275,12 @@ describe("Contract", () => {
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 
-  it("Test GetValidatorSet", async () => {
-    // deploy script contains two validators in constructor
-    const validator1 = ethers.utils.getAddress("0x11112707319ad4beca6b5bb4086617fd6f240cfe");
-    const validator2 = ethers.utils.getAddress("0x22222707319ad4beca6b5bb4086617fd6f240cfe");
-    const expectedValidatorSet = [validator1, validator2];
-
-    expect(await ethBridge.GetValidatorSet()).eql(expectedValidatorSet)
-  })
-
 
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;
     const timestamp = currentTimeframe * 14400 + amount * 14400;
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
-  };
-
-  const submitEpochData = async (ethashContractInstance: Contract, epoch_: any) => {
-    let epoch = epoch_;
-    let start = 0;
-    let nodes: any = [];
-    let mnlen = 0;
-    let index = 0;
-    for (let mn of epoch.MerkleNodes) {
-      nodes.push(mn);
-      if (nodes.length === 40 || index === epoch.MerkleNodes.length - 1) {
-        mnlen = nodes.length;
-        if (index < 440 && epoch.Number === 128) {
-          start = start + mnlen;
-          nodes = [];
-          return;
-        }
-        await ethashContractInstance.setEpochData(
-          epoch.Epoch,
-          epoch.FullSizeIn128Resolution,
-          epoch.BranchDepth,
-          nodes,
-          start,
-          mnlen
-        );
-        start = start + mnlen;
-        nodes = [];
-      }
-      index++;
-    }
   };
 
   const getAccountBalance = async (addr: string) => {
