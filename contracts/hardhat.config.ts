@@ -35,9 +35,10 @@ module.exports = {
         admin: 1,
         relay: 2,
         bridge: 3,
-        user1: 4,
-        user2: 5,
-        user3: 6,
+        user: 4,
+        user1: 5,
+        user2: 6,
+        user3: 7,
     },
     etherscan: {
         apiKey: "DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
