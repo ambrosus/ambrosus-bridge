@@ -8,7 +8,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await hre.deployments.deploy("MockERC20", {
         contract: "MockERC20",
         from: owner,
-        args: [],
+        args: [
+            ["0xa74393612236d7927edc3947161e7efc2eca7769"] // bridgeAddresses
+        ],
         log: true,
     });
 

@@ -8,8 +8,8 @@ import "hardhat/console.sol";
 
 contract CheckPoW is CheckReceiptsProof, Ethash  {
     struct BlockPoW {
-        bytes p0withNonce;
-        bytes P0withoutNonce;
+        bytes p0WithNonce;
+        bytes p0WithoutNonce;
 
         bytes p1;
         bytes32 parentOrReceiptHash;
@@ -47,7 +47,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
                 abi.encodePacked(
-                    block_.p0withNonce,
+                    block_.p0WithNonce,
                     block_.p1,
                     block_.parentOrReceiptHash,
                     block_.p2,
@@ -78,7 +78,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
 
     function blockHashWithoutNonce(BlockPoW memory block_) private pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
-            block_.P0withoutNonce,
+            block_.p0WithoutNonce,
             block_.p1,
             block_.parentOrReceiptHash,
             block_.p2,

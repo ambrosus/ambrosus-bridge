@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -86,10 +87,6 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 		return data, err
 	}
 
-	if err := ethash.DeleteDatasetFile(epoch, ethash.DefaultDir); err != nil {
-		return data, err
-	}
-
 	return data, nil
 }
 
@@ -130,6 +127,9 @@ func (b *Bridge) getGeneratedEpochNumbers() ([]int, error) {
 	var epochs []int
 
 	for _, file := range files {
+		if filepath.Ext(file.Name()) != ".json" {
+			continue
+		}
 		name := strings.Trim(file.Name(), ".json")
 
 		epoch, err := strconv.Atoi(name)
@@ -162,7 +162,7 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 	for i := epoch; i <= length; i++ {
 		if err := b.checkEpochDataFile(i); err != nil {
 			if errors.Is(err, ErrEpochDataFileNotFound) {
-				if _, err := b.createEpochDataFile(epoch); err != nil {
+				if _, err := b.createEpochDataFile(i); err != nil {
 					return err
 				}
 

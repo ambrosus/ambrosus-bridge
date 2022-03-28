@@ -23,12 +23,12 @@ import (
 const BridgeName = "ethereum"
 
 type Bridge struct {
-	Client         *ethclient.Client
-	Contract       *contracts.Eth
-	sideBridge     networks.BridgeReceiveEthash
-	auth           *bind.TransactOpts
-	cfg            *config.ETHConfig
-	ExternalLogger external_logger.ExternalLogger
+	Client     *ethclient.Client
+	Contract   *contracts.Eth
+	sideBridge networks.BridgeReceiveEthash
+	auth       *bind.TransactOpts
+	cfg        *config.ETHConfig
+	logger     external_logger.ExternalLogger
 }
 
 // New creates a new ethereum bridge.
@@ -62,7 +62,13 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
-	return &Bridge{Client: client, Contract: contract, auth: auth, cfg: cfg, ExternalLogger: externalLogger}, nil
+	return &Bridge{
+		Client:   client,
+		Contract: contract,
+		auth:     auth,
+		cfg:      cfg,
+		logger:   externalLogger,
+	}, nil
 }
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
@@ -138,9 +144,9 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	for {
 		if err := b.listen(); err != nil {
-			log.Error().Err(err).Msg("listen ambrosus error")
+			log.Error().Err(err).Msg("listen ethereum error")
 
-			err = b.ExternalLogger.LogError(err)
+			err = b.logger.LogError(err)
 			if err != nil {
 				log.Error().Err(err).Msg("external logger error")
 			}

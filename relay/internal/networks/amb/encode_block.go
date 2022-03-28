@@ -2,12 +2,10 @@ package amb
 
 import (
 	"bytes"
-	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
@@ -42,8 +40,8 @@ func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
 	}
 
 	// seal part
-	step := common.Hex2Bytes(fmt.Sprintf("%x", header.Step)) // int -> bytes
-	signature := common.Hex2Bytes(header.Signature)
+	step := header.Step()
+	signature := header.Signature()
 
 	stepPrefix, err := rlpPrefix(step)
 	if err != nil {

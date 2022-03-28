@@ -74,8 +74,8 @@ type CheckPoWBlockPoW struct {
 
 	P6 []byte
 
-	DataSetLookUp    []*big.Int
-	WitnessForLookUp []*big.Int
+	DataSetLookup    []*big.Int
+	WitnessForLookup []*big.Int
 }
 
 // CheckPoWPoWProof is an auto generated low-level Go binding around an user-defined struct.

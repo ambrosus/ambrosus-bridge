@@ -310,6 +310,28 @@ describe("Contract", () => {
     expect(realBlockHash).eq(expectedBlockHash);
   });
 
+  it('Test CalcTransferReceiptsHash', async () => {
+    const receiptProof = require("./data-pow/receipt-proof-checkpow.json");
+    const transferProof = [
+      receiptProof, 1,
+      [["0xc4b907fc242097D47eFd47f36eaee5Da2C239aDd", "0x8FC84c829d9cB1982f2121F135624E25aac679A9", 10]]
+    ];
+    const sideBridgeAddress = "0xd34baced0bf45ad4752783ad610450d0167ef6c7";
+
+    expect(await ambBridge.CalcTransferReceiptsHash(transferProof, sideBridgeAddress))
+      .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
+  });
+
+  it("Test GetValidatorSet", async () => {
+    // deploy script contains two validators in constructor
+    const validator1 = ethers.utils.getAddress("0x11112707319ad4beca6b5bb4086617fd6f240cfe");
+    const validator2 = ethers.utils.getAddress("0x22222707319ad4beca6b5bb4086617fd6f240cfe");
+    const expectedValidatorSet = [validator1, validator2];
+
+    expect(await ethBridge.GetValidatorSet()).eql(expectedValidatorSet)
+  })
+
+
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
     currentTimeframe += amount;

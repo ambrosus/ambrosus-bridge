@@ -392,7 +392,8 @@ contract Ethash is SHA3_512 {
 
         // we store only previous and current epochs
         // so, delete second from the end epoch
-        delete epochData[epoch - 2];
+        if (epoch >= 2)  // underflow check
+            delete epochData[epoch - 2];
     }
 
     function getMerkleLeave( uint epochIndex, uint p ) view internal returns(uint) {
