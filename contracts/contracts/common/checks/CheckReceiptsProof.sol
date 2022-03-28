@@ -32,6 +32,7 @@ contract CheckReceiptsProof {
         // start from proof[4]
     }
 
+
     function toBinary(uint _x) private pure returns (bytes memory) {
         bytes memory b = new bytes(32);
         assembly {
