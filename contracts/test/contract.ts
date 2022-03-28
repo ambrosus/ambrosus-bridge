@@ -7,8 +7,8 @@ import chai from "chai";
 chai.should();
 export const expect = chai.expect;
 
-const adminRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
-const relayRole = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
+const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
+const RELAY_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
 
 describe("Contract", () => {
   let ownerS: Signer;
@@ -51,13 +51,13 @@ describe("Contract", () => {
     ethash = await ethers.getContract("Ethash", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
 
-    await ambBridge.grantRole(adminRole, admin);
-    await ambBridgeTest.grantRole(adminRole, admin);
-    await ethBridge.grantRole(adminRole, admin);
+    await ambBridge.grantRole(ADMIN_ROLE, admin);
+    await ambBridgeTest.grantRole(ADMIN_ROLE, admin);
+    await ethBridge.grantRole(ADMIN_ROLE, admin);
 
-    await ambBridge.grantRole(relayRole, relay);
-    await ambBridgeTest.grantRole(relayRole, relay);
-    await ethBridge.grantRole(relayRole, relay);
+    await ambBridge.grantRole(RELAY_ROLE, relay);
+    await ambBridgeTest.grantRole(RELAY_ROLE, relay);
+    await ethBridge.grantRole(RELAY_ROLE, relay);
   });
 
   beforeEach(async () => {
