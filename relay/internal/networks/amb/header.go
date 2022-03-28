@@ -42,9 +42,7 @@ type Header struct {
 	Time        *hexutil.Uint64 `json:"timestamp"`
 	Extra       *hexutil.Bytes  `json:"extraData"`
 
-	SealFields []string `json:"sealFields"`
-	Step       uint64   `json:"step,string"`
-	Signature  string   `json:"signature"`
+	SealFields []hexutil.Bytes `json:"sealFields"`
 }
 
 func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
@@ -52,7 +50,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 		Jsonrpc: "2.0",
 		Id:      1,
 		Method:  "eth_getBlockByNumber",
-		Params:  []interface{}{hexutil.EncodeBig(number), true},
+		Params:  []interface{}{hexutil.EncodeBig(number), false},
 	}
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
@@ -62,9 +60,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		err = resp.Body.Close()
-	}()
+	defer resp.Body.Close()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
@@ -86,10 +82,7 @@ func (h *Header) Rlp(withSeal bool) ([]byte, error) {
 	}
 
 	if withSeal {
-		headerAsSlice = append(headerAsSlice,
-			common.Hex2Bytes(fmt.Sprintf("%x", h.Step)), // int -> bytes
-			common.Hex2Bytes(h.Signature),
-		)
+		headerAsSlice = append(headerAsSlice, h.Step(), h.Signature())
 	}
 
 	return rlp.EncodeToBytes(headerAsSlice)
@@ -101,4 +94,14 @@ func (h *Header) Hash(seal bool) common.Hash {
 		return common.Hash{}
 	}
 	return common.BytesToHash(mytrie.Hash(rlp_))
+}
+
+func (h *Header) Step() (r []byte) {
+	_ = rlp.DecodeBytes(h.SealFields[0], &r)
+	return
+}
+
+func (h *Header) Signature() (r []byte) {
+	_ = rlp.DecodeBytes(h.SealFields[1], &r)
+	return
 }

@@ -22,14 +22,14 @@ import (
 const BridgeName = "ambrosus"
 
 type Bridge struct {
-	Client         *ethclient.Client
-	Contract       *contracts.Amb
-	ContractRaw    *contracts.AmbRaw
-	VSContract     *contracts.Vs
-	HttpUrl        string // TODO: delete this field
-	sideBridge     networks.BridgeReceiveAura
-	auth           *bind.TransactOpts
-	ExternalLogger external_logger.ExternalLogger
+	Client      *ethclient.Client
+	Contract    *contracts.Amb
+	ContractRaw *contracts.AmbRaw
+	VSContract  *contracts.Vs
+	HttpUrl     string // TODO: delete this field
+	sideBridge  networks.BridgeReceiveAura
+	auth        *bind.TransactOpts
+	logger      external_logger.ExternalLogger
 }
 
 func (b *Bridge) SubmitEpochData(
@@ -48,12 +48,7 @@ func (b *Bridge) SubmitEpochData(
 		return b.getFailureReasonViaCall(
 			txErr,
 			"setEpochData",
-			epoch,
-			fullSizeIn128Resultion,
-			branchDepth,
-			nodes,
-			start,
-			merkelNodesNumber,
+			epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber,
 		)
 	}
 
@@ -98,13 +93,13 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}
 
 	return &Bridge{
-		Client:         client,
-		Contract:       contract,
-		ContractRaw:    &contracts.AmbRaw{Contract: contract},
-		VSContract:     vsContract,
-		HttpUrl:        "https://network.ambrosus.io",
-		auth:           auth,
-		ExternalLogger: externalLogger,
+		Client:      client,
+		Contract:    contract,
+		ContractRaw: &contracts.AmbRaw{Contract: contract},
+		VSContract:  vsContract,
+		HttpUrl:     cfg.URL,
+		auth:        auth,
+		logger:      externalLogger,
 	}, nil
 }
 
@@ -154,7 +149,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 		if err := b.listen(); err != nil {
 			log.Error().Err(err).Msg("listen ambrosus error")
 
-			err = b.ExternalLogger.LogError(err)
+			err = b.logger.LogError(err)
 			if err != nil {
 				log.Error().Err(err).Msg("external logger error")
 			}
