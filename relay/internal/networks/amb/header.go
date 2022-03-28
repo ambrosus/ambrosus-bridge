@@ -62,9 +62,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func() {
-		err = resp.Body.Close()
-	}()
+	defer resp.Body.Close()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
