@@ -52,7 +52,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 		Jsonrpc: "2.0",
 		Id:      1,
 		Method:  "eth_getBlockByNumber",
-		Params:  []interface{}{hexutil.EncodeBig(number), true},
+		Params:  []interface{}{hexutil.EncodeBig(number), false},
 	}
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
