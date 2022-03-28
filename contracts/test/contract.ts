@@ -77,30 +77,33 @@ describe("Contract", () => {
   });
 
   it("TestWithdraw timeframe", async () => {
-    await ambBridge.withdraw(user1, user2, 1, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 2, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 1, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 2, { value: 1000 });
+    await ambBridge.withdraw(mockERC20.address, user1, 1, { value: 1000 });
+    await ambBridge.withdraw(mockERC20.address, user1, 2, { value: 1000 });
+    await ethBridge.withdraw(mockERC20.address, user1, 1, { value: 1000 });
+    await ethBridge.withdraw(mockERC20.address, user1, 2, { value: 1000 });
     await nextTimeframe();
 
     // will catch previous txs (because nextTimeframe happened)
-    let tx1Amb: ContractTransaction = await ambBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    let tx1Eth: ContractTransaction = await ethBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 3, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 4, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 3, { value: 1000 });
-    await ethBridge.withdraw(user1, user2, 4, { value: 1000 });
+    let tx1Amb: ContractTransaction = await ambBridge.withdraw(mockERC20.address, user1, 1337, { value: 1000 });
+    let tx1Eth: ContractTransaction = await ethBridge.withdraw(mockERC20.address, user1, 1337, { value: 1000 });
+    await ambBridge.withdraw(mockERC20.address, user1, 3, { value: 1000 });
+    await ambBridge.withdraw(mockERC20.address, user1, 4, { value: 1000 });
+    await ethBridge.withdraw(mockERC20.address, user1, 3, { value: 1000 });
+    await ethBridge.withdraw(mockERC20.address, user1, 4, { value: 1000 });
     await nextTimeframe();
 
     // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-    let tx2Amb: ContractTransaction = await ambBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    let tx2Eth: ContractTransaction = await ethBridge.withdraw(user1, user2, 1337, { value: 1000 });
-    await ambBridge.withdraw(user1, user2, 5, { value: 1000 });
+    let tx2Amb: ContractTransaction = await ambBridge.withdraw(mockERC20.address, user1, 1337, { value: 1000 });
+    let tx2Eth: ContractTransaction = await ethBridge.withdraw(mockERC20.address, user1, 1337, { value: 1000 });
+    await ambBridge.withdraw(mockERC20.address, user1, 5, { value: 1000 });
 
     let receipt1Amb: ContractReceipt = await tx1Amb.wait();
     let receipt1Eth: ContractReceipt = await tx1Eth.wait();
     let receipt2Amb: ContractReceipt = await tx2Amb.wait();
     let receipt2Eth: ContractReceipt = await tx2Eth.wait();
+
+    // todo check erc20 balance changed
+    // todo use truffle helpers for catch events
 
     const getEvents = async (receipt: any) => {
       return receipt.events?.filter((x: any) => {
