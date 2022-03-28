@@ -102,7 +102,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		Contract:       contract,
 		ContractRaw:    &contracts.AmbRaw{Contract: contract},
 		VSContract:     vsContract,
-		HttpUrl:        "https://network.ambrosus.io",
+		HttpUrl:        cfg.URL,
 		auth:           auth,
 		ExternalLogger: externalLogger,
 	}, nil
