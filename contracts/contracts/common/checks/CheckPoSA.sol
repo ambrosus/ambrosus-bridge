@@ -19,6 +19,7 @@ contract CheckPoSA is CheckReceiptsProof {
 
     bytes32 private longestChainEndpoint;
     uint256 private currentHeight;
+    bytes32 private genesisBlockHash;
 
     uint256 private constant MIX_HASH = 0;
     uint256 private constant DIFF_NO_TURN = 1;
@@ -28,10 +29,18 @@ contract CheckPoSA is CheckReceiptsProof {
     uint256 private constant EXTRA_SEAL_LENGTH = 65;
     uint256 private constant EPOCH_LENGTH = 200;
 
-    constructor(address[] memory _initialValidators) {
+    constructor(
+        address[] memory _initialValidators,
+        bytes32 _genesisBlockHash,
+        uint256 _currentHeight
+    ) {
         require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
 
         validatorSet = _initialValidators;
+        genesisBlockHash = _genesisBlockHash;
+        blockHashes[genesisBlockHash] = _genesisBlockHash;
+        currentHeight = _currentHeight;
+        longestChainEndpoint = _genesisBlockHash;
     }
 
     function CheckPoSA_(bytes[] memory unsignedHeader, bytes[] memory signedHeader) public {
