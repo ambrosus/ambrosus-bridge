@@ -23,7 +23,9 @@ const BridgeName = "ambrosus"
 
 type Bridge struct {
 	Client      *ethclient.Client
+	WsClient    *ethclient.Client
 	Contract    *contracts.Amb
+	WsContract  *contracts.Amb
 	ContractRaw *contracts.AmbRaw
 	VSContract  *contracts.Vs
 	config      *config.AMBConfig
@@ -57,16 +59,32 @@ func (b *Bridge) SubmitEpochData(
 
 // New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	// Creating a new ethereum client.
-	client, err := ethclient.Dial(cfg.URL)
+	// Creating a new ethereum client (HTTP & WS).
+	client, err := ethclient.Dial(cfg.HttpURL)
 	if err != nil {
 		return nil, err
 	}
+	// Compatibility with tests.
+	var wsClient *ethclient.Client
+	if cfg.WsURL != "" {
+		wsClient, err = ethclient.Dial(cfg.WsURL)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-	// Creating a new ambrosus bridge contract instance.
+	// Creating a new ambrosus bridge contract instance (HTTP & WS).
 	contract, err := contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, err
+	}
+	// Compatibility with tests.
+	var wsContract *contracts.Amb
+	if wsClient != nil {
+		wsContract, err = contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), wsClient)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	// Creating a new ambrosus VS contract instance.
@@ -94,7 +112,9 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 
 	return &Bridge{
 		Client:      client,
+		WsClient:    wsClient,
 		Contract:    contract,
+		WsContract:  wsContract,
 		ContractRaw: &contracts.AmbRaw{Contract: contract},
 		VSContract:  vsContract,
 		config:      cfg,
@@ -220,7 +240,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	if err := ethereum.WaitForBlock(b.Client, event.Raw.BlockNumber+safetyBlocks); err != nil {
+	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return err
 	}
 

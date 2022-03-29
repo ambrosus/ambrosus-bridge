@@ -25,7 +25,8 @@ type (
 	}
 
 	Network struct {
-		URL          string `mapstructure:"url"`
+		HttpURL      string `mapstructure:"http-url"`
+		WsURL        string `mapstructure:"ws-url"`
 		ContractAddr string `mapstructure:"contract-addr"`
 		PrivateKey   *ecdsa.PrivateKey
 	}
