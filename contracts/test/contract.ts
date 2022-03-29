@@ -66,6 +66,10 @@ describe("Contract", () => {
   });
 
   it("TestWithdraw timeframe", async () => {
+    await mockERC20.mint(owner, 10000);
+    await mockERC20.increaseAllowance(ambBridge.address, 5000);
+    await mockERC20.increaseAllowance(ethBridge.address, 5000);
+
     await ambBridge.withdraw(mockERC20.address, user1, 1, {value: 1000});
     await ambBridge.withdraw(mockERC20.address, user1, 2, {value: 1000});
     await ethBridge.withdraw(mockERC20.address, user1, 1, {value: 1000});
