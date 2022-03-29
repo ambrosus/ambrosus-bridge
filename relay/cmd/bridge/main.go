@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
@@ -13,7 +15,8 @@ import (
 )
 
 func main() {
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	// Initialize logger.
+	initLogger()
 
 	// Initialize bridge config.
 	cfg, err := config.Init()
@@ -43,5 +46,17 @@ func main() {
 	// Prometheus endpoint
 	if err = metric.ServeEndpoint(cfg.Prometheus.Ip, cfg.Prometheus.Port); err != nil {
 		log.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
+	}
+}
+
+func initLogger() {
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+
+	debug := (os.Getenv("DEBUG") == "true")
+
+	if debug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	} else {
+		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 }

@@ -57,6 +57,8 @@ func (b *Bridge) SubmitEpochData(
 
 // New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+	log.Debug().Msg("Creating ambrosus bridge...")
+
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
@@ -143,14 +145,17 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
+	log.Debug().Msg("Running ambrosus bridge...")
+
 	b.sideBridge = sideBridge
+
+	log.Info().Msg("Ambrosus bridge runned!")
 
 	for {
 		if err := b.listen(); err != nil {
 			log.Error().Err(err).Msg("listen ambrosus error")
 
-			err = b.logger.LogError(err)
-			if err != nil {
+			if err := b.logger.LogError(err); err != nil {
 				log.Error().Err(err).Msg("external logger error")
 			}
 		}
@@ -185,6 +190,8 @@ func (b *Bridge) checkOldEvents() error {
 }
 
 func (b *Bridge) listen() error {
+	log.Debug().Msg("Listening ambrosus...")
+
 	err := b.checkOldEvents()
 	if err != nil {
 		return err

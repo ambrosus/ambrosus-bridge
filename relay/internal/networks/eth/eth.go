@@ -33,6 +33,8 @@ type Bridge struct {
 
 // New creates a new ethereum bridge.
 func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+	log.Debug().Msg("Creating ethereum bridge...")
+
 	// Creating a new ethereum client.
 	client, err := ethclient.Dial(cfg.URL)
 	if err != nil {
@@ -131,8 +133,11 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
+	log.Debug().Msg("Running ethereum bridge...")
+
 	b.sideBridge = sideBridge
 
+	//
 	blockNumber, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
 		log.Error().Err(err).Msg("error getting last block number")
@@ -142,12 +147,13 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 		log.Error().Err(err).Msg("error checking epoch data dir")
 	}
 
+	log.Info().Msg("Ethereum bridge runned!")
+
 	for {
 		if err := b.listen(); err != nil {
 			log.Error().Err(err).Msg("listen ethereum error")
 
-			err = b.logger.LogError(err)
-			if err != nil {
+			if err := b.logger.LogError(err); err != nil {
 				log.Error().Err(err).Msg("external logger error")
 			}
 		}
@@ -182,6 +188,8 @@ func (b *Bridge) checkOldEvents() error {
 }
 
 func (b *Bridge) listen() error {
+	log.Debug().Msg("Listening ethereum...")
+
 	err := b.checkOldEvents()
 	if err != nil {
 		return err
