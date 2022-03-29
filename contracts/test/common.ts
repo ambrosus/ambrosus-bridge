@@ -30,7 +30,7 @@ describe("Common tests", () => {
 
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest"]);
     ({owner, relay, user, user2, user3} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
@@ -54,7 +54,7 @@ describe("Common tests", () => {
   });
 
   beforeEach(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "ethash", "ambbridgetest"]); // reset contracts state
+    await deployments.fixture(["ethbridge", "ambbridge", "ambbridgetest"]); // reset contracts state
   });
 
   it("TestSign", async () => {
