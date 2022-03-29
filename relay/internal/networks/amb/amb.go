@@ -26,7 +26,7 @@ type Bridge struct {
 	Contract    *contracts.Amb
 	ContractRaw *contracts.AmbRaw
 	VSContract  *contracts.Vs
-	HttpUrl     string // TODO: delete this field
+	config      *config.AMBConfig
 	sideBridge  networks.BridgeReceiveAura
 	auth        *bind.TransactOpts
 	logger      external_logger.ExternalLogger
@@ -97,7 +97,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		Contract:    contract,
 		ContractRaw: &contracts.AmbRaw{Contract: contract},
 		VSContract:  vsContract,
-		HttpUrl:     cfg.URL,
+		config:      cfg,
 		auth:        auth,
 		logger:      externalLogger,
 	}, nil

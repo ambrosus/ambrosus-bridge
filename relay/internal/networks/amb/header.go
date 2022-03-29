@@ -56,7 +56,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
 		return nil, err
 	}
-	resp, err := http.Post(b.HttpUrl, "application/json", payloadBuf)
+	resp, err := http.Post(b.config.HttpURL, "application/json", payloadBuf)
 	if err != nil {
 		return nil, err
 	}
