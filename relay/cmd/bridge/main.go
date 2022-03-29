@@ -52,9 +52,7 @@ func main() {
 func initLogger() {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-	debug := (os.Getenv("DEBUG") == "true")
-
-	if debug {
+	if os.Getenv("DEBUG") == "true" {
 		zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	} else {
 		zerolog.SetGlobalLevel(zerolog.InfoLevel)

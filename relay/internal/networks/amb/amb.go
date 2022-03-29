@@ -165,8 +165,6 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
-	log.Debug().Str("bridge", BridgeName).Msg("Running ambrosus bridge...")
-
 	b.sideBridge = sideBridge
 
 	log.Info().Str("bridge", BridgeName).Msg("Ambrosus bridge runned!")
