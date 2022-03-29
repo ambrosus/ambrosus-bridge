@@ -21,8 +21,8 @@ func CheckProof(proof [][]byte, proofElements [][]byte) common.Hash {
 		els = append(els, proof[i], le)
 	}
 	els = append(els, proof[wrapProofsCount-1])
-	// el now == rlpLog from `CalcProf`
-	el := helpers.BytesConcat(els...)
+
+	el := mytrie.Hash(helpers.BytesConcat(els...))
 
 	// compute trie root
 	for i := wrapProofsCount; i < len(proof); i += 2 {
@@ -50,6 +50,16 @@ func CalcProof(receipts []*types.Receipt, log *types.Log, proofElements [][]byte
 	if err != nil {
 		return nil, err
 	}
+
+	/*
+		these bytes are next to each other, so merge
+		trieResult[0] + logResult[0]
+		and
+		logResult[-1] + trieResult[1]
+	*/
+	logResult[0] = append(trieResult[0], logResult[0]...)
+	logResult[len(logResult)-1] = append(logResult[len(logResult)-1], trieResult[1]...)
+	trieResult = trieResult[2:]
 
 	return append(logResult, trieResult...), nil
 }

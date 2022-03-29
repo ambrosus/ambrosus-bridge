@@ -174,4 +174,9 @@ contract CommonBridge is AccessControl {
             delete tokenAddresses[tokenThisAddresses[i]];
     }
 
+    // internal
+
+    function checkEventId(uint event_id) internal {
+        require(event_id == ++inputEventId, "EventId out of order");
+    }
 }

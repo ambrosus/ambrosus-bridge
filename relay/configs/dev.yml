@@ -1,10 +1,12 @@
 network:
   amb:
-    url: wss://network.ambrosus-dev.io
+    http-url: https://network.ambrosus-dev.io
+    ws-url: wss://network.ambrosus-dev.io
     contract-addr:
     vs-contract-addr: 
   eth:
-    url: wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c
+    http-url: https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c
+    ws-url: wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c
     contract-addr:
     epoch-length: 3
 
