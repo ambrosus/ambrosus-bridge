@@ -11,11 +11,8 @@ const RELAY_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE")
 
 describe("Check PoW", () => {
   let ownerS: Signer;
-
-  let adminS: Signer;
   let relayS: Signer;
   let owner: string;
-  let admin: string;
   let relay: string;
 
   let ambBridge: Contract;
@@ -24,16 +21,15 @@ describe("Check PoW", () => {
 
   before(async () => {
     await deployments.fixture(["ambbridge", "ambbridgetest"]);
-    ({owner, admin, relay} = await getNamedAccounts());
+    ({owner, relay} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
-    adminS = await ethers.getSigner(admin);
     relayS = await ethers.getSigner(relay);
 
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
 
-    await ambBridge.grantRole(ADMIN_ROLE, admin);
-    await ambBridgeTest.grantRole(ADMIN_ROLE, admin);
+    await ambBridge.grantRole(ADMIN_ROLE, owner);
+    await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
 
     await ambBridge.grantRole(RELAY_ROLE, relay);
     await ambBridgeTest.grantRole(RELAY_ROLE, relay);

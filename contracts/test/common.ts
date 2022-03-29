@@ -20,8 +20,6 @@ describe("Common tests", () => {
   let user: string;
 
   // todo remove as redundant
-  let adminS: Signer;
-  let admin: string;
   let user2: string;
   let user3: string;
 
@@ -33,9 +31,8 @@ describe("Common tests", () => {
 
   before(async () => {
     await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ethash", "ambbridgetest"]);
-    ({owner, admin, relay, user, user2, user3} = await getNamedAccounts());
+    ({owner, relay, user, user2, user3} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
-    adminS = await ethers.getSigner(admin);
     relayS = await ethers.getSigner(relay);
     userS = await ethers.getSigner(user);
 
@@ -44,9 +41,9 @@ describe("Common tests", () => {
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
 
-    await ambBridge.grantRole(ADMIN_ROLE, admin);
-    await ambBridgeTest.grantRole(ADMIN_ROLE, admin);
-    await ethBridge.grantRole(ADMIN_ROLE, admin);
+    await ambBridge.grantRole(ADMIN_ROLE, owner);
+    await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
+    await ethBridge.grantRole(ADMIN_ROLE, owner);
 
     await ambBridge.grantRole(RELAY_ROLE, relay);
     await ambBridgeTest.grantRole(RELAY_ROLE, relay);
@@ -131,16 +128,16 @@ describe("Common tests", () => {
     // const tokenSideAddresses = [token3, token4];
 
     it("add tokens", async () => {
-      await ambBridge.connect(adminS).tokensAdd(token1, token2);
-      await ethBridge.connect(adminS).tokensAdd(token1, token2);
+      await ambBridge.tokensAdd(token1, token2);
+      await ethBridge.tokensAdd(token1, token2);
 
       expect(await ambBridge.tokenAddresses(token1)).eq(token2);
       expect(await ethBridge.tokenAddresses(token1)).eq(token2);
     });
 
     it("add tokens batch", async () => {
-      await ambBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
-      await ethBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
+      await ambBridge.tokensAddBatch([token1, token2], [token3, token4]);
+      await ethBridge.tokensAddBatch([token1, token2], [token3, token4]);
 
       expect(await ambBridge.tokenAddresses(token1)).eq(token3);
       expect(await ambBridge.tokenAddresses(token2)).eq(token4);
@@ -149,22 +146,22 @@ describe("Common tests", () => {
     });
 
     it("remove tokens", async () => {
-      await ambBridge.connect(adminS).tokensAdd(token1, token2);
-      await ethBridge.connect(adminS).tokensAdd(token1, token2);
+      await ambBridge.tokensAdd(token1, token2);
+      await ethBridge.tokensAdd(token1, token2);
 
-      await ambBridge.connect(adminS).tokensRemove(token1);
-      await ethBridge.connect(adminS).tokensRemove(token1);
+      await ambBridge.tokensRemove(token1);
+      await ethBridge.tokensRemove(token1);
 
       expect(await ambBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
       expect(await ethBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
     });
 
     it("remove tokens batch", async () => {
-      await ambBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
-      await ethBridge.connect(adminS).tokensAddBatch([token1, token2], [token3, token4]);
+      await ambBridge.tokensAddBatch([token1, token2], [token3, token4]);
+      await ethBridge.tokensAddBatch([token1, token2], [token3, token4]);
 
-      await ambBridge.connect(adminS).tokensRemoveBatch([token1, token2]);
-      await ethBridge.connect(adminS).tokensRemoveBatch([token1, token2]);
+      await ambBridge.tokensRemoveBatch([token1, token2]);
+      await ethBridge.tokensRemoveBatch([token1, token2]);
 
       expect(await ambBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
       expect(await ambBridge.tokenAddresses(token2)).eq(ethers.constants.AddressZero);
@@ -179,7 +176,7 @@ describe("Common tests", () => {
 
     const feeValue = 1000;
 
-    await ambBridge.connect(adminS).changeFeeRecipient(user);
+    await ambBridge.changeFeeRecipient(user);
     await expect(
       () => ambBridge.withdraw(mockERC20.address, user2, 5, {value: feeValue})
     ).to.changeEtherBalance(userS, feeValue);
@@ -220,7 +217,7 @@ describe("Common tests", () => {
   it("Test changeMinSafetyBlocks", async () => {
     const expectedMinSafetyBlocks = 20;
 
-    await ambBridge.connect(adminS).changeMinSafetyBlocks(expectedMinSafetyBlocks);
+    await ambBridge.changeMinSafetyBlocks(expectedMinSafetyBlocks);
 
     const realMinSafetyBlocks = await ambBridge.minSafetyBlocks();
 
@@ -230,7 +227,7 @@ describe("Common tests", () => {
   it("Test changeTimeframeSeconds", async () => {
     const expectedTimeframeSeconds = 20000;
 
-    await ambBridge.connect(adminS).changeTimeframeSeconds(expectedTimeframeSeconds);
+    await ambBridge.changeTimeframeSeconds(expectedTimeframeSeconds);
 
     const realTimeframeSeconds = await ambBridge.timeframeSeconds();
 
@@ -240,7 +237,7 @@ describe("Common tests", () => {
   it("Test changeLockTime", async () => {
     const expectedLockTime = 2000;
 
-    await ambBridge.connect(adminS).changeLockTime(expectedLockTime);
+    await ambBridge.changeLockTime(expectedLockTime);
 
     const realLockTime = await ambBridge.lockTime();
 
@@ -250,7 +247,7 @@ describe("Common tests", () => {
   it("Test setSideBridge", async () => {
     const expectedSideBridgeAddress = "0x00000000000000000000000000000000000b00BA";
 
-    await ambBridge.connect(adminS).setSideBridge(expectedSideBridgeAddress);
+    await ambBridge.setSideBridge(expectedSideBridgeAddress);
 
     const realSideBridgeAddress = await ambBridge.sideBridgeAddress();
 
