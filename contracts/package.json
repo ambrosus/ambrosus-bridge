@@ -17,7 +17,8 @@
     "lint": "eslint .",
     "console": "hardhat console",
     "deploytokensamb": "hardhat run scripts/deployTokens.ts --network amb",
-    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network rinkeby"
+    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network rinkeby",
+    "integration": "hardhat test scripts/integration-tests/main.ts"
   },
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.4",
