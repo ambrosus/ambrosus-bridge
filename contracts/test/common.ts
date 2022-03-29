@@ -174,12 +174,10 @@ describe("Common tests", () => {
     await mockERC20.mint(owner, 5);
     await mockERC20.increaseAllowance(ambBridge.address, 5);
 
-    const feeValue = 1000;
-
     await ambBridge.changeFeeRecipient(user);
     await expect(
-      () => ambBridge.withdraw(mockERC20.address, user2, 5, {value: feeValue})
-    ).to.changeEtherBalance(userS, feeValue);
+      () => ambBridge.withdraw(mockERC20.address, user2, 5, {value: 1000})
+    ).to.changeEtherBalance(userS, 1000);
 
   });
 
@@ -215,43 +213,23 @@ describe("Common tests", () => {
   });
 
   it("Test changeMinSafetyBlocks", async () => {
-    const expectedMinSafetyBlocks = 20;
-
-    await ambBridge.changeMinSafetyBlocks(expectedMinSafetyBlocks);
-
-    const realMinSafetyBlocks = await ambBridge.minSafetyBlocks();
-
-    expect(realMinSafetyBlocks).eq(expectedMinSafetyBlocks);
+    await ambBridge.changeMinSafetyBlocks(20);
+    expect(await ambBridge.minSafetyBlocks()).eq(20);
   });
 
   it("Test changeTimeframeSeconds", async () => {
-    const expectedTimeframeSeconds = 20000;
-
-    await ambBridge.changeTimeframeSeconds(expectedTimeframeSeconds);
-
-    const realTimeframeSeconds = await ambBridge.timeframeSeconds();
-
-    expect(realTimeframeSeconds).eq(expectedTimeframeSeconds);
+    await ambBridge.changeTimeframeSeconds(20000);
+    expect(await ambBridge.timeframeSeconds()).eq(20000);
   });
 
   it("Test changeLockTime", async () => {
-    const expectedLockTime = 2000;
-
-    await ambBridge.changeLockTime(expectedLockTime);
-
-    const realLockTime = await ambBridge.lockTime();
-
-    expect(realLockTime).eq(expectedLockTime);
+    await ambBridge.changeLockTime(2000);
+    expect(await ambBridge.lockTime()).eq(2000);
   });
 
   it("Test setSideBridge", async () => {
-    const expectedSideBridgeAddress = "0x00000000000000000000000000000000000b00BA";
-
-    await ambBridge.setSideBridge(expectedSideBridgeAddress);
-
-    const realSideBridgeAddress = await ambBridge.sideBridgeAddress();
-
-    expect(realSideBridgeAddress).eq(expectedSideBridgeAddress);
+    await ambBridge.setSideBridge(mockERC20.address);
+    expect(await ambBridge.sideBridgeAddress()).eq(mockERC20.address);
   });
 
 
