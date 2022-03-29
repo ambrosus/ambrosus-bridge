@@ -163,28 +163,14 @@ describe("Contract", () => {
   });
 
   it("Test fee", async () => {
+    await mockERC20.mint(owner, 5);
+    await mockERC20.increaseAllowance(ambBridge.address, 5);
+
     const prevBalance = await getAccountBalance(user3);
     const feeValue = 1000;
 
     await ambBridge.connect(adminS).changeFeeRecipient(user3);
-    await ambBridge.withdraw(user1, user2, 5, {
-      value: feeValue,
-    });
-
-    const curBalance = await getAccountBalance(user3);
-
-    expect(curBalance).eq(prevBalance + feeValue);
-  });
-
-  it("Test fee with changing 'fee' variable", async () => {
-    const prevBalance = await getAccountBalance(user3);
-    const feeValue = 1000;
-
-    await ambBridge.connect(adminS).changeFeeRecipient(user3);
-    await ambBridge.connect(adminS).changeFee(feeValue);
-    await ambBridge.withdraw(user1, user2, 5, {
-      value: feeValue,
-    });
+    await ambBridge.withdraw(mockERC20.address, user2, 5, {value: feeValue});
 
     const curBalance = await getAccountBalance(user3);
 
@@ -253,7 +239,7 @@ describe("Contract", () => {
   });
 
   it("Test setSideBridge", async () => {
-    const expectedSideBridgeAddress = "0x13372707319ad4beca6b5bb4086617fd6f240cfe";
+    const expectedSideBridgeAddress = "0x00000000000000000000000000000000000b00BA";
 
     await ambBridge.connect(adminS).setSideBridge(expectedSideBridgeAddress);
 
