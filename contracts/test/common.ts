@@ -19,9 +19,6 @@ describe("Common tests", () => {
   let relay: string;
   let user: string;
 
-  // todo remove as redundant
-  let user2: string;
-  let user3: string;
 
   let ethBridge: Contract;
   let ambBridge: Contract;
@@ -31,7 +28,7 @@ describe("Common tests", () => {
 
   before(async () => {
     await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest"]);
-    ({owner, relay, user, user2, user3} = await getNamedAccounts());
+    ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
     userS = await ethers.getSigner(user);
@@ -176,7 +173,7 @@ describe("Common tests", () => {
 
     await ambBridge.changeFeeRecipient(user);
     await expect(
-      () => ambBridge.withdraw(mockERC20.address, user2, 5, {value: 1000})
+      () => ambBridge.withdraw(mockERC20.address, owner, 5, {value: 1000})
     ).to.changeEtherBalance(userS, 1000);
 
   });
