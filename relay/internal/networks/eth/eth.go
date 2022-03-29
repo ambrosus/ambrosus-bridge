@@ -24,8 +24,11 @@ const BridgeName = "ethereum"
 
 type Bridge struct {
 	Client     *ethclient.Client
+	WsClient   *ethclient.Client
 	Contract   *contracts.Eth
+	WsContract *contracts.Eth
 	sideBridge networks.BridgeReceiveEthash
+	config     *config.ETHConfig
 	auth       *bind.TransactOpts
 	cfg        *config.ETHConfig
 	logger     external_logger.ExternalLogger
@@ -33,16 +36,32 @@ type Bridge struct {
 
 // New creates a new ethereum bridge.
 func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	// Creating a new ethereum client.
-	client, err := ethclient.Dial(cfg.URL)
+	// Creating a new ethereum client (HTTP & WS).
+	client, err := ethclient.Dial(cfg.HttpURL)
 	if err != nil {
 		return nil, err
 	}
+	// Compatibility with tests.
+	var wsClient *ethclient.Client
+	if cfg.WsURL != "" {
+		wsClient, err = ethclient.Dial(cfg.WsURL)
+		if err != nil {
+			return nil, err
+		}
+	}
 
-	// Creating a new ethereum bridge contract instance.
+	// Creating a new ambrosus bridge contract instance (HTTP & WS).
 	contract, err := contracts.NewEth(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, err
+	}
+	// Compatibility with tests.
+	var wsContract *contracts.Eth
+	if wsClient != nil {
+		wsContract, err = contracts.NewEth(common.HexToAddress(cfg.ContractAddr), wsClient)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var auth *bind.TransactOpts
@@ -63,11 +82,13 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	}
 
 	return &Bridge{
-		Client:   client,
-		Contract: contract,
-		auth:     auth,
-		cfg:      cfg,
-		logger:   externalLogger,
+		Client:     client,
+		WsClient:   wsClient,
+		Contract:   contract,
+		WsContract: wsContract,
+		auth:       auth,
+		cfg:        cfg,
+		logger:     externalLogger,
 	}, nil
 }
 
@@ -190,7 +211,7 @@ func (b *Bridge) listen() error {
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
 	eventChannel := make(chan *contracts.EthTransfer) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
+	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return err
 	}
@@ -217,7 +238,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	if err := ethereum.WaitForBlock(b.Client, event.Raw.BlockNumber+safetyBlocks); err != nil {
+	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return err
 	}
 
