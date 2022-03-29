@@ -56,7 +56,7 @@ func (b *Bridge) SetEpochData(epochData *ethash.EpochData) error {
 }
 
 func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
-	log.Debug().Str("bridge", BridgeName).Msgf("Loading '%d.json' epoch data file...")
+	log.Debug().Str("bridge", BridgeName).Msgf("Loading '%d.json' epoch data file...", epoch)
 
 	data, err := os.ReadFile(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
