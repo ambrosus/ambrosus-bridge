@@ -24,7 +24,7 @@ address: `0x0000000000000000000000000000000000000F00`
 owner: `0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79` (validator1)
 
 
-### ETH users:
+### ETH:
 
 rpc URL: `http://127.0.0.1:8502`
 
