@@ -9,8 +9,9 @@ export const expect = chai.expect;
 
 const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
 const RELAY_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
+const BRIDGE_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BRIDGE_ROLE"));
 
-describe("Contract", () => {
+describe("Common tests", () => {
   let ownerS: Signer;
 
   let adminS: Signer;
@@ -47,6 +48,9 @@ describe("Contract", () => {
     await ambBridge.grantRole(RELAY_ROLE, relay);
     await ambBridgeTest.grantRole(RELAY_ROLE, relay);
     await ethBridge.grantRole(RELAY_ROLE, relay);
+
+    await mockERC20.grantRole(BRIDGE_ROLE, ambBridge.address);
+    await mockERC20.grantRole(BRIDGE_ROLE, ethBridge.address);
   });
 
   beforeEach(async () => {
