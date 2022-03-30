@@ -46,7 +46,7 @@ func parseError(err error) string {
 	var jsonErr = err.(JsonError)
 	errStr := jsonErr.ErrorData().(string)
 
-	decodedMsg, err := decodeRevertMessage(errStr)
+	decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
 	if err != nil {
 		return errStr
 	}
