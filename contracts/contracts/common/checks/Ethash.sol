@@ -369,34 +369,7 @@ contract Ethash is SHA3_512 {
         return epochData[epochIndex].fullSizeIn128Resultion != 0;
     }
 
-    event SetEpochData( address indexed sender, uint error, uint errorInfo );
-    function setEpochData( uint epoch,
-        uint fullSizeIn128Resultion,
-        uint branchDepth,
-        uint[] memory merkleNodes,
-        uint start,
-        uint numElems ) public {
-
-        for( uint i = 0 ; i < numElems ; i++ ) {
-            if( epochData[epoch].merkleNodes[start+i] > 0 ) {
-                //ErrorLog("epoch already set", epoch[i]);
-                emit SetEpochData( msg.sender, 1, epoch * (2**128) + start + i );
-                return;
-            }
-            epochData[epoch].merkleNodes[start+i] = merkleNodes[i];
-        }
-        epochData[epoch].fullSizeIn128Resultion = fullSizeIn128Resultion;
-        epochData[epoch].branchDepth = branchDepth;
-
-        emit SetEpochData( msg.sender, 0 , 0 );
-
-        // we store only previous and current epochs
-        // so, delete second from the end epoch
-        if (epoch >= 2)  // underflow check
-            delete epochData[epoch - 2];
-    }
-
-    function setEpochDataTest(
+    function setEpochData(
         uint epochNum,
         uint fullSizeIn128Resultion,
         uint branchDepth,
@@ -418,7 +391,6 @@ contract Ethash is SHA3_512 {
 
         epochData[epochNum].fullSizeIn128Resultion = fullSizeIn128Resultion;
         epochData[epochNum].branchDepth = branchDepth;
-
     }
 
     function getMerkleLeave( uint epochIndex, uint p ) view internal returns(uint) {
