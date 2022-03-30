@@ -4,69 +4,96 @@ import 'mocha';
 import fs from "fs";
 import {ambSigner, ethSigner, relayAddress} from "./cfg";
 import mockTokens from "./mockTokensAddresses.json";
+import {Contract} from "ethers";
 
 
 const YAML = require("js-yaml");
 
 
 chai.should();
+export const expect = chai.expect;
 
 
-describe("Contract", () => {
-  let ambNet;
-  let ethNet;
+
+describe("Contract", function() {
+  this.timeout(60*1000); // one minute
+
+  const ambOptions = {gasLimit: 800000};  // amb gas estimator broken
+
+  let ambBridge: Contract;
+  let ethBridge: Contract;
+  let ambToken: Contract;
+  let ethToken: Contract;
+
+  before(async () => {
+    const bridges = getContractAddressYml();
+
+    ambBridge = await ethers.getContractAt("AmbBridge", bridges.ambAddress, ambSigner);
+    ethBridge = await ethers.getContractAt("EthBridge", bridges.ethAddress, ethSigner);
+    ambToken = await ethers.getContractAt("MockERC20", mockTokens.ambErc20Address, ambSigner);
+    ethToken = await ethers.getContractAt("MockERC20", mockTokens.ethErc20Address, ethSigner);
+  });
 
   // it('Amb -> Eth', async () => {
   // });
 
 
   it('Eth -> Amb', async () => {
-    const bridges = getContractAddressYml();
-    const ambBridge = await ethers.getContractAt("AmbBridge", bridges.ambAddress, ambSigner);
-    const ethBridge = await ethers.getContractAt("EthBridge", bridges.ethAddress, ethSigner);
+    // setup relay
 
-    const ambMockToken = await ethers.getContractAt("MockERC20", mockTokens.ambErc20Address, ambSigner);
-    const ethMockToken = await ethers.getContractAt("MockERC20", mockTokens.ethErc20Address, ethSigner);
+    const relayRole = await ethBridge.callStatic.ADMIN_ROLE();
+    await w(ethBridge.grantRole(relayRole, relayAddress));
+    await w(ambBridge.grantRole(relayRole, relayAddress, ambOptions));
 
-
-    // send funds
-
-    // todo .connect(ethSigner) is redundant when contract deployed or got with ethSigned arg
-
-    const hashAdmin = await ethBridge.callStatic.ADMIN_ROLE();
-
-    await ethBridge.connect(ethSigner).grantRole(hashAdmin, ethSigner.address, {gasLimit: 100000});
-
-    await ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1")});
+    await w(ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1")}));
+    await w(ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...ambOptions}));
 
 
-    await ethBridge.setSideBridge(ambBridge.address, {gasLimit: 100000});
+    // mint tokens
+    await w(ambToken.mint(ambSigner.address, 10, ambOptions));
+    await w(ethToken.mint(ethSigner.address, 10));
 
-    await ethMockToken.connect(ethSigner).mint(ethSigner.address, 30, {gasLimit: 100000});
+    await w(ethToken.increaseAllowance(ethBridge.address, 10));
+    await w(ambToken.increaseAllowance(ambBridge.address, 10, ambOptions));
 
+    const ethBefore = await ethToken.balanceOf(ethSigner.address);
+    const ambBefore = await ambToken.balanceOf(ambSigner.address);
 
-    await ethMockToken.connect(ethSigner).increaseAllowance(ethBridge.address, 1000, {gasLimit: 8000000});
-    await ethMockToken.increaseAllowance(ethSigner.address, 1000, {gasLimit: 8000000});
-    await ethBridge.withdraw(ethMockToken.address, ambSigner.address, 10, {value: 1000, gasPrice: 1});
+    // check mint working
+    expect(ethBefore).gte(10);
+    expect(ambBefore).gte(10);
+    console.log("mint checked")
 
-    console.log("wait for next timeframe...")
+    // withdraw
+
+    const fee = await ethBridge.fee();
+    await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, {value: fee}));
     await sleep(2000); // waiting for 100% new timeframe
-    console.log("waiting is over")
+    await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 1, {value: fee}));  // must emit event, todo check
 
-    await ethBridge.callStatic.withdraw(ethMockToken.address, ambSigner.address, 3, {
-      value: 1000,
-      gasLimit: 8000000,
-      gasPrice: 1
-    });
 
-    // event here
-    console.log(await ambMockToken.connect(ambSigner).balanceOf(ambSigner.address));
+    // wait for transfer event
+    // todo promise that will wait for TransactionSubmit event
+
+
+
+
+    // check user balances
+    const ethAfter = await ethToken.balanceOf(ethSigner.address);
+    const ambAfter = await ambToken.balanceOf(ambSigner.address);
+
+    expect(ethAfter).eq(ethBefore - 5);
+    expect(ambAfter).eq(ambBefore + 5);
 
   });
 
 
 });
 
+// wait for transaction to be mined
+async function w(call: Promise<any>): Promise<any> {
+  return await (await call).wait();
+}
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
