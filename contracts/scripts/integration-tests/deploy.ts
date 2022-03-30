@@ -1,9 +1,8 @@
 import fs from "fs";
 import {deploy, deployAmbBridge, deployEthBridge} from "../deployBridges";
-import {ambSigner, ethSigner, relayAddress, vsContractAddress} from "./cfg";
+import {ambSigner, ethSigner, relayAddress, setContractAddressesYml, vsContractAddress} from "./cfg";
 import path from "path";
 
-const YAML = require("js-yaml");
 
 
 const timeframe = 1;  // each second
@@ -12,8 +11,6 @@ const minSafetyBlocks = 10;
 
 
 async function main() {
-
-
   const ambErc20 = await deploy("MockERC20", ambSigner, []);
   const ethErc20 = await deploy("MockERC20", ethSigner, []);
   fs.writeFileSync(path.resolve(__dirname, "./mockTokensAddresses.json"), JSON.stringify({
@@ -41,7 +38,6 @@ async function main() {
     timeframe, lockTime, minSafetyBlocks
   }, vsContractAddress, ambSigner);
 
-
   await ambBridge.setSideBridge(ethBridge.address, {gasLimit: 30_000});  // auto gas exceed network gasLimit
 
   // todo use real erc20 contract
@@ -50,20 +46,8 @@ async function main() {
   setContractAddressesYml(ambBridge.address, ethBridge.address);
 }
 
-
-function setContractAddressesYml(ambAddress: String, ethAddress: String) {
-  const path = "../relay/configs/dev.yml";
-  const raw = fs.readFileSync(path);
-  const data = YAML.load(raw);
-
-  data.network.amb["contract-addr"] = ambAddress;
-  data.network.eth["contract-addr"] = ethAddress;
-
-  const yaml = YAML.dump(data);
-  fs.writeFileSync(path, yaml);
-}
-
 main().then(() => {
+  process.exit(0);  // "gracefully" close websockets :)
 }).catch((error) => {
   console.error(error);
   process.exit(1);

@@ -94,10 +94,10 @@ services:
       --syncmode "full"
       --verbosity 5
       --keystore /root/keystore
-     #--ws
-     #--ws.port 3434
-     #--ws.api "eth,web3,net,admin,personal"
-     #--ws.addr "0.0.0.0"
+      --ws
+      --ws.port 3434
+      --ws.api "eth,web3,net,admin,personal"
+      --ws.addr "0.0.0.0"
       # --datadir data
       #--keystore ~/.ethereum/keystore
     ports:
@@ -127,10 +127,6 @@ services:
       --networkid ${NETWORK_ID}
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
-      --ws
-      --ws.port 3535
-      --ws.api "eth,web3,net,admin,personal"
-      --ws.addr "0.0.0.0"
       --mine
       --miner.threads 1
       --verbosity 5
