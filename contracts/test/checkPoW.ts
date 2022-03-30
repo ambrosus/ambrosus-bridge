@@ -43,21 +43,34 @@ describe("Check PoW", () => {
     const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
     const epoch = require("../../relay/cmd/dump-test-data/epoch-475.json");
 
-    await submitEpochData(ambBridge, epoch);
+    await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
+        epoch.BranchDepth, epoch.MerkleNodes);
     expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
 
     await ambBridge.verifyEthash(blockPoW);
   });
 
+  // epoch-128 has 512 MerkleNodes
+  it("Test submit epoch-128", async () => {
+    const block = require("../../relay/cmd/dump-test-data/BlockPoW-3840001.json");
+    const epoch = require("../../relay/assets/testdata/epoch-128.json");
+    await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
+      epoch.BranchDepth, epoch.MerkleNodes, {gasLimit: 30000000});
+
+    await ambBridge.verifyEthash(block);
+  })
+
   it("Test setEpochData deleting old epochs", async () => {
     const epoch1 = require("../../relay/assets/testdata/epoch-475.json");
     const epoch2 = require("../../relay/assets/testdata/epoch-476.json");
     const epoch3 = require("../../relay/assets/testdata/epoch-477.json");
-
-    await submitEpochData(ambBridge, epoch1);
-    await submitEpochData(ambBridge, epoch2);
+    await ambBridge.setEpochData(epoch1.Epoch, epoch1.FullSizeIn128Resolution,
+        epoch1.BranchDepth, epoch1.MerkleNodes);
+    await ambBridge.setEpochData(epoch2.Epoch, epoch2.FullSizeIn128Resolution,
+        epoch2.BranchDepth, epoch2.MerkleNodes);
     expect(await ambBridge.isEpochDataSet(epoch1.Epoch)).to.be.true;
-    await submitEpochData(ambBridge, epoch3);
+    await ambBridge.setEpochData(epoch3.Epoch, epoch3.FullSizeIn128Resolution,
+        epoch3.BranchDepth, epoch3.MerkleNodes);
     expect(await ambBridge.isEpochDataSet(epoch1.Epoch)).to.be.false;
     expect(await ambBridge.isEpochDataSet(epoch2.Epoch)).to.be.true;
     expect(await ambBridge.isEpochDataSet(epoch3.Epoch)).to.be.true;
@@ -70,33 +83,4 @@ describe("Check PoW", () => {
     const realBlockHash = await ambBridgeTest.blockHashTest(blockPoW);
     expect(realBlockHash).eq(expectedBlockHash);
   });
-
-  const submitEpochData = async (ethashContractInstance: Contract, epoch: any) => {
-    let start = 0;
-    let nodes: any = [];
-    let mnlen = 0;
-    let index = 0;
-
-    for (let mn of epoch.MerkleNodes) {
-      nodes.push(mn);
-
-      if (nodes.length === 40 || index === epoch.MerkleNodes.length - 1) {
-        mnlen = nodes.length;
-        if (index < 440 && epoch.Number === 128) {
-          start = start + mnlen;
-          nodes = [];
-          return;
-        }
-        await ethashContractInstance.setEpochData(
-          epoch.Epoch, epoch.FullSizeIn128Resolution, epoch.BranchDepth,
-          nodes, start, mnlen
-        );
-
-        start = start + mnlen;
-        nodes = [];
-      }
-      index++;
-    }
-  };
-
 });
