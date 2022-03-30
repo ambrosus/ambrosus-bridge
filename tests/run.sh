@@ -4,5 +4,6 @@ rm -rf ./amb/apollo2/chains
 
 rm -rf ./eth/chain
 
-docker-compose rm -y
+docker-compose rm -f
+docker system prune --yes
 docker-compose up
