@@ -3,7 +3,7 @@ package amb
 import (
 	"context"
 	"encoding/hex"
-	"fmt"
+	"errors"
 	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
@@ -20,7 +20,7 @@ func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		if err = ethereum.GetFailureReason(b.Client, b.auth, tx); err != nil {
-			return fmt.Errorf("%s", parseError(err))
+			return parseError(err)
 		}
 	}
 
@@ -33,24 +33,25 @@ func (b *Bridge) getFailureReasonViaCall(txErr error, funcName string, params ..
 	}, nil, funcName, params...)
 
 	if err != nil {
-		return fmt.Errorf("%s", parseError(err))
+		return parseError(err)
 	}
-	return fmt.Errorf("%s", parseError(txErr))
+	return txErr
 }
 
 type JsonError interface {
 	ErrorData() interface{}
 }
 
-func parseError(err error) string {
-	var jsonErr = err.(JsonError)
-	errStr := jsonErr.ErrorData().(string)
-
-	decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
-	if err != nil {
-		return errStr
+func parseError(err error) error {
+	if jsonErr, ok := err.(JsonError); ok {
+		errStr := jsonErr.ErrorData().(string)
+		decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
+		if err != nil {
+			return errors.New(errStr)
+		}
+		return errors.New(decodedMsg)
 	}
-	return decodedMsg
+	return err
 }
 
 func decodeRevertMessage(errStr string) (string, error) {
