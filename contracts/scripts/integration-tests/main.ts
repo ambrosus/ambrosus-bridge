@@ -1,20 +1,17 @@
 import chai from "chai";
 import {ethers} from "hardhat";
 import 'mocha';
-import fs from "fs";
-import {ambSigner, ethSigner, relayAddress} from "./cfg";
+import {ambSigner, ethSigner, loadYaml, relayAddress} from "./cfg";
 import mockTokens from "./mockTokensAddresses.json";
 import {Contract, providers} from "ethers";
 
-
-const YAML = require("js-yaml");
 
 
 chai.should();
 const expect = chai.expect;
 
 
-describe("Contract", function () {
+describe("Integration tests", function () {
   this.timeout(5 * 60 * 1000); // 5 minutes
 
   const ambOptions = {gasLimit: 800000};  // amb gas estimator broken
@@ -34,7 +31,7 @@ describe("Contract", function () {
 
     // setup relay
     console.log("Setup relay");
-    const relayRole = await ethBridge.callStatic.ADMIN_ROLE();
+    const relayRole = await ethBridge.ADMIN_ROLE();
     await w(ethBridge.grantRole(relayRole, relayAddress));
     await w(ambBridge.grantRole(relayRole, relayAddress, ambOptions));
 
@@ -120,7 +117,9 @@ async function waitConfirmations(minSafetyBlocks: number, provider: providers.Pr
 
 // wait for transaction to be mined
 async function w(call: Promise<any>): Promise<any> {
-  return await (await call).wait();
+  const tx = await (await call).wait();
+  console.log('Transaction mined');
+  return tx;
 }
 
 function sleep(ms: number) {
@@ -128,12 +127,9 @@ function sleep(ms: number) {
 }
 
 function getContractAddressYml() {
-  const path = "../relay/configs/dev.yml";
-  const raw = fs.readFileSync(path);
-  const data = YAML.load(raw);
-
+  const yaml = loadYaml()
   return {
-    ambAddress: data.network.amb["contract-addr"],
-    ethAddress: data.network.eth["contract-addr"]
+    ambAddress: yaml.network.amb["contract-addr"],
+    ethAddress: yaml.network.eth["contract-addr"]
   };
 }

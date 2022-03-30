@@ -32,7 +32,7 @@ export const vsContractAddress = config.network.amb["vs-contract-addr"];
 
 //
 
-function loadYaml() {
+export function loadYaml() {
   return yaml.load(fs.readFileSync(yamlPath));
 }
 
