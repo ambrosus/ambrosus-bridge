@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 import {Contract, Signer} from "ethers";
-import vsAbi from "../abi/ValidatorSet.json"
+import vsAbi from "../abi/ModifiedValidatorSet.json"
 
 
 interface CommonArgs {
