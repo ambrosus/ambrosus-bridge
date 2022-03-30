@@ -36,7 +36,7 @@ export async function deployAmbBridge(
     args.minSafetyBlocks,
   ]];
 
-  return await deploy("AmbBridge", ambSigner, argsForAmb);
+  return await deploy("AmbBridge", ambSigner, ...argsForAmb);
 }
 
 
@@ -67,7 +67,7 @@ export async function deployEthBridge(
     lastProcessedBlock
   ];
 
-  return await deploy("EthBridge", ethSigner, argsForEth);
+  return await deploy("EthBridge", ethSigner, ...argsForEth);
 }
 
 
@@ -82,9 +82,9 @@ async function getValidators(ambSigner: Signer, vsContractAddress: string): Prom
 }
 
 
-export async function deploy(contractName: string, signer: any, args: Array<any>) {
+export async function deploy(contractName: string, signer: any, ...args: Array<any>) {
   const factory = await ethers.getContractFactory(contractName, signer);
-  const deployedContract = await factory.deploy(args);
+  const deployedContract = await factory.deploy(...args);
   await deployedContract.deployed();
   console.log(`${contractName} deployed at ${deployedContract.address}`);
   return deployedContract;

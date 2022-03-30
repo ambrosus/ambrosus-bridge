@@ -2,19 +2,17 @@ network:
   amb:
     http-url: https://network.ambrosus-dev.io
     ws-url: wss://network.ambrosus-dev.io
-    contract-addr:
-    vs-contract-addr: 
+    contract-addr: '0x1AbD78c5Ecef3D4d3C7428Bb3b94A17BCeAC4575'
+    vs-contract-addr: null
   eth:
     http-url: https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c
     ws-url: wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c
-    contract-addr:
+    contract-addr: '0x56829D90745def48cc2572d2922CC5972D4b7cb9'
     epoch-length: 3
-
 external-logger:
   telegram:
-    token:
-    chat-id:
-
+    token: null
+    chat-id: null
 prometheus:
   ip: localhost
   port: 9091
