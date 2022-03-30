@@ -4,14 +4,14 @@ import 'mocha';
 import fs from "fs";
 import {ambSigner, ethSigner, relayAddress} from "./cfg";
 import mockTokens from "./mockTokensAddresses.json";
-import {Contract} from "ethers";
+import {Contract, providers} from "ethers";
 
 
 const YAML = require("js-yaml");
 
 
 chai.should();
-export const expect = chai.expect;
+const expect = chai.expect;
 
 
 describe("Contract", function () {
@@ -31,13 +31,7 @@ describe("Contract", function () {
     ethBridge = await ethers.getContractAt("EthBridge", bridges.ethAddress, ethSigner);
     ambToken = await ethers.getContractAt("MockERC20", mockTokens.ambErc20Address, ambSigner);
     ethToken = await ethers.getContractAt("MockERC20", mockTokens.ethErc20Address, ethSigner);
-  });
 
-  // it('Amb -> Eth', async () => {
-  // });
-
-
-  it('Eth -> Amb', async () => {
     // setup relay
     console.log("Setup relay");
     const relayRole = await ethBridge.callStatic.ADMIN_ROLE();
@@ -56,10 +50,17 @@ describe("Contract", function () {
     await w(ethToken.increaseAllowance(ethBridge.address, 10));
     await w(ambToken.increaseAllowance(ambBridge.address, 10, ambOptions));
 
+  });
+
+  // it('Amb -> Eth', async () => {
+  // });
+
+
+  it('Eth -> Amb', async () => {
+    // check mint working
     const ethBefore = await ethToken.balanceOf(ethSigner.address);
     const ambBefore = await ambToken.balanceOf(ambSigner.address);
 
-    // check mint working
     expect(ethBefore).gte(10);
     expect(ambBefore).gte(10);
 
@@ -74,17 +75,7 @@ describe("Contract", function () {
     // wait for minSafetyBlocks confirmations
     console.log(`Wait for confirmations`);
     const minSafetyBlocks = await ambBridge.minSafetyBlocks();
-    const currentBlock = (await ethSigner.provider.getBlock('latest')).number;
-    await new Promise<void>((resolve) => {
-      ethSigner.provider.on('block', async (block) => {
-        if (block - currentBlock > minSafetyBlocks) {
-          await ethSigner.provider.removeAllListeners('block');
-          return resolve();
-        }
-        console.log(`  Confirmations: ${block - currentBlock}/${minSafetyBlocks}`)
-      });
-    });
-
+    await waitConfirmations(minSafetyBlocks, ethSigner.provider);
 
     // wait for transfer submit event (tx from relay)
     console.log("Waiting for transfer submit event");
@@ -108,6 +99,24 @@ describe("Contract", function () {
 
 
 });
+
+
+
+async function waitConfirmations(minSafetyBlocks: number, provider: providers.Provider) {
+  const currentBlock = (await ethSigner.provider.getBlock('latest')).number;
+  await new Promise<void>((resolve) => {
+    provider.on('block', async (block) => {
+      if (block - currentBlock > minSafetyBlocks) {
+        await provider.removeAllListeners('block');
+        return resolve();
+      }
+      console.log(`  Confirmations: ${block - currentBlock}/${minSafetyBlocks}`)
+    });
+  });
+
+}
+
+
 
 // wait for transaction to be mined
 async function w(call: Promise<any>): Promise<any> {
