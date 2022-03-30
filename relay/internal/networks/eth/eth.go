@@ -288,7 +288,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		Msg("Submit transfer PoW...")
 
 	if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
-		if errors.Is(err, networks.ErrEpochData) {
+		if err.Error() == networks.ErrEpochData.Error() {
 			epoch := event.Raw.BlockNumber / 30000
 
 			epochData, err := b.loadEpochDataFile(epoch)
