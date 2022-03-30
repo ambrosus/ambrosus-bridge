@@ -162,6 +162,17 @@ describe("Common tests", () => {
         expect(await bridge.lockTime()).eq(2000);
       });
 
+      it("Test Pausable", async () => {
+        await expect(bridge.removeLockedTransfers(0)).to.be.revertedWith("Pausable: not paused");
+
+        await bridge.pause()
+        expect(await bridge.paused()).to.be.true;
+
+        await expect(bridge.connect(relayS).unlockTransfers(0)).to.be.revertedWith("Pausable: paused");
+
+        await bridge.unpause()
+        expect(await bridge.paused()).to.be.false;
+      });
 
     });
   });
