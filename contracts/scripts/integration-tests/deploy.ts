@@ -1,6 +1,7 @@
 import fs from "fs";
 import {deploy, deployAmbBridge, deployEthBridge} from "../deployBridges";
 import {ambSigner, ethSigner, relayAddress, vsContractAddress} from "./cfg";
+import path from "path";
 
 const YAML = require("js-yaml");
 
@@ -15,7 +16,7 @@ async function main() {
 
   const ambErc20 = await deploy("MockERC20", ambSigner, []);
   const ethErc20 = await deploy("MockERC20", ethSigner, []);
-  fs.writeFileSync("../mockTokensAddresses.json", JSON.stringify({
+  fs.writeFileSync(path.resolve(__dirname, "./mockTokensAddresses.json"), JSON.stringify({
     ambErc20Address: ambErc20.address,
     ethErc20Address: ethErc20.address,
   }));

@@ -3,6 +3,8 @@ import {ethers} from "hardhat";
 import 'mocha';
 import fs from "fs";
 import {ambSigner, ethSigner, relayAddress} from "./cfg";
+import mockTokens from "./mockTokensAddresses.json";
+
 
 const YAML = require("js-yaml");
 
@@ -23,7 +25,6 @@ describe("Contract", () => {
     const ambBridge = await ethers.getContractAt("AmbBridge", bridges.ambAddress, ambSigner);
     const ethBridge = await ethers.getContractAt("EthBridge", bridges.ethAddress, ethSigner);
 
-    const mockTokens = require("../../mockTokensAddresses.json");
     const ambMockToken = await ethers.getContractAt("MockERC20", mockTokens.ambErc20Address, ambSigner);
     const ethMockToken = await ethers.getContractAt("MockERC20", mockTokens.ethErc20Address, ethSigner);
 
