@@ -14,9 +14,8 @@ chai.should();
 export const expect = chai.expect;
 
 
-
-describe("Contract", function() {
-  this.timeout(60*1000); // one minute
+describe("Contract", function () {
+  this.timeout(5 * 60 * 1000); // 5 minutes
 
   const ambOptions = {gasLimit: 800000};  // amb gas estimator broken
 
@@ -40,7 +39,7 @@ describe("Contract", function() {
 
   it('Eth -> Amb', async () => {
     // setup relay
-
+    console.log("Setup relay");
     const relayRole = await ethBridge.callStatic.ADMIN_ROLE();
     await w(ethBridge.grantRole(relayRole, relayAddress));
     await w(ambBridge.grantRole(relayRole, relayAddress, ambOptions));
@@ -50,6 +49,7 @@ describe("Contract", function() {
 
 
     // mint tokens
+    console.log("Mint tokens");
     await w(ambToken.mint(ambSigner.address, 10, ambOptions));
     await w(ethToken.mint(ethSigner.address, 10));
 
@@ -62,20 +62,39 @@ describe("Contract", function() {
     // check mint working
     expect(ethBefore).gte(10);
     expect(ambBefore).gte(10);
-    console.log("mint checked")
+
 
     // withdraw
-
+    console.log("Withdraw");
     const fee = await ethBridge.fee();
     await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, {value: fee}));
-    await sleep(2000); // waiting for 100% new timeframe
+    await sleep(2000); // waiting for 100% new timeframe (timeframe is 1 second)
     await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 1, {value: fee}));  // must emit event, todo check
 
+    // wait for minSafetyBlocks confirmations
+    console.log(`Wait for confirmations`);
+    const minSafetyBlocks = await ambBridge.minSafetyBlocks();
+    const currentBlock = (await ethSigner.provider.getBlock('latest')).number;
+    await new Promise<void>((resolve) => {
+      ethSigner.provider.on('block', async (block) => {
+        if (block - currentBlock > minSafetyBlocks) {
+          await ethSigner.provider.removeAllListeners('block');
+          return resolve();
+        }
+        console.log(`  Confirmations: ${block - currentBlock}/${minSafetyBlocks}`)
+      });
+    });
 
-    // wait for transfer event
-    // todo promise that will wait for TransactionSubmit event
 
+    // wait for transfer submit event (tx from relay)
+    console.log("Waiting for transfer submit event");
+    await new Promise(resolve => ambBridge.once("TransferSubmit", resolve));
 
+    // wait for transfer unlock event
+    console.log("Waiting for transfer unlock event");
+    await new Promise(resolve => ambBridge.once("TransferUnlock", resolve));
+
+    // todo check event_id in events
 
 
     // check user balances
