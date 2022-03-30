@@ -26,12 +26,13 @@ contract AmbBridge is CommonBridge, CheckPoW {
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) {
+        emit TransferSubmit(powProof.transfer.event_id);
 
         checkEventId(powProof.transfer.event_id);
 
         CheckPoW_(powProof, sideBridgeAddress);
 
-        //        lockTransfers(events, event_id);
+        lockTransfers(powProof.transfer.transfers, powProof.transfer.event_id);
     }
 
     function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {

@@ -38,6 +38,7 @@ contract CommonBridge is AccessControl {
     event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
     event TransferFinish(uint indexed event_id);
+    event TransferSubmit(uint indexed event_id);
 
 
     constructor(
