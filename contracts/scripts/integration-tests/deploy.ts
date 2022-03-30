@@ -40,7 +40,11 @@ async function main() {
     timeframe, lockTime, minSafetyBlocks
   }, vsContractAddress, ambSigner);
 
-  ambBridge.setSideBridge(ethBridge.address);
+
+  await ambBridge.setSideBridge(ethBridge.address, {gasLimit: 30_000});  // auto gas exceed network gasLimit
+
+  // todo use real erc20 contract
+  // todo set bridge addresses to erc20 contracts
 
   setContractAddressesYml(ambBridge.address, ethBridge.address);
 }
