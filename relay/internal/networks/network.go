@@ -11,7 +11,7 @@ import (
 
 var (
 	ErrEventNotFound = errors.New("error event not found")
-	ErrEpochData     = errors.New("error epoch data")
+	ErrEpochData     = errors.New("Required epoch data-pow not set")
 )
 
 type Bridge interface {
