@@ -1,5 +1,8 @@
-### Start:
-`docker-compose up`
+## Start:
+
+run local nodes - `nodes.sh`  
+run tests - `test.sh`
+
 
 ### AMB
 rpc URL: `http://127.0.0.1:8545` or `ws://127.0.0.1:8546`
