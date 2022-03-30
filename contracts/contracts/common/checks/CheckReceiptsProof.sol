@@ -6,7 +6,7 @@ import "../CommonStructs.sol";
 
 contract CheckReceiptsProof {
     // check readme for focs
-    function CalcReceiptsHash(bytes[] memory proof, bytes32 el, uint proofStart) public view returns (bytes32) {
+    function CalcReceiptsHash(bytes[] memory proof, bytes32 el, uint proofStart) public pure returns (bytes32) {
         bytes memory s;
 
         for (uint i = proofStart; i < proof.length; i += 2) {
@@ -18,7 +18,7 @@ contract CheckReceiptsProof {
     }
 
 
-    function CalcTransferReceiptsHash(CommonStructs.TransferProof memory p, address eventContractAddress) public view returns (bytes32) {
+    function CalcTransferReceiptsHash(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
         bytes32 el = keccak256(abi.encodePacked(
                 p.receipt_proof[0],
                 eventContractAddress,

@@ -112,17 +112,17 @@ contract CheckAura is CheckReceiptsProof {
         }
     }
 
-    function CheckBlock(BlockAura memory block) internal view returns (bytes32) {
-        bytes memory common_rlp = abi.encodePacked(block.p1, block.parent_hash, block.p2, block.receipt_hash, block.p3);
+    function CheckBlock(BlockAura memory block_) internal view returns (bytes32) {
+        bytes memory common_rlp = abi.encodePacked(block_.p1, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
 
         // hash without seal for signature check
-        bytes32 bare_hash = keccak256(abi.encodePacked(block.p0_bare, common_rlp));
-        address validator = GetValidator(bytesToUint(block.step));
-        CheckSignature(validator, bare_hash, block.signature);
+        bytes32 bare_hash = keccak256(abi.encodePacked(block_.p0_bare, common_rlp));
+        address validator = GetValidator(bytesToUint(block_.step));
+        CheckSignature(validator, bare_hash, block_.signature);
         // revert if wrong
 
         // hash with seal, for prev_hash check
-        return keccak256(abi.encodePacked(block.p0_seal, common_rlp, block.s1, block.step, block.s2, block.signature));
+        return keccak256(abi.encodePacked(block_.p0_seal, common_rlp, block_.s1, block_.step, block_.s2, block_.signature));
 
     }
 
@@ -135,7 +135,7 @@ contract CheckAura is CheckReceiptsProof {
         return validatorSet;
     }
 
-    function CheckSignature(address signer, bytes32 message, bytes memory signature) internal view {
+    function CheckSignature(address signer, bytes32 message, bytes memory signature) internal pure {
         bytes32 r;
         bytes32 s;
         uint8 v;
@@ -151,7 +151,7 @@ contract CheckAura is CheckReceiptsProof {
 
     function CalcValidatorSetReceiptHash(AuraProof memory auraProof,
                                          address validatorSetAddress,
-                                         address[] memory vSet) private returns(bytes32) {
+                                         address[] memory vSet) private pure returns(bytes32) {
 
         bytes32 el = keccak256(abi.encodePacked(
             auraProof.transfer.receipt_proof[0],
