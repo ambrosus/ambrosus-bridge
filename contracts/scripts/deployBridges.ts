@@ -73,19 +73,17 @@ export async function deployEthBridge(
 
 async function getValidators(ambSigner: Signer, vsContractAddress: string): Promise<[string[], string]> {
   const vsContract = ethers.ContractFactory.getContract(vsContractAddress, vsAbi, ambSigner)
-
   const block = await ambSigner.provider!.getBlock('latest');
-  //   const curBlock = await amb.provider!.getBlock(await amb.provider!.getBlockNumber());
-
   const validators = await vsContract["getValidators()"]({blockTag: block.number});
   return [validators, block.hash];
 }
 
 
-export async function deploy(contractName: string, signer: any, ...args: Array<any>) {
+export async function deploy(contractName: string, signer: Signer, ...args: Array<any>) {
   const factory = await ethers.getContractFactory(contractName, signer);
   const deployedContract = await factory.deploy(...args);
   await deployedContract.deployed();
-  console.log(`${contractName} deployed at ${deployedContract.address}`);
+  console.log(`${contractName} deployed at ${deployedContract.address}; 
+    tx: ${deployedContract.deployTransaction.hash}`);
   return deployedContract;
 }
