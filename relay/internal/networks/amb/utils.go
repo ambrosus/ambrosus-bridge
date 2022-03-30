@@ -56,6 +56,11 @@ func parseError(err error) string {
 func decodeRevertMessage(errStr string) (string, error) {
 	res := errStr[138:] // https://github.com/authereum/eth-revert-reason/blob/e33f4df82426a177dbd69c0f97ff53153592809b/index.js#L93
 	res = strings.TrimRight(res, "0")
+	// If the res is an odd number of characters, add a trailing 0
+	if len(res)%2 == 1 {
+		res = "0" + res
+	}
+
 	resBytes, err := hex.DecodeString(res)
 	if err != nil {
 		return "", err
