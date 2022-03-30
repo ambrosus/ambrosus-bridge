@@ -19,7 +19,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 const BridgeName = "ethereum"
@@ -40,7 +39,7 @@ type Bridge struct {
 func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	logger := logger.NewSubLogger(BridgeName, externalLogger)
 
-	log.Debug().Msg("Creating ethereum bridge...")
+	logger.Debug().Msg("Creating ethereum bridge...")
 
 	// Creating a new ethereum client (HTTP & WS).
 	client, err := ethclient.Dial(cfg.HttpURL)
