@@ -49,6 +49,14 @@ describe("Check PoW", () => {
     await ambBridge.verifyEthash(blockPoW);
   });
 
+  it("TEST epochdata new", async () => {
+    const blockDelete = require("../../relay/cmd/dump-test-data/BlockPoW-228.json");
+    const epoch4 = require("../../relay/assets/testdata/epoch-128.json");
+    await submitEpochData(ambBridge, epoch4);
+
+    await ambBridge.verifyEthash(blockDelete);
+  })
+
   it("Test setEpochData deleting old epochs", async () => {
     const epoch1 = require("../../relay/assets/testdata/epoch-475.json");
     const epoch2 = require("../../relay/assets/testdata/epoch-476.json");
@@ -70,6 +78,13 @@ describe("Check PoW", () => {
     const realBlockHash = await ambBridgeTest.blockHashTest(blockPoW);
     expect(realBlockHash).eq(expectedBlockHash);
   });
+
+  const submitEpochDataTest = async (ethashContractInstance: Contract, epoch: any) => {
+    await ethashContractInstance.setEpochDataTest(
+        epoch.Epoch, epoch.FullSizeIn128Resolution, epoch.BranchDepth,
+        epoch.MerkleNodes, 0, 0
+    );
+  }
 
   const submitEpochData = async (ethashContractInstance: Contract, epoch: any) => {
     let start = 0;

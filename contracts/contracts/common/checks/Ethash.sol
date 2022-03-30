@@ -396,6 +396,28 @@ contract Ethash is SHA3_512 {
             delete epochData[epoch - 2];
     }
 
+    function setEpochDataTest(
+        uint epoch,
+        uint fullSizeIn128Resultion,
+        uint branchDepth,
+        uint[] memory merkleNodes,
+        uint start,
+        uint numElems ) public {
+
+        for( uint i = 0 ; i < merkleNodes.length ; i++ ) {
+            epochData[epoch].merkleNodes[i] = merkleNodes[i];
+        }
+        epochData[epoch].fullSizeIn128Resultion = fullSizeIn128Resultion;
+        epochData[epoch].branchDepth = branchDepth;
+
+        emit SetEpochData( msg.sender, 0 , 0 );
+
+        // we store only previous and current epochs
+        // so, delete second from the end epoch
+        if (epoch >= 2)  // underflow check
+            delete epochData[epoch - 2];
+    }
+
     function getMerkleLeave( uint epochIndex, uint p ) view internal returns(uint) {
         uint rootIndex = uint(p >> epochData[epochIndex].branchDepth);
         uint expectedRoot = epochData[epochIndex].merkleNodes[(rootIndex/2)];
