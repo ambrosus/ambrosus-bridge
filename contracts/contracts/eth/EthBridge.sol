@@ -31,6 +31,7 @@ contract EthBridge is CommonBridge, CheckAura {
     }
 
     function submitTransfer(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) {
+        emit TransferSubmit(auraProof.transfer.event_id);
 
         checkEventId(auraProof.transfer.event_id);
 

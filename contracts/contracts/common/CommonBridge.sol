@@ -3,11 +3,12 @@ pragma solidity 0.8.6;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./CommonStructs.sol";
 import "hardhat/console.sol";
 
 
-contract CommonBridge is AccessControl {
+contract CommonBridge is AccessControl, Pausable {
     // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
@@ -38,6 +39,7 @@ contract CommonBridge is AccessControl {
     event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
     event TransferFinish(uint indexed event_id);
+    event TransferSubmit(uint indexed event_id);
 
 
     constructor(
@@ -172,6 +174,10 @@ contract CommonBridge is AccessControl {
         uint arrayLength = tokenThisAddresses.length;
         for (uint i = 0; i < arrayLength; i++)
             delete tokenAddresses[tokenThisAddresses[i]];
+    }
+
+    function removeTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
+        delete lockedTransfers[eventId];
     }
 
     // internal
