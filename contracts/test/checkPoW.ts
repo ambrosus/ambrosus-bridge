@@ -52,12 +52,12 @@ describe("Check PoW", () => {
 
   // epoch-128 has 512 MerkleNodes
   it("Test submit epoch-128", async () => {
-    const blockDelete = require("../../relay/cmd/dump-test-data/BlockPoW-3840001.json");
+    const block = require("../../relay/cmd/dump-test-data/BlockPoW-3840001.json");
     const epoch = require("../../relay/assets/testdata/epoch-128.json");
     await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
       epoch.BranchDepth, epoch.MerkleNodes, {gasLimit: 30000000});
 
-    await ambBridge.verifyEthash(blockDelete);
+    await ambBridge.verifyEthash(block);
   })
 
   it("Test setEpochData deleting old epochs", async () => {
