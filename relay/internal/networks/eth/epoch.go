@@ -56,6 +56,8 @@ func (b *Bridge) SetEpochData(epochData *ethash.EpochData) error {
 }
 
 func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
+	log.Debug().Str("bridge", BridgeName).Msgf("Loading '%d.json' epoch data file...", epoch)
+
 	data, err := os.ReadFile(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
 		return nil, err
@@ -71,7 +73,7 @@ func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 }
 
 func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
-	log.Debug().Msgf("creating '%d.json' epoch data file...", epoch)
+	log.Debug().Str("bridge", BridgeName).Msgf("creating '%d.json' epoch data file...", epoch)
 
 	data, err := ethash.GenerateEpochData(epoch)
 	if err != nil {
@@ -91,7 +93,7 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 }
 
 func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
-	log.Debug().Msgf("Deleting '%d.json' epoch data file...", epoch)
+	log.Debug().Str("bridge", BridgeName).Msgf("Deleting '%d.json' epoch data file...", epoch)
 
 	if err := os.Remove(fmt.Sprintf(epochDataFilePath, epoch)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -105,7 +107,7 @@ func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
 }
 
 func (b *Bridge) checkEpochDataFile(epoch uint64) error {
-	log.Debug().Msgf("Checking '%d.json' epoch data file...", epoch)
+	log.Debug().Str("bridge", BridgeName).Msgf("Checking '%d.json' epoch data file...", epoch)
 
 	if _, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch)); err != nil {
 		if errors.Is(err, os.ErrNotExist) {
@@ -144,7 +146,7 @@ func (b *Bridge) getGeneratedEpochNumbers() ([]int, error) {
 }
 
 func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
-	log.Debug().Msg("Checking epoch data dir...")
+	log.Debug().Str("bridge", BridgeName).Msg("Checking epoch data dir...")
 
 	epochs, err := b.getGeneratedEpochNumbers()
 	if err != nil {
