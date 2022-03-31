@@ -139,6 +139,10 @@ func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 	return b.waitForTxMined(tx)
 }
 
+func (b *Bridge) IsEpochSet(epoch uint64) (bool, error) {
+	return b.Contract.IsEpochDataSet(nil, big.NewInt(int64(epoch)))
+}
+
 // GetLastEventId gets last contract event id.
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
