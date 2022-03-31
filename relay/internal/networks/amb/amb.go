@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
@@ -33,29 +34,6 @@ type Bridge struct {
 	sideBridge  networks.BridgeReceiveAura
 	auth        *bind.TransactOpts
 	logger      zerolog.Logger
-}
-
-func (b *Bridge) SubmitEpochData(
-	epoch *big.Int,
-	fullSizeIn128Resultion *big.Int,
-	branchDepth *big.Int,
-	nodes []*big.Int,
-	start *big.Int,
-	merkelNodesNumber *big.Int,
-) error {
-	// Metric
-	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
-
-	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
-	if txErr != nil {
-		return b.getFailureReasonViaCall(
-			txErr,
-			"setEpochData",
-			epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber,
-		)
-	}
-
-	return b.waitForTxMined(tx)
 }
 
 // New creates a new ambrosus bridge.
@@ -144,6 +122,23 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	return b.waitForTxMined(tx)
 }
 
+func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
+	// Metric
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+
+	tx, txErr := b.Contract.SetEpochData(b.auth,
+		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
+	if txErr != nil {
+		return b.getFailureReasonViaCall(
+			txErr,
+			"setEpochData",
+			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
+		)
+	}
+
+	return b.waitForTxMined(tx)
+}
+
 // GetLastEventId gets last contract event id.
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
@@ -174,7 +169,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Msgf("listen ambrosus error: %s", err.Error())
+			b.logger.Error().Msgf("listen error: %s", err.Error())
 		}
 	}
 }
@@ -210,17 +205,16 @@ func (b *Bridge) checkOldEvents() error {
 }
 
 func (b *Bridge) listen() error {
-	b.logger.Debug().Msg("Listening ambrosus events...")
-
-	err := b.checkOldEvents()
-	if err != nil {
+	if err := b.checkOldEvents(); err != nil {
 		return err
 	}
+
+	b.logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
+	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return err
 	}

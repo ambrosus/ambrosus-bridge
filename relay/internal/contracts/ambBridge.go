@@ -955,23 +955,23 @@ func (_Amb *AmbTransactorSession) RevokeRole(role [32]byte, account common.Addre
 
 // SetEpochData is a paid mutator transaction binding the contract method 0xc891a29d.
 //
-// Solidity: function setEpochData(uint256 epoch, uint256 fullSizeIn128Resultion, uint256 branchDepth, uint256[] merkleNodes, uint256 start, uint256 numElems) returns()
-func (_Amb *AmbTransactor) SetEpochData(opts *bind.TransactOpts, epoch *big.Int, fullSizeIn128Resultion *big.Int, branchDepth *big.Int, merkleNodes []*big.Int, start *big.Int, numElems *big.Int) (*types.Transaction, error) {
-	return _Amb.contract.Transact(opts, "setEpochData", epoch, fullSizeIn128Resultion, branchDepth, merkleNodes, start, numElems)
+// Solidity: function setEpochData(uint256 epoch, uint256 fullSizeIn128Resultion, uint256 branchDepth, uint256[] merkleNodes) returns()
+func (_Amb *AmbTransactor) SetEpochData(opts *bind.TransactOpts, epoch *big.Int, fullSizeIn128Resultion *big.Int, branchDepth *big.Int, merkleNodes []*big.Int) (*types.Transaction, error) {
+	return _Amb.contract.Transact(opts, "setEpochData", epoch, fullSizeIn128Resultion, branchDepth, merkleNodes)
 }
 
 // SetEpochData is a paid mutator transaction binding the contract method 0xc891a29d.
 //
-// Solidity: function setEpochData(uint256 epoch, uint256 fullSizeIn128Resultion, uint256 branchDepth, uint256[] merkleNodes, uint256 start, uint256 numElems) returns()
-func (_Amb *AmbSession) SetEpochData(epoch *big.Int, fullSizeIn128Resultion *big.Int, branchDepth *big.Int, merkleNodes []*big.Int, start *big.Int, numElems *big.Int) (*types.Transaction, error) {
-	return _Amb.Contract.SetEpochData(&_Amb.TransactOpts, epoch, fullSizeIn128Resultion, branchDepth, merkleNodes, start, numElems)
+// Solidity: function setEpochData(uint256 epoch, uint256 fullSizeIn128Resultion, uint256 branchDepth, uint256[] merkleNodes) returns()
+func (_Amb *AmbSession) SetEpochData(epoch *big.Int, fullSizeIn128Resultion *big.Int, branchDepth *big.Int, merkleNodes []*big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.SetEpochData(&_Amb.TransactOpts, epoch, fullSizeIn128Resultion, branchDepth, merkleNodes)
 }
 
 // SetEpochData is a paid mutator transaction binding the contract method 0xc891a29d.
 //
-// Solidity: function setEpochData(uint256 epoch, uint256 fullSizeIn128Resultion, uint256 branchDepth, uint256[] merkleNodes, uint256 start, uint256 numElems) returns()
-func (_Amb *AmbTransactorSession) SetEpochData(epoch *big.Int, fullSizeIn128Resultion *big.Int, branchDepth *big.Int, merkleNodes []*big.Int, start *big.Int, numElems *big.Int) (*types.Transaction, error) {
-	return _Amb.Contract.SetEpochData(&_Amb.TransactOpts, epoch, fullSizeIn128Resultion, branchDepth, merkleNodes, start, numElems)
+// Solidity: function setEpochData(uint256 epoch, uint256 fullSizeIn128Resultion, uint256 branchDepth, uint256[] merkleNodes) returns()
+func (_Amb *AmbTransactorSession) SetEpochData(epoch *big.Int, fullSizeIn128Resultion *big.Int, branchDepth *big.Int, merkleNodes []*big.Int) (*types.Transaction, error) {
+	return _Amb.Contract.SetEpochData(&_Amb.TransactOpts, epoch, fullSizeIn128Resultion, branchDepth, merkleNodes)
 }
 
 // SetSideBridge is a paid mutator transaction binding the contract method 0x21d3d536.

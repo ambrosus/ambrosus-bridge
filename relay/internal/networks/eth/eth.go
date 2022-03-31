@@ -176,7 +176,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Msgf("listen ethereum error: %s", err.Error())
+			b.logger.Error().Msgf("listen error: %s", err.Error())
 		}
 	}
 }
@@ -212,12 +212,11 @@ func (b *Bridge) checkOldEvents() error {
 }
 
 func (b *Bridge) listen() error {
-	b.logger.Debug().Msg("Listening ethereum events...")
-
-	err := b.checkOldEvents()
-	if err != nil {
+	if err := b.checkOldEvents(); err != nil {
 		return err
 	}
+
+	b.logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
@@ -280,7 +279,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 				return err
 			}
 
-			if err := b.SetEpochData(epochData); err != nil {
+			if err := b.sideBridge.SubmitEpochData(epochData); err != nil {
 				return err
 			}
 
