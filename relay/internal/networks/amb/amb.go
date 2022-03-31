@@ -8,6 +8,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
@@ -16,7 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog"
 )
 
 const BridgeName = "ambrosus"
@@ -31,7 +32,7 @@ type Bridge struct {
 	config      *config.AMBConfig
 	sideBridge  networks.BridgeReceiveAura
 	auth        *bind.TransactOpts
-	logger      external_logger.ExternalLogger
+	logger      zerolog.Logger
 }
 
 func (b *Bridge) SubmitEpochData(
@@ -59,7 +60,9 @@ func (b *Bridge) SubmitEpochData(
 
 // New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	log.Debug().Str("bridge", BridgeName).Msg("Creating ambrosus bridge...")
+	logger := logger.NewSubLogger(BridgeName, externalLogger)
+
+	logger.Debug().Msg("Creating ambrosus bridge...")
 
 	// Creating a new ethereum client (HTTP & WS).
 	client, err := ethclient.Dial(cfg.HttpURL)
@@ -121,7 +124,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		VSContract:  vsContract,
 		config:      cfg,
 		auth:        auth,
-		logger:      externalLogger,
+		logger:      logger,
 	}, nil
 }
 
@@ -167,21 +170,17 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 
-	log.Info().Str("bridge", BridgeName).Msg("Ambrosus bridge runned!")
+	b.logger.Info().Msg("Ambrosus bridge runned!")
 
 	for {
 		if err := b.listen(); err != nil {
-			log.Error().Err(err).Msg("listen ambrosus error")
-
-			if err := b.logger.LogError(err); err != nil {
-				log.Error().Err(err).Msg("external logger error")
-			}
+			b.logger.Error().Msgf("listen ambrosus error: %s", err.Error())
 		}
 	}
 }
 
 func (b *Bridge) checkOldEvents() error {
-	log.Info().Str("bridge", BridgeName).Msg("Checking old events...")
+	b.logger.Info().Msg("Checking old events...")
 
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
@@ -200,10 +199,7 @@ func (b *Bridge) checkOldEvents() error {
 			return err
 		}
 
-		log.Info().
-			Str("bridge", BridgeName).
-			Str("event_id", nextEventId.String()).
-			Msg("Send old event...")
+		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
 
 		if err := b.sendEvent(nextEvent); err != nil {
 			return err
@@ -214,7 +210,7 @@ func (b *Bridge) checkOldEvents() error {
 }
 
 func (b *Bridge) listen() error {
-	log.Debug().Str("bridge", BridgeName).Msg("Listening ambrosus events...")
+	b.logger.Debug().Msg("Listening ambrosus events...")
 
 	err := b.checkOldEvents()
 	if err != nil {
@@ -237,10 +233,7 @@ func (b *Bridge) listen() error {
 		case err := <-eventSub.Err():
 			return err
 		case event := <-eventChannel:
-			log.Info().
-				Str("bridge", BridgeName).
-				Str("event_id", event.EventId.String()).
-				Msg("Send event...")
+			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
 			if err := b.sendEvent(&event.TransferEvent); err != nil {
 				return err
@@ -250,10 +243,7 @@ func (b *Bridge) listen() error {
 }
 
 func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
-	log.Debug().
-		Str("bridge", BridgeName).
-		Str("event_id", event.EventId.String()).
-		Msg("Waiting for safety blocks...")
+	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
 
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
@@ -265,10 +255,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	log.Debug().
-		Str("bridge", BridgeName).
-		Str("event_id", event.EventId.String()).
-		Msg("Checking if the event has been removed...")
+	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.isEventRemoved(event); err != nil {
@@ -280,10 +267,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	log.Debug().
-		Str("bridge", BridgeName).
-		Str("event_id", event.EventId.String()).
-		Msg("Submit transfer Aura...")
+	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 
 	return b.sideBridge.SubmitTransferAura(ambTransfer)
 }
