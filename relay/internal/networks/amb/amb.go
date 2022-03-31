@@ -36,23 +36,6 @@ type Bridge struct {
 	logger      zerolog.Logger
 }
 
-func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
-	// Metric
-	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
-
-	tx, txErr := b.Contract.SetEpochData(b.auth,
-		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
-	if txErr != nil {
-		return b.getFailureReasonViaCall(
-			txErr,
-			"setEpochData",
-			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
-		)
-	}
-
-	return b.waitForTxMined(tx)
-}
-
 // New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	logger := logger.NewSubLogger(BridgeName, externalLogger)
@@ -134,6 +117,23 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
 		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
+	}
+
+	return b.waitForTxMined(tx)
+}
+
+func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
+	// Metric
+	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+
+	tx, txErr := b.Contract.SetEpochData(b.auth,
+		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
+	if txErr != nil {
+		return b.getFailureReasonViaCall(
+			txErr,
+			"setEpochData",
+			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
+		)
 	}
 
 	return b.waitForTxMined(tx)
