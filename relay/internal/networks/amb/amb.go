@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
@@ -35,23 +36,17 @@ type Bridge struct {
 	logger      zerolog.Logger
 }
 
-func (b *Bridge) SubmitEpochData(
-	epoch *big.Int,
-	fullSizeIn128Resultion *big.Int,
-	branchDepth *big.Int,
-	nodes []*big.Int,
-	start *big.Int,
-	merkelNodesNumber *big.Int,
-) error {
+func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 	// Metric
 	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
-	tx, txErr := b.Contract.SetEpochData(b.auth, epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber)
+	tx, txErr := b.Contract.SetEpochData(b.auth,
+		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
 	if txErr != nil {
 		return b.getFailureReasonViaCall(
 			txErr,
 			"setEpochData",
-			epoch, fullSizeIn128Resultion, branchDepth, nodes, start, merkelNodesNumber,
+			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
 		)
 	}
 
