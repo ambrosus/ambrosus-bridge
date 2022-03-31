@@ -215,7 +215,7 @@ func (b *Bridge) listen() error {
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
 	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
-	eventSub, err := b.Contract.WatchTransfer(watchOpts, eventChannel, nil)
+	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return err
 	}
