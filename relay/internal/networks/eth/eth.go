@@ -280,7 +280,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 				return err
 			}
 
-			if err := b.SetEpochData(epochData); err != nil {
+			if err := b.sideBridge.SubmitEpochData(epochData); err != nil {
 				return err
 			}
 

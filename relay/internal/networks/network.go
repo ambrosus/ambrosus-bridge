@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -30,5 +31,5 @@ type BridgeReceiveAura interface {
 type BridgeReceiveEthash interface {
 	Bridge
 	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
-	SubmitEpochData(*big.Int, *big.Int, *big.Int, []*big.Int, *big.Int, *big.Int) error
+	SubmitEpochData(*ethash.EpochData) error
 }
