@@ -13,6 +13,8 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 )
 
+// todo move epochs control to ethash package
+
 const (
 	epochDataPath     string = "./assets/epoch/"
 	epochDataFilePath        = epochDataPath + "%d.json"
@@ -40,7 +42,7 @@ func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 	b.logger.Info().Msgf("Creating '%d.json' epoch data file...", epoch)
 
-	data, err := ethash.GenerateEpochData(epoch)
+	data, err := b.ethash.GenerateEpochData(epoch)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +123,7 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 	for i := epoch; i <= length; i++ {
 		if err := b.checkEpochDataFile(i); err != nil {
 			if errors.Is(err, ErrEpochDataFileNotFound) {
-				if _, err := b.createEpochDataFile(i); err != nil {
+				if _, err := b.ethash.GenerateEpochData(i); err != nil {
 					return err
 				}
 

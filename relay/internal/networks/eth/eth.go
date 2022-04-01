@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
@@ -33,6 +34,7 @@ type Bridge struct {
 	auth       *bind.TransactOpts
 	cfg        *config.ETHConfig
 	logger     zerolog.Logger
+	ethash     *ethash.Ethash
 }
 
 // New creates a new ethereum bridge.
@@ -86,6 +88,8 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
+	ethash := ethash.New("./assets") // todo cfg
+
 	return &Bridge{
 		Client:     client,
 		WsClient:   wsClient,
@@ -94,6 +98,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		auth:       auth,
 		cfg:        cfg,
 		logger:     logger,
+		ethash:     ethash,
 	}, nil
 }
 
