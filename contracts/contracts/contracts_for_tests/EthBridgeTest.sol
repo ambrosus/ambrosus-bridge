@@ -12,4 +12,8 @@ contract EthBridgeTest is EthBridge {
         bytes32 lastProcessedBlock
     )
     EthBridge(args, initialValidators, validatorSetAddress_, lastProcessedBlock) {}
+
+    function CheckSignatureTest(address signer, bytes32 message, bytes memory signature) public pure {
+        CheckSignature(signer, message, signature);
+    }
 }
