@@ -9,11 +9,15 @@ contract wAMB is IwAMB, ERC20 {
 
     function wrap() public override payable {
         _mint(msg.sender, msg.value);
+
+        emit Wrap(msg.sender, msg.value);
     }
 
     function unwrap(uint amount) public override payable {
         _burn(msg.sender, amount);
         payable(msg.sender).transfer(amount);
+
+        emit Unwrap(msg.sender, msg.value);
     }
 
 }
