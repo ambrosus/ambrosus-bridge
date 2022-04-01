@@ -12,9 +12,11 @@ network:
 
 external-logger:
   telegram:
+    enable: true
     token:
     chat-id:
 
 prometheus:
+  enable: true
   ip: localhost
   port: 9091
