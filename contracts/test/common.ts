@@ -245,21 +245,21 @@ describe("Common tests", () => {
   it('Test wrap_withdraw in AmbBridge', async () => {
     await ambBridge.setAmbWrapper(wAmb.address);
 
-    await expect(() => ambBridge.wrap_withdraw(wAmb.address, user, 1, {value: 1050}))
+    await expect(() => ambBridge.wrap_withdraw(user, 1, {value: 1050}))
         .to.changeTokenBalance(wAmb, ownerS, 50);
 
-    await ambBridge.wrap_withdraw(wAmb.address, user, 2, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 2, {value: 1001});
     await nextTimeframe();
 
     // will catch previous txs (because nextTimeframe happened)
-    let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(wAmb.address, user, 1337, {value: 1001});
-    await ambBridge.wrap_withdraw(wAmb.address, user, 3, {value: 1001});
-    await ambBridge.wrap_withdraw(wAmb.address, user, 4, {value: 1001});
+    let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, 1337, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 3, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 4, {value: 1001});
     await nextTimeframe();
 
     // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-    let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(wAmb.address, user, 1337, {value: 1001});
-    await ambBridge.wrap_withdraw(wAmb.address, user, 5, {value: 1001});
+    let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, 1337, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 5, {value: 1001});
 
     let receipt1Amb: ContractReceipt = await tx1Amb.wait();
     let receipt2Amb: ContractReceipt = await tx2Amb.wait();
