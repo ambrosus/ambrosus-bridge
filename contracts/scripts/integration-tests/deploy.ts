@@ -1,6 +1,6 @@
 import fs from "fs";
 import {deploy, deployAmbBridge, deployEthBridge} from "../deployBridges";
-import {ambSigner, ethSigner, relayAddress, setContractAddressesYml, vsContractAddress} from "./cfg";
+import {ambSigner, ethSigner, relayAddress, setContractAddressesYml, vsContractAddress, w, options} from "./cfg";
 import path from "path";
 
 
@@ -38,7 +38,9 @@ async function main() {
     timeframe, lockTime, minSafetyBlocks
   }, vsContractAddress, ambSigner);
 
-  await ambBridge.setSideBridge(ethBridge.address, {gasLimit: 30_000});  // auto gas exceed network gasLimit
+  const adminRole = await ambBridge.ADMIN_ROLE();
+  await w(ambBridge.grantRole(adminRole, ambSigner.address, options));
+  await w(ambBridge.setSideBridge(ethBridge.address, options));  // auto gas exceed network gasLimit
 
   // todo use real erc20 contract
   // todo set bridge addresses to erc20 contracts
