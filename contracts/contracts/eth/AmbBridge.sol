@@ -4,6 +4,7 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/checks/CheckPoW.sol";
 import "../common/CommonStructs.sol";
+import "../IwAMB.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
@@ -24,6 +25,12 @@ contract AmbBridge is CommonBridge, CheckPoW {
         emitTestEvent(address(this), msg.sender, 10, true);
 
         ambWrapperAddress = ambWrapper_;
+    }
+
+    function wrap() public payable {
+        require(msg.value > 0);
+        IwAMB(ambWrapperAddress).wrap{value: msg.value}();
+        IwAMB(ambWrapperAddress).transfer(msg.sender, msg.value);
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
