@@ -6,7 +6,6 @@ import mockTokens from "./mockTokensAddresses.json";
 import {Contract, providers} from "ethers";
 
 
-
 chai.should();
 const expect = chai.expect;
 
@@ -14,7 +13,7 @@ const expect = chai.expect;
 describe("Integration tests", function () {
   this.timeout(5 * 60 * 1000); // 5 minutes
 
-  const ambOptions = {gasLimit: 800000};  // amb gas estimator broken
+  const options = {gasLimit: 800000};  // amb gas estimator broken
 
   let ambBridge: Contract;
   let ethBridge: Contract;
@@ -31,20 +30,20 @@ describe("Integration tests", function () {
     // setup relay
     console.log("Setup relay");
     const relayRole = await ethBridge.ADMIN_ROLE();
-    await w(ethBridge.grantRole(relayRole, relayAddress));
-    await w(ambBridge.grantRole(relayRole, relayAddress, ambOptions));
+    await w(ethBridge.grantRole(relayRole, relayAddress, options));
+    await w(ambBridge.grantRole(relayRole, relayAddress, options));
 
     await w(ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1")}));
-    await w(ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...ambOptions}));
+    await w(ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...options}));
 
 
     // mint tokens
     console.log("Mint tokens");
-    await w(ambToken.mint(ambSigner.address, 10));
-    await w(ethToken.mint(ethSigner.address, 10, ambOptions));
+    await w(ambToken.mint(ambSigner.address, 10, options));
+    await w(ethToken.mint(ethSigner.address, 10, options));
 
-    await w(ethToken.increaseAllowance(ethBridge.address, 10));
-    await w(ambToken.increaseAllowance(ambBridge.address, 10, ambOptions));
+    await w(ethToken.increaseAllowance(ethBridge.address, 10, options));
+    await w(ambToken.increaseAllowance(ambBridge.address, 10, options));
   });
 
 
@@ -56,13 +55,19 @@ describe("Integration tests", function () {
     expect(ethBefore).gte(10);
     expect(ambBefore).gte(10);
 
-
     // withdraw
     console.log("Withdraw ETH");
     const fee = await ethBridge.fee();
-    await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, {value: fee, gasLimit: 800000}));
+    const receipt1 = await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, {value: fee, gasLimit: 800000}));
+    const events = getEvents(receipt1, "Withdraw");
+    const prevEventId = events[0].args.event_id;
+
     await sleep(2000); // waiting for 100% new timeframe (timeframe is 1 second)
-    await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 1, {value: fee, gasLimit: 800000}));  // must emit event, todo check
+
+    const receipt2 = await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 1, {value: fee, gasLimit: 800000}));
+    const args = getEvents(receipt2, "Withdraw")[0].args;
+    expect([args.from, args.event_id, args.feeAmount]).to.eql([ethSigner.address, prevEventId.add("1"), fee]);
+
 
     // wait for minSafetyBlocks confirmations
     console.log(`Wait for confirmations ETH`);
@@ -101,9 +106,16 @@ describe("Integration tests", function () {
     // withdraw
     console.log("Withdraw AMB");
     const fee = await ambBridge.fee();
-    await w(ambBridge.withdraw(ambToken.address, ethSigner.address, 5, {value: fee, gasLimit: 800000}));
+    const receipt1 = await w(ambBridge.withdraw(ambToken.address, ethSigner.address, 5, {value: fee, gasLimit: 800000}));
+    const events1 = getEvents(receipt1, "Withdraw");
+    const prevEventId = events1[0].args.event_id;
+
     await sleep(2000); // waiting for 100% new timeframe (timeframe is 1 second)
-    await w(ambBridge.withdraw(ambToken.address, ethSigner.address, 1, {value: fee, gasLimit: 800000}));  // must emit event, todo check
+
+    const receipt2 = await w(ambBridge.withdraw(ambToken.address, ethSigner.address, 1, {value: fee, gasLimit: 800000}));  // must emit event, todo check
+    const events2 = getEvents(receipt2, "Withdraw");
+    const args = events2[0].args;
+    expect([args.from, args.event_id, args.feeAmount]).to.eql([ambSigner.address, prevEventId.add("1"), fee]);
 
     // wait for minSafetyBlocks confirmations
     console.log(`Wait for confirmations AMB`);
@@ -149,7 +161,11 @@ async function waitConfirmations(minSafetyBlocks: number, provider: providers.Pr
 
 }
 
-
+const getEvents = (receipt: any, eventName: string) => {
+  return receipt.events?.filter((x: any) => {
+    return x.event === eventName;
+  });
+};
 
 // wait for transaction to be mined
 async function w(call: Promise<any>): Promise<any> {
