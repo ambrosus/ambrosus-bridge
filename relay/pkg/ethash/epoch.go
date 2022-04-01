@@ -20,6 +20,13 @@ type EpochData struct {
 	MerkleNodes             []*hexutil.Big
 }
 
+func (ed *EpochData) BigIntNodes() (result []*big.Int) {
+	for _, i := range ed.MerkleNodes {
+		result = append(result, i.ToInt())
+	}
+	return
+}
+
 func GenerateEpochData(epoch uint64) (*EpochData, error) {
 	fullSize := DatasetSize(epoch * epochLength)
 	fullSizeIn128Resolution := fullSize / 128

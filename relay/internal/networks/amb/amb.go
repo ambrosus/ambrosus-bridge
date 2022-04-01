@@ -126,8 +126,8 @@ func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 	// Metric
 	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
-	tx, txErr := b.Contract.SetEpochData(b.auth,
-		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
+	tx, txErr := b.Contract.SetEpochData(b.auth, (*big.Int)(epochData.Epoch), (*big.Int)(epochData.FullSizeIn128Resolution),
+		(*big.Int)(epochData.BranchDepth), epochData.BigIntNodes())
 	if txErr != nil {
 		return b.getFailureReasonViaCall(
 			txErr,
