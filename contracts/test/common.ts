@@ -24,10 +24,11 @@ describe("Common tests", () => {
   let mockERC20: Contract;
   let ambBridgeTest: Contract;
   let ethBridgeTest: Contract;
+  let wAmb: Contract;
 
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest", "wamb"]);
     ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
@@ -38,6 +39,7 @@ describe("Common tests", () => {
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
     ethBridgeTest = await ethers.getContract("EthBridgeTest", ownerS);
+    wAmb = await ethers.getContract("wAMB", ownerS);
 
     await ambBridge.grantRole(ADMIN_ROLE, owner);
     await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
@@ -245,5 +247,12 @@ describe("Common tests", () => {
     const timestamp = currentTimeframe * 14400 + amount * 14400;
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   };
+
+  it('Test wrap in AmbBridge', async () => {
+    await ambBridge.setAmbWrapper(wAmb.address);
+
+    await expect(() => ambBridge.wrap({value: 50}))
+        .to.changeTokenBalance(wAmb, ownerS, 50);
+  });
 
 });
