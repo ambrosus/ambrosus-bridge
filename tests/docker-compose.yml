@@ -44,7 +44,6 @@ services:
     hostname: geth-bootnode
     env_file:
       - .env
-    image: geth-client
     build:
       context: ./ethereum
       args:
@@ -76,9 +75,12 @@ services:
     hostname: geth-rpc-endpoint
     env_file:
       - .env
-    image: geth-client
+    build:
+      context: ./ethereum
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
     depends_on:
-      - geth-bootnode    
+      - geth-bootnode
     command:
       --bootnodes "enode://af22c29c316ad069cf48a09a4ad5cf04a251b411e45098888d114c6dd7f489a13786620d5953738762afa13711d4ffb3b19aa5de772d8af72f851f7e9c5b164a@geth-bootnode:30303"
       --allow-insecure-unlock
@@ -92,10 +94,10 @@ services:
       --syncmode "full"
       --verbosity 5
       --keystore /root/keystore
-     #--ws
-     #--ws.port 3434
-     #--ws.api "eth,web3,net,admin,personal"
-     #--ws.addr "0.0.0.0"
+      --ws
+      --ws.port 3434
+      --ws.api "eth,web3,net,admin,personal"
+      --ws.addr "0.0.0.0"
       # --datadir data
       #--keystore ~/.ethereum/keystore
     ports:
@@ -114,7 +116,10 @@ services:
     hostname: geth-miner
     env_file:
       - .env
-    image: geth-client
+    build:
+      context: ./ethereum
+      args:
+        - ACCOUNT_PASSWORD=${ACCOUNT_PASSWORD}
     depends_on:
       - geth-bootnode
     command:
@@ -122,10 +127,6 @@ services:
       --networkid ${NETWORK_ID}
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
-      --ws
-      --ws.port 3535
-      --ws.api "eth,web3,net,admin,personal"
-      --ws.addr "0.0.0.0"
       --mine
       --miner.threads 1
       --verbosity 5

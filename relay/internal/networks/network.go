@@ -5,13 +5,13 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
 	ErrEventNotFound = errors.New("error event not found")
-	ErrEpochData     = errors.New("Required epoch data-pow not set")
 )
 
 type Bridge interface {
@@ -30,5 +30,6 @@ type BridgeReceiveAura interface {
 type BridgeReceiveEthash interface {
 	Bridge
 	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
-	SubmitEpochData(*big.Int, *big.Int, *big.Int, []*big.Int, *big.Int, *big.Int) error
+	SubmitEpochData(*ethash.EpochData) error
+	IsEpochSet(epoch uint64) (bool, error)
 }

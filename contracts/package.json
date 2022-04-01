@@ -17,7 +17,10 @@
     "lint": "eslint .",
     "console": "hardhat console",
     "deploytokensamb": "hardhat run scripts/deployTokens.ts --network amb",
-    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network rinkeby"
+    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network rinkeby",
+
+    "integr_deploy": "hardhat run scripts/integration-tests/deploy.ts",
+    "integr_test": "hardhat test scripts/integration-tests/main.ts"
   },
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.4",
@@ -33,6 +36,7 @@
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.4",
     "istanbul": "^0.4.5",
+    "js-yaml": "^4.1.0",
     "mocha": "^8.4.0",
     "prettier": "^2.3.0",
     "rlp": "^3.0.0",

@@ -7,13 +7,13 @@ import "../common/CommonStructs.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
+    address ambWrapperAddress;
+
     constructor(
-        CommonStructs.ConstructorArgs memory args
+        CommonStructs.ConstructorArgs memory args,
+        address ambWrapper_
     )
-    CommonBridge(args.sideBridgeAddress, args.relayAddress,
-                 args.tokenThisAddresses, args.tokenSideAddresses,
-                 args.fee, args.feeRecipient,
-                 args.timeframeSeconds, args.lockTime, args.minSafetyBlocks)
+    CommonBridge(args)
     {
 
         // relay uses this event to know from what moment to synchronize the validator set;
@@ -23,9 +23,10 @@ contract AmbBridge is CommonBridge, CheckPoW {
 
         emitTestEvent(address(this), msg.sender, 10, true);
 
+        ambWrapperAddress = ambWrapper_;
     }
 
-    function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenPaused {
+    function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
         emit TransferSubmit(powProof.transfer.event_id);
 
         checkEventId(powProof.transfer.event_id);
@@ -39,5 +40,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-
+    function setAmbWrapper(address wrapper) public onlyRole(ADMIN_ROLE) {
+        ambWrapperAddress = wrapper;
+    }
 }

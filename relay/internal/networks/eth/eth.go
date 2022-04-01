@@ -176,7 +176,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Msgf("listen ethereum error: %s", err.Error())
+			b.logger.Error().Msgf("listen error: %s", err.Error())
 		}
 	}
 }
@@ -212,12 +212,11 @@ func (b *Bridge) checkOldEvents() error {
 }
 
 func (b *Bridge) listen() error {
-	b.logger.Debug().Msg("Listening ethereum events...")
-
-	err := b.checkOldEvents()
-	if err != nil {
+	if err := b.checkOldEvents(); err != nil {
 		return err
 	}
+
+	b.logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
@@ -269,32 +268,31 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
-
-	if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
-		if err.Error() == networks.ErrEpochData.Error() {
-			epoch := event.Raw.BlockNumber / 30000
-
-			epochData, err := b.loadEpochDataFile(epoch)
-			if err != nil {
-				return err
-			}
-
-			if err := b.SetEpochData(epochData); err != nil {
-				return err
-			}
-
-			if err := b.sideBridge.SubmitTransferPoW(ambTransfer); err != nil {
-				return err
-			}
-
-			return b.checkEpochDataDir(epoch, b.cfg.EpochLength)
-		}
-
+	if err := b.checkEpochData(event); err != nil {
 		return err
 	}
 
-	return nil
+	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
+	return b.sideBridge.SubmitTransferPoW(ambTransfer)
+}
+
+func (b *Bridge) checkEpochData(event *contracts.TransferEvent) error {
+	epoch := event.Raw.BlockNumber / 30000
+	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
+	if err != nil {
+		return err
+	}
+	if isEpochSet {
+		return nil
+	}
+
+	b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit epoch data...")
+	epochData, err := b.loadEpochDataFile(epoch)
+	if err != nil {
+		return err
+	}
+	return b.sideBridge.SubmitEpochData(epochData)
+	// todo delete old epochs, generate new (if need)
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
