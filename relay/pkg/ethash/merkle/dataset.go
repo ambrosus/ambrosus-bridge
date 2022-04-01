@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -59,28 +60,27 @@ func NewDatasetTree() *DatasetTree {
 	}
 }
 
-func (d DatasetTree) MerkleNodes() []*big.Int {
-	if d.finalized {
-		result := []*big.Int{}
+func (d DatasetTree) MerkleNodes() []*hexutil.Big {
+	if !d.finalized {
+		panic("Merkle tree needs to be finalized")
+	}
+	var result []*hexutil.Big
 
-		for i := 0; i*2 < len(d.exportNodes); i++ {
-			if i*2+1 >= len(d.exportNodes) {
-				result = append(result, BranchElementFromHash(
-					SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-					SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
-				)
-			} else {
-				result = append(result, BranchElementFromHash(
-					SPHash(d.exportNodes[i*2+1].(DatasetData)),
-					SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
-				)
-			}
+	for i := 0; i*2 < len(d.exportNodes); i++ {
+		if i*2+1 >= len(d.exportNodes) {
+			result = append(result, (*hexutil.Big)(BranchElementFromHash(
+				SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+				SPHash(d.exportNodes[i*2].(DatasetData)),
+			).Big()))
+		} else {
+			result = append(result, (*hexutil.Big)(BranchElementFromHash(
+				SPHash(d.exportNodes[i*2+1].(DatasetData)),
+				SPHash(d.exportNodes[i*2].(DatasetData)),
+			).Big()))
 		}
-
-		return result
 	}
 
-	panic("Merkle tree needs to be finalized")
+	return result
 }
 
 func (d DatasetTree) AllDAGElements() []Word {

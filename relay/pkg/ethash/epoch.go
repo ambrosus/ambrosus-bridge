@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash/merkle"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 const (
@@ -13,10 +14,10 @@ const (
 )
 
 type EpochData struct {
-	Epoch                   *big.Int
-	FullSizeIn128Resolution *big.Int
-	BranchDepth             *big.Int
-	MerkleNodes             []*big.Int
+	Epoch                   *hexutil.Big
+	FullSizeIn128Resolution *hexutil.Big
+	BranchDepth             *hexutil.Big
+	MerkleNodes             []*hexutil.Big
 }
 
 func GenerateEpochData(epoch uint64) (*EpochData, error) {
@@ -39,9 +40,9 @@ func GenerateEpochData(epoch uint64) (*EpochData, error) {
 	mt.Finalize()
 
 	return &EpochData{
-		Epoch:                   big.NewInt(int64(epoch)),
-		FullSizeIn128Resolution: big.NewInt(int64(fullSizeIn128Resolution)),
-		BranchDepth:             big.NewInt(int64(branchDepth - 10)),
+		Epoch:                   (*hexutil.Big)(big.NewInt(int64(epoch))),
+		FullSizeIn128Resolution: (*hexutil.Big)(big.NewInt(int64(fullSizeIn128Resolution))),
+		BranchDepth:             (*hexutil.Big)(big.NewInt(int64(branchDepth - 10))),
 		MerkleNodes:             mt.MerkleNodes(),
 	}, nil
 }

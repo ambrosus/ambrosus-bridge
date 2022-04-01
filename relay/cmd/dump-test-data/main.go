@@ -236,14 +236,7 @@ func generateEpochData() error {
 		return err
 	}
 
-	data := epochData{
-		Epoch:                   ed.Epoch,
-		FullSizeIn128Resolution: ed.FullSizeIn128Resolution,
-		BranchDepth:             ed.BranchDepth,
-		MerkleNodes:             bigIntArrayToStringArray(ed.MerkleNodes),
-	}
-
-	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/epoch-%d.json", number))
+	return writeToJSONFile(ed, fmt.Sprintf("./assets/testdata/epoch-%d.json", number))
 }
 
 // Write data to json file.
@@ -256,14 +249,4 @@ func writeToJSONFile(data interface{}, path string) error {
 
 	// Write data to file.
 	return ioutil.WriteFile(path, file, 0644)
-}
-
-func bigIntArrayToStringArray(intArray []*big.Int) []string {
-	var array []string
-
-	for _, n := range intArray {
-		array = append(array, n.String())
-	}
-
-	return array
 }
