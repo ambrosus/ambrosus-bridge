@@ -16,12 +16,7 @@ contract EthBridge is CommonBridge, CheckAura {
         address validatorSetAddress_,
         bytes32 lastProcessedBlock_
     )
-    CommonBridge(
-        args.sideBridgeAddress, args.relayAddress,
-        args.tokenThisAddresses, args.tokenSideAddresses,
-        args.fee, args.feeRecipient,
-        args.timeframeSeconds, args.lockTime, args.minSafetyBlocks
-    )
+    CommonBridge(args)
     CheckAura(initialValidators)
     {
         emitTestEvent(address(this), msg.sender, 10, true);
