@@ -15,6 +15,8 @@ interface CommonArgs {
   timeframe: number;
   lockTime: number;
   minSafetyBlocks: number;
+
+  ambWrapperAddress: string;
 }
 
 
@@ -35,7 +37,7 @@ export async function deployAmbBridge(
     args.lockTime,
     args.minSafetyBlocks,
   ],
-  ethers.constants.AddressZero
+  args.ambWrapperAddress
   ];
 
   return await deploy("AmbBridge", ambSigner, ...argsForAmb);
