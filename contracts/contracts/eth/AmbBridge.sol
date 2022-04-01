@@ -27,7 +27,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         ambWrapperAddress = ambWrapper_;
     }
 
-    function wrap_withdraw(address tokenAmbAddress, address toAddress, uint amount) public payable {
+    function wrap_withdraw(address toAddress, uint amount) public payable {
         require(msg.value > fee, "msg.value can't be lesser than fee");
         feeRecipient.transfer(fee);
 
@@ -36,7 +36,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         IERC20(ambWrapperAddress).transfer(msg.sender, restOfValue);
 
         //
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        queue.push(CommonStructs.Transfer(ambWrapperAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);
 
         uint nowTimeframe = block.timestamp / timeframeSeconds;
