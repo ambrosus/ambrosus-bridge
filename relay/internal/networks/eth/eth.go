@@ -34,7 +34,7 @@ type Bridge struct {
 	auth       *bind.TransactOpts
 	cfg        *config.ETHConfig
 	logger     zerolog.Logger
-	ethash     *ethash.Ethash
+	Ethash     *ethash.Ethash
 }
 
 // New creates a new ethereum bridge.
@@ -98,7 +98,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		auth:       auth,
 		cfg:        cfg,
 		logger:     logger,
-		ethash:     ethash,
+		Ethash:     ethash,
 	}, nil
 }
 

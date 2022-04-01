@@ -13,7 +13,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -168,7 +167,7 @@ func encodePoWBlock() error {
 		return err
 	}
 
-	bd, err := eth.EncodeBlock(block.Header(), true)
+	bd, err := bridge.EncodeBlock(block.Header(), true)
 	if err != nil {
 		return err
 	}
@@ -254,6 +253,13 @@ type epochData struct {
 
 // Generating epoch data.
 func generateEpochData() error {
+	bridge, err := eth.New(&config.ETHConfig{
+		Network: config.Network{HttpURL: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"},
+	}, nil)
+	if err != nil {
+		return err
+	}
+
 	log.Info().Msg("Generating epoch data...")
 
 	if len(os.Args) < 3 {
@@ -265,7 +271,7 @@ func generateEpochData() error {
 		return err
 	}
 
-	ed, err := ethash.GenerateEpochData(uint64(number))
+	ed, err := bridge.Ethash.GenerateEpochData(uint64(number))
 	if err != nil {
 		return err
 	}
