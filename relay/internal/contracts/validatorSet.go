@@ -30,7 +30,7 @@ var (
 
 // VsMetaData contains all meta data concerning the Vs contract.
 var VsMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"parentHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"internalType\":\"address[]\",\"name\":\"newSet\",\"type\":\"address[]\"}],\"name\":\"InitiateChange\",\"type\":\"event\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_validator\",\"type\":\"address\"}],\"name\":\"addValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"ambBlockNumber\",\"type\":\"uint256\"}],\"name\":\"finalizeChange\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"finalizeChange\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getPendingValidators\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"ambBlockNumber\",\"type\":\"uint256\"}],\"name\":\"getValidators\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getValidators\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"pendingValidators\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_validator\",\"type\":\"address\"}],\"name\":\"removeValidator\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"ambBlockNumber\",\"type\":\"uint256\"}],\"name\":\"removeValidators\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"validators\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"pendingValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"validators\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_validator\",\"type\":\"address\"}],\"name\":\"removeValidator\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_validator\",\"type\":\"address\"}],\"name\":\"addValidator\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[],\"name\":\"finalizeChange\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"owner\",\"outputs\":[{\"name\":\"\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"getPendingValidators\",\"outputs\":[{\"name\":\"\",\"type\":\"address[]\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"transferOwnership\",\"outputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"},{\"name\":\"_initialValidators\",\"type\":\"address[]\"},{\"name\":\"_superUser\",\"type\":\"address\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"previousOwner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"newOwner\",\"type\":\"address\"}],\"name\":\"OwnershipTransferred\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"parentHash\",\"type\":\"bytes32\"},{\"indexed\":false,\"name\":\"newSet\",\"type\":\"address[]\"}],\"name\":\"InitiateChange\",\"type\":\"event\"}]",
 }
 
 // VsABI is the input ABI used to generate the binding from.
@@ -210,12 +210,12 @@ func (_Vs *VsCallerSession) GetPendingValidators() ([]common.Address, error) {
 	return _Vs.Contract.GetPendingValidators(&_Vs.CallOpts)
 }
 
-// GetValidators is a free data retrieval call binding the contract method 0x471f40fb.
+// GetValidators is a free data retrieval call binding the contract method 0xb7ab4db5.
 //
-// Solidity: function getValidators(uint256 ambBlockNumber) view returns(address[])
-func (_Vs *VsCaller) GetValidators(opts *bind.CallOpts, ambBlockNumber *big.Int) ([]common.Address, error) {
+// Solidity: function getValidators() view returns(address[])
+func (_Vs *VsCaller) GetValidators(opts *bind.CallOpts) ([]common.Address, error) {
 	var out []interface{}
-	err := _Vs.contract.Call(opts, &out, "getValidators", ambBlockNumber)
+	err := _Vs.contract.Call(opts, &out, "getValidators")
 
 	if err != nil {
 		return *new([]common.Address), err
@@ -227,49 +227,49 @@ func (_Vs *VsCaller) GetValidators(opts *bind.CallOpts, ambBlockNumber *big.Int)
 
 }
 
-// GetValidators is a free data retrieval call binding the contract method 0x471f40fb.
-//
-// Solidity: function getValidators(uint256 ambBlockNumber) view returns(address[])
-func (_Vs *VsSession) GetValidators(ambBlockNumber *big.Int) ([]common.Address, error) {
-	return _Vs.Contract.GetValidators(&_Vs.CallOpts, ambBlockNumber)
-}
-
-// GetValidators is a free data retrieval call binding the contract method 0x471f40fb.
-//
-// Solidity: function getValidators(uint256 ambBlockNumber) view returns(address[])
-func (_Vs *VsCallerSession) GetValidators(ambBlockNumber *big.Int) ([]common.Address, error) {
-	return _Vs.Contract.GetValidators(&_Vs.CallOpts, ambBlockNumber)
-}
-
-// GetValidators0 is a free data retrieval call binding the contract method 0xb7ab4db5.
+// GetValidators is a free data retrieval call binding the contract method 0xb7ab4db5.
 //
 // Solidity: function getValidators() view returns(address[])
-func (_Vs *VsCaller) GetValidators0(opts *bind.CallOpts) ([]common.Address, error) {
+func (_Vs *VsSession) GetValidators() ([]common.Address, error) {
+	return _Vs.Contract.GetValidators(&_Vs.CallOpts)
+}
+
+// GetValidators is a free data retrieval call binding the contract method 0xb7ab4db5.
+//
+// Solidity: function getValidators() view returns(address[])
+func (_Vs *VsCallerSession) GetValidators() ([]common.Address, error) {
+	return _Vs.Contract.GetValidators(&_Vs.CallOpts)
+}
+
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
+//
+// Solidity: function owner() view returns(address)
+func (_Vs *VsCaller) Owner(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
-	err := _Vs.contract.Call(opts, &out, "getValidators0")
+	err := _Vs.contract.Call(opts, &out, "owner")
 
 	if err != nil {
-		return *new([]common.Address), err
+		return *new(common.Address), err
 	}
 
-	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
 	return out0, err
 
 }
 
-// GetValidators0 is a free data retrieval call binding the contract method 0xb7ab4db5.
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function getValidators() view returns(address[])
-func (_Vs *VsSession) GetValidators0() ([]common.Address, error) {
-	return _Vs.Contract.GetValidators0(&_Vs.CallOpts)
+// Solidity: function owner() view returns(address)
+func (_Vs *VsSession) Owner() (common.Address, error) {
+	return _Vs.Contract.Owner(&_Vs.CallOpts)
 }
 
-// GetValidators0 is a free data retrieval call binding the contract method 0xb7ab4db5.
+// Owner is a free data retrieval call binding the contract method 0x8da5cb5b.
 //
-// Solidity: function getValidators() view returns(address[])
-func (_Vs *VsCallerSession) GetValidators0() ([]common.Address, error) {
-	return _Vs.Contract.GetValidators0(&_Vs.CallOpts)
+// Solidity: function owner() view returns(address)
+func (_Vs *VsCallerSession) Owner() (common.Address, error) {
+	return _Vs.Contract.Owner(&_Vs.CallOpts)
 }
 
 // PendingValidators is a free data retrieval call binding the contract method 0x28569e1f.
@@ -303,12 +303,12 @@ func (_Vs *VsCallerSession) PendingValidators(arg0 *big.Int) (common.Address, er
 	return _Vs.Contract.PendingValidators(&_Vs.CallOpts, arg0)
 }
 
-// Validators is a free data retrieval call binding the contract method 0xdcf2793a.
+// Validators is a free data retrieval call binding the contract method 0x35aa2e44.
 //
-// Solidity: function validators(uint256 , uint256 ) view returns(address)
-func (_Vs *VsCaller) Validators(opts *bind.CallOpts, arg0 *big.Int, arg1 *big.Int) (common.Address, error) {
+// Solidity: function validators(uint256 ) view returns(address)
+func (_Vs *VsCaller) Validators(opts *bind.CallOpts, arg0 *big.Int) (common.Address, error) {
 	var out []interface{}
-	err := _Vs.contract.Call(opts, &out, "validators", arg0, arg1)
+	err := _Vs.contract.Call(opts, &out, "validators", arg0)
 
 	if err != nil {
 		return *new(common.Address), err
@@ -320,18 +320,18 @@ func (_Vs *VsCaller) Validators(opts *bind.CallOpts, arg0 *big.Int, arg1 *big.In
 
 }
 
-// Validators is a free data retrieval call binding the contract method 0xdcf2793a.
+// Validators is a free data retrieval call binding the contract method 0x35aa2e44.
 //
-// Solidity: function validators(uint256 , uint256 ) view returns(address)
-func (_Vs *VsSession) Validators(arg0 *big.Int, arg1 *big.Int) (common.Address, error) {
-	return _Vs.Contract.Validators(&_Vs.CallOpts, arg0, arg1)
+// Solidity: function validators(uint256 ) view returns(address)
+func (_Vs *VsSession) Validators(arg0 *big.Int) (common.Address, error) {
+	return _Vs.Contract.Validators(&_Vs.CallOpts, arg0)
 }
 
-// Validators is a free data retrieval call binding the contract method 0xdcf2793a.
+// Validators is a free data retrieval call binding the contract method 0x35aa2e44.
 //
-// Solidity: function validators(uint256 , uint256 ) view returns(address)
-func (_Vs *VsCallerSession) Validators(arg0 *big.Int, arg1 *big.Int) (common.Address, error) {
-	return _Vs.Contract.Validators(&_Vs.CallOpts, arg0, arg1)
+// Solidity: function validators(uint256 ) view returns(address)
+func (_Vs *VsCallerSession) Validators(arg0 *big.Int) (common.Address, error) {
+	return _Vs.Contract.Validators(&_Vs.CallOpts, arg0)
 }
 
 // AddValidator is a paid mutator transaction binding the contract method 0x4d238c8e.
@@ -355,46 +355,25 @@ func (_Vs *VsTransactorSession) AddValidator(_validator common.Address) (*types.
 	return _Vs.Contract.AddValidator(&_Vs.TransactOpts, _validator)
 }
 
-// FinalizeChange is a paid mutator transaction binding the contract method 0x55a6b050.
-//
-// Solidity: function finalizeChange(uint256 ambBlockNumber) returns()
-func (_Vs *VsTransactor) FinalizeChange(opts *bind.TransactOpts, ambBlockNumber *big.Int) (*types.Transaction, error) {
-	return _Vs.contract.Transact(opts, "finalizeChange", ambBlockNumber)
-}
-
-// FinalizeChange is a paid mutator transaction binding the contract method 0x55a6b050.
-//
-// Solidity: function finalizeChange(uint256 ambBlockNumber) returns()
-func (_Vs *VsSession) FinalizeChange(ambBlockNumber *big.Int) (*types.Transaction, error) {
-	return _Vs.Contract.FinalizeChange(&_Vs.TransactOpts, ambBlockNumber)
-}
-
-// FinalizeChange is a paid mutator transaction binding the contract method 0x55a6b050.
-//
-// Solidity: function finalizeChange(uint256 ambBlockNumber) returns()
-func (_Vs *VsTransactorSession) FinalizeChange(ambBlockNumber *big.Int) (*types.Transaction, error) {
-	return _Vs.Contract.FinalizeChange(&_Vs.TransactOpts, ambBlockNumber)
-}
-
-// FinalizeChange0 is a paid mutator transaction binding the contract method 0x75286211.
+// FinalizeChange is a paid mutator transaction binding the contract method 0x75286211.
 //
 // Solidity: function finalizeChange() returns()
-func (_Vs *VsTransactor) FinalizeChange0(opts *bind.TransactOpts) (*types.Transaction, error) {
-	return _Vs.contract.Transact(opts, "finalizeChange0")
+func (_Vs *VsTransactor) FinalizeChange(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Vs.contract.Transact(opts, "finalizeChange")
 }
 
-// FinalizeChange0 is a paid mutator transaction binding the contract method 0x75286211.
+// FinalizeChange is a paid mutator transaction binding the contract method 0x75286211.
 //
 // Solidity: function finalizeChange() returns()
-func (_Vs *VsSession) FinalizeChange0() (*types.Transaction, error) {
-	return _Vs.Contract.FinalizeChange0(&_Vs.TransactOpts)
+func (_Vs *VsSession) FinalizeChange() (*types.Transaction, error) {
+	return _Vs.Contract.FinalizeChange(&_Vs.TransactOpts)
 }
 
-// FinalizeChange0 is a paid mutator transaction binding the contract method 0x75286211.
+// FinalizeChange is a paid mutator transaction binding the contract method 0x75286211.
 //
 // Solidity: function finalizeChange() returns()
-func (_Vs *VsTransactorSession) FinalizeChange0() (*types.Transaction, error) {
-	return _Vs.Contract.FinalizeChange0(&_Vs.TransactOpts)
+func (_Vs *VsTransactorSession) FinalizeChange() (*types.Transaction, error) {
+	return _Vs.Contract.FinalizeChange(&_Vs.TransactOpts)
 }
 
 // RemoveValidator is a paid mutator transaction binding the contract method 0x40a141ff.
@@ -418,25 +397,25 @@ func (_Vs *VsTransactorSession) RemoveValidator(_validator common.Address) (*typ
 	return _Vs.Contract.RemoveValidator(&_Vs.TransactOpts, _validator)
 }
 
-// RemoveValidators is a paid mutator transaction binding the contract method 0x47ff07fc.
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
-// Solidity: function removeValidators(uint256 ambBlockNumber) returns()
-func (_Vs *VsTransactor) RemoveValidators(opts *bind.TransactOpts, ambBlockNumber *big.Int) (*types.Transaction, error) {
-	return _Vs.contract.Transact(opts, "removeValidators", ambBlockNumber)
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_Vs *VsTransactor) TransferOwnership(opts *bind.TransactOpts, newOwner common.Address) (*types.Transaction, error) {
+	return _Vs.contract.Transact(opts, "transferOwnership", newOwner)
 }
 
-// RemoveValidators is a paid mutator transaction binding the contract method 0x47ff07fc.
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
-// Solidity: function removeValidators(uint256 ambBlockNumber) returns()
-func (_Vs *VsSession) RemoveValidators(ambBlockNumber *big.Int) (*types.Transaction, error) {
-	return _Vs.Contract.RemoveValidators(&_Vs.TransactOpts, ambBlockNumber)
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_Vs *VsSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _Vs.Contract.TransferOwnership(&_Vs.TransactOpts, newOwner)
 }
 
-// RemoveValidators is a paid mutator transaction binding the contract method 0x47ff07fc.
+// TransferOwnership is a paid mutator transaction binding the contract method 0xf2fde38b.
 //
-// Solidity: function removeValidators(uint256 ambBlockNumber) returns()
-func (_Vs *VsTransactorSession) RemoveValidators(ambBlockNumber *big.Int) (*types.Transaction, error) {
-	return _Vs.Contract.RemoveValidators(&_Vs.TransactOpts, ambBlockNumber)
+// Solidity: function transferOwnership(address newOwner) returns()
+func (_Vs *VsTransactorSession) TransferOwnership(newOwner common.Address) (*types.Transaction, error) {
+	return _Vs.Contract.TransferOwnership(&_Vs.TransactOpts, newOwner)
 }
 
 // VsInitiateChangeIterator is returned from FilterInitiateChange and is used to iterate over the raw logs and unpacked data for InitiateChange events raised by the Vs contract.
@@ -571,6 +550,159 @@ func (_Vs *VsFilterer) WatchInitiateChange(opts *bind.WatchOpts, sink chan<- *Vs
 func (_Vs *VsFilterer) ParseInitiateChange(log types.Log) (*VsInitiateChange, error) {
 	event := new(VsInitiateChange)
 	if err := _Vs.contract.UnpackLog(event, "InitiateChange", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// VsOwnershipTransferredIterator is returned from FilterOwnershipTransferred and is used to iterate over the raw logs and unpacked data for OwnershipTransferred events raised by the Vs contract.
+type VsOwnershipTransferredIterator struct {
+	Event *VsOwnershipTransferred // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *VsOwnershipTransferredIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(VsOwnershipTransferred)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(VsOwnershipTransferred)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *VsOwnershipTransferredIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *VsOwnershipTransferredIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// VsOwnershipTransferred represents a OwnershipTransferred event raised by the Vs contract.
+type VsOwnershipTransferred struct {
+	PreviousOwner common.Address
+	NewOwner      common.Address
+	Raw           types.Log // Blockchain specific contextual infos
+}
+
+// FilterOwnershipTransferred is a free log retrieval operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_Vs *VsFilterer) FilterOwnershipTransferred(opts *bind.FilterOpts, previousOwner []common.Address, newOwner []common.Address) (*VsOwnershipTransferredIterator, error) {
+
+	var previousOwnerRule []interface{}
+	for _, previousOwnerItem := range previousOwner {
+		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
+	}
+	var newOwnerRule []interface{}
+	for _, newOwnerItem := range newOwner {
+		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	}
+
+	logs, sub, err := _Vs.contract.FilterLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	if err != nil {
+		return nil, err
+	}
+	return &VsOwnershipTransferredIterator{contract: _Vs.contract, event: "OwnershipTransferred", logs: logs, sub: sub}, nil
+}
+
+// WatchOwnershipTransferred is a free log subscription operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_Vs *VsFilterer) WatchOwnershipTransferred(opts *bind.WatchOpts, sink chan<- *VsOwnershipTransferred, previousOwner []common.Address, newOwner []common.Address) (event.Subscription, error) {
+
+	var previousOwnerRule []interface{}
+	for _, previousOwnerItem := range previousOwner {
+		previousOwnerRule = append(previousOwnerRule, previousOwnerItem)
+	}
+	var newOwnerRule []interface{}
+	for _, newOwnerItem := range newOwner {
+		newOwnerRule = append(newOwnerRule, newOwnerItem)
+	}
+
+	logs, sub, err := _Vs.contract.WatchLogs(opts, "OwnershipTransferred", previousOwnerRule, newOwnerRule)
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(VsOwnershipTransferred)
+				if err := _Vs.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseOwnershipTransferred is a log parse operation binding the contract event 0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0.
+//
+// Solidity: event OwnershipTransferred(address indexed previousOwner, address indexed newOwner)
+func (_Vs *VsFilterer) ParseOwnershipTransferred(log types.Log) (*VsOwnershipTransferred, error) {
+	event := new(VsOwnershipTransferred)
+	if err := _Vs.contract.UnpackLog(event, "OwnershipTransferred", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log

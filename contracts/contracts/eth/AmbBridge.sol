@@ -10,10 +10,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
     constructor(
         CommonStructs.ConstructorArgs memory args
     )
-    CommonBridge(args.sideBridgeAddress, args.relayAddress,
-                 args.tokenThisAddresses, args.tokenSideAddresses,
-                 args.fee, args.feeRecipient,
-                 args.timeframeSeconds, args.lockTime, args.minSafetyBlocks)
+    CommonBridge(args)
     {
 
         // relay uses this event to know from what moment to synchronize the validator set;

@@ -12,7 +12,6 @@ import (
 
 var (
 	ErrEventNotFound = errors.New("error event not found")
-	ErrEpochData     = errors.New("Required epoch data-pow not set")
 )
 
 type Bridge interface {
@@ -32,4 +31,5 @@ type BridgeReceiveEthash interface {
 	Bridge
 	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
 	SubmitEpochData(*ethash.EpochData) error
+	IsEpochSet(epoch uint64) (bool, error)
 }

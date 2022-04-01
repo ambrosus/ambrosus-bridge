@@ -29,6 +29,7 @@ export const relayAddress = new ethers.Wallet(relayPk).address;
 
 export const vsContractAddress = config.network.amb["vs-contract-addr"];
 
+export const options = {gasLimit: 800000};  // amb & eth gas estimator broken
 
 //
 
@@ -42,3 +43,11 @@ export function setContractAddressesYml(ambAddress: String, ethAddress: String) 
   data.network.eth["contract-addr"] = ethAddress;
   fs.writeFileSync(yamlPath, yaml.dump(data));
 }
+
+// wait for transaction to be mined
+export async function w(call: Promise<any>): Promise<any> {
+  const tx = await (await call).wait();
+  console.log('Transaction mined');
+  return tx;
+}
+
