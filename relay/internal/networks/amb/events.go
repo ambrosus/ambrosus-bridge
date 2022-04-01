@@ -163,7 +163,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 		return nil, err
 	}
 
-	start, err := b.sideBridge.GetLastProcessedBlockNum()
+	start, err := b.GetLastProcessedBlockNum()
 	if err != nil {
 		return nil, err
 	}

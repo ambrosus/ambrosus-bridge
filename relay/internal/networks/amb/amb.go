@@ -164,6 +164,20 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	return nil, networks.ErrEventNotFound
 }
 
+func (b *Bridge) GetLastProcessedBlockNum() (*big.Int, error) {
+	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return block.Number(), nil
+}
+
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
