@@ -15,14 +15,13 @@ interface CommonArgs {
   timeframe: number;
   lockTime: number;
   minSafetyBlocks: number;
-
-  ambWrapperAddress: string;
 }
 
 
 export async function deployAmbBridge(
   ambSigner: Signer,
-  args: CommonArgs
+  args: CommonArgs,
+  ambWrapperAddress: string
 ): Promise<Contract> {
   const argsForAmb = [[
     ethers.constants.AddressZero,  // ethBridge not deployed yet
@@ -37,7 +36,7 @@ export async function deployAmbBridge(
     args.lockTime,
     args.minSafetyBlocks,
   ],
-  args.ambWrapperAddress
+  ambWrapperAddress
   ];
 
   return await deploy("AmbBridge", ambSigner, ...argsForAmb);

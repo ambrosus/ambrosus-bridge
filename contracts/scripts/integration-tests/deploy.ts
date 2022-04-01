@@ -26,9 +26,8 @@ async function main() {
     tokens: {[ambErc20.address]: ethErc20.address},
     fee: 10,
     feeRecipient: relayAddress,
-    timeframe, lockTime, minSafetyBlocks,
-    ambWrapperAddress: ethers.constants.AddressZero
-  });
+    timeframe, lockTime, minSafetyBlocks
+  }, ethers.constants.AddressZero);
 
 
   const ethBridge = await deployEthBridge(ethSigner, {
@@ -38,7 +37,6 @@ async function main() {
     fee: 1000,
     feeRecipient: relayAddress,
     timeframe, lockTime, minSafetyBlocks,
-    ambWrapperAddress: ethers.constants.AddressZero
   }, vsContractAddress, ambSigner);
 
   const adminRole = await ambBridge.ADMIN_ROLE();
