@@ -17,7 +17,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog/log"
 )
@@ -209,23 +208,7 @@ func encodePoABlock() error {
 		return err
 	}
 
-	data := []interface{}{
-		hexutil.Encode(bd.P0Seal),
-		hexutil.Encode(bd.P0Bare),
-		hexutil.Encode(bd.P1),
-		hexutil.Encode(bd.ParentHash[:]),
-		hexutil.Encode(bd.P2),
-		hexutil.Encode(bd.ReceiptHash[:]),
-		hexutil.Encode(bd.P3),
-		hexutil.Encode(bd.S1),
-		hexutil.Encode(bd.Step),
-		hexutil.Encode(bd.S2),
-		hexutil.Encode(bd.Signature),
-
-		bd.Type,
-	}
-
-	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/BlockPoA-%d.json", number))
+	return writeToJSONFile(bd, fmt.Sprintf("./assets/testdata/BlockPoA-%d.json", number))
 }
 
 type epochData struct {
