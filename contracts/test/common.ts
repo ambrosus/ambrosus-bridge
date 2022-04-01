@@ -23,10 +23,11 @@ describe("Common tests", () => {
   let ambBridge: Contract;
   let mockERC20: Contract;
   let ambBridgeTest: Contract;
+  let wAmb: Contract;
 
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest", "wamb"]);
     ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
@@ -36,6 +37,7 @@ describe("Common tests", () => {
     ambBridge = await ethers.getContract("AmbBridge", ownerS);
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
+    wAmb = await ethers.getContract("wAMB", ownerS);
 
     await ambBridge.grantRole(ADMIN_ROLE, owner);
     await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
@@ -227,6 +229,12 @@ describe("Common tests", () => {
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 
+  it('Test wrap in AmbBridge', async () => {
+    await ambBridge.setAmbWrapper(wAmb.address);
+
+    await expect(() => ambBridge.wrap({value: 50}))
+        .to.changeTokenBalance(wAmb, ownerS, 50);
+  });
 
   let currentTimeframe = Math.floor(Date.now() / 14400);
   const nextTimeframe = async (amount = 1) => {
