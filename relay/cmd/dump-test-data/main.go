@@ -17,6 +17,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog/log"
 )
@@ -173,25 +174,7 @@ func encodePoWBlock() error {
 		return err
 	}
 
-	data := []interface{}{
-		"0x" + common.Bytes2Hex(bd.P0WithNonce),
-		"0x" + common.Bytes2Hex(bd.P0WithoutNonce),
-		"0x" + common.Bytes2Hex(bd.P1),
-		"0x" + common.Bytes2Hex(bd.ParentOrReceiptHash[:]),
-		"0x" + common.Bytes2Hex(bd.P2),
-		"0x" + common.Bytes2Hex(bd.Difficulty),
-		"0x" + common.Bytes2Hex(bd.P3),
-		"0x" + common.Bytes2Hex(bd.Number),
-		"0x" + common.Bytes2Hex(bd.P4),
-		"0x" + common.Bytes2Hex(bd.P5),
-		"0x" + common.Bytes2Hex(bd.Nonce),
-		"0x" + common.Bytes2Hex(bd.P6),
-
-		bigIntArrayToStringArray(bd.DataSetLookup),
-		bigIntArrayToStringArray(bd.WitnessForLookup),
-	}
-
-	return writeToJSONFile(data, fmt.Sprintf("./assets/testdata/BlockPoW-%d.json", block.Header().Number.Uint64()))
+	return writeToJSONFile(bd, fmt.Sprintf("./assets/testdata/BlockPoW-%d.json", block.Header().Number.Uint64()))
 }
 
 // Encoding PoA block.
@@ -227,17 +210,17 @@ func encodePoABlock() error {
 	}
 
 	data := []interface{}{
-		"0x" + common.Bytes2Hex(bd.P0Seal),
-		"0x" + common.Bytes2Hex(bd.P0Bare),
-		"0x" + common.Bytes2Hex(bd.P1),
-		"0x" + common.Bytes2Hex(bd.ParentHash[:]),
-		"0x" + common.Bytes2Hex(bd.P2),
-		"0x" + common.Bytes2Hex(bd.ReceiptHash[:]),
-		"0x" + common.Bytes2Hex(bd.P3),
-		"0x" + common.Bytes2Hex(bd.S1),
-		"0x" + common.Bytes2Hex(bd.Step),
-		"0x" + common.Bytes2Hex(bd.S2),
-		"0x" + common.Bytes2Hex(bd.Signature),
+		hexutil.Encode(bd.P0Seal),
+		hexutil.Encode(bd.P0Bare),
+		hexutil.Encode(bd.P1),
+		hexutil.Encode(bd.ParentHash[:]),
+		hexutil.Encode(bd.P2),
+		hexutil.Encode(bd.ReceiptHash[:]),
+		hexutil.Encode(bd.P3),
+		hexutil.Encode(bd.S1),
+		hexutil.Encode(bd.Step),
+		hexutil.Encode(bd.S2),
+		hexutil.Encode(bd.Signature),
 
 		bd.Type,
 	}

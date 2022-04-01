@@ -4,13 +4,14 @@ import (
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // CommonStructsTransfer is an auto generated low-level Go binding around an user-defined struct.
 type CommonStructsTransfer struct {
 	TokenAddress common.Address
 	ToAddress    common.Address
-	Amount       *big.Int
+	Amount       hexutil.Big
 }
 
 // CommonStructsTransferProof is an auto generated low-level Go binding around an user-defined struct.
@@ -22,21 +23,21 @@ type CommonStructsTransferProof struct {
 
 // CheckAuraBlockAura is an auto generated low-level Go binding around an user-defined struct.
 type CheckAuraBlockAura struct {
-	P0Seal []byte // header prefix when encoded with seal
-	P0Bare []byte // header prefix when encoded without seal
+	P0Seal hexutil.Bytes // header prefix when encoded with seal
+	P0Bare hexutil.Bytes // header prefix when encoded without seal
 
 	// common (for bare and seal headers) part
-	P1          []byte // bytes after header prefix and before ParentHash (de facto ParentHash prefix)
-	ParentHash  [32]byte
-	P2          []byte // bytes between ParentHash and ReceiptHash
-	ReceiptHash [32]byte
-	P3          []byte // bytes after ReceiptHash and before seal part
+	P1          hexutil.Bytes // bytes after header prefix and before ParentHash (de facto ParentHash prefix)
+	ParentHash  common.Hash
+	P2          hexutil.Bytes // bytes between ParentHash and ReceiptHash
+	ReceiptHash common.Hash
+	P3          hexutil.Bytes // bytes after ReceiptHash and before seal part
 
 	// seal part
-	S1        []byte // step prefix
-	Step      []byte
-	S2        []byte // signature prefix
-	Signature []byte
+	S1        hexutil.Bytes // step prefix
+	Step      hexutil.Bytes
+	S2        hexutil.Bytes // signature prefix
+	Signature hexutil.Bytes
 
 	Type       uint8
 	DeltaIndex int64
@@ -58,21 +59,21 @@ type CheckAuraAuraProof struct {
 
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
 type CheckPoWBlockPoW struct {
-	P0WithNonce    []byte
-	P0WithoutNonce []byte
+	P0WithNonce    hexutil.Bytes
+	P0WithoutNonce hexutil.Bytes
 
-	P1                  []byte
-	ParentOrReceiptHash [32]byte
-	P2                  []byte
-	Difficulty          []byte
-	P3                  []byte
-	Number              []byte
-	P4                  []byte // end when extra end
+	P1                  hexutil.Bytes
+	ParentOrReceiptHash common.Hash
+	P2                  hexutil.Bytes
+	Difficulty          hexutil.Bytes
+	P3                  hexutil.Bytes
+	Number              hexutil.Bytes
+	P4                  hexutil.Bytes // end when extra end
 
-	P5    []byte // after extra
-	Nonce []byte
+	P5    hexutil.Bytes // after extra
+	Nonce hexutil.Bytes
 
-	P6 []byte
+	P6 hexutil.Bytes
 
 	DataSetLookup    []*big.Int
 	WitnessForLookup []*big.Int

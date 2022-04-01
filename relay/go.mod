@@ -1,6 +1,6 @@
 module github.com/ambrosus/ambrosus-bridge/relay
 
-go 1.17
+go 1.18
 
 require (
 	github.com/edsrzf/mmap-go v1.0.0
