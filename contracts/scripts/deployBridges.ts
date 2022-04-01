@@ -34,7 +34,9 @@ export async function deployAmbBridge(
     args.timeframe,
     args.lockTime,
     args.minSafetyBlocks,
-  ]];
+  ],
+  ethers.constants.AddressZero
+  ];
 
   return await deploy("AmbBridge", ambSigner, ...argsForAmb);
 }
