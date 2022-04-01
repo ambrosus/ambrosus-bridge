@@ -24,10 +24,11 @@ describe("Common tests", () => {
   let mockERC20: Contract;
   let ambBridgeTest: Contract;
   let ethBridgeTest: Contract;
+  let wAmb: Contract;
 
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest", "wamb"]);
     ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
@@ -38,6 +39,7 @@ describe("Common tests", () => {
     mockERC20 = await ethers.getContract("MockERC20", ownerS);
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
     ethBridgeTest = await ethers.getContract("EthBridgeTest", ownerS);
+    wAmb = await ethers.getContract("wAMB", ownerS);
 
     await ambBridge.grantRole(ADMIN_ROLE, owner);
     await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
@@ -87,12 +89,6 @@ describe("Common tests", () => {
 
         // todo check erc20 balance changed
         // todo use truffle helpers for catch events
-
-        const getEvents = async (receipt: any) => {
-          return receipt.events?.filter((x: any) => {
-            return x.event == "Transfer";
-          });
-        };
 
         let events1Amb: any = await getEvents(receipt1Amb);
         let events2Amb: any = await getEvents(receipt2Amb);
@@ -246,4 +242,38 @@ describe("Common tests", () => {
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   };
 
+  it('Test wrap_withdraw in AmbBridge', async () => {
+    await ambBridge.setAmbWrapper(wAmb.address);
+
+    await expect(() => ambBridge.wrap_withdraw(user, 1, {value: 1050}))
+        .to.changeTokenBalance(wAmb, ownerS, 50);
+
+    await ambBridge.wrap_withdraw(user, 2, {value: 1001});
+    await nextTimeframe();
+
+    // will catch previous txs (because nextTimeframe happened)
+    let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, 1337, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 3, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 4, {value: 1001});
+    await nextTimeframe();
+
+    // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
+    let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, 1337, {value: 1001});
+    await ambBridge.wrap_withdraw(user, 5, {value: 1001});
+
+    let receipt1Amb: ContractReceipt = await tx1Amb.wait();
+    let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+
+    let events1Amb: any = await getEvents(receipt1Amb);
+    let events2Amb: any = await getEvents(receipt2Amb);
+
+    // Checking that event_id increased
+    expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+  });
+
+  const getEvents = async (receipt: any) => {
+    return receipt.events?.filter((x: any) => {
+      return x.event == "Transfer";
+    });
+  };
 });

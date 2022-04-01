@@ -4,6 +4,7 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/checks/CheckPoW.sol";
 import "../common/CommonStructs.sol";
+import "../IwAMB.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
@@ -24,6 +25,27 @@ contract AmbBridge is CommonBridge, CheckPoW {
         emitTestEvent(address(this), msg.sender, 10, true);
 
         ambWrapperAddress = ambWrapper_;
+    }
+
+    function wrap_withdraw(address toAddress, uint amount) public payable {
+        require(msg.value > fee, "msg.value can't be lesser than fee");
+        feeRecipient.transfer(fee);
+
+        uint restOfValue = msg.value - fee;
+        IwAMB(ambWrapperAddress).wrap{value: restOfValue}();
+        IERC20(ambWrapperAddress).transfer(msg.sender, restOfValue);
+
+        //
+        queue.push(CommonStructs.Transfer(ambWrapperAddress, toAddress, amount));
+        emit Withdraw(msg.sender, outputEventId, fee);
+
+        uint nowTimeframe = block.timestamp / timeframeSeconds;
+        if (nowTimeframe != lastTimeframe) {
+            emit Transfer(outputEventId++, queue);
+            delete queue;
+
+            lastTimeframe = nowTimeframe;
+        }
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
