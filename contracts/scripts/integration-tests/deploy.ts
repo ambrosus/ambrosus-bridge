@@ -2,6 +2,7 @@ import fs from "fs";
 import {deploy, deployAmbBridge, deployEthBridge} from "../deployBridges";
 import {ambSigner, ethSigner, relayAddress, setContractAddressesYml, vsContractAddress, w, options} from "./cfg";
 import path from "path";
+import {ethers} from "hardhat";
 
 
 
@@ -26,7 +27,7 @@ async function main() {
     fee: 10,
     feeRecipient: relayAddress,
     timeframe, lockTime, minSafetyBlocks
-  });
+  }, ethers.constants.AddressZero);
 
 
   const ethBridge = await deployEthBridge(ethSigner, {
@@ -35,7 +36,7 @@ async function main() {
     tokens: {[ethErc20.address]: ambErc20.address},
     fee: 1000,
     feeRecipient: relayAddress,
-    timeframe, lockTime, minSafetyBlocks
+    timeframe, lockTime, minSafetyBlocks,
   }, vsContractAddress, ambSigner);
 
   const adminRole = await ambBridge.ADMIN_ROLE();

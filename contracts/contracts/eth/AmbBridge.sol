@@ -7,8 +7,11 @@ import "../common/CommonStructs.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
+    address ambWrapperAddress;
+
     constructor(
-        CommonStructs.ConstructorArgs memory args
+        CommonStructs.ConstructorArgs memory args,
+        address ambWrapper_
     )
     CommonBridge(args)
     {
@@ -20,6 +23,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
 
         emitTestEvent(address(this), msg.sender, 10, true);
 
+        ambWrapperAddress = ambWrapper_;
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
@@ -36,5 +40,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-
+    function setAmbWrapper(address wrapper) public onlyRole(ADMIN_ROLE) {
+        ambWrapperAddress = wrapper;
+    }
 }
