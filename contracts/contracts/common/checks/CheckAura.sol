@@ -143,6 +143,7 @@ contract CheckAura is CheckReceiptsProof {
             r := mload(add(signature, 32))
             s := mload(add(signature, 64))
             v := byte(0, mload(add(signature, 96)))
+            if lt(v, 27) { v := add(v, 27) }
         }
         require(ecrecover(message_hash, v, r, s) == signer, "Failed to verify sign");
     }
