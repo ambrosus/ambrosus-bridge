@@ -25,10 +25,11 @@ describe("Common tests", () => {
   let ambBridgeTest: Contract;
   let ethBridgeTest: Contract;
   let wAmb: Contract;
+  let commonBridge: Contract;
 
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest", "wamb"]);
+    await deployments.fixture(["ethbridge", "ambbridge", "mocktoken", "ambbridgetest", "wamb", "commonbridge"]);
     ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
@@ -40,14 +41,17 @@ describe("Common tests", () => {
     ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
     ethBridgeTest = await ethers.getContract("EthBridgeTest", ownerS);
     wAmb = await ethers.getContract("wAMB", ownerS);
+    commonBridge = await ethers.getContract("CommonBridge", ownerS);
 
     await ambBridge.grantRole(ADMIN_ROLE, owner);
     await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
     await ethBridge.grantRole(ADMIN_ROLE, owner);
+    await commonBridge.grantRole(ADMIN_ROLE, owner);
 
     await ambBridge.grantRole(RELAY_ROLE, relay);
     await ambBridgeTest.grantRole(RELAY_ROLE, relay);
     await ethBridge.grantRole(RELAY_ROLE, relay);
+    await commonBridge.grantRole(RELAY_ROLE, relay);
 
     await mockERC20.grantRole(BRIDGE_ROLE, ambBridge.address);
     await mockERC20.grantRole(BRIDGE_ROLE, ethBridge.address);
@@ -57,123 +61,115 @@ describe("Common tests", () => {
     await deployments.fixture(["ethbridge", "ambbridge", "ambbridgetest"]); // reset contracts state
   });
 
-  it("Really common", async () => {
-    // todo if this shit really common why the fuck would you test it for all contracts? :thinking:
-    const bridges = [
-      {name: "ETH", bridge: ethBridge},
-      {name: "AMB", bridge: ambBridge},
-    ];
-    for (const {name, bridge} of bridges) describe("Bridge " + name, async () => {
+  describe("CommonBridge Test", async () => {
+    it("TestWithdraw timeframe", async () => {
+      await mockERC20.mint(owner, 10000);
+      await mockERC20.increaseAllowance(commonBridge.address, 5000);
 
+      await commonBridge.withdraw(mockERC20.address, user, 1, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 2, {value: 1000});
+      await nextTimeframe();
 
-      it("TestWithdraw timeframe", async () => {
-        await mockERC20.mint(owner, 10000);
-        await mockERC20.increaseAllowance(bridge.address, 5000);
+      // will catch previous txs (because nextTimeframe happened)
+      let tx1Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 3, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 4, {value: 1000});
+      await nextTimeframe();
 
-        await bridge.withdraw(mockERC20.address, user, 1, {value: 1000});
-        await bridge.withdraw(mockERC20.address, user, 2, {value: 1000});
-        await nextTimeframe();
+      // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
+      let tx2Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 5, {value: 1000});
 
-        // will catch previous txs (because nextTimeframe happened)
-        let tx1Amb: ContractTransaction = await bridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
-        await bridge.withdraw(mockERC20.address, user, 3, {value: 1000});
-        await bridge.withdraw(mockERC20.address, user, 4, {value: 1000});
-        await nextTimeframe();
+      let receipt1Amb: ContractReceipt = await tx1Amb.wait();
+      let receipt2Amb: ContractReceipt = await tx2Amb.wait();
 
-        // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-        let tx2Amb: ContractTransaction = await bridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
-        await bridge.withdraw(mockERC20.address, user, 5, {value: 1000});
+      // todo check erc20 balance changed
+      // todo use truffle helpers for catch events
 
-        let receipt1Amb: ContractReceipt = await tx1Amb.wait();
-        let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+      let events1Amb: any = await getEvents(receipt1Amb);
+      let events2Amb: any = await getEvents(receipt2Amb);
 
-        // todo check erc20 balance changed
-        // todo use truffle helpers for catch events
+      // Checking that event_id increased
+      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+    });
 
-        let events1Amb: any = await getEvents(receipt1Amb);
-        let events2Amb: any = await getEvents(receipt2Amb);
+    describe("Token addresses", () => {
+      const token1 = "0x0000000000000000000000000000000000000001";
+      const token2 = "0x0000000000000000000000000000000000000002";
+      const token3 = "0x0000000000000000000000000000000000000003";
+      const token4 = "0x0000000000000000000000000000000000000004";
 
-        // Checking that event_id increased
-        expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+      it("add tokens", async () => {
+        await commonBridge.tokensAdd(token1, token2);
+
+        expect(await commonBridge.tokenAddresses(token1)).eq(token2);
       });
 
-      describe("Token addresses", () => {
-        const token1 = "0x0000000000000000000000000000000000000001";
-        const token2 = "0x0000000000000000000000000000000000000002";
-        const token3 = "0x0000000000000000000000000000000000000003";
-        const token4 = "0x0000000000000000000000000000000000000004";
+      it("add tokens batch", async () => {
+        await commonBridge.tokensAddBatch([token1, token2], [token3, token4]);
 
-        it("add tokens", async () => {
-          await bridge.tokensAdd(token1, token2);
-
-          expect(await bridge.tokenAddresses(token1)).eq(token2);
-        });
-
-        it("add tokens batch", async () => {
-          await bridge.tokensAddBatch([token1, token2], [token3, token4]);
-
-          expect(await bridge.tokenAddresses(token1)).eq(token3);
-          expect(await bridge.tokenAddresses(token2)).eq(token4);
-        });
-
-        it("remove tokens", async () => {
-          await bridge.tokensAdd(token1, token2);
-
-          await bridge.tokensRemove(token1);
-
-          expect(await bridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
-        });
-
-        it("remove tokens batch", async () => {
-          await bridge.tokensAddBatch([token1, token2], [token3, token4]);
-
-          await bridge.tokensRemoveBatch([token1, token2]);
-
-          expect(await bridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
-          expect(await bridge.tokenAddresses(token2)).eq(ethers.constants.AddressZero);
-        });
+        expect(await commonBridge.tokenAddresses(token1)).eq(token3);
+        expect(await commonBridge.tokenAddresses(token2)).eq(token4);
       });
 
-      it("Test fee", async () => {
-        await mockERC20.mint(owner, 5);
-        await mockERC20.increaseAllowance(bridge.address, 5);
+      it("remove tokens", async () => {
+        await commonBridge.tokensAdd(token1, token2);
 
-        await bridge.changeFeeRecipient(user);
-        await expect(
-          () => bridge.withdraw(mockERC20.address, owner, 5, {value: 1000})
-        ).to.changeEtherBalance(userS, 1000);
+        await commonBridge.tokensRemove(token1);
 
+        expect(await commonBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
       });
 
-      it("Test changeMinSafetyBlocks", async () => {
-        await bridge.changeMinSafetyBlocks(20);
-        expect(await bridge.minSafetyBlocks()).eq(20);
+      it("remove tokens batch", async () => {
+        await commonBridge.tokensAddBatch([token1, token2], [token3, token4]);
+
+        await commonBridge.tokensRemoveBatch([token1, token2]);
+
+        expect(await commonBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
+        expect(await commonBridge.tokenAddresses(token2)).eq(ethers.constants.AddressZero);
       });
+    });
 
-      it("Test changeTimeframeSeconds", async () => {
-        await bridge.changeTimeframeSeconds(20000);
-        expect(await bridge.timeframeSeconds()).eq(20000);
-      });
+    it("Test fee", async () => {
+      await mockERC20.mint(owner, 5);
+      await mockERC20.increaseAllowance(commonBridge.address, 5);
 
-      it("Test changeLockTime", async () => {
-        await bridge.changeLockTime(2000);
-        expect(await bridge.lockTime()).eq(2000);
-      });
-
-      it("Test Pausable", async () => {
-        await expect(bridge.removeLockedTransfers(0)).to.be.revertedWith("Pausable: not paused");
-
-        await bridge.pause()
-        expect(await bridge.paused()).to.be.true;
-
-        await expect(bridge.connect(relayS).unlockTransfers(0)).to.be.revertedWith("Pausable: paused");
-
-        await bridge.unpause()
-        expect(await bridge.paused()).to.be.false;
-      });
+      await commonBridge.changeFeeRecipient(user);
+      await expect(
+          () => commonBridge.withdraw(mockERC20.address, owner, 5, {value: 1000})
+      ).to.changeEtherBalance(userS, 1000);
 
     });
+
+    it("Test changeMinSafetyBlocks", async () => {
+      await commonBridge.changeMinSafetyBlocks(20);
+      expect(await commonBridge.minSafetyBlocks()).eq(20);
+    });
+
+    it("Test changeTimeframeSeconds", async () => {
+      await commonBridge.changeTimeframeSeconds(20000);
+      expect(await commonBridge.timeframeSeconds()).eq(20000);
+    });
+
+    it("Test changeLockTime", async () => {
+      await commonBridge.changeLockTime(2000);
+      expect(await commonBridge.lockTime()).eq(2000);
+    });
+
+    it("Test Pausable", async () => {
+      await expect(commonBridge.removeLockedTransfers(0)).to.be.revertedWith("Pausable: not paused");
+
+      await commonBridge.pause()
+      expect(await commonBridge.paused()).to.be.true;
+
+      await expect(commonBridge.connect(relayS).unlockTransfers(0)).to.be.revertedWith("Pausable: paused");
+
+      await commonBridge.unpause()
+      expect(await commonBridge.paused()).to.be.false;
+    });
+
   });
+
 
   it("Test setSideBridge", async () => {
     await ambBridge.setSideBridge(mockERC20.address);
