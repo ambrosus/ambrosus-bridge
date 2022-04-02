@@ -37,7 +37,7 @@ func (te *TransferEvent) ProofElements() [][]byte {
 
 // VsInitiateChange represents a InitiateChange event raised by the Vs contract.
 type VsInitiateChange struct {
-	ParentHash [32]byte
+	ParentHash common.Hash
 	NewSet     []common.Address
 	Raw        types.Log // Blockchain specific contextual infos
 }

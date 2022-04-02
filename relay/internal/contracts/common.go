@@ -11,7 +11,7 @@ import (
 type CommonStructsTransfer struct {
 	TokenAddress common.Address
 	ToAddress    common.Address
-	Amount       hexutil.Big
+	Amount       *big.Int
 }
 
 // CommonStructsTransferProof is an auto generated low-level Go binding around an user-defined struct.
