@@ -17,7 +17,7 @@ describe("ERC20Token", () => {
   let mockERC20: Contract;
 
   before(async () => {
-    await deployments.fixture(["mocktoken"]);
+    await deployments.fixture(["for_tests"]);
     ({ owner, user, bridge } = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     userS = await ethers.getSigner(user);
@@ -27,7 +27,7 @@ describe("ERC20Token", () => {
   });
 
   beforeEach(async () => {
-    await deployments.fixture(["mocktoken"]); // reset contracts state
+    await deployments.fixture(["for_tests"]); // reset contracts state
   });
 
   describe("transfer/transferFrom", () => {

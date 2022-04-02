@@ -20,7 +20,7 @@ describe("Check PoW", () => {
 
 
   before(async () => {
-    await deployments.fixture(["ambbridge", "ambbridgetest"]);
+    await deployments.fixture(["ambbridge", "for_tests"]);
     ({owner, relay} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
