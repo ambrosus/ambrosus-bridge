@@ -72,7 +72,7 @@ func (b *Bridge) checkEpochDataFile(epoch uint64) error {
 	b.logger.Debug().Msgf("Checking '%d.json' epoch data file...", epoch)
 	_, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch))
 	if errors.Is(err, os.ErrNotExist) {
-		return nil
+		return ErrEpochDataFileNotFound
 	}
 	return err
 }
