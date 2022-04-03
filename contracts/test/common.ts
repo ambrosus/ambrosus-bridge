@@ -19,11 +19,11 @@ describe("Common tests", () => {
   let user: string;
 
 
+  let commonBridge: Contract;
   let ethBridge: Contract;
   let ambBridge: Contract;
   let mockERC20: Contract;
   let wAmb: Contract;
-  let commonBridge: Contract;
 
 
   before(async () => {
