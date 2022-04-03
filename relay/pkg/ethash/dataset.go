@@ -38,7 +38,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 	if err = dumpToFile(path, dag); err != nil {
 		e.logger.Warn("Failed to save dag file", "err", err)
 	}
-
+	e.dags[epoch] = dag
 	return dag, nil
 }
 

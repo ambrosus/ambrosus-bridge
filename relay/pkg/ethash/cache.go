@@ -37,7 +37,7 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 	if err = dumpToFile(path, cache); err != nil {
 		e.logger.Warn("Failed to save cache file", "err", err)
 	}
-
+	e.caches[epoch] = cache
 	return cache, nil
 }
 
