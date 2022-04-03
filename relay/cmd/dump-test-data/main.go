@@ -271,7 +271,7 @@ func generateEpochData() error {
 		return err
 	}
 
-	ed, err := bridge.Ethash.GenerateEpochData(uint64(number))
+	ed, err := bridge.Ethash.GetEpochData(uint64(number))
 	if err != nil {
 		return err
 	}

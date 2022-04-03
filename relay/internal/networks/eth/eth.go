@@ -166,16 +166,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	b.sideBridge = sideBridge
 
-	// Getting last ethereum block number.
-	blockNumber, err := b.Client.BlockNumber(context.Background())
-	if err != nil {
-		b.logger.Error().Msgf("error getting last block number: %s", err.Error())
-	}
-
-	// Checking epoch data dir.
-	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLength); err != nil {
-		b.logger.Error().Msgf("error checking epoch data dir: %s", err.Error())
-	}
+	b.ensureDAGsExists()
 
 	b.logger.Info().Msg("Ethereum bridge runned!")
 
@@ -292,12 +283,26 @@ func (b *Bridge) checkEpochData(event *contracts.TransferEvent) error {
 	}
 
 	b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit epoch data...")
-	epochData, err := b.loadEpochDataFile(epoch)
+	epochData, err := b.Ethash.GetEpochData(epoch)
 	if err != nil {
 		return err
 	}
 	return b.sideBridge.SubmitEpochData(epochData)
-	// todo delete old epochs, generate new (if need)
+}
+
+func (b *Bridge) ensureDAGsExists() {
+	b.logger.Info().Msgf("Checking if DAG file exists...")
+
+	// Getting last ethereum block number.
+	blockNumber, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		b.logger.Error().Msgf("error getting last block number: %s", err.Error())
+	}
+
+	// This func will generate DAG if it doesn't exist yet
+	if _, err = b.Ethash.GetEpochData(blockNumber / 30000); err != nil {
+		b.logger.Error().Msgf("error checking dags: %s", err.Error())
+	}
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
