@@ -3,7 +3,9 @@ package ethash
 import (
 	"encoding/binary"
 	"sync/atomic"
+	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/bitutil"
 	"golang.org/x/crypto/sha3"
 )
@@ -43,6 +45,11 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 
 func (e *Ethash) generateCache(epoch uint64) ([]byte, error) {
 	e.logger.Info("Start generating ethash cache")
+	start := time.Now()
+	defer func() {
+		e.logger.Info("Generated ethash verification cache",
+			"elapsed", common.PrettyDuration(time.Since(start)))
+	}()
 
 	seed := seedHash(epoch)
 	size := cacheSize(epoch)
@@ -114,11 +121,6 @@ func seedHash(epoch uint64) []byte {
 // todo use this
 /*
 
-start := time.Now()
-	defer func() {
-		elapsed := time.Since(start)
-		logger.Info("Generated ethash verification cache", "elapsed", common.PrettyDuration(elapsed))
-	}()
 
 
 	go func() {

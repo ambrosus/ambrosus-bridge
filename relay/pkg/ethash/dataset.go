@@ -5,7 +5,9 @@ import (
 	"runtime"
 	"sync"
 	"sync/atomic"
+	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -44,6 +46,11 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 
 func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
 	e.logger.Info("Start generating ethash dag")
+	start := time.Now()
+	defer func() {
+		e.logger.Info("Generated ethash verification cache",
+			"elapsed", common.PrettyDuration(time.Since(start)))
+	}()
 
 	cache, err := e.getCache(epoch)
 	if err != nil {
