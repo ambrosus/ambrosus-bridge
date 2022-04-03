@@ -17,7 +17,7 @@ describe("wAMB", () => {
     const val = 1000;
 
     before(async () => {
-        await deployments.fixture(["wamb"]); // reset contracts state
+        await deployments.fixture(["for_tests"]); // reset contracts state
         ({ owner, user } = await getNamedAccounts());
         ownerS = await ethers.getSigner(owner);
         userS = await ethers.getSigner(user);
