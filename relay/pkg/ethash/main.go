@@ -25,6 +25,9 @@ func New(dir string) *Ethash {
 	return &Ethash{
 		dir:    dir,
 		logger: logger,
+
+		caches: map[uint64][]byte{},
+		dags:   map[uint64][]byte{},
 	}
 }
 
@@ -75,6 +78,8 @@ func (e *Ethash) GetBlockLookups(blockNumber uint64, nonce uint64, hashNoNonce [
 }
 
 func (e *Ethash) deleteOldData(epoch uint64) {
+	// create new if need
+
 	// Iterate over all previous instances and delete old ones
 	for ep := epoch; ep >= 0; ep-- {
 		_ = os.Remove(e.pathToDag(ep))
