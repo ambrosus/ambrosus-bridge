@@ -8,11 +8,11 @@ export const expect = chai.expect;
 
 describe("ERC20Token", () => {
   let ownerS: Signer;
+  let userS: Signer;
+  let bridgeS: Signer;
   let owner: string;
   let user: string;
-  let userS: Signer;
   let bridge: string;
-  let bridgeS: Signer;
 
   let mockERC20: Contract;
 

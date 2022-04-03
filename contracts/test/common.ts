@@ -19,46 +19,37 @@ describe("Common tests", () => {
   let user: string;
 
 
+  let commonBridge: Contract;
   let ethBridge: Contract;
   let ambBridge: Contract;
   let mockERC20: Contract;
-  let ambBridgeTest: Contract;
-  let ethBridgeTest: Contract;
   let wAmb: Contract;
-  let commonBridge: Contract;
 
 
   before(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge", "for_tests"]);
+    await deployments.fixture(["for_tests"]);
     ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
     userS = await ethers.getSigner(user);
 
-    ethBridge = await ethers.getContract("EthBridge", ownerS);
-    ambBridge = await ethers.getContract("AmbBridge", ownerS);
-    mockERC20 = await ethers.getContract("MockERC20", ownerS);
-    ambBridgeTest = await ethers.getContract("AmbBridgeTest", ownerS);
-    ethBridgeTest = await ethers.getContract("EthBridgeTest", ownerS);
-    wAmb = await ethers.getContract("wAMB", ownerS);
     commonBridge = await ethers.getContract("CommonBridge", ownerS);
+    ambBridge = await ethers.getContract("AmbBridgeTest", ownerS);
+    ethBridge = await ethers.getContract("EthBridgeTest", ownerS);
+    mockERC20 = await ethers.getContract("MockERC20", ownerS);
+    wAmb = await ethers.getContract("wAMB", ownerS);
 
-    await ambBridge.grantRole(ADMIN_ROLE, owner);
-    await ambBridgeTest.grantRole(ADMIN_ROLE, owner);
-    await ethBridge.grantRole(ADMIN_ROLE, owner);
-    await commonBridge.grantRole(ADMIN_ROLE, owner);
-
-    await ambBridge.grantRole(RELAY_ROLE, relay);
-    await ambBridgeTest.grantRole(RELAY_ROLE, relay);
-    await ethBridge.grantRole(RELAY_ROLE, relay);
-    await commonBridge.grantRole(RELAY_ROLE, relay);
-
-    await mockERC20.grantRole(BRIDGE_ROLE, ambBridge.address);
-    await mockERC20.grantRole(BRIDGE_ROLE, ethBridge.address);
   });
 
   beforeEach(async () => {
-    await deployments.fixture(["ethbridge", "ambbridge"]); // reset contracts state
+    await deployments.fixture(["for_tests"]); // reset contracts state
+
+    for (let bridge of [commonBridge, ethBridge, ambBridge]) {
+      await bridge.grantRole(ADMIN_ROLE, owner);
+      await bridge.grantRole(RELAY_ROLE, relay);
+      await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
+    }
+    await ambBridge.setAmbWrapper(wAmb.address);
   });
 
   describe("CommonBridge Test", async () => {
@@ -142,7 +133,7 @@ describe("Common tests", () => {
 
       await commonBridge.changeFeeRecipient(user);
       await expect(
-          () => commonBridge.withdraw(mockERC20.address, owner, 5, {value: 1000})
+        () => commonBridge.withdraw(mockERC20.address, owner, 5, {value: 1000})
       ).to.changeEtherBalance(userS, 1000);
 
     });
@@ -184,7 +175,7 @@ describe("Common tests", () => {
 
 
   it("Test Transfer lock/unlock", async () => {
-    await mockERC20.mint(ambBridgeTest.address, 900);
+    await mockERC20.mint(ambBridge.address, 900);
 
     let data1 = [
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
@@ -198,11 +189,11 @@ describe("Common tests", () => {
       [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41],
     ];
 
-    await ambBridgeTest.connect(relayS).lockTransfersTest(data1, 1);
-    await ambBridgeTest.connect(relayS).lockTransfersTest(data2, 2);
+    await ambBridge.connect(relayS).lockTransfersTest(data1, 1);
+    await ambBridge.connect(relayS).lockTransfersTest(data2, 2);
 
     for (let i = 0; i < 3; i++) {
-      let answer = await ambBridgeTest.getLockedTransferTest(1, i);
+      let answer = await ambBridge.getLockedTransferTest(1, i);
       expect(answer[0]).eq(data1[i][0]); // Check tokenAddress is correct
       expect(answer[1]).eq(data1[i][1]); // Check toAddress is correct
       expect(parseInt(answer[2]._hex, 16)).eq(data1[i][2]); // Check amount is correct
@@ -210,8 +201,8 @@ describe("Common tests", () => {
 
     await nextTimeframe();
 
-    await ambBridgeTest.connect(relayS).unlockTransfersTest(1);
-    await ambBridgeTest.connect(relayS).unlockTransfersTest(2);
+    await ambBridge.connect(relayS).unlockTransfersTest(1);
+    await ambBridge.connect(relayS).unlockTransfersTest(2);
   });
 
 
@@ -227,13 +218,12 @@ describe("Common tests", () => {
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 
-
   it('CheckSignature', async () => {
     const hash = "0x74dfc2c4994f9393f823773a399849e0241c8f4c549f7e019960bd64b938b6ae"
     const signature = "0x44c08b83a120ad90f645f645f3fe1bc49dd88e703fce665de1f941c0cede65d81968ac2ad0b5bb9db7cb32a23064c199c0ab5378957f99b1c361fc3ed3b209eb00";
     const needAddress = "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0"
     expect(ethers.utils.recoverAddress(ethers.utils.arrayify(hash), signature)).eq(needAddress);
-    await ethBridgeTest.CheckSignatureTest(needAddress, hash, signature)
+    await ethBridge.CheckSignatureTest(needAddress, hash, signature)
   });
 
 
@@ -244,36 +234,44 @@ describe("Common tests", () => {
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   };
 
+  describe('Test wrap_withdraw in AmbBridge', async () => {
 
-  it('Test wrap_withdraw in AmbBridge', async () => {
-    await ambBridge.setAmbWrapper(wAmb.address);
+    it('Test wrap part', async () => {
+      const fee = +await ambBridge.fee();
 
-    await expect(() => ambBridge.wrap_withdraw(user, 1, {value: 1050}))
-        .to.changeTokenBalance(wAmb, ownerS, 50);
+      await ambBridge.wrap_withdraw(user, {value: fee + 50});
 
-    await ambBridge.wrap_withdraw(user, 2, {value: 1001});
-    await nextTimeframe();
+      await expect(() => ambBridge.wrap_withdraw(user, {value: fee + 50}))
+        .to.changeTokenBalance(wAmb, ambBridge, 50);
+    });
 
-    // will catch previous txs (because nextTimeframe happened)
-    let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, 1337, {value: 1001});
-    await ambBridge.wrap_withdraw(user, 3, {value: 1001});
-    await ambBridge.wrap_withdraw(user, 4, {value: 1001});
-    await nextTimeframe();
+    it('Test withdraw part', async () => {
+      const fee = +await ambBridge.fee();
 
-    // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-    let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, 1337, {value: 1001});
-    await ambBridge.wrap_withdraw(user, 5, {value: 1001});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await nextTimeframe();
 
-    let receipt1Amb: ContractReceipt = await tx1Amb.wait();
-    let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+      // will catch previous txs (because nextTimeframe happened)
+      let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await nextTimeframe();
 
-    let events1Amb: any = await getEvents(receipt1Amb);
-    let events2Amb: any = await getEvents(receipt2Amb);
+      // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
+      let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
 
-    // Checking that event_id increased
-    expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+      let receipt1Amb: ContractReceipt = await tx1Amb.wait();
+      let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+
+      let events1Amb: any = await getEvents(receipt1Amb);
+      let events2Amb: any = await getEvents(receipt2Amb);
+
+      // Checking that event_id increased
+      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+    });
   });
-
 
   const getEvents = async (receipt: any) => {
     return receipt.events?.filter((x: any) => {
