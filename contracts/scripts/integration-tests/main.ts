@@ -46,6 +46,7 @@ describe("Integration tests", function () {
 
 
   it('Eth -> Amb', async () => {
+    console.log("ETH");
     // check mint working
     const ethBefore = await ethToken.balanceOf(ethSigner.address);
     const ambBefore = await ambToken.balanceOf(ambSigner.address);
@@ -54,7 +55,7 @@ describe("Integration tests", function () {
     expect(ambBefore).gte(10);
 
     // withdraw
-    console.log("Withdraw ETH");
+    console.log("Withdraw");
     const fee = await ethBridge.fee();
 
     await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, {value: fee, ...options}));
@@ -62,7 +63,7 @@ describe("Integration tests", function () {
     await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 1, {value: fee, ...options}));  // must emit event, todo check
 
     // wait for minSafetyBlocks confirmations
-    console.log(`Wait for confirmations ETH`);
+    console.log(`Wait for confirmations`);
     const minSafetyBlocks = await ambBridge.minSafetyBlocks();
     await waitConfirmations(minSafetyBlocks, ethSigner.provider);
 
@@ -87,6 +88,7 @@ describe("Integration tests", function () {
   });
 
   it('Amb -> Eth', async () => {
+    console.log("AMB");
     // check mint working
     const ethBefore = await ethToken.balanceOf(ethSigner.address);
     const ambBefore = await ambToken.balanceOf(ambSigner.address);
@@ -96,7 +98,7 @@ describe("Integration tests", function () {
 
 
     // withdraw
-    console.log("Withdraw AMB");
+    console.log("Withdraw");
     const fee = await ambBridge.fee();
     const receipt1 = await w(ambBridge.withdraw(ambToken.address, ethSigner.address, 5, {value: fee, gasLimit: 800000}));
     const events1 = getEvents(receipt1, "Withdraw");
@@ -110,7 +112,7 @@ describe("Integration tests", function () {
     expect([args.from, args.event_id, args.feeAmount]).to.eql([ambSigner.address, prevEventId.add("1"), fee]);
 
     // wait for minSafetyBlocks confirmations
-    console.log(`Wait for confirmations AMB`);
+    console.log(`Wait for confirmations`);
     const minSafetyBlocks = await ethBridge.minSafetyBlocks();
     await waitConfirmations(minSafetyBlocks, ambSigner.provider);
 
