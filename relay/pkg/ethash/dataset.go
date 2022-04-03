@@ -105,7 +105,7 @@ func generateDatasetItem(cache []uint32, index uint32, keccak512 hasher) []byte 
 func generateDataset(dataset []byte, cache []uint32) {
 	// Generate the dataset on many goroutines since it takes a while
 	threads := runtime.NumCPU()
-	size := uint64(cap(dataset))
+	size := uint64(len(dataset))
 
 	var pend sync.WaitGroup
 	pend.Add(threads)

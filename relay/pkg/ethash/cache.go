@@ -66,14 +66,11 @@ func (e *Ethash) generateCache(epoch uint64) ([]byte, error) {
 // set of 524288 64-byte values.
 func generateCache(cache []byte, seed []byte) {
 	// Calculate the number of thoretical rows (we'll store in one buffer nonetheless)
-	size := uint64(cap(cache))
+	size := uint64(len(cache))
 	rows := int(size) / hashBytes
 
 	// Start a monitoring goroutine to report progress on low end devices
 	var progress uint32
-
-	done := make(chan struct{})
-	defer close(done)
 
 	// Create a hasher to reuse between invocations
 	keccak512 := makeHasher(sha3.NewLegacyKeccak512())
