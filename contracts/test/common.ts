@@ -62,35 +62,41 @@ describe("Common tests", () => {
   });
 
   describe("CommonBridge Test", async () => {
-    it("TestWithdraw timeframe", async () => {
-      await mockERC20.mint(owner, 10000);
-      await mockERC20.increaseAllowance(commonBridge.address, 5000);
 
-      await commonBridge.withdraw(mockERC20.address, user, 1, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 2, {value: 1000});
-      await nextTimeframe();
+    describe("Test Withdraw", async () => {
+      beforeEach(async () => {
+        await mockERC20.mint(owner, 10000);
+        await mockERC20.increaseAllowance(commonBridge.address, 5000);
+      });
 
-      // will catch previous txs (because nextTimeframe happened)
-      let tx1Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 3, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 4, {value: 1000});
-      await nextTimeframe();
+      it("token balance changed", async () => {
+        await expect(() => commonBridge.withdraw(mockERC20.address, user, 1, {value: 1000}))
+            .to.changeTokenBalance(mockERC20, ownerS, -1);
+      });
 
-      // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      let tx2Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 5, {value: 1000});
+      it("withdraw event_id increased", async () => {
+        await commonBridge.withdraw(mockERC20.address, user, 2, {value: 1000});
+        await nextTimeframe();
+        let tx1Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
+        await commonBridge.withdraw(mockERC20.address, user, 3, {value: 1000});
+        await commonBridge.withdraw(mockERC20.address, user, 4, {value: 1000});
+        await nextTimeframe();
 
-      let receipt1Amb: ContractReceipt = await tx1Amb.wait();
-      let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+        // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
+        let tx2Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
+        await commonBridge.withdraw(mockERC20.address, user, 5, {value: 1000});
 
-      // todo check erc20 balance changed
-      // todo use truffle helpers for catch events
+        let receipt1Amb: ContractReceipt = await tx1Amb.wait();
+        let receipt2Amb: ContractReceipt = await tx2Amb.wait();
 
-      let events1Amb: any = await getEvents(receipt1Amb);
-      let events2Amb: any = await getEvents(receipt2Amb);
+        // todo use truffle helpers for catch events
 
-      // Checking that event_id increased
-      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+        let events1Amb: any = await getEvents(receipt1Amb);
+        let events2Amb: any = await getEvents(receipt2Amb);
+
+        // Checking that event_id increased
+        expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+      });
     });
 
     describe("Token addresses", () => {
@@ -221,6 +227,7 @@ describe("Common tests", () => {
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 
+
   it('CheckSignature', async () => {
     const hash = "0x74dfc2c4994f9393f823773a399849e0241c8f4c549f7e019960bd64b938b6ae"
     const signature = "0x44c08b83a120ad90f645f645f3fe1bc49dd88e703fce665de1f941c0cede65d81968ac2ad0b5bb9db7cb32a23064c199c0ab5378957f99b1c361fc3ed3b209eb00";
@@ -236,6 +243,7 @@ describe("Common tests", () => {
     const timestamp = currentTimeframe * 14400 + amount * 14400;
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   };
+
 
   it('Test wrap_withdraw in AmbBridge', async () => {
     await ambBridge.setAmbWrapper(wAmb.address);
@@ -265,6 +273,7 @@ describe("Common tests", () => {
     // Checking that event_id increased
     expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
   });
+
 
   const getEvents = async (receipt: any) => {
     return receipt.events?.filter((x: any) => {
