@@ -14,30 +14,37 @@ const (
 	cacheInitBytes   = 1 << 24 // Bytes in cache at genesis
 )
 
-func (e *Ethash) getOrGenerateCache(epoch uint64) ([]byte, error) {
-	path := e.pathToCache(epoch)
+func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
+	if cache, ok := e.caches[epoch]; ok {
+		e.logger.Debug("Loaded old ethash cache from cache :)")
+		return cache, nil
+	}
 
 	// Try to load the file from disk and memory map it
+	path := e.pathToCache(epoch)
 	cache, err := readFile(path)
 	if err == nil {
 		e.logger.Debug("Loaded old ethash cache from disk")
 		return cache, nil
 	}
-	e.logger.Debug("Failed to load old cache cache", "err", err)
 
 	// Generate new
 	cache, err = e.generateCache(epoch)
 	if err != nil {
 		return nil, err
 	}
-	err = dumpToFile(path, cache)
-	return cache, err
+
+	if err = dumpToFile(path, cache); err != nil {
+		e.logger.Warn("Failed to save cache file", "err", err)
+	}
+
+	return cache, nil
 }
 
 func (e *Ethash) generateCache(epoch uint64) ([]byte, error) {
 	e.logger.Info("Start generating ethash cache")
 
-	seed := seedHash(epoch*epochLength + 1)
+	seed := seedHash(epoch)
 	size := cacheSize(epoch)
 
 	buffer := make([]byte, size)

@@ -13,9 +13,10 @@ import (
 type Ethash struct {
 	dir    string
 	logger log.Logger
-	// todo caches
-	// todo logger
 
+	// cache (in default meaning)
+	caches map[uint64][]byte
+	dags   map[uint64][]byte
 }
 
 func New(dir string) *Ethash {
@@ -78,6 +79,8 @@ func (e *Ethash) deleteOldData(epoch uint64) {
 	for ep := epoch; ep >= 0; ep-- {
 		_ = os.Remove(e.pathToDag(ep))
 		_ = os.Remove(e.pathToCache(ep))
+		delete(e.dags, epoch)
+		delete(e.caches, epoch)
 	}
 }
 

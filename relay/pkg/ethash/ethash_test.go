@@ -9,15 +9,15 @@ import (
 
 func TestEpoch(t *testing.T) {
 	ethash := New("./test")
-	_, err := ethash.getOrGenerateCache(1)
+	_, err := ethash.getCache(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = ethash.getOrGenerateDag(1)
+	_, err = ethash.getDag(1)
 	if err != nil {
 		t.Fatal(err)
 	}
-	edata, err := ethash.GenerateEpochData(1)
+	edata, err := ethash.GetEpochData(1)
 	if err != nil {
 		t.Fatal(err)
 	}

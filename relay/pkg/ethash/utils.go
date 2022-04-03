@@ -44,7 +44,7 @@ func bytesToUint32Slice(b []byte) []uint32 {
 }
 
 func (e *Ethash) populateMerkle(epoch uint64, mt *merkle.DatasetTree) (int, int, error) {
-	dag, err := e.getOrGenerateDag(epoch)
+	dag, err := e.getDag(epoch)
 	if err != nil {
 		return 0, 0, err
 	}
@@ -71,7 +71,7 @@ func dagToMerkle(dag []byte, mt *merkle.DatasetTree) {
 
 func (e *Ethash) getVerificationIndices(blockNumber uint64, hash common.Hash, nonce uint64) ([]uint32, error) {
 	// Recompute the digest and PoW value and verify against the header
-	cache, err := e.getOrGenerateCache(epoch(blockNumber))
+	cache, err := e.getCache(epoch(blockNumber))
 	if err != nil {
 		return nil, err
 	}

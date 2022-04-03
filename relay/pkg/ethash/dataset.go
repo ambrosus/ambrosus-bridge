@@ -15,30 +15,37 @@ const (
 	datasetParents     = 256     // Number of parents of each dataset element
 )
 
-func (e *Ethash) getOrGenerateDag(epoch uint64) ([]byte, error) {
-	path := e.pathToDag(epoch)
+func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
+	if dag, ok := e.dags[epoch]; ok {
+		e.logger.Debug("Loaded old ethash dag from cache")
+		return dag, nil
+	}
 
 	// Try to load the file from disk and memory map it
+	path := e.pathToDag(epoch)
 	dag, err := readFile(path)
 	if err == nil {
 		e.logger.Debug("Loaded old ethash dag from disk")
 		return dag, nil
 	}
-	e.logger.Debug("Failed to load old ethash dag", "err", err)
 
 	// Generate new
 	dag, err = e.generateDag(epoch)
 	if err != nil {
 		return nil, err
 	}
-	err = dumpToFile(path, dag)
-	return dag, err
+
+	if err = dumpToFile(path, dag); err != nil {
+		e.logger.Warn("Failed to save dag file", "err", err)
+	}
+
+	return dag, nil
 }
 
 func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
 	e.logger.Info("Start generating ethash dag")
 
-	cache, err := e.getOrGenerateCache(epoch)
+	cache, err := e.getCache(epoch)
 	if err != nil {
 		return nil, err
 	}
