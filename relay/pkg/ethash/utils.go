@@ -35,20 +35,6 @@ func makeHasher(h hash.Hash) hasher {
 	}
 }
 
-func seedHash(block uint64) []byte { // todo epoch arg
-	seed := make([]byte, 32)
-	if block < epochLength {
-		return seed
-	}
-
-	keccak256 := makeHasher(sha3.NewLegacyKeccak256())
-	for i := 0; i < int(block/epochLength); i++ {
-		keccak256(seed, seed)
-	}
-
-	return seed
-}
-
 func bytesToUint32Slice(b []byte) []uint32 {
 	sh := *(*reflect.SliceHeader)(unsafe.Pointer(&b))
 	sh.Len /= 4

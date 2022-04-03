@@ -89,6 +89,21 @@ func generateCache(cache []byte, seed []byte) {
 
 }
 
+func seedHash(epoch uint64) []byte {
+	block := epoch*epochLength + 1 // todo use only epoch
+	seed := make([]byte, 32)
+	if block < epochLength {
+		return seed
+	}
+
+	keccak256 := makeHasher(sha3.NewLegacyKeccak256())
+	for i := 0; i < int(block/epochLength); i++ {
+		keccak256(seed, seed)
+	}
+
+	return seed
+}
+
 // todo use this
 /*
 
