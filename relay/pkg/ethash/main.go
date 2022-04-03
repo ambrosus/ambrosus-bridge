@@ -34,52 +34,33 @@ type EpochData struct {
 	MerkleNodes             []*big.Int
 }
 
-func (e *Ethash) GenerateEpochData(epoch uint64) (*EpochData, error) {
-	// todo use cache
-	dag, err := e.getOrGenerateDag(epoch)
+func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
+	mt := merkle.NewDatasetTree()
+	fullSize, branchDepth, err := e.populateMerkle(epoch, mt)
 	if err != nil {
 		return nil, err
 	}
 
-	fullSize := len(dag)
-	fullSizeIn128Resolution := fullSize / 128
-	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
-
-	mt := merkle.NewDatasetTree()
-	mt.RegisterStoredLevel(uint32(branchDepth), uint32(10))
-	dagToMerkle(dag, mt)
-	mt.Finalize()
-
 	return &EpochData{
 		Epoch:                   big.NewInt(int64(epoch)),
-		FullSizeIn128Resolution: big.NewInt(int64(fullSizeIn128Resolution)),
+		FullSizeIn128Resolution: big.NewInt(int64(fullSize / 128)),
 		BranchDepth:             big.NewInt(int64(branchDepth - 10)),
 		MerkleNodes:             mt.MerkleNodes(),
 	}, nil
 }
 
 func (e *Ethash) GetBlockLookups(blockNumber uint64, nonce uint64, hashNoNonce [32]byte) (dataSetLookup, witnessForLookup []*big.Int, err error) {
-	// todo use cache
-	dag, err := e.getOrGenerateDag(epoch(blockNumber))
-	if err != nil {
-		return
-	}
-
-	fullSize := len(dag)
-	fullSizeIn128Resolution := fullSize / 128
-	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
-
-	mt := merkle.NewDatasetTree()
-
 	indices, err := e.getVerificationIndices(blockNumber, hashNoNonce, nonce)
 	if err != nil {
 		return
 	}
-	mt.RegisterIndex(indices...) // diff with GenerateEpochData :(
 
-	mt.RegisterStoredLevel(uint32(branchDepth), 10)
-	dagToMerkle(dag, mt)
-	mt.Finalize()
+	mt := merkle.NewDatasetTree()
+	mt.RegisterIndex(indices...)
+	_, _, err = e.populateMerkle(epoch(blockNumber), mt)
+	if err != nil {
+		return nil, nil, err
+	}
 
 	for _, w := range mt.AllDAGElements() {
 		dataSetLookup = append(dataSetLookup, w.ToUint256Array()...)

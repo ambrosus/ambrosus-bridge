@@ -2,6 +2,7 @@ package ethash
 
 import (
 	"encoding/binary"
+	"fmt"
 	"hash"
 	"io/ioutil"
 	"os"
@@ -40,6 +41,23 @@ func bytesToUint32Slice(b []byte) []uint32 {
 	sh.Len /= 4
 	sh.Cap /= 4
 	return *(*[]uint32)(unsafe.Pointer(&sh))
+}
+
+func (e *Ethash) populateMerkle(epoch uint64, mt *merkle.DatasetTree) (int, int, error) {
+	dag, err := e.getOrGenerateDag(epoch)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	fullSize := len(dag)
+	fullSizeIn128Resolution := fullSize / 128
+	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
+
+	mt.RegisterStoredLevel(uint32(branchDepth), 10)
+	dagToMerkle(dag, mt)
+	mt.Finalize()
+
+	return fullSize, branchDepth, nil
 }
 
 func dagToMerkle(dag []byte, mt *merkle.DatasetTree) {
