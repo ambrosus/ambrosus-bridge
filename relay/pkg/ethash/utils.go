@@ -57,19 +57,15 @@ func (e *Ethash) populateMerkle(epoch uint64, mt *merkle.DatasetTree) (int, int,
 	branchDepth := len(fmt.Sprintf("%b", fullSizeIn128Resolution-1))
 
 	mt.RegisterStoredLevel(uint32(branchDepth), 10)
-	dagToMerkle(dag, mt)
-	mt.Finalize()
 
-	return fullSize, branchDepth, nil
-}
-
-func dagToMerkle(dag []byte, mt *merkle.DatasetTree) {
-	size := uint32(len(dag) / 128)
 	var buf [128]byte
-	for i := uint32(0); i < size; i++ {
+	for i := 0; i < fullSizeIn128Resolution; i++ {
 		copy(buf[:], dag[i*128:(i+1)*128])
-		mt.Insert(merkle.Word(buf), i)
+		mt.Insert(merkle.Word(buf), uint32(i))
 	}
+
+	mt.Finalize()
+	return fullSize, branchDepth, nil
 }
 
 func (e *Ethash) getVerificationIndices(blockNumber uint64, hash common.Hash, nonce uint64) ([]uint32, error) {
