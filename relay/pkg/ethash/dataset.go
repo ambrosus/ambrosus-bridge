@@ -18,6 +18,8 @@ const (
 )
 
 func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
+	e.logger.Debug("Get DAG", "epoch", epoch)
+
 	e.dagKLock.Lock(epoch)
 	defer e.dagKLock.Unlock(epoch)
 
@@ -53,7 +55,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 }
 
 func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
-	e.logger.Info("Start generating ethash dag")
+	e.logger.Info("Start generating ethash dag", "epoch", epoch)
 
 	start := time.Now()
 	progress := uint64(0)
@@ -66,10 +68,9 @@ func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
 
 	go func() {
 		ticker := time.NewTicker(time.Second)
-		for ; progress <= size/64; <-ticker.C {
-			e.logger.Info("Generating DAG in progress", "percentage", progress*hashBytes*100/size,
-				"progress", progress, "size", size,
-				"elapsed", common.PrettyDuration(time.Since(start)))
+		for ; progress < size/64; <-ticker.C {
+			e.logger.Info("Generating DAG in progress", "epoch", epoch,
+				"percentage", progress*hashBytes*100/size, "elapsed", common.PrettyDuration(time.Since(start)))
 		}
 	}()
 
