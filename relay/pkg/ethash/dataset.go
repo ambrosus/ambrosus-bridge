@@ -26,23 +26,27 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 		return dag, nil
 	}
 
-	// Try to load the file from disk and memory map it
-	path := e.pathToDag(epoch)
-	dag, err := readFile(path)
-	if err == nil {
-		e.logger.Debug("Loaded old ethash dag from disk")
-		return dag, nil
+	if e.useFs() {
+		// Try to load the file from disk and memory map it
+		dag, err := readFile(e.pathToDag(epoch))
+		if err == nil {
+			e.logger.Debug("Loaded old ethash dag from disk")
+			return dag, nil
+		}
 	}
 
 	// Generate new
-	dag, err = e.generateDag(epoch)
+	dag, err := e.generateDag(epoch)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = dumpToFile(path, dag); err != nil {
-		e.logger.Warn("Failed to save dag file", "err", err)
+	if e.useFs() {
+		if err = dumpToFile(e.pathToDag(epoch), dag); err != nil {
+			e.logger.Warn("Failed to save dag file", "err", err)
+		}
 	}
+
 	e.dags[epoch] = dag
 	return dag, nil
 }

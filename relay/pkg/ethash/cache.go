@@ -22,23 +22,27 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 		return cache, nil
 	}
 
-	// Try to load the file from disk and memory map it
-	path := e.pathToCache(epoch)
-	cache, err := readFile(path)
-	if err == nil {
-		e.logger.Debug("Loaded old ethash cache from disk")
-		return cache, nil
+	if e.useFs() {
+		// Try to load the file from disk and memory map it
+		cache, err := readFile(e.pathToCache(epoch))
+		if err == nil {
+			e.logger.Debug("Loaded old ethash cache from disk")
+			return cache, nil
+		}
 	}
 
 	// Generate new
-	cache, err = e.generateCache(epoch)
+	cache, err := e.generateCache(epoch)
 	if err != nil {
 		return nil, err
 	}
 
-	if err = dumpToFile(path, cache); err != nil {
-		e.logger.Warn("Failed to save cache file", "err", err)
+	if e.useFs() {
+		if err = dumpToFile(e.pathToCache(epoch), cache); err != nil {
+			e.logger.Warn("Failed to save cache file", "err", err)
+		}
 	}
+
 	e.caches[epoch] = cache
 	return cache, nil
 }

@@ -27,6 +27,10 @@ type Ethash struct {
 func New(dir string, keepPrevEpochs, genNextEpochs uint64) *Ethash {
 	logger := log.New("epoch", epoch) // todo
 
+	if dir == "" {
+		logger.Info("No ethash dir provided, working in memory only")
+	}
+
 	return &Ethash{
 		dir:    dir,
 		logger: logger,
@@ -103,13 +107,18 @@ func (e *Ethash) UpdateCache(currentEpoch uint64) {
 	e.logger.Debug("Deleting data for older epochs")
 	// Iterate over all previous instances and delete old ones
 	for ep := currentEpoch - e.keepPrevEpochs - 1; ep >= 0; ep-- {
-		_ = os.Remove(e.pathToDag(ep))
-		_ = os.Remove(e.pathToCache(ep))
+		if e.useFs() {
+			_ = os.Remove(e.pathToDag(ep))
+			_ = os.Remove(e.pathToCache(ep))
+		}
 		delete(e.dags, ep)
 		delete(e.caches, ep)
 	}
 }
 
+func (e *Ethash) useFs() bool {
+	return e.dir != ""
+}
 func (e *Ethash) pathToCache(epoch uint64) string {
 	return filepath.Join(e.dir, fmt.Sprintf("cache-%d", epoch))
 }
