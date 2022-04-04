@@ -34,7 +34,7 @@ type Bridge struct {
 	auth       *bind.TransactOpts
 	cfg        *config.ETHConfig
 	logger     zerolog.Logger
-	Ethash     *ethash.Ethash
+	ethash     *ethash.Ethash
 }
 
 // New creates a new ethereum bridge.
@@ -98,7 +98,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		auth:       auth,
 		cfg:        cfg,
 		logger:     logger,
-		Ethash:     ethash,
+		ethash:     ethash,
 	}, nil
 }
 
@@ -283,7 +283,7 @@ func (b *Bridge) checkEpochData(event *contracts.TransferEvent) error {
 	}
 
 	b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit epoch data...")
-	epochData, err := b.Ethash.GetEpochData(epoch)
+	epochData, err := b.ethash.GetEpochData(epoch)
 	if err != nil {
 		return err
 	}
@@ -300,7 +300,7 @@ func (b *Bridge) ensureDAGsExists() {
 	}
 
 	// This func will generate DAG if it doesn't exist yet
-	b.Ethash.UpdateCache(blockNumber / 30000)
+	b.ethash.UpdateCache(blockNumber / 30000)
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {

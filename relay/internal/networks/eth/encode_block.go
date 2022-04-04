@@ -94,7 +94,7 @@ func (b *Bridge) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, er
 		return nil, nil, err
 	}
 	hashWithoutNonce := helpers.BytesToBytes32(crypto.Keccak256(blockHeaderWithoutNonce))
-	return b.Ethash.GetBlockLookups(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)
+	return b.ethash.GetBlockLookups(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)
 }
 
 func headerRlp(header *types.Header, withNonce bool) ([]byte, error) {
