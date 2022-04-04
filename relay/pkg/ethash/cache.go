@@ -27,6 +27,7 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 		cache, err := readFile(e.pathToCache(epoch))
 		if err == nil {
 			e.logger.Debug("Loaded old ethash cache from disk")
+			e.caches[epoch] = cache
 			return cache, nil
 		}
 	}

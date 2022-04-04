@@ -31,6 +31,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 		dag, err := readFile(e.pathToDag(epoch))
 		if err == nil {
 			e.logger.Debug("Loaded old ethash dag from disk")
+			e.dags[epoch] = dag
 			return dag, nil
 		}
 	}
