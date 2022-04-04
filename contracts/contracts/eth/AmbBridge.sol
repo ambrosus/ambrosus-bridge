@@ -4,16 +4,17 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/checks/CheckPoW.sol";
 import "../common/CommonStructs.sol";
+import "../IwAMB.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
+    address ambWrapperAddress;
+
     constructor(
-        CommonStructs.ConstructorArgs memory args
+        CommonStructs.ConstructorArgs memory args,
+        address ambWrapper_
     )
-    CommonBridge(args.sideBridgeAddress, args.relayAddress,
-                 args.tokenThisAddresses, args.tokenSideAddresses,
-                 args.fee, args.feeRecipient,
-                 args.timeframeSeconds, args.lockTime, args.minSafetyBlocks)
+    CommonBridge(args)
     {
 
         // relay uses this event to know from what moment to synchronize the validator set;
@@ -23,6 +24,27 @@ contract AmbBridge is CommonBridge, CheckPoW {
 
         emitTestEvent(address(this), msg.sender, 10, true);
 
+        ambWrapperAddress = ambWrapper_;
+    }
+
+    function wrap_withdraw(address toAddress) public payable {
+        require(msg.value > fee, "msg.value can't be lesser than fee");
+        uint restOfValue = msg.value - fee;
+
+        feeRecipient.transfer(fee);
+        IwAMB(ambWrapperAddress).wrap{value: restOfValue}();
+
+        //
+        queue.push(CommonStructs.Transfer(ambWrapperAddress, toAddress, restOfValue));
+        emit Withdraw(msg.sender, outputEventId, fee);
+
+        uint nowTimeframe = block.timestamp / timeframeSeconds;
+        if (nowTimeframe != lastTimeframe) {
+            emit Transfer(outputEventId++, queue);
+            delete queue;
+
+            lastTimeframe = nowTimeframe;
+        }
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
@@ -39,5 +61,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-
+    function setAmbWrapper(address wrapper) public onlyRole(ADMIN_ROLE) {
+        ambWrapperAddress = wrapper;
+    }
 }

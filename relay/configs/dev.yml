@@ -11,8 +11,10 @@ network:
     epoch-length: 3
 external-logger:
   telegram:
+    enable: false
     token: null
     chat-id: null
 prometheus:
+  enable: false
   ip: localhost
   port: 9091

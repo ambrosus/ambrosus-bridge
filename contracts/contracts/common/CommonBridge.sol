@@ -42,24 +42,20 @@ contract CommonBridge is AccessControl, Pausable {
     event TransferSubmit(uint indexed event_id);
 
 
-    constructor(
-        address _sideBridgeAddress, address relayAddress,
-        address[] memory tokenThisAddresses, address[] memory tokenSideAddresses,
-        uint fee_, address payable feeRecipient_,
-        uint timeframeSeconds_, uint lockTime_, uint minSafetyBLocks_)
+    constructor(CommonStructs.ConstructorArgs memory args)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(RELAY_ROLE, relayAddress);
+        _setupRole(RELAY_ROLE, args.relayAddress);
 
         // initialise tokenAddresses with start values
-        _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
+        _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);
 
-        sideBridgeAddress = _sideBridgeAddress;
-        fee = fee_;
-        feeRecipient = feeRecipient_;
-        minSafetyBlocks = minSafetyBLocks_;
-        timeframeSeconds = timeframeSeconds_;
-        lockTime = lockTime_;
+        sideBridgeAddress = args.sideBridgeAddress;
+        fee = args.fee;
+        feeRecipient = args.feeRecipient;
+        minSafetyBlocks = args.minSafetyBlocks;
+        timeframeSeconds = args.timeframeSeconds;
+        lockTime = args.lockTime;
     }
 
 

@@ -163,7 +163,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 		return nil, err
 	}
 
-	start, err := b.sideBridge.GetLastProcessedBlockNum()
+	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, err
 	}
@@ -207,6 +207,20 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contract
 	}
 	encodedBlock.Type |= type_
 	return encodedBlock, nil
+}
+
+func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
+	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+	if err != nil {
+		return nil, err
+	}
+
+	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	if err != nil {
+		return nil, err
+	}
+
+	return block.Number(), nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {

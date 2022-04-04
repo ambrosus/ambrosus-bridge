@@ -135,7 +135,7 @@ contract CheckAura is CheckReceiptsProof {
         return validatorSet;
     }
 
-    function CheckSignature(address signer, bytes32 message, bytes memory signature) internal pure {
+    function CheckSignature(address signer, bytes32 message_hash, bytes memory signature) internal pure {
         bytes32 r;
         bytes32 s;
         uint8 v;
@@ -143,10 +143,9 @@ contract CheckAura is CheckReceiptsProof {
             r := mload(add(signature, 32))
             s := mload(add(signature, 64))
             v := byte(0, mload(add(signature, 96)))
+            if lt(v, 27) { v := add(v, 27) }
         }
-        require(
-            ecrecover(keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", message)), v, r, s) == signer,
-            "Failed to verify sign");
+        require(ecrecover(message_hash, v, r, s) == signer, "Failed to verify sign");
     }
 
     function CalcValidatorSetReceiptHash(AuraProof memory auraProof,

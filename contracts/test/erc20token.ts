@@ -8,16 +8,16 @@ export const expect = chai.expect;
 
 describe("ERC20Token", () => {
   let ownerS: Signer;
+  let userS: Signer;
+  let bridgeS: Signer;
   let owner: string;
   let user: string;
-  let userS: Signer;
   let bridge: string;
-  let bridgeS: Signer;
 
   let mockERC20: Contract;
 
   before(async () => {
-    await deployments.fixture(["mocktoken"]);
+    await deployments.fixture(["for_tests"]);
     ({ owner, user, bridge } = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     userS = await ethers.getSigner(user);
@@ -27,7 +27,7 @@ describe("ERC20Token", () => {
   });
 
   beforeEach(async () => {
-    await deployments.fixture(["mocktoken"]); // reset contracts state
+    await deployments.fixture(["for_tests"]); // reset contracts state
   });
 
   describe("transfer/transferFrom", () => {

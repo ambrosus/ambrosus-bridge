@@ -133,14 +133,13 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
 
-func (b *Bridge) GetLastProcessedBlockNum() (*big.Int, error) {
+func (b *Bridge) GetLastProcessedBlockHash() (*common.Hash, error) {
 	blockHash, err := b.Contract.LastProcessedBlock(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	header, err := b.Client.HeaderByHash(context.Background(), blockHash)
-	return header.Number, err
+	return (*common.Hash)(&blockHash), nil
 }
 
 // GetEventById gets contract event by id.
