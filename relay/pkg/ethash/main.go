@@ -14,6 +14,9 @@ type Ethash struct {
 	dir    string
 	logger log.Logger
 
+	keepPrevEpochs uint64
+	genNextEpochs  uint64
+
 	// cache (in default meaning)
 	caches   map[uint64][]byte
 	dags     map[uint64][]byte
@@ -21,12 +24,15 @@ type Ethash struct {
 	// no lock for cache because is doesn't take that long to generate it
 }
 
-func New(dir string) *Ethash {
+func New(dir string, keepPrevEpochs, genNextEpochs uint64) *Ethash {
 	logger := log.New("epoch", epoch) // todo
 
 	return &Ethash{
 		dir:    dir,
 		logger: logger,
+
+		keepPrevEpochs: keepPrevEpochs,
+		genNextEpochs:  genNextEpochs,
 
 		caches:   map[uint64][]byte{},
 		dags:     map[uint64][]byte{},
@@ -42,6 +48,8 @@ type EpochData struct {
 }
 
 func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
+	defer e.UpdateCache(epoch)
+
 	mt := merkle.NewDatasetTree()
 	fullSize, branchDepth, err := e.populateMerkle(epoch, mt)
 	if err != nil {
@@ -56,7 +64,9 @@ func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
 	}, nil
 }
 
-func (e *Ethash) GetBlockLookups(blockNumber uint64, nonce uint64, hashNoNonce [32]byte) (dataSetLookup, witnessForLookup []*big.Int, err error) {
+func (e *Ethash) GetBlockLookups(blockNumber, nonce uint64, hashNoNonce [32]byte) (dataSetLookup, witnessForLookup []*big.Int, err error) {
+	defer e.UpdateCache(epoch(blockNumber))
+
 	indices, err := e.getVerificationIndices(blockNumber, hashNoNonce, nonce)
 	if err != nil {
 		return
@@ -80,15 +90,23 @@ func (e *Ethash) GetBlockLookups(blockNumber uint64, nonce uint64, hashNoNonce [
 	return
 }
 
-func (e *Ethash) deleteOldData(epoch uint64) {
-	// create new if need
+func (e *Ethash) UpdateCache(currentEpoch uint64) {
+	if e.genNextEpochs != 0 {
+		e.logger.Debug("Generating data for next epochs")
+		go func() {
+			for i := uint64(0); i < e.genNextEpochs; i++ {
+				_, _ = e.getDag(currentEpoch + i + 1)
+			}
+		}()
+	}
 
+	e.logger.Debug("Deleting data for older epochs")
 	// Iterate over all previous instances and delete old ones
-	for ep := epoch; ep >= 0; ep-- {
+	for ep := currentEpoch - e.keepPrevEpochs - 1; ep >= 0; ep-- {
 		_ = os.Remove(e.pathToDag(ep))
 		_ = os.Remove(e.pathToCache(ep))
-		delete(e.dags, epoch)
-		delete(e.caches, epoch)
+		delete(e.dags, ep)
+		delete(e.caches, ep)
 	}
 }
 

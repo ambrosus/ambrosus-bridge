@@ -88,7 +88,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
-	ethash := ethash.New("./assets") // todo cfg
+	ethash := ethash.New("./assets", 1, 1) // todo cfg
 
 	return &Bridge{
 		Client:     client,
@@ -300,9 +300,7 @@ func (b *Bridge) ensureDAGsExists() {
 	}
 
 	// This func will generate DAG if it doesn't exist yet
-	if _, err = b.Ethash.GetEpochData(blockNumber / 30000); err != nil {
-		b.logger.Error().Msgf("error checking dags: %s", err.Error())
-	}
+	b.Ethash.UpdateCache(blockNumber / 30000)
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
