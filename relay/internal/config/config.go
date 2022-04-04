@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -69,7 +70,7 @@ func Init() (*Config, error) {
 	if err := setFromEnv(&cfg); err != nil {
 		return nil, err
 	}
-
+	fmt.Println(cfg.AMB.HttpURL)
 	return &cfg, nil
 }
 
@@ -84,6 +85,7 @@ func parseConfigFile() error {
 
 	dir, file := filepath.Split(configPath)
 
+	viper.SetConfigType("json")
 	viper.AddConfigPath(dir)
 	viper.SetConfigName(file)
 
