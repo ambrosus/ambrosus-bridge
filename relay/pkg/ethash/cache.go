@@ -2,7 +2,6 @@ package ethash
 
 import (
 	"encoding/binary"
-	"sync/atomic"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -51,16 +50,14 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 func (e *Ethash) generateCache(epoch uint64) ([]byte, error) {
 	e.logger.Info("Start generating ethash cache")
 	start := time.Now()
-	defer func() {
-		e.logger.Info("Generated ethash verification cache",
-			"elapsed", common.PrettyDuration(time.Since(start)))
-	}()
 
 	seed := seedHash(epoch)
 	size := cacheSize(epoch)
 
 	buffer := make([]byte, size)
 	generateCache(buffer, seed)
+
+	e.logger.Info("Generated ethash verification cache", "elapsed", common.PrettyDuration(time.Since(start)))
 	return buffer, nil
 }
 
@@ -74,9 +71,6 @@ func generateCache(cache []byte, seed []byte) {
 	size := uint64(len(cache))
 	rows := int(size) / hashBytes
 
-	// Start a monitoring goroutine to report progress on low end devices
-	var progress uint32
-
 	// Create a hasher to reuse between invocations
 	keccak512 := makeHasher(sha3.NewLegacyKeccak512())
 
@@ -84,22 +78,19 @@ func generateCache(cache []byte, seed []byte) {
 	keccak512(cache, seed)
 	for offset := uint64(hashBytes); offset < size; offset += hashBytes {
 		keccak512(cache[offset:], cache[offset-hashBytes:offset])
-		atomic.AddUint32(&progress, 1)
 	}
+
 	// Use a low-round version of randmemohash
 	temp := make([]byte, hashBytes)
 
 	for i := 0; i < cacheRounds; i++ {
 		for j := 0; j < rows; j++ {
-			var (
-				srcOff = ((j - 1 + rows) % rows) * hashBytes
-				dstOff = j * hashBytes
-				xorOff = (binary.LittleEndian.Uint32(cache[dstOff:]) % uint32(rows)) * hashBytes
-			)
+			srcOff := ((j - 1 + rows) % rows) * hashBytes
+			dstOff := j * hashBytes
+			xorOff := (binary.LittleEndian.Uint32(cache[dstOff:]) % uint32(rows)) * hashBytes
+
 			bitutil.XORBytes(temp, cache[srcOff:srcOff+hashBytes], cache[xorOff:xorOff+hashBytes])
 			keccak512(cache[dstOff:], temp)
-
-			atomic.AddUint32(&progress, 1)
 		}
 	}
 
@@ -119,20 +110,3 @@ func seedHash(epoch uint64) []byte {
 
 	return seed
 }
-
-// todo use this
-/*
-
-
-
-	go func() {
-		for {
-			select {
-			case <-done:
-				return
-			case <-time.After(3 * time.Second):
-				logger.Info("Generating ethash verification cache", "percentage", atomic.LoadUint32(&progress)*100/uint32(rows)/4, "elapsed", common.PrettyDuration(time.Since(start)))
-			}
-		}
-	}()
-*/
