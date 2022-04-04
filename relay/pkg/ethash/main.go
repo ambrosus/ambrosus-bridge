@@ -56,6 +56,8 @@ type EpochData struct {
 func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
 	defer e.UpdateCache(epoch)
 
+	e.logger.Debug("GetEpochData", "epoch", epoch)
+
 	mt := merkle.NewDatasetTree()
 	fullSize, branchDepth, err := e.populateMerkle(epoch, mt)
 	if err != nil {
@@ -72,6 +74,8 @@ func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
 
 func (e *Ethash) GetBlockLookups(blockNumber, nonce uint64, hashNoNonce [32]byte) (dataSetLookup, witnessForLookup []*big.Int, err error) {
 	defer e.UpdateCache(epoch(blockNumber))
+
+	e.logger.Debug("GetBlockLookups", "blockNumber", blockNumber)
 
 	indices, err := e.getVerificationIndices(blockNumber, hashNoNonce, nonce)
 	if err != nil {
