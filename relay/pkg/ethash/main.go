@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash/merkle"
+	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/ethereum/go-ethereum/log"
 )
 
@@ -25,7 +26,8 @@ type Ethash struct {
 }
 
 func New(dir string, keepPrevEpochs, genNextEpochs uint64) *Ethash {
-	logger := log.New("epoch", epoch) // todo
+	logger := log.New() // todo
+	logger.SetHandler(log.StdoutHandler)
 
 	if dir == "" {
 		logger.Info("No ethash dir provided, working in memory only")
@@ -104,9 +106,12 @@ func (e *Ethash) UpdateCache(currentEpoch uint64) {
 		}()
 	}
 
-	e.logger.Debug("Deleting data for older epochs")
-	// Iterate over all previous instances and delete old ones
-	for ep := currentEpoch - e.keepPrevEpochs - 1; ep >= 0; ep-- {
+	ep, of := math.SafeSub(currentEpoch, e.keepPrevEpochs+1)
+	if of { // fucking golang, 21 century already -_-
+		ep = 0
+	}
+	e.logger.Debug("Deleting data for older epochs", "older than", ep)
+	for ; ep > 0; ep-- {
 		if e.useFs() {
 			_ = os.Remove(e.pathToDag(ep))
 			_ = os.Remove(e.pathToCache(ep))
