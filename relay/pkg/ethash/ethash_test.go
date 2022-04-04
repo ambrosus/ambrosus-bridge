@@ -8,7 +8,7 @@ import (
 )
 
 func TestEpoch(t *testing.T) {
-	ethash := New("./test")
+	ethash := New("", 0, 0)
 	_, err := ethash.getCache(1)
 	if err != nil {
 		t.Fatal(err)
