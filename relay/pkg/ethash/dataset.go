@@ -18,6 +18,9 @@ const (
 )
 
 func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
+	e.dagKLock.Lock(epoch)
+	defer e.dagKLock.Unlock(epoch)
+
 	if dag, ok := e.dags[epoch]; ok {
 		e.logger.Debug("Loaded old ethash dag from cache")
 		return dag, nil

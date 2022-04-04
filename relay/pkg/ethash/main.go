@@ -15,8 +15,10 @@ type Ethash struct {
 	logger log.Logger
 
 	// cache (in default meaning)
-	caches map[uint64][]byte
-	dags   map[uint64][]byte
+	caches   map[uint64][]byte
+	dags     map[uint64][]byte
+	dagKLock *Kmutex // dagKLock need to make sure that for each epoch only one dag is generating at a time
+	// no lock for cache because is doesn't take that long to generate it
 }
 
 func New(dir string) *Ethash {
@@ -26,8 +28,9 @@ func New(dir string) *Ethash {
 		dir:    dir,
 		logger: logger,
 
-		caches: map[uint64][]byte{},
-		dags:   map[uint64][]byte{},
+		caches:   map[uint64][]byte{},
+		dags:     map[uint64][]byte{},
+		dagKLock: NewKmutex(),
 	}
 }
 

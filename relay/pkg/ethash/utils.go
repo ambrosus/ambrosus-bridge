@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"sync"
 	"unsafe"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash/merkle"
@@ -163,4 +164,28 @@ func dumpToFile(path string, buf []byte) error {
 
 func epoch(blockNumber uint64) uint64 {
 	return blockNumber / epochLength
+}
+
+// separate mutex for each epoch
+type Kmutex struct {
+	mapMutex   sync.Mutex
+	mapOfMutex map[uint64]*sync.Mutex
+}
+
+func NewKmutex() *Kmutex {
+	return &Kmutex{mapOfMutex: map[uint64]*sync.Mutex{}}
+}
+func (m *Kmutex) Lock(i uint64) {
+	m.mapMutex.Lock()
+	defer m.mapMutex.Unlock()
+	if _, ok := m.mapOfMutex[i]; !ok {
+		m.mapOfMutex[i] = &sync.Mutex{}
+	}
+	m.mapOfMutex[i].Lock()
+}
+func (m *Kmutex) Unlock(i uint64) {
+	m.mapMutex.Lock()
+	defer m.mapMutex.Unlock()
+	m.mapOfMutex[i].Unlock()
+	delete(m.mapOfMutex, i)
 }
