@@ -68,18 +68,14 @@ func (e *Ethash) populateMerkle(epoch uint64, mt *merkle.DatasetTree) (int, int,
 	return fullSize, branchDepth, nil
 }
 
-func (e *Ethash) getVerificationIndices(blockNumber uint64, hash common.Hash, nonce uint64) ([]uint32, error) {
-	// Recompute the digest and PoW value and verify against the header
-	cache, err := e.getCache(epoch(blockNumber))
+func (e *Ethash) getVerificationIndices(epoch uint64, hash common.Hash, nonce uint64) ([]uint32, error) {
+	cacheBytes, err := e.getCache(epoch)
 	if err != nil {
 		return nil, err
 	}
+	cache := bytesToUint32Slice(cacheBytes)
 
-	size := datasetSize(blockNumber)
-	return hashimotoLightIndices(size, bytesToUint32Slice(cache), hash.Bytes(), nonce), nil
-}
-
-func hashimotoLightIndices(size uint64, cache []uint32, hash []byte, nonce uint64) []uint32 {
+	size := datasetSize(epoch)
 	keccak512 := makeHasher(sha3.NewLegacyKeccak512())
 
 	lookup := func(index uint32) []uint32 {
@@ -91,7 +87,8 @@ func hashimotoLightIndices(size uint64, cache []uint32, hash []byte, nonce uint6
 		}
 		return data
 	}
-	return hashimotoIndices(hash, nonce, size, lookup)
+
+	return hashimotoIndices(hash.Bytes(), nonce, size, lookup), nil
 }
 
 func hashimotoIndices(hash []byte, nonce uint64, size uint64, lookup func(index uint32) []uint32) []uint32 {

@@ -73,18 +73,19 @@ func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
 }
 
 func (e *Ethash) GetBlockLookups(blockNumber, nonce uint64, hashNoNonce [32]byte) (dataSetLookup, witnessForLookup []*big.Int, err error) {
-	defer e.UpdateCache(epoch(blockNumber))
+	ep := epoch(blockNumber)
+	defer e.UpdateCache(ep)
 
 	e.logger.Debug("GetBlockLookups", "blockNumber", blockNumber)
 
-	indices, err := e.getVerificationIndices(blockNumber, hashNoNonce, nonce)
+	indices, err := e.getVerificationIndices(ep, hashNoNonce, nonce)
 	if err != nil {
 		return
 	}
 
 	mt := merkle.NewDatasetTree()
 	mt.RegisterIndex(indices...)
-	_, _, err = e.populateMerkle(epoch(blockNumber), mt)
+	_, _, err = e.populateMerkle(ep, mt)
 	if err != nil {
 		return nil, nil, err
 	}
