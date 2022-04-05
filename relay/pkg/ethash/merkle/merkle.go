@@ -3,7 +3,7 @@ package merkle
 import "container/list"
 
 type Node struct {
-	Data      NodeData
+	Data      SPHash
 	NodeCount uint32
 	Branches  *map[uint32]BranchTree
 }
@@ -14,7 +14,7 @@ func (n Node) Copy() Node {
 
 type ElementData interface{}
 
-type NodeData interface{ Copy() NodeData }
+//type NodeData interface{ Copy() NodeData }
 
 type DatasetTree struct {
 	merkleBuf       *list.List
@@ -23,7 +23,7 @@ type DatasetTree struct {
 	finalized       bool
 	indexes         map[uint32]bool
 	orderedIndexes  []uint32
-	exportNodes     []NodeData
+	exportNodes     []SPHash
 }
 
 func (d *DatasetTree) Insert(data ElementData, index uint32) {

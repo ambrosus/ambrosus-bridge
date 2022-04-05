@@ -15,7 +15,7 @@ const (
 type SPHash [HashLength]byte
 type Word [WordLength]byte
 
-func (d SPHash) Copy() NodeData {
+func (d SPHash) Copy() SPHash {
 	result := SPHash{}
 	copy(result[:], d[:])
 	return result
@@ -26,7 +26,7 @@ func NewDatasetTree() *DatasetTree {
 		merkleBuf:      list.New(),
 		indexes:        map[uint32]bool{},
 		orderedIndexes: []uint32{},
-		exportNodes:    []NodeData{},
+		exportNodes:    []SPHash{},
 	}
 }
 
@@ -36,9 +36,9 @@ func (d DatasetTree) MerkleNodes() []*big.Int {
 
 	for i := 0; i*2 < len(d.exportNodes); i++ {
 		if i*2+1 >= len(d.exportNodes) {
-			result = append(result, BranchElementFromHash(SPHash{}, d.exportNodes[i*2].(SPHash)).Big())
+			result = append(result, BranchElementFromHash(SPHash{}, d.exportNodes[i*2]).Big())
 		} else {
-			result = append(result, BranchElementFromHash(d.exportNodes[i*2+1].(SPHash), d.exportNodes[i*2].(SPHash)).Big())
+			result = append(result, BranchElementFromHash(d.exportNodes[i*2+1], d.exportNodes[i*2]).Big())
 		}
 	}
 
@@ -59,9 +59,9 @@ func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
 			// for anyone who is courious why i*2 + 1 comes before i * 2
 			// it's agreement between client side and contract side
 			if i*2+1 >= len(hashes) {
-				witnessForLookup = append(witnessForLookup, BranchElementFromHash(SPHash{}, hashes[i*2].(SPHash)).Big())
+				witnessForLookup = append(witnessForLookup, BranchElementFromHash(SPHash{}, hashes[i*2]).Big())
 			} else {
-				witnessForLookup = append(witnessForLookup, BranchElementFromHash(hashes[i*2+1].(SPHash), hashes[i*2].(SPHash)).Big())
+				witnessForLookup = append(witnessForLookup, BranchElementFromHash(hashes[i*2+1], hashes[i*2]).Big())
 			}
 		}
 
@@ -71,11 +71,11 @@ func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
 	return
 }
 
-func (d *DatasetTree) hash(a, b NodeData) NodeData {
+func (d *DatasetTree) hash(a, b SPHash) SPHash {
 	var keccak []byte
 
-	left := a.(SPHash)
-	right := b.(SPHash)
+	left := a
+	right := b
 
 	keccak = crypto.Keccak256(
 		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, left[:]...),
@@ -87,7 +87,7 @@ func (d *DatasetTree) hash(a, b NodeData) NodeData {
 	return result
 }
 
-func (d *DatasetTree) elementHash(data ElementData) NodeData {
+func (d *DatasetTree) elementHash(data ElementData) SPHash {
 	first, second := conventionalWord(data.(Word))
 	keccak := crypto.Keccak256(first, second)
 
@@ -96,14 +96,12 @@ func (d *DatasetTree) elementHash(data ElementData) NodeData {
 	return result
 }
 
-func conventionalWord(data Word) ([]byte, []byte) {
-	first := rev(data[:32])
-	first = append(first, rev(data[32:64])...)
-
-	second := rev(data[64:96])
-	second = append(second, rev(data[96:128])...)
-
-	return first, second
+func conventionalWord(data Word) (first, second []byte) {
+	rev(data[0:32])
+	rev(data[32:64])
+	rev(data[64:96])
+	rev(data[96:128])
+	return data[:64], data[64:]
 }
 
 func (w Word) ToUint256Array() []*big.Int {
