@@ -67,7 +67,7 @@ func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
 			witnessForLookup = append(witnessForLookup, BranchElementFromHash(f, hashes[i*2]).Big())
 		}
 
-		dataSetLookup = append(dataSetLookup, branches[k].RawData.(Word).ToUint256Array()...)
+		dataSetLookup = append(dataSetLookup, branches[k].RawData.ToUint256Array()...)
 	}
 
 	return
@@ -84,8 +84,8 @@ func (d *DatasetTree) hash(left, right SPHash) SPHash {
 	return result
 }
 
-func (d *DatasetTree) elementHash(data ElementData) SPHash {
-	first, second := conventionalWord(data.(Word))
+func (d *DatasetTree) elementHash(data Word) SPHash {
+	first, second := conventionalWord(data)
 	keccak := crypto.Keccak256(first, second)
 
 	result := SPHash{}

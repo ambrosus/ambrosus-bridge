@@ -12,8 +12,6 @@ func (n Node) Copy() Node {
 	return Node{n.Data.Copy(), n.NodeCount, &map[uint32]BranchTree{}}
 }
 
-type ElementData interface{}
-
 //type NodeData interface{ Copy() NodeData }
 
 type DatasetTree struct {
@@ -26,7 +24,7 @@ type DatasetTree struct {
 	exportNodes     []SPHash
 }
 
-func (d *DatasetTree) Insert(data ElementData, index uint32) {
+func (d *DatasetTree) Insert(data Word, index uint32) {
 	node := Node{
 		Data:      d.elementHash(data),
 		NodeCount: 1,

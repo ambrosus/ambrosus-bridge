@@ -29,7 +29,7 @@ func (b BranchNode) ToNodeArray() []SPHash {
 }
 
 type BranchTree struct {
-	RawData    ElementData
+	RawData    Word
 	HashedData SPHash
 	Root       *BranchNode
 }
