@@ -2,6 +2,7 @@ package ethash
 
 import (
 	"encoding/binary"
+	"os"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -30,7 +31,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 
 	if e.useFs() {
 		// Try to load the file from disk and memory map it
-		dag, err := readFile(e.pathToDag(epoch))
+		dag, err := os.ReadFile(e.pathToDag(epoch))
 		if err == nil {
 			e.logger.Debug("Loaded old ethash dag from disk")
 			e.dags[epoch] = dag

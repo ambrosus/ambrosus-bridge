@@ -2,6 +2,7 @@ package ethash
 
 import (
 	"encoding/binary"
+	"os"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -23,7 +24,7 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 
 	if e.useFs() {
 		// Try to load the file from disk and memory map it
-		cache, err := readFile(e.pathToCache(epoch))
+		cache, err := os.ReadFile(e.pathToCache(epoch))
 		if err == nil {
 			e.logger.Debug("Loaded old ethash cache from disk")
 			e.caches[epoch] = cache

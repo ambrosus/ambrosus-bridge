@@ -135,24 +135,6 @@ func fnvHash(mix []uint32, data []uint32) {
 	}
 }
 
-func readFile(path string) ([]byte, error) {
-	// read all file at once in pre-allocated buffer (10x faster than os.ReadFile)
-	fInfo, err := os.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	buf := make([]byte, fInfo.Size())
-	_, err = f.Read(buf)
-	return buf, err
-}
-
 func dumpToFile(path string, buf []byte) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		return err
