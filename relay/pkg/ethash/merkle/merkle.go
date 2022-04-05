@@ -16,14 +16,8 @@ type ElementData interface{}
 
 type NodeData interface{ Copy() NodeData }
 
-type hashFunc func(NodeData, NodeData) NodeData
-
-type elementHashFunc func(ElementData) NodeData
-
 type DatasetTree struct {
-	hash            hashFunc
 	merkleBuf       *list.List
-	elementHash     elementHashFunc
 	exportNodeCount uint32
 	storedLevel     uint32
 	finalized       bool
@@ -31,8 +25,6 @@ type DatasetTree struct {
 	orderedIndexes  []uint32
 	exportNodes     []NodeData
 }
-
-func (d *DatasetTree) StoredLevel() uint32 { return d.storedLevel }
 
 func (d *DatasetTree) Insert(data ElementData, index uint32) {
 	node := Node{
@@ -105,25 +97,24 @@ func (d *DatasetTree) insertNode(node Node) {
 	}
 }
 
-func (d *DatasetTree) RegisterStoredLevel(depth, level uint32) {
-	d.storedLevel = level
-	d.exportNodeCount = 1<<(depth-level+1) - 1
-}
-
 func (d *DatasetTree) Finalize() {
-	if !d.finalized && d.merkleBuf.Len() > 1 {
-		for {
+	if d.finalized {
+		return
+	}
+
+	if d.merkleBuf.Len() > 1 {
+		for d.merkleBuf.Len() != 1 {
 			dupNode := d.merkleBuf.Back().Value.(Node).Copy()
-
 			d.insertNode(dupNode)
-
-			if d.merkleBuf.Len() == 1 {
-				break
-			}
 		}
 	}
 
 	d.finalized = true
+}
+
+func (d *DatasetTree) RegisterStoredLevel(depth, level uint32) {
+	d.storedLevel = level
+	d.exportNodeCount = 1<<(depth-level+1) - 1
 }
 
 func (d *DatasetTree) RegisterIndex(indexes ...uint32) {

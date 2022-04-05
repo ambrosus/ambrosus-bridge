@@ -13,21 +13,7 @@ const (
 )
 
 type SPHash [HashLength]byte
-
 type Word [WordLength]byte
-
-func (w Word) ToUint256Array() []*big.Int {
-	result := []*big.Int{}
-
-	for i := 0; i < WordLength/32; i++ {
-		z := big.NewInt(0)
-		z.SetBytes(rev(w[i*32 : (i+1)*32]))
-
-		result = append(result, z)
-	}
-
-	return result
-}
 
 func (d SPHash) Copy() NodeData {
 	result := SPHash{}
@@ -37,9 +23,7 @@ func (d SPHash) Copy() NodeData {
 
 func NewDatasetTree() *DatasetTree {
 	return &DatasetTree{
-		hash:           hash,
 		merkleBuf:      list.New(),
-		elementHash:    elementHash,
 		indexes:        map[uint32]bool{},
 		orderedIndexes: []uint32{},
 		exportNodes:    []NodeData{},
@@ -81,7 +65,7 @@ func (d DatasetTree) AllBranchesArray() []BranchElement {
 
 	for _, k := range d.orderedIndexes {
 		hh := branches[k].ToNodeArray()[1:]
-		hashes := hh[:len(hh)-int(d.StoredLevel())]
+		hashes := hh[:len(hh)-int(d.storedLevel)]
 
 		for i := 0; i*2 < len(hashes); i++ {
 			// for anyone who is courious why i*2 + 1 comes before i * 2
@@ -97,7 +81,7 @@ func (d DatasetTree) AllBranchesArray() []BranchElement {
 	return result
 }
 
-func hash(a, b NodeData) NodeData {
+func (d *DatasetTree) hash(a, b NodeData) NodeData {
 	var keccak []byte
 
 	left := a.(SPHash)
@@ -109,20 +93,16 @@ func hash(a, b NodeData) NodeData {
 	)
 
 	result := SPHash{}
-
 	copy(result[:HashLength], keccak[HashLength:])
-
 	return result
 }
 
-func elementHash(data ElementData) NodeData {
+func (d *DatasetTree) elementHash(data ElementData) NodeData {
 	first, second := conventionalWord(data.(Word))
 	keccak := crypto.Keccak256(first, second)
 
 	result := SPHash{}
-
 	copy(result[:HashLength], keccak[HashLength:])
-
 	return result
 }
 
@@ -134,6 +114,19 @@ func conventionalWord(data Word) ([]byte, []byte) {
 	second = append(second, rev(data[96:128])...)
 
 	return first, second
+}
+
+func (w Word) ToUint256Array() []*big.Int {
+	result := []*big.Int{}
+
+	for i := 0; i < WordLength/32; i++ {
+		z := big.NewInt(0)
+		z.SetBytes(rev(w[i*32 : (i+1)*32]))
+
+		result = append(result, z)
+	}
+
+	return result
 }
 
 func rev(b []byte) []byte {

@@ -56,15 +56,12 @@ func AcceptLeftSibling(branch *BranchNode, data NodeData) *BranchNode {
 
 func BranchElementFromHash(a, b SPHash) BranchElement {
 	result := BranchElement{}
-
 	copy(result[:], append(a[:], b[:]...)[:BranchElementLength])
-
 	return result
 }
 
 func bytesToBig(data []byte) *big.Int {
 	n := new(big.Int)
 	n.SetBytes(data)
-
 	return n
 }
