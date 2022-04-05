@@ -88,7 +88,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
-	ethash := ethash.New("./assets", 1, 1) // todo cfg
+	ethash := ethash.New(cfg.EthashDir, 1, 1) // todo cfg
 
 	return &Bridge{
 		Client:     client,
