@@ -10,7 +10,8 @@
             "http-url": "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "ws-url": "wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contract-addr": "0x56829D90745def48cc2572d2922CC5972D4b7cb9",
-            "epoch-length": 3
+            "epoch-length": 3,
+            "ethash-dir": ""
         }
     },
     "external-logger": {

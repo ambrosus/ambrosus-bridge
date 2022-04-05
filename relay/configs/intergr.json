@@ -10,7 +10,8 @@
             "http-url": "http://127.0.0.1:8502",
             "ws-url": "ws://127.0.0.1:3434",
             "contract-addr": "will be set by deploy script",
-            "epoch-length": 3
+            "epoch-length": 3,
+            "ethash-dir": ""
         }
     },
     "external-logger": {
