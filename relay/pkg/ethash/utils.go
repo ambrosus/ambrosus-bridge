@@ -61,7 +61,7 @@ func (e *Ethash) populateMerkle(epoch uint64, mt *merkle.DatasetTree) (int, int,
 	var buf [128]byte
 	for i := 0; i < fullSizeIn128Resolution; i++ {
 		copy(buf[:], dag[i*128:(i+1)*128])
-		mt.Insert(merkle.Word(buf), uint32(i))
+		mt.Insert(buf, uint32(i))
 	}
 
 	mt.Finalize()

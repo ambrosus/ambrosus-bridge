@@ -1,18 +1,10 @@
 package merkle
 
-import "container/list"
+import (
+	"container/list"
 
-type Node struct {
-	Data      SPHash
-	NodeCount uint32
-	Branches  *map[uint32]BranchTree
-}
-
-func (n Node) Copy() Node {
-	return Node{n.Data.Copy(), n.NodeCount, &map[uint32]BranchTree{}}
-}
-
-//type NodeData interface{ Copy() NodeData }
+	"github.com/ethereum/go-ethereum/crypto"
+)
 
 type DatasetTree struct {
 	merkleBuf       *list.List
@@ -22,6 +14,25 @@ type DatasetTree struct {
 	indexes         map[uint32]bool
 	orderedIndexes  []uint32
 	exportNodes     []SPHash
+}
+
+func NewDatasetTree() *DatasetTree {
+	return &DatasetTree{
+		merkleBuf:      list.New(),
+		indexes:        map[uint32]bool{},
+		orderedIndexes: []uint32{},
+		exportNodes:    []SPHash{},
+	}
+}
+
+type Node struct {
+	Data      SPHash
+	NodeCount uint32
+	Branches  *map[uint32]BranchTree
+}
+
+func (n Node) Copy() Node {
+	return Node{n.Data.Copy(), n.NodeCount, &map[uint32]BranchTree{}}
 }
 
 func (d *DatasetTree) Insert(data Word, index uint32) {
@@ -35,11 +46,7 @@ func (d *DatasetTree) Insert(data Word, index uint32) {
 		(*node.Branches)[index] = BranchTree{
 			RawData:    data,
 			HashedData: node.Data,
-			Root: &BranchNode{
-				Hash:  node.Data,
-				Left:  nil,
-				Right: nil,
-			},
+			Root:       &BranchNode{Hash: node.Data},
 		}
 	}
 
@@ -56,11 +63,11 @@ func (d *DatasetTree) insertNode(node Node) {
 
 	for {
 		prev = element.Prev()
-		cNode = element.Value.(Node)
 		if prev == nil {
 			break
 		}
 
+		cNode = element.Value.(Node)
 		prevNode = prev.Value.(Node)
 		if cNode.NodeCount != prevNode.NodeCount {
 			break
@@ -122,13 +129,25 @@ func (d *DatasetTree) RegisterIndex(indexes ...uint32) {
 	}
 }
 
-func (d DatasetTree) Branches() map[uint32]BranchTree {
-	d.assertFinalized()
-	return *(d.merkleBuf.Front().Value.(Node).Branches)
+func (d *DatasetTree) hash(left, right SPHash) SPHash {
+	return d.wtfHash(
+		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, left[:]...),
+		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, right[:]...),
+	)
 }
 
-func (d DatasetTree) assertFinalized() {
-	if !d.finalized {
-		panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
-	}
+func (d *DatasetTree) elementHash(data Word) SPHash {
+	rev(data[0:32])
+	rev(data[32:64])
+	rev(data[64:96])
+	rev(data[96:128])
+	first, second := data[:64], data[64:]
+	return d.wtfHash(first, second)
+}
+
+func (d *DatasetTree) wtfHash(first, second []byte) SPHash {
+	keccak := crypto.Keccak256(first, second)
+	result := SPHash{}
+	copy(result[:HashLength], keccak[HashLength:])
+	return result
 }

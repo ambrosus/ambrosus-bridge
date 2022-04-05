@@ -1,18 +1,18 @@
 package merkle
 
-import "math/big"
-
 const BranchElementLength = 32
-
-type BranchElement [BranchElementLength]byte
-
-func (b BranchElement) Big() *big.Int { return bytesToBig(b[:]) }
 
 type BranchNode struct {
 	Hash             SPHash
 	Left             *BranchNode
 	Right            *BranchNode
 	ElementOnTheLeft bool
+}
+
+type BranchTree struct {
+	RawData    Word
+	HashedData SPHash
+	Root       *BranchNode
 }
 
 func (b BranchNode) ToNodeArray() []SPHash {
@@ -28,12 +28,6 @@ func (b BranchNode) ToNodeArray() []SPHash {
 	}
 }
 
-type BranchTree struct {
-	RawData    Word
-	HashedData SPHash
-	Root       *BranchNode
-}
-
 func (t BranchTree) ToNodeArray() []SPHash {
 	return t.Root.ToNodeArray()
 }
@@ -41,27 +35,15 @@ func (t BranchTree) ToNodeArray() []SPHash {
 func AcceptRightSibling(branch *BranchNode, data SPHash) *BranchNode {
 	return &BranchNode{
 		Left:             branch,
-		Right:            &BranchNode{data, nil, nil, false},
+		Right:            &BranchNode{Hash: data},
 		ElementOnTheLeft: true,
 	}
 }
 
 func AcceptLeftSibling(branch *BranchNode, data SPHash) *BranchNode {
 	return &BranchNode{
-		Left:             &BranchNode{data, nil, nil, false},
+		Left:             &BranchNode{Hash: data},
 		Right:            branch,
 		ElementOnTheLeft: false,
 	}
-}
-
-func BranchElementFromHash(a, b SPHash) BranchElement {
-	result := BranchElement{}
-	copy(result[:], append(a[:], b[:]...)[:BranchElementLength])
-	return result
-}
-
-func bytesToBig(data []byte) *big.Int {
-	n := new(big.Int)
-	n.SetBytes(data)
-	return n
 }
