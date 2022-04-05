@@ -18,7 +18,7 @@ const (
 
 func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 	if cache, ok := e.caches[epoch]; ok {
-		e.logger.Debug("Loaded old ethash cache from cache :)")
+		e.logger.Debug().Msg("Loaded old ethash cache from cache :)")
 		return cache, nil
 	}
 
@@ -26,7 +26,7 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 		// Try to load the file from disk and memory map it
 		cache, err := os.ReadFile(e.pathToCache(epoch))
 		if err == nil {
-			e.logger.Debug("Loaded old ethash cache from disk")
+			e.logger.Debug().Msg("Loaded old ethash cache from disk")
 			e.caches[epoch] = cache
 			return cache, nil
 		}
@@ -40,7 +40,7 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 
 	if e.useFs() {
 		if err = dumpToFile(e.pathToCache(epoch), cache); err != nil {
-			e.logger.Warn("Failed to save cache file", "err", err)
+			e.logger.Warn().Err(err).Msg("Failed to save cache file")
 		}
 	}
 
@@ -49,7 +49,7 @@ func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
 }
 
 func (e *Ethash) generateCache(epoch uint64) ([]byte, error) {
-	e.logger.Info("Start generating ethash cache")
+	e.logger.Info().Msg("Start generating ethash cache")
 	start := time.Now()
 
 	seed := seedHash(epoch)
@@ -58,7 +58,10 @@ func (e *Ethash) generateCache(epoch uint64) ([]byte, error) {
 	buffer := make([]byte, size)
 	generateCache(buffer, seed)
 
-	e.logger.Info("Generated ethash verification cache", "elapsed", common.PrettyDuration(time.Since(start)))
+	e.logger.Info().
+		Str("elapsed", common.PrettyDuration(time.Since(start)).String()).
+		Msg("Generated ethash verification cache")
+
 	return buffer, nil
 }
 
