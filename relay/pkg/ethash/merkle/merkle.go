@@ -20,7 +20,7 @@ type hashFunc func(NodeData, NodeData) NodeData
 
 type elementHashFunc func(ElementData) NodeData
 
-type MerkleTree struct {
+type DatasetTree struct {
 	hash            hashFunc
 	merkleBuf       *list.List
 	elementHash     elementHashFunc
@@ -32,16 +32,16 @@ type MerkleTree struct {
 	exportNodes     []NodeData
 }
 
-func (m *MerkleTree) StoredLevel() uint32 { return m.storedLevel }
+func (d *DatasetTree) StoredLevel() uint32 { return d.storedLevel }
 
-func (m *MerkleTree) Insert(data ElementData, index uint32) {
+func (d *DatasetTree) Insert(data ElementData, index uint32) {
 	node := Node{
-		Data:      m.elementHash(data),
+		Data:      d.elementHash(data),
 		NodeCount: 1,
 		Branches:  &map[uint32]BranchTree{},
 	}
 
-	if m.indexes[index] {
+	if d.indexes[index] {
 		(*node.Branches)[index] = BranchTree{
 			RawData:    data,
 			HashedData: node.Data,
@@ -53,16 +53,16 @@ func (m *MerkleTree) Insert(data ElementData, index uint32) {
 		}
 	}
 
-	m.insertNode(node)
+	d.insertNode(node)
 }
 
-func (m *MerkleTree) insertNode(node Node) {
+func (d *DatasetTree) insertNode(node Node) {
 	var (
 		element, prev   *list.Element
 		cNode, prevNode Node
 	)
 
-	element = m.merkleBuf.PushBack(node)
+	element = d.merkleBuf.PushBack(node)
 
 	for {
 		prev = element.Prev()
@@ -90,56 +90,56 @@ func (m *MerkleTree) insertNode(node Node) {
 			}
 		}
 
-		prevNode.Data = m.hash(prevNode.Data, cNode.Data)
+		prevNode.Data = d.hash(prevNode.Data, cNode.Data)
 
 		prevNode.NodeCount = cNode.NodeCount*2 + 1
 
-		if prevNode.NodeCount == m.exportNodeCount {
-			m.exportNodes = append(m.exportNodes, prevNode.Data)
+		if prevNode.NodeCount == d.exportNodeCount {
+			d.exportNodes = append(d.exportNodes, prevNode.Data)
 		}
 
-		m.merkleBuf.Remove(element)
-		m.merkleBuf.Remove(prev)
+		d.merkleBuf.Remove(element)
+		d.merkleBuf.Remove(prev)
 
-		element = m.merkleBuf.PushBack(prevNode)
+		element = d.merkleBuf.PushBack(prevNode)
 	}
 }
 
-func (m *MerkleTree) RegisterStoredLevel(depth, level uint32) {
-	m.storedLevel = level
-	m.exportNodeCount = 1<<(depth-level+1) - 1
+func (d *DatasetTree) RegisterStoredLevel(depth, level uint32) {
+	d.storedLevel = level
+	d.exportNodeCount = 1<<(depth-level+1) - 1
 }
 
-func (m *MerkleTree) Finalize() {
-	if !m.finalized && m.merkleBuf.Len() > 1 {
+func (d *DatasetTree) Finalize() {
+	if !d.finalized && d.merkleBuf.Len() > 1 {
 		for {
-			dupNode := m.merkleBuf.Back().Value.(Node).Copy()
+			dupNode := d.merkleBuf.Back().Value.(Node).Copy()
 
-			m.insertNode(dupNode)
+			d.insertNode(dupNode)
 
-			if m.merkleBuf.Len() == 1 {
+			if d.merkleBuf.Len() == 1 {
 				break
 			}
 		}
 	}
 
-	m.finalized = true
+	d.finalized = true
 }
 
-func (m *MerkleTree) RegisterIndex(indexes ...uint32) {
+func (d *DatasetTree) RegisterIndex(indexes ...uint32) {
 	for _, i := range indexes {
-		m.indexes[i] = true
-		m.orderedIndexes = append(m.orderedIndexes, i)
+		d.indexes[i] = true
+		d.orderedIndexes = append(d.orderedIndexes, i)
 	}
 }
 
-func (m MerkleTree) Branches() map[uint32]BranchTree {
-	m.assertFinalized()
-	return *(m.merkleBuf.Front().Value.(Node).Branches)
+func (d DatasetTree) Branches() map[uint32]BranchTree {
+	d.assertFinalized()
+	return *(d.merkleBuf.Front().Value.(Node).Branches)
 }
 
-func (m MerkleTree) assertFinalized() {
-	if !m.finalized {
+func (d DatasetTree) assertFinalized() {
+	if !d.finalized {
 		panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
 	}
 }

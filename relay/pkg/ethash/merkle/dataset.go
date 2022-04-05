@@ -29,26 +29,20 @@ func (w Word) ToUint256Array() []*big.Int {
 	return result
 }
 
-type DatasetData SPHash
-
-func (d DatasetData) Copy() NodeData {
-	result := DatasetData{}
+func (d SPHash) Copy() NodeData {
+	result := SPHash{}
 	copy(result[:], d[:])
 	return result
 }
 
-type DatasetTree struct{ MerkleTree }
-
 func NewDatasetTree() *DatasetTree {
 	return &DatasetTree{
-		MerkleTree{
-			hash:           hash,
-			merkleBuf:      list.New(),
-			elementHash:    elementHash,
-			indexes:        map[uint32]bool{},
-			orderedIndexes: []uint32{},
-			exportNodes:    []NodeData{},
-		},
+		hash:           hash,
+		merkleBuf:      list.New(),
+		elementHash:    elementHash,
+		indexes:        map[uint32]bool{},
+		orderedIndexes: []uint32{},
+		exportNodes:    []NodeData{},
 	}
 }
 
@@ -58,15 +52,9 @@ func (d DatasetTree) MerkleNodes() []*big.Int {
 
 	for i := 0; i*2 < len(d.exportNodes); i++ {
 		if i*2+1 >= len(d.exportNodes) {
-			result = append(result, BranchElementFromHash(
-				SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-				SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
-			)
+			result = append(result, BranchElementFromHash(SPHash{}, d.exportNodes[i*2].(SPHash)).Big())
 		} else {
-			result = append(result, BranchElementFromHash(
-				SPHash(d.exportNodes[i*2+1].(DatasetData)),
-				SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
-			)
+			result = append(result, BranchElementFromHash(d.exportNodes[i*2+1].(SPHash), d.exportNodes[i*2].(SPHash)).Big())
 		}
 	}
 
@@ -99,13 +87,9 @@ func (d DatasetTree) AllBranchesArray() []BranchElement {
 			// for anyone who is courious why i*2 + 1 comes before i * 2
 			// it's agreement between client side and contract side
 			if i*2+1 >= len(hashes) {
-				result = append(result, BranchElementFromHash(
-					SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-					SPHash(hashes[i*2].(DatasetData))))
+				result = append(result, BranchElementFromHash(SPHash{}, hashes[i*2].(SPHash)))
 			} else {
-				result = append(result, BranchElementFromHash(
-					SPHash(hashes[i*2+1].(DatasetData)),
-					SPHash(hashes[i*2].(DatasetData))))
+				result = append(result, BranchElementFromHash(hashes[i*2+1].(SPHash), hashes[i*2].(SPHash)))
 			}
 		}
 	}
@@ -116,15 +100,15 @@ func (d DatasetTree) AllBranchesArray() []BranchElement {
 func hash(a, b NodeData) NodeData {
 	var keccak []byte
 
-	left := a.(DatasetData)
-	right := b.(DatasetData)
+	left := a.(SPHash)
+	right := b.(SPHash)
 
 	keccak = crypto.Keccak256(
 		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, left[:]...),
 		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, right[:]...),
 	)
 
-	result := DatasetData{}
+	result := SPHash{}
 
 	copy(result[:HashLength], keccak[HashLength:])
 
@@ -135,7 +119,7 @@ func elementHash(data ElementData) NodeData {
 	first, second := conventionalWord(data.(Word))
 	keccak := crypto.Keccak256(first, second)
 
-	result := DatasetData{}
+	result := SPHash{}
 
 	copy(result[:HashLength], keccak[HashLength:])
 
