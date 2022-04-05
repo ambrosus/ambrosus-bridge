@@ -32,14 +32,15 @@ func NewDatasetTree() *DatasetTree {
 
 func (d DatasetTree) MerkleNodes() []*big.Int {
 	d.assertFinalized()
-	result := []*big.Int{}
+	var result []*big.Int
 
 	for i := 0; i*2 < len(d.exportNodes); i++ {
-		if i*2+1 >= len(d.exportNodes) {
-			result = append(result, BranchElementFromHash(SPHash{}, d.exportNodes[i*2]).Big())
-		} else {
-			result = append(result, BranchElementFromHash(d.exportNodes[i*2+1], d.exportNodes[i*2]).Big())
+		f := SPHash{}
+		if i*2+1 < len(d.exportNodes) {
+			f = d.exportNodes[i*2+1]
 		}
+
+		result = append(result, BranchElementFromHash(f, d.exportNodes[i*2]).Big())
 	}
 
 	return result
@@ -58,11 +59,12 @@ func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
 		for i := 0; i*2 < len(hashes); i++ {
 			// for anyone who is courious why i*2 + 1 comes before i * 2
 			// it's agreement between client side and contract side
-			if i*2+1 >= len(hashes) {
-				witnessForLookup = append(witnessForLookup, BranchElementFromHash(SPHash{}, hashes[i*2]).Big())
-			} else {
-				witnessForLookup = append(witnessForLookup, BranchElementFromHash(hashes[i*2+1], hashes[i*2]).Big())
+			f := SPHash{}
+			if i*2+1 < len(hashes) {
+				f = hashes[i*2+1]
 			}
+
+			witnessForLookup = append(witnessForLookup, BranchElementFromHash(f, hashes[i*2]).Big())
 		}
 
 		dataSetLookup = append(dataSetLookup, branches[k].RawData.(Word).ToUint256Array()...)
@@ -71,13 +73,8 @@ func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
 	return
 }
 
-func (d *DatasetTree) hash(a, b SPHash) SPHash {
-	var keccak []byte
-
-	left := a
-	right := b
-
-	keccak = crypto.Keccak256(
+func (d *DatasetTree) hash(left, right SPHash) SPHash {
+	keccak := crypto.Keccak256(
 		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, left[:]...),
 		append([]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, right[:]...),
 	)
