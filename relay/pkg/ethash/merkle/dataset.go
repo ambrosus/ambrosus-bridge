@@ -45,22 +45,22 @@ func (d DatasetTree) MerkleNodes() []*big.Int {
 	return result
 }
 
-func (d DatasetTree) AllDAGElements() []Word {
+func (d DatasetTree) DatasetLookups() []*big.Int {
 	d.assertFinalized()
-	result := []Word{}
+	var result []*big.Int
 	branches := d.Branches()
 
 	for _, k := range d.orderedIndexes {
-		result = append(result, branches[k].RawData.(Word))
+		result = append(result, branches[k].RawData.(Word).ToUint256Array()...)
 	}
 
 	return result
 }
 
-func (d DatasetTree) AllBranchesArray() []BranchElement {
+func (d DatasetTree) WitnessForLookups() []*big.Int {
 	d.assertFinalized()
 
-	result := []BranchElement{}
+	var result []*big.Int
 	branches := d.Branches()
 
 	for _, k := range d.orderedIndexes {
@@ -71,9 +71,9 @@ func (d DatasetTree) AllBranchesArray() []BranchElement {
 			// for anyone who is courious why i*2 + 1 comes before i * 2
 			// it's agreement between client side and contract side
 			if i*2+1 >= len(hashes) {
-				result = append(result, BranchElementFromHash(SPHash{}, hashes[i*2].(SPHash)))
+				result = append(result, BranchElementFromHash(SPHash{}, hashes[i*2].(SPHash)).Big())
 			} else {
-				result = append(result, BranchElementFromHash(hashes[i*2+1].(SPHash), hashes[i*2].(SPHash)))
+				result = append(result, BranchElementFromHash(hashes[i*2+1].(SPHash), hashes[i*2].(SPHash)).Big())
 			}
 		}
 	}

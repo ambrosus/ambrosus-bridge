@@ -90,14 +90,8 @@ func (e *Ethash) GetBlockLookups(blockNumber, nonce uint64, hashNoNonce [32]byte
 		return nil, nil, err
 	}
 
-	for _, w := range mt.AllDAGElements() {
-		dataSetLookup = append(dataSetLookup, w.ToUint256Array()...)
-	}
-
-	for _, be := range mt.AllBranchesArray() {
-		witnessForLookup = append(witnessForLookup, be.Big())
-	}
-
+	dataSetLookup = mt.DatasetLookups()
+	witnessForLookup = mt.WitnessForLookups()
 	return
 }
 
