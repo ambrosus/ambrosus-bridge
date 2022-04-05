@@ -76,7 +76,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 		}
 	}
 
-	blocks := make([]contracts.CheckAuraBlockAura, 0, len(blocksMap))
+	blocks := make([]contracts.CheckAuraBlockAura, len(blocksMap))
 	blockNums = sortedKeys(blocksMap)
 	for _, blockNum := range blockNums {
 		blocks = append(blocks, blocksMap[blockNum])
@@ -109,7 +109,7 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockA
 }
 
 func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]contracts.CheckAuraValidatorSetProof, error) {
-	vsChanges := make([]contracts.CheckAuraValidatorSetProof, 0, len(events))
+	vsChanges := make([]contracts.CheckAuraValidatorSetProof, len(events))
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
