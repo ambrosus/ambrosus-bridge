@@ -34,98 +34,83 @@ type DatasetData SPHash
 func (d DatasetData) Copy() NodeData {
 	result := DatasetData{}
 	copy(result[:], d[:])
-
 	return result
 }
 
 type DatasetTree struct{ MerkleTree }
 
 func NewDatasetTree() *DatasetTree {
-	merkleBuf := list.New()
-
 	return &DatasetTree{
 		MerkleTree{
-			hash:             hash,
-			merkleBuf:        merkleBuf,
-			elementHash:      elementHash,
-			dummyNodeModifie: dummyNodeModifie,
-			exportNodeCount:  0,
-			storedLevel:      0,
-			finalized:        false,
-			indexes:          map[uint32]bool{},
-			orderedIndexes:   []uint32{},
-			exportNodes:      []NodeData{},
+			hash:           hash,
+			merkleBuf:      list.New(),
+			elementHash:    elementHash,
+			indexes:        map[uint32]bool{},
+			orderedIndexes: []uint32{},
+			exportNodes:    []NodeData{},
 		},
 	}
 }
 
 func (d DatasetTree) MerkleNodes() []*big.Int {
-	if d.finalized {
-		result := []*big.Int{}
+	d.assertFinalized()
+	result := []*big.Int{}
 
-		for i := 0; i*2 < len(d.exportNodes); i++ {
-			if i*2+1 >= len(d.exportNodes) {
-				result = append(result, BranchElementFromHash(
-					SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-					SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
-				)
-			} else {
-				result = append(result, BranchElementFromHash(
-					SPHash(d.exportNodes[i*2+1].(DatasetData)),
-					SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
-				)
-			}
+	for i := 0; i*2 < len(d.exportNodes); i++ {
+		if i*2+1 >= len(d.exportNodes) {
+			result = append(result, BranchElementFromHash(
+				SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+				SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
+			)
+		} else {
+			result = append(result, BranchElementFromHash(
+				SPHash(d.exportNodes[i*2+1].(DatasetData)),
+				SPHash(d.exportNodes[i*2].(DatasetData))).Big(),
+			)
 		}
-
-		return result
 	}
 
-	panic("Merkle tree needs to be finalized")
+	return result
 }
 
 func (d DatasetTree) AllDAGElements() []Word {
-	if d.finalized {
-		result := []Word{}
-		branches := d.Branches()
+	d.assertFinalized()
+	result := []Word{}
+	branches := d.Branches()
 
-		for _, k := range d.Indices() {
-			result = append(result, branches[k].RawData.(Word))
-		}
-
-		return result
+	for _, k := range d.orderedIndexes {
+		result = append(result, branches[k].RawData.(Word))
 	}
 
-	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
+	return result
 }
 
 func (d DatasetTree) AllBranchesArray() []BranchElement {
-	if d.finalized {
-		result := []BranchElement{}
-		branches := d.Branches()
+	d.assertFinalized()
 
-		for _, k := range d.Indices() {
-			hh := branches[k].ToNodeArray()[1:]
-			hashes := hh[:len(hh)-int(d.StoredLevel())]
+	result := []BranchElement{}
+	branches := d.Branches()
 
-			for i := 0; i*2 < len(hashes); i++ {
-				// for anyone who is courious why i*2 + 1 comes before i * 2
-				// it's agreement between client side and contract side
-				if i*2+1 >= len(hashes) {
-					result = append(result, BranchElementFromHash(
-						SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
-						SPHash(hashes[i*2].(DatasetData))))
-				} else {
-					result = append(result, BranchElementFromHash(
-						SPHash(hashes[i*2+1].(DatasetData)),
-						SPHash(hashes[i*2].(DatasetData))))
-				}
+	for _, k := range d.orderedIndexes {
+		hh := branches[k].ToNodeArray()[1:]
+		hashes := hh[:len(hh)-int(d.StoredLevel())]
+
+		for i := 0; i*2 < len(hashes); i++ {
+			// for anyone who is courious why i*2 + 1 comes before i * 2
+			// it's agreement between client side and contract side
+			if i*2+1 >= len(hashes) {
+				result = append(result, BranchElementFromHash(
+					SPHash(DatasetData{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}),
+					SPHash(hashes[i*2].(DatasetData))))
+			} else {
+				result = append(result, BranchElementFromHash(
+					SPHash(hashes[i*2+1].(DatasetData)),
+					SPHash(hashes[i*2].(DatasetData))))
 			}
 		}
-
-		return result
 	}
 
-	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
+	return result
 }
 
 func hash(a, b NodeData) NodeData {
@@ -174,5 +159,3 @@ func rev(b []byte) []byte {
 
 	return b
 }
-
-func dummyNodeModifie(data NodeData) {}

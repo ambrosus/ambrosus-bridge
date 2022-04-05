@@ -20,19 +20,16 @@ type hashFunc func(NodeData, NodeData) NodeData
 
 type elementHashFunc func(ElementData) NodeData
 
-type dummyNodeModifierFunc func(NodeData)
-
 type MerkleTree struct {
-	hash             hashFunc
-	merkleBuf        *list.List
-	elementHash      elementHashFunc
-	dummyNodeModifie dummyNodeModifierFunc
-	exportNodeCount  uint32
-	storedLevel      uint32
-	finalized        bool
-	indexes          map[uint32]bool
-	orderedIndexes   []uint32
-	exportNodes      []NodeData
+	hash            hashFunc
+	merkleBuf       *list.List
+	elementHash     elementHashFunc
+	exportNodeCount uint32
+	storedLevel     uint32
+	finalized       bool
+	indexes         map[uint32]bool
+	orderedIndexes  []uint32
+	exportNodes     []NodeData
 }
 
 func (m *MerkleTree) StoredLevel() uint32 { return m.storedLevel }
@@ -118,7 +115,6 @@ func (m *MerkleTree) Finalize() {
 		for {
 			dupNode := m.merkleBuf.Back().Value.(Node).Copy()
 
-			m.dummyNodeModifie(dupNode.Data)
 			m.insertNode(dupNode)
 
 			if m.merkleBuf.Len() == 1 {
@@ -138,13 +134,12 @@ func (m *MerkleTree) RegisterIndex(indexes ...uint32) {
 }
 
 func (m MerkleTree) Branches() map[uint32]BranchTree {
-	if m.finalized {
-		return *(m.merkleBuf.Front().Value.(Node).Branches)
-	}
-
-	panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
+	m.assertFinalized()
+	return *(m.merkleBuf.Front().Value.(Node).Branches)
 }
 
-func (m MerkleTree) Indices() []uint32 {
-	return m.orderedIndexes
+func (m MerkleTree) assertFinalized() {
+	if !m.finalized {
+		panic("SP Merkle tree needs to be finalized by calling mt.Finalize()")
+	}
 }
