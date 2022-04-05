@@ -34,7 +34,9 @@ type BranchTree struct {
 	Root       *BranchNode
 }
 
-func (t BranchTree) ToNodeArray() []SPHash { return t.Root.ToNodeArray() }
+func (t BranchTree) ToNodeArray() []SPHash {
+	return t.Root.ToNodeArray()
+}
 
 func AcceptRightSibling(branch *BranchNode, data SPHash) *BranchNode {
 	return &BranchNode{

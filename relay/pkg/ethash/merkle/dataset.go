@@ -32,18 +32,7 @@ func NewDatasetTree() *DatasetTree {
 
 func (d DatasetTree) MerkleNodes() []*big.Int {
 	d.assertFinalized()
-	var result []*big.Int
-
-	for i := 0; i*2 < len(d.exportNodes); i++ {
-		f := SPHash{}
-		if i*2+1 < len(d.exportNodes) {
-			f = d.exportNodes[i*2+1]
-		}
-
-		result = append(result, BranchElementFromHash(f, d.exportNodes[i*2]).Big())
-	}
-
-	return result
+	return branchesFromHashes(d.exportNodes)
 }
 
 func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
@@ -52,25 +41,30 @@ func (d DatasetTree) Lookups() (dataSetLookup, witnessForLookup []*big.Int) {
 	branches := d.Branches()
 
 	for _, k := range d.orderedIndexes {
-
 		hh := branches[k].ToNodeArray()[1:]
 		hashes := hh[:len(hh)-int(d.storedLevel)]
-
-		for i := 0; i*2 < len(hashes); i++ {
-			// for anyone who is courious why i*2 + 1 comes before i * 2
-			// it's agreement between client side and contract side
-			f := SPHash{}
-			if i*2+1 < len(hashes) {
-				f = hashes[i*2+1]
-			}
-
-			witnessForLookup = append(witnessForLookup, BranchElementFromHash(f, hashes[i*2]).Big())
-		}
+		witnessForLookup = append(witnessForLookup, branchesFromHashes(hashes)...)
 
 		dataSetLookup = append(dataSetLookup, branches[k].RawData.ToUint256Array()...)
 	}
 
 	return
+}
+
+func branchesFromHashes(hashes []SPHash) []*big.Int {
+	var result []*big.Int
+	for i := 0; i*2 < len(hashes); i++ {
+		// todo what does this mean?
+		// for anyone who is courious why i*2 + 1 comes before i * 2
+		// it's agreement between client side and contract side
+		f := SPHash{}
+		if i*2+1 < len(hashes) {
+			f = hashes[i*2+1]
+		}
+
+		result = append(result, BranchElementFromHash(f, hashes[i*2]).Big())
+	}
+	return result
 }
 
 func (d *DatasetTree) hash(left, right SPHash) SPHash {
