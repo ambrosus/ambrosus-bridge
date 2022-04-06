@@ -108,3 +108,19 @@ func (t *CommonStructsTransfer) MarshalJSON() ([]byte, error) {
 	tm := Transfer{t.TokenAddress, t.ToAddress, (*hexutil.Big)(t.Amount)}
 	return json.Marshal(&tm)
 }
+
+// todo maybe create `type ReceiptProof []hexutil.Bytes`
+
+func (t *CommonStructsTransferProof) MarshalJSON() ([]byte, error) {
+	type TransferProof struct {
+		ReceiptProof []hexutil.Bytes         `json:"receipt_proof"`
+		EventId      *hexutil.Big            `json:"event_id"`
+		Transfers    []CommonStructsTransfer `json:"transfers"`
+	}
+	rp := make([]hexutil.Bytes, len(t.ReceiptProof))
+	for i, v := range t.ReceiptProof {
+		rp[i] = v
+	}
+	tm := TransferProof{rp, (*hexutil.Big)(t.EventId), t.Transfers}
+	return json.Marshal(&tm)
+}
