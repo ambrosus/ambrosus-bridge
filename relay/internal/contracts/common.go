@@ -53,9 +53,9 @@ type CheckAuraValidatorSetProof struct {
 
 // CheckAuraAuraProof is an auto generated low-level Go binding around an user-defined struct.
 type CheckAuraAuraProof struct {
-	Blocks    []CheckAuraBlockAura
-	Transfer  CommonStructsTransferProof
-	VsChanges []CheckAuraValidatorSetProof
+	Blocks    []CheckAuraBlockAura         `json:"blocks"`
+	Transfer  CommonStructsTransferProof   `json:"transfer"`
+	VsChanges []CheckAuraValidatorSetProof `json:"vs_changes"`
 }
 
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
