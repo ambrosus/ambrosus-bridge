@@ -154,3 +154,17 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(&tm)
 }
+
+func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
+	type ValidatorSetProof struct {
+		ReceiptProof []hexutil.Bytes `json:"receipt_proof"`
+		DeltaAddress common.Address  `json:"delta_address"`
+		DeltaIndex   int64           `json:"delta_index"`
+	}
+	rp := make([]hexutil.Bytes, len(t.ReceiptProof))
+	for i, v := range t.ReceiptProof {
+		rp[i] = v
+	}
+	tm := ValidatorSetProof{rp, t.DeltaAddress, t.DeltaIndex}
+	return json.Marshal(&tm)
+}
