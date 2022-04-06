@@ -267,16 +267,18 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 		return err
 	}
 
-	if err := b.checkEpochData(event); err != nil {
-		return err
+	for _, blockNum := range []uint64{event.Raw.BlockNumber, event.Raw.BlockNumber + safetyBlocks} {
+		if err := b.checkEpochData(blockNum, event.EventId); err != nil {
+			return err
+		}
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
 	return b.sideBridge.SubmitTransferPoW(ambTransfer)
 }
 
-func (b *Bridge) checkEpochData(event *contracts.TransferEvent) error {
-	epoch := event.Raw.BlockNumber / 30000
+func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
+	epoch := blockNumber / 30000
 	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
 	if err != nil {
 		return err
@@ -285,7 +287,7 @@ func (b *Bridge) checkEpochData(event *contracts.TransferEvent) error {
 		return nil
 	}
 
-	b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit epoch data...")
+	b.logger.Info().Str("event_id", eventId.String()).Msg("Submit epoch data...")
 	epochData, err := b.loadEpochDataFile(epoch)
 	if err != nil {
 		return err
