@@ -1,9 +1,11 @@
 package contracts
 
 import (
+	"encoding/json"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 // CommonStructsTransfer is an auto generated low-level Go binding around an user-defined struct.
@@ -95,4 +97,14 @@ type CommonStructsConstructorArgs struct {
 	TimeframeSeconds   *big.Int
 	LockTime           *big.Int
 	MinSafetyBlocks    *big.Int
+}
+
+func (t *CommonStructsTransfer) MarshalJSON() ([]byte, error) {
+	type Transfer struct {
+		TokenAddress common.Address `json:"tokenAddress"`
+		ToAddress    common.Address `json:"toAddress"`
+		Amount       *hexutil.Big   `json:"amount"`
+	}
+	tm := Transfer{t.TokenAddress, t.ToAddress, (*hexutil.Big)(t.Amount)}
+	return json.Marshal(&tm)
 }
