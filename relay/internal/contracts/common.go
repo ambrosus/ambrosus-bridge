@@ -82,8 +82,8 @@ type CheckPoWBlockPoW struct {
 
 // CheckPoWPoWProof is an auto generated low-level Go binding around an user-defined struct.
 type CheckPoWPoWProof struct {
-	Blocks   []CheckPoWBlockPoW
-	Transfer CommonStructsTransferProof
+	Blocks   []CheckPoWBlockPoW         `json:"blocks"`
+	Transfer CommonStructsTransferProof `json:"transfer"`
 }
 
 // CommonStructsConstructorArgs is an auto generated low-level Go binding around an user-defined struct.
