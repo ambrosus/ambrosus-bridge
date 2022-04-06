@@ -168,3 +168,43 @@ func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
 	tm := ValidatorSetProof{rp, t.DeltaAddress, t.DeltaIndex}
 	return json.Marshal(&tm)
 }
+
+func (t *CheckPoWBlockPoW) MarshalJSON() ([]byte, error) {
+	type PoWBlockPoW struct {
+		P0WithNonce    hexutil.Bytes `json:"p0WithNonce"`
+		P0WithoutNonce hexutil.Bytes `json:"p0WithoutNonce"`
+
+		P1                  hexutil.Bytes `json:"p1"`
+		ParentOrReceiptHash hexutil.Bytes `json:"parentOrReceiptHash"`
+		P2                  hexutil.Bytes `json:"p2"`
+		Difficulty          hexutil.Bytes `json:"difficulty"`
+		P3                  hexutil.Bytes `json:"p3"`
+		Number              hexutil.Bytes `json:"number"`
+		P4                  hexutil.Bytes `json:"p4"` // end when extra end
+
+		P5    hexutil.Bytes `json:"p5"` // after extra
+		Nonce hexutil.Bytes `json:"nonce"`
+
+		P6 hexutil.Bytes `json:"p6"`
+
+		DataSetLookup    []*hexutil.Big `json:"dataSetLookup"`
+		WitnessForLookup []*hexutil.Big `json:"witnessForLookup"`
+	}
+	dslookup := make([]*hexutil.Big, len(t.DataSetLookup))
+	wflookup := make([]*hexutil.Big, len(t.WitnessForLookup))
+	for i, v := range t.DataSetLookup {
+		dslookup[i] = (*hexutil.Big)(v)
+	}
+	for i, v := range t.WitnessForLookup {
+		wflookup[i] = (*hexutil.Big)(v)
+	}
+
+	tm := PoWBlockPoW{
+		t.P0WithNonce, t.P0WithoutNonce,
+		t.P1, t.ParentOrReceiptHash[:], t.P2, t.Difficulty[:], t.P3, t.Number[:], t.P4,
+		t.P5, t.Nonce[:],
+		t.P6,
+		dslookup, wflookup,
+	}
+	return json.Marshal(&tm)
+}
