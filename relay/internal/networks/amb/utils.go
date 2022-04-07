@@ -38,13 +38,9 @@ func (b *Bridge) getFailureReasonViaCall(txErr error, funcName string, params ..
 	return txErr
 }
 
-type JsonError interface {
-	ErrorData() interface{}
-}
-
 func parseError(err error) error {
-	if jsonErr, ok := err.(JsonError); ok {
-		errStr := jsonErr.ErrorData().(string)
+	if dataError, ok := err.(rpc.DataError); ok {
+		errStr := dataError.ErrorData().(string)
 		decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
 		if err != nil {
 			return errors.New(errStr)
