@@ -18,6 +18,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
 
@@ -101,9 +102,13 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	// Metric
 	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
-	tx, err := b.Contract.SubmitTransfer(b.auth, *proof)
-	if err != nil {
-		return err
+	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
+	if txErr != nil {
+		if txErr.Error() == "execution reverted" {
+			dataErr := txErr.(rpc.DataError)
+			return fmt.Errorf("contract runtime error: %s", dataErr.ErrorData())
+		}
+		return txErr
 	}
 
 	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
