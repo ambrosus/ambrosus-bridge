@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "./common/ERC20Token.sol";
+import "./BridgeERC20.sol";
 
 contract MockERC20 is ERC20Token {
     constructor(address[] memory bridgeAddresses)

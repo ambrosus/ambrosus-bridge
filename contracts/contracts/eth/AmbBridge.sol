@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/checks/CheckPoW.sol";
 import "../common/CommonStructs.sol";
-import "../IwAMB.sol";
+import "../tokens/IwAMB.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
