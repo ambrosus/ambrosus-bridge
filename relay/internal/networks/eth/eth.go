@@ -252,7 +252,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	epoch := blockNumber / 30000
 	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
 	if err != nil {
-		return err
+		return fmt.Errorf("IsEpochSet in %v: %w", b.sideBridge.Name(), err)
 	}
 	if isEpochSet {
 		return nil
@@ -261,9 +261,14 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	b.logger.Info().Str("event_id", eventId.String()).Msg("Submit epoch data...")
 	epochData, err := b.loadEpochDataFile(epoch)
 	if err != nil {
-		return err
+		return fmt.Errorf("loadEpochDataFile: %w", err)
 	}
-	return b.sideBridge.SubmitEpochData(epochData)
+
+	err = b.sideBridge.SubmitEpochData(epochData)
+	if err != nil {
+		return fmt.Errorf("SubmitEpochData in %v: %w", b.sideBridge.Name(), err)
+	}
+	return nil
 	// todo delete old epochs, generate new (if need)
 }
 
