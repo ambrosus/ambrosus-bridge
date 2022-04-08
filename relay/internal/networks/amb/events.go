@@ -97,7 +97,7 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockA
 
 	encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeTransfer)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encode block as transfer: %w", err)
 	}
 	blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 
