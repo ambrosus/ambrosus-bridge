@@ -6,7 +6,7 @@ import chai from "chai";
 chai.should();
 export const expect = chai.expect;
 
-describe("ERC20Token", () => {
+describe("BridgeERC20", () => {
   let ownerS: Signer;
   let userS: Signer;
   let bridgeS: Signer;
@@ -23,7 +23,7 @@ describe("ERC20Token", () => {
     userS = await ethers.getSigner(user);
     bridgeS = await ethers.getSigner(bridge);
 
-    mockERC20 = await ethers.getContract("MockERC20", ownerS);
+    mockERC20 = await ethers.getContract("BridgeERC20Test", ownerS);
   });
 
   beforeEach(async () => {

@@ -2,10 +2,9 @@
 pragma solidity 0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-contract ERC20Token is ERC20, ERC20Burnable, AccessControl {
+contract BridgeERC20 is ERC20, AccessControl {
     bytes32 public constant BRIDGE_ROLE = keccak256("BRIDGE_ROLE");
     address private _bridgeAddress;
 
