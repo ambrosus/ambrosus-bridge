@@ -44,35 +44,35 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	// Creating a new ethereum client (HTTP & WS).
 	client, err := ethclient.Dial(cfg.HttpURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dial http: %w", err)
 	}
 	// Compatibility with tests.
 	var wsClient *ethclient.Client
 	if cfg.WsURL != "" {
 		wsClient, err = ethclient.Dial(cfg.WsURL)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 	}
 
 	// Creating a new ambrosus bridge contract instance (HTTP & WS).
 	contract, err := contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create contract http: %w", err)
 	}
 	// Compatibility with tests.
 	var wsContract *contracts.Amb
 	if wsClient != nil {
 		wsContract, err = contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), wsClient)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
 	}
 
 	// Creating a new ambrosus VS contract instance.
 	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create vs contract: %w", err)
 	}
 
 	var auth *bind.TransactOpts
@@ -80,12 +80,12 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	if cfg.PrivateKey != nil {
 		chainId, err := client.ChainID(context.Background())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("chain id: %w", err)
 		}
 
 		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("new keyed transactor: %w", err)
 		}
 
 		// Metric
