@@ -107,13 +107,13 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 
 	epochs, err := b.getGeneratedEpochNumbers()
 	if err != nil {
-		return err
+		return fmt.Errorf("get epoch numbers: %w", err)
 	}
 
 	for _, i := range epochs {
 		if uint64(i) < epoch {
 			if err := b.deleteEpochDataFile(uint64(i)); err != nil {
-				return err
+				return fmt.Errorf("delete epoch (%v) data file: %w", i, err)
 			}
 		}
 	}
@@ -122,13 +122,13 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 		if err := b.checkEpochDataFile(i); err != nil {
 			if errors.Is(err, ErrEpochDataFileNotFound) {
 				if _, err := b.createEpochDataFile(i); err != nil {
-					return err
+					return fmt.Errorf("create epoch (%v) data file: %w", i, err)
 				}
 
 				continue
 			}
 
-			return err
+			return fmt.Errorf("check epoch (%v) data file: %w", i, err)
 		}
 	}
 
