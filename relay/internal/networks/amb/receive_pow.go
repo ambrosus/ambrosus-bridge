@@ -1,6 +1,7 @@
 package amb
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -18,10 +19,18 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
-		return b.getFailureReasonViaCall(txErr, "submitTransfer", *proof)
+		err := b.getFailureReasonViaCall("submitTransfer", *proof)
+		if err != nil {
+			return fmt.Errorf("getFailureReasonViaCall: %w", err)
+		}
+		return txErr
 	}
 
-	return b.waitForTxMined(tx)
+	err := b.waitForTxMined(tx)
+	if err != nil {
+		return fmt.Errorf("waitForTxMined: %w", err)
+	}
+	return nil
 }
 
 func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
@@ -31,14 +40,21 @@ func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 	tx, txErr := b.Contract.SetEpochData(b.auth,
 		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
 	if txErr != nil {
-		return b.getFailureReasonViaCall(
-			txErr,
+		err := b.getFailureReasonViaCall(
 			"setEpochData",
 			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
 		)
+		if err != nil {
+			return fmt.Errorf("getFailureReasonViaCall: %w", err)
+		}
+		return txErr
 	}
 
-	return b.waitForTxMined(tx)
+	err := b.waitForTxMined(tx)
+	if err != nil {
+		return fmt.Errorf("waitForTxMined: %w", err)
+	}
+	return nil
 }
 
 func (b *Bridge) IsEpochSet(epoch uint64) (bool, error) {

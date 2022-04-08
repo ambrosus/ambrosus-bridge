@@ -25,13 +25,13 @@ func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 
 	data, err := os.ReadFile(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read file %v: %w", epochDataFilePath, err)
 	}
 
 	var epochData *ethash.EpochData
 
 	if err := json.Unmarshal(data, &epochData); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
 	return epochData, nil
@@ -42,16 +42,16 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 
 	data, err := ethash.GenerateEpochData(epoch)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generate epoch data: %w", err)
 	}
 
 	file, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
-		return data, err
+		return data, fmt.Errorf("marshal: %w", err)
 	}
 
 	if err := os.WriteFile(fmt.Sprintf(epochDataFilePath, epoch), file, 0644); err != nil {
-		return data, err
+		return data, fmt.Errorf("write file %v: %w", epochDataFilePath, err)
 	}
 
 	b.logger.Info().Msgf("Finish creating '%d.json' epoch data file...", epoch)
@@ -107,13 +107,13 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 
 	epochs, err := b.getGeneratedEpochNumbers()
 	if err != nil {
-		return err
+		return fmt.Errorf("get epoch numbers: %w", err)
 	}
 
 	for _, i := range epochs {
 		if uint64(i) < epoch {
 			if err := b.deleteEpochDataFile(uint64(i)); err != nil {
-				return err
+				return fmt.Errorf("delete epoch (%v) data file: %w", i, err)
 			}
 		}
 	}
@@ -122,13 +122,13 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 		if err := b.checkEpochDataFile(i); err != nil {
 			if errors.Is(err, ErrEpochDataFileNotFound) {
 				if _, err := b.createEpochDataFile(i); err != nil {
-					return err
+					return fmt.Errorf("create epoch (%v) data file: %w", i, err)
 				}
 
 				continue
 			}
 
-			return err
+			return fmt.Errorf("check epoch (%v) data file: %w", i, err)
 		}
 	}
 

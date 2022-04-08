@@ -28,13 +28,16 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 
 	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
 	if err != nil {
-		return err
+		return fmt.Errorf("wait mined: %w", err)
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		// we've got here probably due to low gas limit,
 		// and revert() that hasn't been caught at eth_estimateGas
-		return ethereum.GetFailureReason(b.Client, b.auth, tx)
+		err = ethereum.GetFailureReason(b.Client, b.auth, tx)
+		if err != nil {
+			return fmt.Errorf("GetFailureReason: %w", err)
+		}
 	}
 
 	return nil

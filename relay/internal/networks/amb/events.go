@@ -30,22 +30,22 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 
 	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
 	}
 
 	vsChangeEvents, err := b.getVSChangeEvents(transferEvent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getVSChangeEvents: %w", err)
 	}
 	vsChanges, err := b.encodeVSChangeEvents(blocksMap, vsChangeEvents)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encodeVSChangeEvents: %w", err)
 	}
 
 	// add safety blocks after each event block
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
 	}
 
 	blockNums := sortedKeys(blocksMap)
@@ -68,7 +68,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 				// save block as safety
 				encodedBlockWithType, err := b.encodeBlockWithType(targetBlockNum, blType)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("encode block as safety: %w", err)
 				}
 				blocksMap[targetBlockNum] = *encodedBlockWithType
 			}
@@ -97,7 +97,7 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockA
 
 	encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeTransfer)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encode block as transfer: %w", err)
 	}
 	blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 
@@ -113,13 +113,13 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
 	for i, event := range events {
 		encodedEvent, err := b.encodeVSChangeEvent(prevSet, event)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("encodeVSChangeEvent: %w", err)
 		}
 		vsChanges[i] = *encodedEvent
 		prevSet = event.NewSet
@@ -130,7 +130,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 		} else {
 			encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeVSChange)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("encode block as vs change: %w", err)
 			}
 			encodedBlockWithType.DeltaIndex = int64(i)
 			blocks[event.Raw.BlockNumber] = *encodedBlockWithType
@@ -142,12 +142,12 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
 	address, index, err := deltaVS(prevSet, event.NewSet)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("deltaVS: %w", err)
 	}
 
 	proof, err := b.getProof(event)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getProof: %w", err)
 	}
 
 	return &contracts.CheckAuraValidatorSetProof{
@@ -160,12 +160,12 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.
 func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts.VsInitiateChange, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
 	}
 
 	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
 
@@ -177,7 +177,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 
 	logs, err := b.VSContract.FilterInitiateChange(opts, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
 
 	var res []*contracts.VsInitiateChange
@@ -191,7 +191,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	receipts, err := ethereum.GetReceipts(b.Client, event.Log().BlockHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetReceipts: %w", err)
 	}
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
@@ -199,11 +199,11 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contracts.CheckAuraBlockAura, error) {
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("HeaderByNumber: %w", err)
 	}
 	encodedBlock, err := EncodeBlock(block)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encode: %w", err)
 	}
 	encodedBlock.Type |= type_
 	return encodedBlock, nil
@@ -212,12 +212,12 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contract
 func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
 	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
 	}
 
 	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get block by hash: %w", err)
 	}
 
 	return block.Number(), nil

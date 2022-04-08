@@ -43,28 +43,28 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	// Creating a new ethereum client (HTTP & WS).
 	client, err := ethclient.Dial(cfg.HttpURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("dial http: %w", err)
 	}
 	// Compatibility with tests.
 	var wsClient *ethclient.Client
 	if cfg.WsURL != "" {
 		wsClient, err = ethclient.Dial(cfg.WsURL)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 	}
 
 	// Creating a new ambrosus bridge contract instance (HTTP & WS).
 	contract, err := contracts.NewEth(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("create contract http: %w", err)
 	}
 	// Compatibility with tests.
 	var wsContract *contracts.Eth
 	if wsClient != nil {
 		wsContract, err = contracts.NewEth(common.HexToAddress(cfg.ContractAddr), wsClient)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
 	}
 
@@ -73,12 +73,12 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	if cfg.PrivateKey != nil {
 		chainId, err := client.ChainID(context.Background())
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("chain id: %w", err)
 		}
 
 		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("new keyed transactor: %w", err)
 		}
 
 		// Metric
@@ -106,7 +106,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 
 	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
 
 	if logs.Next() {
@@ -138,7 +138,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Msgf("listen error: %s", err.Error())
+			b.logger.Error().Err(err)
 		}
 	}
 }
@@ -148,7 +148,7 @@ func (b *Bridge) checkOldEvents() error {
 
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
-		return err
+		return fmt.Errorf("GetLastEventId: %w", err)
 	}
 
 	i := big.NewInt(1)
@@ -160,13 +160,13 @@ func (b *Bridge) checkOldEvents() error {
 				// no more old events
 				return nil
 			}
-			return err
+			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
 		}
 
 		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
 
 		if err := b.sendEvent(nextEvent); err != nil {
-			return err
+			return fmt.Errorf("send event: %w", err)
 		}
 
 		i = big.NewInt(0).Add(i, big.NewInt(1))
@@ -175,7 +175,7 @@ func (b *Bridge) checkOldEvents() error {
 
 func (b *Bridge) listen() error {
 	if err := b.checkOldEvents(); err != nil {
-		return err
+		return fmt.Errorf("checkOldEvents: %w", err)
 	}
 
 	b.logger.Info().Msg("Listening new events...")
@@ -185,7 +185,7 @@ func (b *Bridge) listen() error {
 	eventChannel := make(chan *contracts.EthTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("watchTransfer: %w", err)
 	}
 
 	defer eventSub.Unsubscribe()
@@ -194,12 +194,12 @@ func (b *Bridge) listen() error {
 	for {
 		select {
 		case err := <-eventSub.Err():
-			return err
+			return fmt.Errorf("watching transfers: %w", err)
 		case event := <-eventChannel:
 			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
 			if err := b.sendEvent(&event.TransferEvent); err != nil {
-				return err
+				return fmt.Errorf("send event: %w", err)
 			}
 		}
 	}
@@ -211,40 +211,44 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return err
+		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
 	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
-		return err
+		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.isEventRemoved(event); err != nil {
-		return err
+		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
 	ambTransfer, err := b.getBlocksAndEvents(event)
 	if err != nil {
-		return err
+		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
 
 	for _, blockNum := range []uint64{event.Raw.BlockNumber, event.Raw.BlockNumber + safetyBlocks} {
 		if err := b.checkEpochData(blockNum, event.EventId); err != nil {
-			return err
+			return fmt.Errorf("checkEpochData on block %v: %w", blockNum, err)
 		}
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
-	return b.sideBridge.SubmitTransferPoW(ambTransfer)
+	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
+	if err != nil {
+		return fmt.Errorf("SubmitTransferPoW: %w", err)
+	}
+	return nil
 }
 
 func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	epoch := blockNumber / 30000
 	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
 	if err != nil {
-		return err
+		return fmt.Errorf("IsEpochSet: %w", err)
 	}
 	if isEpochSet {
 		return nil
@@ -253,16 +257,21 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	b.logger.Info().Str("event_id", eventId.String()).Msg("Submit epoch data...")
 	epochData, err := b.loadEpochDataFile(epoch)
 	if err != nil {
-		return err
+		return fmt.Errorf("loadEpochDataFile: %w", err)
 	}
-	return b.sideBridge.SubmitEpochData(epochData)
+
+	err = b.sideBridge.SubmitEpochData(epochData)
+	if err != nil {
+		return fmt.Errorf("SubmitEpochData: %w", err)
+	}
+	return nil
 	// todo delete old epochs, generate new (if need)
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
-		return err
+		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
 
 	if block.Hash() != event.Raw.BlockHash {

@@ -2,6 +2,7 @@ package amb
 
 import (
 	"bytes"
+	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -16,11 +17,11 @@ func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
 
 	rlpHeader, err := header.Rlp(false)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp header: %w", err)
 	}
 	rlpHeaderSeal, err := header.Rlp(true)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp header seal: %w", err)
 	}
 
 	// rlpHeader length about 508 bytes => rlp prefix always 3 bytes length
@@ -36,7 +37,7 @@ func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
 	}
 	rlpParts, err := helpers.BytesSplit(rlpHeader, splitEls)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("split rlp header: %w", err)
 	}
 
 	// seal part
@@ -45,11 +46,11 @@ func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
 
 	stepPrefix, err := rlpPrefix(step)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp step prefix: %w", err)
 	}
 	signaturePrefix, err := rlpPrefix(signature)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp signature prefix: %w", err)
 	}
 
 	return &contracts.CheckAuraBlockAura{
