@@ -45,7 +45,7 @@ type Header struct {
 	SealFields []hexutil.Bytes `json:"sealFields"`
 }
 
-func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
+func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	body := &request{
 		Jsonrpc: "2.0",
 		Id:      1,
@@ -71,7 +71,7 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 	if respData.Result.Number == nil {
 		return nil, fmt.Errorf("there is no header with number %d", number.Int64())
 	}
-	return &respData.Result, err
+	return &respData.Result, nil
 }
 
 func (h *Header) Rlp(withSeal bool) ([]byte, error) {

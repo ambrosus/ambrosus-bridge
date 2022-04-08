@@ -37,7 +37,7 @@ type response struct {
 	ErrorDescription string `json:"description"` // if Ok is false
 }
 
-func (t *externalLogger) LogError(msg string) (returningError error) {
+func (t *externalLogger) LogError(msg string) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Token)
 	body := &request{
 		ChatId:    t.ChatId,
@@ -53,9 +53,7 @@ func (t *externalLogger) LogError(msg string) (returningError error) {
 	if err != nil {
 		return err
 	}
-	defer func() {
-		err = resp.Body.Close()
-	}()
+	defer resp.Body.Close()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
@@ -64,5 +62,5 @@ func (t *externalLogger) LogError(msg string) (returningError error) {
 	if !respData.Ok {
 		return fmt.Errorf(respData.ErrorDescription)
 	}
-	return err
+	return nil
 }
