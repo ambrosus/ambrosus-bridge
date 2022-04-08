@@ -275,7 +275,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
-		return err
+		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
 
 	if block.Hash() != event.Raw.BlockHash {
