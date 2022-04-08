@@ -28,23 +28,20 @@ contract AmbBridge is CommonBridge, CheckPoW {
     }
 
     function wrap_withdraw(address toAddress) public payable {
-        require(msg.value > fee, "msg.value can't be lesser than fee");
-        uint restOfValue = msg.value - fee;
+        address tokenExternalAddress = tokenAddresses[ambWrapperAddress];
+        require(tokenExternalAddress != address(0), "Unknown token address");
 
+        require(msg.value > fee, "msg.value can't be lesser than fee");
         feeRecipient.transfer(fee);
+
+        uint restOfValue = msg.value - fee;
         IwAMB(ambWrapperAddress).wrap{value: restOfValue}();
 
         //
-        queue.push(CommonStructs.Transfer(ambWrapperAddress, toAddress, restOfValue));
+        queue.push(CommonStructs.Transfer(tokenExternalAddress, toAddress, restOfValue));
         emit Withdraw(msg.sender, outputEventId, fee);
 
-        uint nowTimeframe = block.timestamp / timeframeSeconds;
-        if (nowTimeframe != lastTimeframe) {
-            emit Transfer(outputEventId++, queue);
-            delete queue;
-
-            lastTimeframe = nowTimeframe;
-        }
+        withdraw_finish();
     }
 
     function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {

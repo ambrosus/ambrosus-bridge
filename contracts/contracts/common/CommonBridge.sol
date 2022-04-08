@@ -61,6 +61,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     // todo remove
     event Test(uint indexed a, address indexed b, string c, uint d);
+
     function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount, bool transferEvent) public {
         emit Test(1, address(this), "asd", 123);
 
@@ -76,16 +77,22 @@ contract CommonBridge is AccessControl, Pausable {
     }
 
 
-
-
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
+        address tokenExternalAddress = tokenAddresses[tokenAmbAddress];
+        require(tokenExternalAddress != address(0), "Unknown token address");
+
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
+
         require(IERC20(tokenAmbAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);
 
+        withdraw_finish();
+    }
+
+    function withdraw_finish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
             emit Transfer(outputEventId++, queue);
@@ -94,10 +101,6 @@ contract CommonBridge is AccessControl, Pausable {
             lastTimeframe = nowTimeframe;
         }
     }
-
-
-
-
 
 
     function lockTransfers(CommonStructs.Transfer[] memory events, uint event_id) internal {
