@@ -40,14 +40,21 @@ func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 	tx, txErr := b.Contract.SetEpochData(b.auth,
 		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
 	if txErr != nil {
-		return b.getFailureReasonViaCall(
-			txErr,
+		err := b.getFailureReasonViaCall(
 			"setEpochData",
 			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
 		)
+		if err != nil {
+			return fmt.Errorf("getFailureReasonViaCall: %w", err)
+		}
+		return txErr
 	}
 
-	return b.waitForTxMined(tx)
+	err := b.waitForTxMined(tx)
+	if err != nil {
+		return fmt.Errorf("waitForTxMined: %w", err)
+	}
+	return nil
 }
 
 func (b *Bridge) IsEpochSet(epoch uint64) (bool, error) {
