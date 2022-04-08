@@ -105,6 +105,10 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}, nil
 }
 
+func (b *Bridge) Name() string {
+	return BridgeName
+}
+
 // GetLastEventId gets last contract event id.
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)

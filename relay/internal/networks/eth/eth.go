@@ -96,6 +96,10 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	}, nil
 }
 
+func (b *Bridge) Name() string {
+	return BridgeName
+}
+
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
