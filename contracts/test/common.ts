@@ -56,15 +56,13 @@ describe("Common tests", () => {
       await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
     }
     await ambBridge.setAmbWrapper(wAmb.address);
+
+    await mockERC20.mint(owner, 10000);
+    await mockERC20.increaseAllowance(commonBridge.address, 5000);
   });
 
 
   describe("Test Withdraw", async () => {
-    beforeEach(async () => {
-      await mockERC20.mint(owner, 10000);
-      await mockERC20.increaseAllowance(commonBridge.address, 5000);
-    });
-
     it("token balance changed", async () => {
       await expect(() => commonBridge.withdraw(mockERC20.address, user, 1, {value: 1000}))
         .to.changeTokenBalance(mockERC20, ownerS, -1);
@@ -168,48 +166,32 @@ describe("Common tests", () => {
     });
   });
 
-  it("Test changeFeeRecipient", async () => {
-    await mockERC20.mint(owner, 5);
-    await mockERC20.increaseAllowance(commonBridge.address, 5);
+  describe("Test change methods", () => {
+    it("Test changeFeeRecipient", async () => {
+      await commonBridge.changeFeeRecipient(user);
+      await expect(() => commonBridge.withdraw(mockERC20.address, owner, 5, {value: 1000}))
+        .to.changeEtherBalance(userS, 1000);
+    });
 
-    await commonBridge.changeFeeRecipient(user);
-    await expect(
-      () => commonBridge.withdraw(mockERC20.address, owner, 5, {value: 1000})
-    ).to.changeEtherBalance(userS, 1000);
+    it("Test changeMinSafetyBlocks", async () => {
+      await commonBridge.changeMinSafetyBlocks(20);
+      expect(await commonBridge.minSafetyBlocks()).eq(20);
+    });
 
-  });
+    it("Test changeTimeframeSeconds", async () => {
+      await commonBridge.changeTimeframeSeconds(20000);
+      expect(await commonBridge.timeframeSeconds()).eq(20000);
+    });
 
-  it("Test changeMinSafetyBlocks", async () => {
-    await commonBridge.changeMinSafetyBlocks(20);
-    expect(await commonBridge.minSafetyBlocks()).eq(20);
-  });
+    it("Test changeLockTime", async () => {
+      await commonBridge.changeLockTime(2000);
+      expect(await commonBridge.lockTime()).eq(2000);
+    });
 
-  it("Test changeTimeframeSeconds", async () => {
-    await commonBridge.changeTimeframeSeconds(20000);
-    expect(await commonBridge.timeframeSeconds()).eq(20000);
-  });
-
-  it("Test changeLockTime", async () => {
-    await commonBridge.changeLockTime(2000);
-    expect(await commonBridge.lockTime()).eq(2000);
-  });
-
-  it("Test Pausable", async () => {
-    await expect(commonBridge.removeLockedTransfers(0)).to.be.revertedWith("Pausable: not paused");
-
-    await commonBridge.pause()
-    expect(await commonBridge.paused()).to.be.true;
-
-    await expect(commonBridge.connect(relayS).unlockTransfers(0)).to.be.revertedWith("Pausable: paused");
-
-    await commonBridge.unpause()
-    expect(await commonBridge.paused()).to.be.false;
-  });
-
-
-  it("Test setSideBridge", async () => {
-    await ambBridge.setSideBridge(mockERC20.address);
-    expect(await ambBridge.sideBridgeAddress()).eq(mockERC20.address);
+    it("Test setSideBridge [AMB]", async () => {
+      await ambBridge.setSideBridge(mockERC20.address);
+      expect(await ambBridge.sideBridgeAddress()).eq(mockERC20.address);
+    });
   });
 
 
