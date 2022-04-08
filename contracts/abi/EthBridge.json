@@ -1189,6 +1189,13 @@
   },
   {
     "inputs": [],
+    "name": "unlockTransfersBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "unpause",
     "outputs": [],
     "stateMutability": "nonpayable",

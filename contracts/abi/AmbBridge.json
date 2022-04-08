@@ -52,6 +52,11 @@
         "internalType": "struct CommonStructs.ConstructorArgs",
         "name": "args",
         "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "ambWrapper_",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -854,6 +859,19 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "wrapper",
+        "type": "address"
+      }
+    ],
+    "name": "setAmbWrapper",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "epochNum",
         "type": "uint256"
@@ -1164,6 +1182,13 @@
   },
   {
     "inputs": [],
+    "name": "unlockTransfersBatch",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "unpause",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1273,6 +1298,19 @@
       }
     ],
     "name": "withdraw",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "toAddress",
+        "type": "address"
+      }
+    ],
+    "name": "wrap_withdraw",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"

@@ -66,6 +66,7 @@ module.exports = {
         ],
     },
     abiExporter: {
+        runOnCompile: true,
         clear: true,
         flat: true,
         only: [
