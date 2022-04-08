@@ -33,6 +33,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     uint public inputEventId;
     uint outputEventId;
+    uint oldestLockedEventId;
 
     uint lastTimeframe;
 
@@ -103,25 +104,55 @@ contract CommonBridge is AccessControl, Pausable {
     }
 
 
+    // locked transfers from another network
+
+    // submitted transfers save here for `lockTime` period
     function lockTransfers(CommonStructs.Transfer[] memory events, uint event_id) internal {
         lockedTransfers[event_id].endTimestamp = block.timestamp + lockTime;
-        for (uint i = 0; i < events.length; i++) {
+        for (uint i = 0; i < events.length; i++)
             lockedTransfers[event_id].transfers.push(events[i]);
-        }
     }
 
-    function unlockTransfers(uint event_id) public onlyRole(RELAY_ROLE) whenNotPaused {
+    // after `lockTime` period, transfers can  be unlocked
+    function unlockTransfers(uint event_id) public whenNotPaused {
+        require(event_id == oldestLockedEventId, "can unlock only oldest event");
+
         CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[event_id];
+        require(transfersLocked.endTimestamp > 0, "no locked transfers with this id");
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
         CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
-
-        for (uint i = 0; i < transfers.length; i++) {
+        for (uint i = 0; i < transfers.length; i++)
             require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
-        }
-        emit TransferFinish(event_id);
 
         delete lockedTransfers[event_id];
+        emit TransferFinish(event_id);
+
+        oldestLockedEventId = event_id+1;
+    }
+
+    // optimized version of unlockTransfers that unlock all transfer that can be unlocked in one call
+    function unlockTransfersBatch() public whenNotPaused {
+        uint event_id = oldestLockedEventId;
+        for (;; event_id++) {
+            CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[event_id];
+            if (transfersLocked.endTimestamp == 0 || transfersLocked.endTimestamp > block.timestamp) break;
+
+            CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
+            for (uint i = 0; i < transfers.length; i++)
+                require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
+
+            delete lockedTransfers[event_id];
+            emit TransferFinish(event_id);
+        }
+        oldestLockedEventId = event_id;
+    }
+
+    // delete transfers with passed event_id and all after it
+    function removeLockedTransfers(uint event_id) public onlyRole(ADMIN_ROLE) whenPaused {
+        require(event_id >= oldestLockedEventId, "event_id must be >= oldestLockedEventId");
+        for ( ;lockedTransfers[event_id].endTimestamp != 0; event_id++)
+            delete lockedTransfers[event_id];
     }
 
 
@@ -183,10 +214,6 @@ contract CommonBridge is AccessControl, Pausable {
 
     function unpause() public onlyRole(ADMIN_ROLE) {
         _unpause();
-    }
-
-    function removeLockedTransfers(uint event_id) public onlyRole(ADMIN_ROLE) whenPaused {
-        delete lockedTransfers[event_id];
     }
 
     // internal
