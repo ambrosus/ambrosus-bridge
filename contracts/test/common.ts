@@ -10,6 +10,11 @@ const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE")
 const RELAY_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
 const BRIDGE_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BRIDGE_ROLE"));
 
+const [token1, token2, token3, token4] = [
+  "0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002",
+  "0x0000000000000000000000000000000000000003", "0x0000000000000000000000000000000000000004"];
+
+
 describe("Common tests", () => {
   let ownerS: Signer;
   let relayS: Signer;
@@ -47,6 +52,7 @@ describe("Common tests", () => {
     for (let bridge of [commonBridge, ethBridge, ambBridge]) {
       await bridge.grantRole(ADMIN_ROLE, owner);
       await bridge.grantRole(RELAY_ROLE, relay);
+      await bridge.tokensAddBatch([wAmb.address, mockERC20.address], [token1, token2]);
       await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
     }
     await ambBridge.setAmbWrapper(wAmb.address);
@@ -91,11 +97,6 @@ describe("Common tests", () => {
     });
 
     describe("Token addresses", () => {
-      const token1 = "0x0000000000000000000000000000000000000001";
-      const token2 = "0x0000000000000000000000000000000000000002";
-      const token3 = "0x0000000000000000000000000000000000000003";
-      const token4 = "0x0000000000000000000000000000000000000004";
-
       it("add tokens", async () => {
         await commonBridge.tokensAdd(token1, token2);
 
