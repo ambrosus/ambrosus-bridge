@@ -160,12 +160,12 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.
 func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts.VsInitiateChange, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
 	}
 
 	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
 
@@ -177,7 +177,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 
 	logs, err := b.VSContract.FilterInitiateChange(opts, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
 
 	var res []*contracts.VsInitiateChange
