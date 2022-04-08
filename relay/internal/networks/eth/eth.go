@@ -179,7 +179,7 @@ func (b *Bridge) checkOldEvents() error {
 
 func (b *Bridge) listen() error {
 	if err := b.checkOldEvents(); err != nil {
-		return err
+		return fmt.Errorf("checkOldEvents: %w", err)
 	}
 
 	b.logger.Info().Msg("Listening new events...")
@@ -189,7 +189,7 @@ func (b *Bridge) listen() error {
 	eventChannel := make(chan *contracts.EthTransfer) // <-- тут я хз как сделать общий(common) тип для канала
 	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("watchTransfer: %w", err)
 	}
 
 	defer eventSub.Unsubscribe()
@@ -198,12 +198,12 @@ func (b *Bridge) listen() error {
 	for {
 		select {
 		case err := <-eventSub.Err():
-			return err
+			return fmt.Errorf("watching transfers: %w", err)
 		case event := <-eventChannel:
 			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
 			if err := b.sendEvent(&event.TransferEvent); err != nil {
-				return err
+				return fmt.Errorf("send event: %w", err)
 			}
 		}
 	}
