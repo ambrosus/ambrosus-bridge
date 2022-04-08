@@ -25,13 +25,13 @@ func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 
 	data, err := os.ReadFile(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read file %v: %w", epochDataFilePath, err)
 	}
 
 	var epochData *ethash.EpochData
 
 	if err := json.Unmarshal(data, &epochData); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
 	return epochData, nil
