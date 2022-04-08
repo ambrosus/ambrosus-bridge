@@ -243,7 +243,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
 	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
-		return err
+		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
 
 	if block.Hash(true) != event.Raw.BlockHash {
