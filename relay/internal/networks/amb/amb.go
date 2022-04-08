@@ -105,10 +105,6 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}, nil
 }
 
-func (b *Bridge) Name() string {
-	return BridgeName
-}
-
 // GetLastEventId gets last contract event id.
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
@@ -149,7 +145,7 @@ func (b *Bridge) checkOldEvents() error {
 
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
-		return fmt.Errorf("GetLastEventId in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("GetLastEventId: %w", err)
 	}
 
 	i := big.NewInt(1)
@@ -212,7 +208,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return fmt.Errorf("GetMinSafetyBlocksNum in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
 	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
@@ -235,7 +231,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 
 	err = b.sideBridge.SubmitTransferAura(ambTransfer)
 	if err != nil {
-		return fmt.Errorf("SubmitTransferAura in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("SubmitTransferAura: %w", err)
 	}
 	return nil
 }

@@ -14,7 +14,7 @@ import (
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckPoWPoWProof, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return nil, fmt.Errorf("GetMinSafetyBlocksNum in %v: %w", b.sideBridge.Name(), err)
+		return nil, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 	blocks := make([]contracts.CheckPoWBlockPoW, 0, safetyBlocks+1)
 

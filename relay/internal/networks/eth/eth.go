@@ -96,10 +96,6 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	}, nil
 }
 
-func (b *Bridge) Name() string {
-	return BridgeName
-}
-
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
@@ -152,7 +148,7 @@ func (b *Bridge) checkOldEvents() error {
 
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
-		return fmt.Errorf("GetLastEventId in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("GetLastEventId: %w", err)
 	}
 
 	i := big.NewInt(1)
@@ -215,7 +211,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return fmt.Errorf("GetMinSafetyBlocksNum in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
 	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
@@ -243,7 +239,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
 	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
 	if err != nil {
-		return fmt.Errorf("SubmitTransferPoW in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("SubmitTransferPoW: %w", err)
 	}
 	return nil
 }
@@ -252,7 +248,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	epoch := blockNumber / 30000
 	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
 	if err != nil {
-		return fmt.Errorf("IsEpochSet in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("IsEpochSet: %w", err)
 	}
 	if isEpochSet {
 		return nil
@@ -266,7 +262,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 
 	err = b.sideBridge.SubmitEpochData(epochData)
 	if err != nil {
-		return fmt.Errorf("SubmitEpochData in %v: %w", b.sideBridge.Name(), err)
+		return fmt.Errorf("SubmitEpochData: %w", err)
 	}
 	return nil
 	// todo delete old epochs, generate new (if need)

@@ -113,7 +113,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
-		return nil, fmt.Errorf("GetValidatorSet on %v: %w", b.sideBridge.Name(), err)
+		return nil, fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
 	for i, event := range events {
@@ -212,7 +212,7 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contract
 func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
 	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
 	if err != nil {
-		return nil, fmt.Errorf("getLastProcessedBlockHash on %v: %w", b.sideBridge.Name(), err)
+		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
 	}
 
 	block, err := b.Client.BlockByHash(context.Background(), *blockHash)

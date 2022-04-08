@@ -15,7 +15,6 @@ var (
 )
 
 type Bridge interface {
-	Name() string
 	// GetLastEventId used by the other side of the bridge for synchronization
 	GetLastEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
