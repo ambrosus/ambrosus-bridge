@@ -59,7 +59,7 @@ func (b *Bridge) encodeTransferEvent(event *contracts.TransferEvent) (*contracts
 func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	receipts, err := ethereum.GetReceipts(b.Client, event.Log().BlockHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetReceipts: %w", err)
 	}
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
