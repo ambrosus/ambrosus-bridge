@@ -30,22 +30,22 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 
 	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
 	}
 
 	vsChangeEvents, err := b.getVSChangeEvents(transferEvent)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getVSChangeEvents: %w", err)
 	}
 	vsChanges, err := b.encodeVSChangeEvents(blocksMap, vsChangeEvents)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encodeVSChangeEvents: %w", err)
 	}
 
 	// add safety blocks after each event block
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
 	}
 
 	blockNums := sortedKeys(blocksMap)
@@ -68,7 +68,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 				// save block as safety
 				encodedBlockWithType, err := b.encodeBlockWithType(targetBlockNum, blType)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("encode block as safety: %w", err)
 				}
 				blocksMap[targetBlockNum] = *encodedBlockWithType
 			}
