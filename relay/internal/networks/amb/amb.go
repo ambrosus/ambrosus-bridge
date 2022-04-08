@@ -139,7 +139,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Msgf("listen error: %s", err.Error())
+			b.logger.Error().Err(err)
 		}
 	}
 }
