@@ -54,17 +54,17 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	}
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json encode request: %w", err)
 	}
 	resp, err := http.Post(b.config.HttpURL, "application/json", payloadBuf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http post: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json decode response: %w", err)
 	}
 
 	// Check if result is empty
