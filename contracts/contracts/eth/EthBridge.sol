@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "hardhat/console.sol";
 import "../common/CommonBridge.sol";
-import "../common/checks/CheckAura.sol";
 import "../common/CommonStructs.sol";
+import "../checks/CheckAura.sol";
+import "hardhat/console.sol";
 
 
 contract EthBridge is CommonBridge, CheckAura {

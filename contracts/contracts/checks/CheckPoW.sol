@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../CommonStructs.sol";
+import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
-import "./Ethash.sol";
+import "./CheckPoW_Ethash.sol";
 import "hardhat/console.sol";
 
 contract CheckPoW is CheckReceiptsProof, Ethash  {
