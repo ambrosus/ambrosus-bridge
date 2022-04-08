@@ -191,7 +191,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.TransferEvent) ([]*contracts
 func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	receipts, err := ethereum.GetReceipts(b.Client, event.Log().BlockHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetReceipts: %w", err)
 	}
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
@@ -199,11 +199,11 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contracts.CheckAuraBlockAura, error) {
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("HeaderByNumber: %w", err)
 	}
 	encodedBlock, err := EncodeBlock(block)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encode: %w", err)
 	}
 	encodedBlock.Type |= type_
 	return encodedBlock, nil
@@ -212,12 +212,12 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contract
 func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
 	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getLastProcessedBlockHash on %v: %w", b.sideBridge.Name(), err)
 	}
 
 	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get block by hash: %w", err)
 	}
 
 	return block.Number(), nil
