@@ -46,7 +46,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 func (b *Bridge) encodeTransferEvent(event *contracts.TransferEvent) (*contracts.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getProof: %w", err)
 	}
 
 	return &contracts.CommonStructsTransferProof{
