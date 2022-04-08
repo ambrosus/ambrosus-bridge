@@ -150,7 +150,6 @@ describe("Common tests", () => {
 
     it("remove tokens", async () => {
       await commonBridge.tokensAdd(token1, token2);
-
       await commonBridge.tokensRemove(token1);
 
       expect(await commonBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
@@ -158,7 +157,6 @@ describe("Common tests", () => {
 
     it("remove tokens batch", async () => {
       await commonBridge.tokensAddBatch([token1, token2], [token3, token4]);
-
       await commonBridge.tokensRemoveBatch([token1, token2]);
 
       expect(await commonBridge.tokenAddresses(token1)).eq(ethers.constants.AddressZero);
@@ -262,7 +260,6 @@ describe("Common tests", () => {
       await ambBridge.pause();
       await expect(ambBridge.removeLockedTransfers(0)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
     });
-
   });
 
 
@@ -286,18 +283,15 @@ describe("Common tests", () => {
     await ethBridge.CheckSignatureTest(needAddress, hash, signature)
   });
 
-
-  let currentTimeframe = Math.floor(Date.now() / 14400);
-  const nextTimeframe = async (amount = 1) => {
-    currentTimeframe += amount;
-    const timestamp = currentTimeframe * 14400 + amount * 14400;
-    await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
-  };
-
-
-  const getEvents = async (receipt: any) => {
-    return receipt.events?.filter((x: any) => {
-      return x.event == "Transfer";
-    });
-  };
 });
+
+
+let currentTimeframe = Math.floor(Date.now() / 14400);
+const nextTimeframe = async (amount = 1) => {
+  currentTimeframe += amount;
+  const timestamp = currentTimeframe * 14400 + amount * 14400;
+  await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
+};
+
+const getEvents = async (receipt: any) =>
+  receipt.events?.filter((x: any) => x.event == "Transfer");
