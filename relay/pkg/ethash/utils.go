@@ -44,8 +44,8 @@ func bytesToUint32Slice(b []byte) []uint32 {
 }
 
 func (e *Ethash) populateMerkle(epoch uint64, mt *merkle.DatasetTree) (int, int, error) {
-	e.logger.Debug("Populating merkle tree")
-	defer e.logger.Debug("Finish populating merkle tree")
+	e.logger.Debug().Msg("Populating merkle tree")
+	defer e.logger.Debug().Msg("Finish populating merkle tree")
 
 	dag, err := e.getDag(epoch)
 	if err != nil {

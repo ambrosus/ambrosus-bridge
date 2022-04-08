@@ -7,13 +7,15 @@ import (
 	"path/filepath"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash/merkle"
+
 	"github.com/ethereum/go-ethereum/common/math"
-	"github.com/ethereum/go-ethereum/log"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 type Ethash struct {
 	dir    string
-	logger log.Logger
+	logger zerolog.Logger
 
 	keepPrevEpochs uint64
 	genNextEpochs  uint64
@@ -26,11 +28,10 @@ type Ethash struct {
 }
 
 func New(dir string, keepPrevEpochs, genNextEpochs uint64) *Ethash {
-	logger := log.New() // todo
-	logger.SetHandler(log.StdoutHandler)
+	logger := log.With().Str("pkg", "ethash").Logger()
 
 	if dir == "" {
-		logger.Info("No ethash dir provided, working in memory only")
+		logger.Info().Msg("No ethash dir provided, working in memory only")
 	}
 
 	return &Ethash{
@@ -56,7 +57,7 @@ type EpochData struct {
 func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
 	defer e.UpdateCache(epoch)
 
-	e.logger.Debug("GetEpochData", "epoch", epoch)
+	e.logger.Debug().Uint64("epoch", epoch).Msg("Getting epoch data")
 
 	mt := merkle.NewDatasetTree()
 	fullSize, branchDepth, err := e.populateMerkle(epoch, mt)
@@ -76,7 +77,7 @@ func (e *Ethash) GetBlockLookups(blockNumber, nonce uint64, hashNoNonce [32]byte
 	ep := epoch(blockNumber)
 	defer e.UpdateCache(ep)
 
-	e.logger.Debug("GetBlockLookups", "blockNumber", blockNumber)
+	e.logger.Debug().Uint64("blockNumber", blockNumber).Msg("Getting block lookups")
 
 	indices, err := e.getVerificationIndices(ep, hashNoNonce, nonce)
 	if err != nil {
@@ -96,7 +97,8 @@ func (e *Ethash) GetBlockLookups(blockNumber, nonce uint64, hashNoNonce [32]byte
 
 func (e *Ethash) UpdateCache(currentEpoch uint64) {
 	if e.genNextEpochs != 0 {
-		e.logger.Debug("Generating data for next epochs")
+		e.logger.Debug().Msg("Generating data for next epochs")
+
 		go func() {
 			for i := uint64(0); i < e.genNextEpochs; i++ {
 				_, _ = e.getDag(currentEpoch + i + 1)
@@ -108,7 +110,9 @@ func (e *Ethash) UpdateCache(currentEpoch uint64) {
 	if of { // fucking golang, 21 century already -_-
 		ep = 0
 	}
-	e.logger.Debug("Deleting data for older epochs", "older than", ep)
+
+	e.logger.Debug().Msgf("Deleting data for older epochs older than %d", ep)
+
 	for ; ep > 0; ep-- {
 		if e.useFs() {
 			_ = os.Remove(e.pathToDag(ep))

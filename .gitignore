@@ -132,6 +132,7 @@ deployments/
 # Mac OS
 .DS_Store
 
+relay/pkg/ethash/test/
 tests/amb/apollo*/chains
 tests/amb/apollo*/cache
 tests/amb/apollo*/signer

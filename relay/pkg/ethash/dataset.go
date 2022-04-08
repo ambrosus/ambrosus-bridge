@@ -19,13 +19,13 @@ const (
 )
 
 func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
-	e.logger.Debug("Get DAG", "epoch", epoch)
+	e.logger.Debug().Uint64("epoch", epoch).Msg("Getting DAG")
 
 	e.dagKLock.Lock(epoch)
 	defer e.dagKLock.Unlock(epoch)
 
 	if dag, ok := e.dags[epoch]; ok {
-		e.logger.Debug("Loaded old ethash dag from cache")
+		e.logger.Debug().Msg("Loaded old ethash dag from cache")
 		return dag, nil
 	}
 
@@ -33,7 +33,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 		// Try to load the file from disk and memory map it
 		dag, err := os.ReadFile(e.pathToDag(epoch))
 		if err == nil {
-			e.logger.Debug("Loaded old ethash dag from disk")
+			e.logger.Debug().Msg("Loaded old ethash dag from disk")
 			e.dags[epoch] = dag
 			return dag, nil
 		}
@@ -47,7 +47,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 
 	if e.useFs() {
 		if err = dumpToFile(e.pathToDag(epoch), dag); err != nil {
-			e.logger.Warn("Failed to save dag file", "err", err)
+			e.logger.Warn().Err(err).Msg("Failed to save dag file")
 		}
 	}
 
@@ -56,7 +56,7 @@ func (e *Ethash) getDag(epoch uint64) ([]byte, error) {
 }
 
 func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
-	e.logger.Info("Start generating ethash dag", "epoch", epoch)
+	e.logger.Info().Uint64("epoch", epoch).Msg("Start generating ethash dag")
 
 	start := time.Now()
 	progress := uint64(0)
@@ -70,15 +70,19 @@ func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
 	go func() {
 		ticker := time.NewTicker(time.Second)
 		for ; progress < size/64; <-ticker.C {
-			e.logger.Info("Generating DAG in progress", "epoch", epoch,
-				"percentage", progress*hashBytes*100/size, "elapsed", common.PrettyDuration(time.Since(start)))
+			e.logger.Info().
+				Uint64("epoch", epoch).
+				Uint64("percentage", progress*hashBytes*100/size).
+				Str("elapsed", common.PrettyDuration(time.Since(start)).String()).
+				Msg("Generating DAG in progress")
 		}
 	}()
 
 	buffer := make([]byte, size)
 	generateDataset(buffer, bytesToUint32Slice(cache), &progress)
 
-	e.logger.Info("Generated ethash dag", "elapsed", common.PrettyDuration(time.Since(start)))
+	e.logger.Info().Str("elapsed", common.PrettyDuration(time.Since(start)).String()).Msg("Generated ethash dag")
+
 	return buffer, nil
 }
 
