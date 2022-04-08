@@ -30,7 +30,7 @@ export const options = {gasLimit: 800000};  // amb & eth gas estimator broken
 
 //
 
-export function setContractAddressesYml(ambAddress: string, ethAddress: string) {
+export function saveContractAddressesInCfg(ambAddress: string, ethAddress: string) {
   config.network.amb.contractAddr = ambAddress;
   config.network.eth.contractAddr = ethAddress;
   fs.writeFileSync("../../../relay/configs/integr.json", JSON.stringify(config));

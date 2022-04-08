@@ -1,6 +1,6 @@
 import fs from "fs";
 import {deploy, deployAmbBridge, deployEthBridge} from "../deployBridges";
-import {ambSigner, ethSigner, relayAddress, setContractAddressesYml, vsContractAddress, w, options} from "./cfg";
+import {ambSigner, ethSigner, relayAddress, saveContractAddressesInCfg, vsContractAddress, w, options} from "./cfg";
 import path from "path";
 import {ethers} from "hardhat";
 
@@ -46,7 +46,7 @@ async function main() {
   // todo use real erc20 contract
   // todo set bridge addresses to erc20 contracts
 
-  setContractAddressesYml(ambBridge.address, ethBridge.address);
+  saveContractAddressesInCfg(ambBridge.address, ethBridge.address);
 }
 
 main().then(() => {
