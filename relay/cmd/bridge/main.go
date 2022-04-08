@@ -56,6 +56,8 @@ func main() {
 		if err = metric.ServeEndpoint(cfg.Prometheus.Ip, cfg.Prometheus.Port); err != nil {
 			log.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
 		}
+	} else {
+		select {}
 	}
 }
 
