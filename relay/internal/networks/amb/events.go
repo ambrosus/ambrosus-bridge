@@ -113,13 +113,13 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GetValidatorSet on %v: %w", b.sideBridge.Name(), err)
 	}
 
 	for i, event := range events {
 		encodedEvent, err := b.encodeVSChangeEvent(prevSet, event)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("encodeVSChangeEvent: %w", err)
 		}
 		vsChanges[i] = *encodedEvent
 		prevSet = event.NewSet
@@ -130,7 +130,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 		} else {
 			encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeVSChange)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("encode block as vs change: %w", err)
 			}
 			encodedBlockWithType.DeltaIndex = int64(i)
 			blocks[event.Raw.BlockNumber] = *encodedBlockWithType
