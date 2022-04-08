@@ -215,33 +215,37 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return err
+		return fmt.Errorf("GetMinSafetyBlocksNum in %v: %w", b.sideBridge.Name(), err)
 	}
 
 	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
-		return err
+		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.isEventRemoved(event); err != nil {
-		return err
+		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
 	ambTransfer, err := b.getBlocksAndEvents(event)
 	if err != nil {
-		return err
+		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
 
 	for _, blockNum := range []uint64{event.Raw.BlockNumber, event.Raw.BlockNumber + safetyBlocks} {
 		if err := b.checkEpochData(blockNum, event.EventId); err != nil {
-			return err
+			return fmt.Errorf("checkEpochData on block %v: %w", blockNum, err)
 		}
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
-	return b.sideBridge.SubmitTransferPoW(ambTransfer)
+	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
+	if err != nil {
+		return fmt.Errorf("SubmitTransferPoW in %v: %w", b.sideBridge.Name(), err)
+	}
+	return nil
 }
 
 func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
