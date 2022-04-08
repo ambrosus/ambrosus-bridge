@@ -2,6 +2,7 @@ package ethereum
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -14,7 +15,7 @@ import (
 func GetReceipts(client *ethclient.Client, blockHash common.Hash) ([]*types.Receipt, error) {
 	txsCount, err := client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get transaction count: %w", err)
 	}
 
 	receipts := make([]*types.Receipt, txsCount)
@@ -25,11 +26,11 @@ func GetReceipts(client *ethclient.Client, blockHash common.Hash) ([]*types.Rece
 		errGroup.Go(func() error {
 			tx, err := client.TransactionInBlock(context.Background(), blockHash, i)
 			if err != nil {
-				return err
+				return fmt.Errorf("get transaction in block: %w", err)
 			}
 			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
 			if err != nil {
-				return err
+				return fmt.Errorf("get transaction receipt: %w", err)
 			}
 
 			receipts[i] = receipt
