@@ -142,12 +142,12 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
 	address, index, err := deltaVS(prevSet, event.NewSet)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("deltaVS: %w", err)
 	}
 
 	proof, err := b.getProof(event)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("getProof: %w", err)
 	}
 
 	return &contracts.CheckAuraValidatorSetProof{
