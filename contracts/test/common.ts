@@ -68,7 +68,7 @@ describe("Common tests", () => {
 
       it("token balance changed", async () => {
         await expect(() => commonBridge.withdraw(mockERC20.address, user, 1, {value: 1000}))
-            .to.changeTokenBalance(mockERC20, ownerS, -1);
+          .to.changeTokenBalance(mockERC20, ownerS, -1);
       });
 
       it("withdraw event_id increased", async () => {
@@ -175,35 +175,74 @@ describe("Common tests", () => {
   });
 
 
-  it("Test Transfer lock/unlock", async () => {
-    await mockERC20.mint(ambBridge.address, 900);
+  describe("Test Transfer lock/unlock/remove", () => {
+    beforeEach(async () => {
+      const data0 = [[mockERC20.address, user, 10]];
+      const data1 = [[mockERC20.address, user, 20], [mockERC20.address, user, 30]];
 
-    let data1 = [
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 36],
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 37],
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 38],
-    ];
+      await ambBridge.lockTransfersTest(data0, 0);
+      await ambBridge.lockTransfersTest(data1, 1);
+    });
 
-    let data2 = [
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 39],
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 40],
-      [mockERC20.address, "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4", 41],
-    ];
+    it("locked correctly", async () => {
+      const d0 = await ambBridge.getLockedTransferTest(0);
+      const d1 = await ambBridge.getLockedTransferTest(1);
 
-    await ambBridge.connect(relayS).lockTransfersTest(data1, 1);
-    await ambBridge.connect(relayS).lockTransfersTest(data2, 2);
+      expect(d0.transfers[0].amount).eq(10)
+      expect(d1.transfers[0].amount).eq(20)
+      expect(d1.transfers[1].amount).eq(30)
+    });
 
-    for (let i = 0; i < 3; i++) {
-      let answer = await ambBridge.getLockedTransferTest(1, i);
-      expect(answer[0]).eq(data1[i][0]); // Check tokenAddress is correct
-      expect(answer[1]).eq(data1[i][1]); // Check toAddress is correct
-      expect(parseInt(answer[2]._hex, 16)).eq(data1[i][2]); // Check amount is correct
-    }
+    it("unlock", async () => {
+      await nextTimeframe();
 
-    await nextTimeframe();
+      await expect(() => ambBridge.unlockTransfers(0))
+        .to.changeTokenBalance(mockERC20, userS, 10);
+    });
 
-    await ambBridge.connect(relayS).unlockTransfersTest(1);
-    await ambBridge.connect(relayS).unlockTransfersTest(2);
+    it("unlock before endTime passed", async () => {
+      await expect(ambBridge.unlockTransfers(0))
+        .to.be.revertedWith("lockTime has not yet passed")
+    });
+
+    it("unlock not oldest", async () => {
+      await nextTimeframe();
+
+      await expect(ambBridge.unlockTransfers(1))
+        .to.be.revertedWith("can unlock only oldest event")
+    });
+
+    it("unlock batch", async () => {
+      await nextTimeframe();
+
+      await expect(() => ambBridge.unlockTransfersBatch())
+        .to.changeTokenBalance(mockERC20, userS, 10+20+30);
+    });
+
+    it("remove transfers from 0", async () => {
+      await ambBridge.pause();
+      await ambBridge.removeLockedTransfers(0);
+
+      expect((await ambBridge.getLockedTransferTest(0)).transfers).to.be.empty;
+      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
+    });
+
+    it("remove transfers from 1", async () => {
+      await ambBridge.pause();
+      await ambBridge.removeLockedTransfers(1);
+
+      expect((await ambBridge.getLockedTransferTest(0)).transfers).to.not.be.empty;
+      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
+    });
+
+    it("remove unlocked", async () => {
+      await nextTimeframe();
+      await ambBridge.unlockTransfers(0);
+
+      await ambBridge.pause();
+      await expect(ambBridge.removeLockedTransfers(0)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
+    });
+
   });
 
 

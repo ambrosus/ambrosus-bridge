@@ -11,17 +11,12 @@ contract AmbBridgeTest is AmbBridge {
     )
     AmbBridge(args, ambWrapper) {}
 
-    function getLockedTransferTest(uint event_id, uint index) public view returns (address, address, uint) {
-        CommonStructs.Transfer storage t = lockedTransfers[event_id].transfers[index];
-        return (t.tokenAddress, t.toAddress, t.amount);
+    function getLockedTransferTest(uint event_id) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[event_id];
     }
 
     function lockTransfersTest(CommonStructs.Transfer[] memory events, uint event_id) public {
         lockTransfers(events, event_id);
-    }
-
-    function unlockTransfersTest(uint event_id) public {
-        unlockTransfers(event_id);
     }
 
     function blockHashTest(BlockPoW memory block_) public pure returns (bytes32) {
