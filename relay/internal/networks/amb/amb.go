@@ -212,28 +212,32 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
-		return err
+		return fmt.Errorf("GetMinSafetyBlocksNum in %v: %w", b.sideBridge.Name(), err)
 	}
 
 	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
-		return err
+		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.isEventRemoved(event); err != nil {
-		return err
+		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
 	ambTransfer, err := b.getBlocksAndEvents(event)
 	if err != nil {
-		return err
+		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
 
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 
-	return b.sideBridge.SubmitTransferAura(ambTransfer)
+	err = b.sideBridge.SubmitTransferAura(ambTransfer)
+	if err != nil {
+		return fmt.Errorf("SubmitTransferAura in %v: %w", b.sideBridge.Name(), err)
+	}
+	return nil
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
