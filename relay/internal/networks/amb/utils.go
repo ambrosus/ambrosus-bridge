@@ -17,12 +17,12 @@ import (
 func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
 	if err != nil {
-		return err
+		return fmt.Errorf("wait mined: %w", err)
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		if err = ethereum.GetFailureReason(b.Client, b.auth, tx); err != nil {
-			return parseError(err)
+			return fmt.Errorf("GetFailureReason: %w", parseError(err))
 		}
 	}
 
