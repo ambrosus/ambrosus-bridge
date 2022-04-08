@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
+	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -38,13 +40,9 @@ func (b *Bridge) getFailureReasonViaCall(txErr error, funcName string, params ..
 	return txErr
 }
 
-type JsonError interface {
-	ErrorData() interface{}
-}
-
 func parseError(err error) error {
-	if jsonErr, ok := err.(JsonError); ok {
-		errStr := jsonErr.ErrorData().(string)
+	if dataError, ok := err.(rpc.DataError); ok {
+		errStr := dataError.ErrorData().(string)
 		decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
 		if err != nil {
 			return errors.New(errStr)
@@ -55,6 +53,10 @@ func parseError(err error) error {
 }
 
 func decodeRevertMessage(errStr string) (string, error) {
+	if len(errStr) < 138 {
+		return fmt.Sprintf("probably runtime error: %s", errStr), nil
+	}
+
 	res := errStr[138:] // https://github.com/authereum/eth-revert-reason/blob/e33f4df82426a177dbd69c0f97ff53153592809b/index.js#L93
 	res = strings.TrimRight(res, "0")
 	// If the res is an odd number of characters, add a trailing 0
