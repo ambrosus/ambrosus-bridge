@@ -110,7 +110,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 
 	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
 
 	if logs.Next() {
