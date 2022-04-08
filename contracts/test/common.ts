@@ -95,6 +95,47 @@ describe("Common tests", () => {
     });
   });
 
+
+  describe('Test wrap_withdraw in AmbBridge', async () => {
+
+    it('Test wrap part', async () => {
+      const fee = +await ambBridge.fee();
+
+      await ambBridge.wrap_withdraw(user, {value: fee + 50});
+
+      await expect(() => ambBridge.wrap_withdraw(user, {value: fee + 50}))
+        .to.changeTokenBalance(wAmb, ambBridge, 50);
+    });
+
+    it('Test withdraw part', async () => {
+      const fee = +await ambBridge.fee();
+
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await nextTimeframe();
+
+      // will catch previous txs (because nextTimeframe happened)
+      let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await nextTimeframe();
+
+      // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
+      let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+
+      let receipt1Amb: ContractReceipt = await tx1Amb.wait();
+      let receipt2Amb: ContractReceipt = await tx2Amb.wait();
+
+      let events1Amb: any = await getEvents(receipt1Amb);
+      let events2Amb: any = await getEvents(receipt2Amb);
+
+      // Checking that event_id increased
+      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+    });
+  });
+
+
   describe("Token addresses", () => {
     it("add tokens", async () => {
       await commonBridge.tokensAdd(token1, token2);
@@ -271,44 +312,6 @@ describe("Common tests", () => {
     await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
   };
 
-  describe('Test wrap_withdraw in AmbBridge', async () => {
-
-    it('Test wrap part', async () => {
-      const fee = +await ambBridge.fee();
-
-      await ambBridge.wrap_withdraw(user, {value: fee + 50});
-
-      await expect(() => ambBridge.wrap_withdraw(user, {value: fee + 50}))
-        .to.changeTokenBalance(wAmb, ambBridge, 50);
-    });
-
-    it('Test withdraw part', async () => {
-      const fee = +await ambBridge.fee();
-
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await nextTimeframe();
-
-      // will catch previous txs (because nextTimeframe happened)
-      let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await nextTimeframe();
-
-      // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-
-      let receipt1Amb: ContractReceipt = await tx1Amb.wait();
-      let receipt2Amb: ContractReceipt = await tx2Amb.wait();
-
-      let events1Amb: any = await getEvents(receipt1Amb);
-      let events2Amb: any = await getEvents(receipt2Amb);
-
-      // Checking that event_id increased
-      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
-    });
-  });
 
   const getEvents = async (receipt: any) => {
     return receipt.events?.filter((x: any) => {
