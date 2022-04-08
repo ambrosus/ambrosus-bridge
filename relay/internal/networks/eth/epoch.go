@@ -42,16 +42,16 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 
 	data, err := ethash.GenerateEpochData(epoch)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("generate epoch data: %w", err)
 	}
 
 	file, err := json.MarshalIndent(data, "", " ")
 	if err != nil {
-		return data, err
+		return data, fmt.Errorf("marshal: %w", err)
 	}
 
 	if err := os.WriteFile(fmt.Sprintf(epochDataFilePath, epoch), file, 0644); err != nil {
-		return data, err
+		return data, fmt.Errorf("write file %v: %w", epochDataFilePath, err)
 	}
 
 	b.logger.Info().Msgf("Finish creating '%d.json' epoch data file...", epoch)
