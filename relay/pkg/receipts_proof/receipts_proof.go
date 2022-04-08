@@ -38,17 +38,17 @@ func CheckProof(proof [][]byte, proofElements [][]byte) common.Hash {
 func CalcProof(receipts []*types.Receipt, log *types.Log, proofElements [][]byte) ([][]byte, error) {
 	rlpLog, err := rlp.EncodeToBytes(log)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp encode log: %w", err)
 	}
 
 	logResult, err := helpers.BytesSplit(rlpLog, proofElements)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("split log: %w", err)
 	}
 
 	trieResult, err := encodeTrie(receipts, rlpLog)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("encodetrie: %w", err)
 	}
 
 	/*
