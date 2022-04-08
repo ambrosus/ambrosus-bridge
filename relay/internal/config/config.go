@@ -25,26 +25,26 @@ type (
 	}
 
 	Network struct {
-		HttpURL      string `mapstructure:"http-url"`
-		WsURL        string `mapstructure:"ws-url"`
-		ContractAddr string `mapstructure:"contract-addr"`
+		HttpURL      string `mapstructure:"httpUrl"`
+		WsURL        string `mapstructure:"wsUrl"`
+		ContractAddr string `mapstructure:"contractAddr"`
 		PrivateKey   *ecdsa.PrivateKey
 	}
 
 	AMBConfig struct {
 		Network
-		VSContractAddr string `mapstructure:"vs-contract-addr"`
+		VSContractAddr string `mapstructure:"vsContractAddr"`
 	}
 
 	ETHConfig struct {
 		Network
-		EpochLength uint64 `mapstructure:"epoch-length"`
+		EpochLength uint64 `mapstructure:"epochLength"`
 	}
 
 	TelegramLogger struct {
 		Enable bool   `mapstructure:"enable"`
 		Token  string `mapstructure:"token"`
-		ChatId int    `mapstructure:"chat-id"`
+		ChatId int    `mapstructure:"chatId"`
 	}
 
 	Prometheus struct {
@@ -84,6 +84,7 @@ func parseConfigFile() error {
 
 	dir, file := filepath.Split(configPath)
 
+	viper.SetConfigType("json")
 	viper.AddConfigPath(dir)
 	viper.SetConfigName(file)
 
@@ -104,7 +105,7 @@ func unmarshal(cfg *Config) error {
 		return err
 	}
 
-	if err := viper.UnmarshalKey("external-logger.telegram", &cfg.Telegram); err != nil {
+	if err := viper.UnmarshalKey("externalLogger.telegram", &cfg.Telegram); err != nil {
 		return err
 	}
 

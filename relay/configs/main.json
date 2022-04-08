@@ -1,0 +1,29 @@
+{
+    "network": {
+        "amb": {
+            "httpUrl": "https://network.ambrosus-dev.io",
+            "wsUrl": "wss://network.ambrosus-dev.io",
+            "contractAddr": "",
+            "vsContractAddr": ""
+        },
+        "eth": {
+            "httpUrl": "https://rinkeby.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://rinkeby.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "",
+            "epochLength": 3,
+            "ethashDir": ""
+        }
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "",
+            "chatId": ""
+        }
+    },
+    "prometheus": {
+        "enable": true,
+        "ip": "localhost",
+        "port": "9091"
+    }
+}

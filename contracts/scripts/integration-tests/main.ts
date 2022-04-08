@@ -1,7 +1,7 @@
 import chai from "chai";
 import {ethers} from "hardhat";
 import 'mocha';
-import {ambSigner, ethSigner, loadYaml, relayAddress, w, options} from "./cfg";
+import {ambSigner, ethSigner, relayAddress, w, options} from "./cfg";
 import mockTokens from "./mockTokensAddresses.json";
 import {Contract, providers} from "ethers";
 
@@ -167,9 +167,9 @@ function sleep(ms: number) {
 }
 
 function getContractAddressYml() {
-  const yaml = loadYaml()
+  const json = require("../../../relay/configs/integr.json");
   return {
-    ambAddress: yaml.network.amb["contract-addr"],
-    ethAddress: yaml.network.eth["contract-addr"]
+    ambAddress: json.network.amb["contractAddr"],
+    ethAddress: json.network.eth["contractAddr"]
   };
 }

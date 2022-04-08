@@ -1,0 +1,29 @@
+{
+    "network": {
+        "amb": {
+            "httpUrl": "http://127.0.0.1:8545",
+            "wsUrl": "ws://127.0.0.1:8546",
+            "contractAddr": "will be set by deploy script",
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
+        },
+        "eth": {
+            "httpUrl": "http://127.0.0.1:8502",
+            "wsUrl": "ws://127.0.0.1:3434",
+            "contractAddr": "will be set by deploy script",
+            "epochLength": 3,
+            "ethashDir": ""
+        }
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": false,
+            "token": "",
+            "chatId": ""
+        }
+    },
+    "prometheus": {
+        "enable": false,
+        "ip": "localhost",
+        "port": "9090"
+    }
+}

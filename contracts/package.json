@@ -36,7 +36,6 @@
     "hardhat-abi-exporter": "^2.8.0",
     "hardhat-gas-reporter": "^1.0.4",
     "istanbul": "^0.4.5",
-    "js-yaml": "^4.1.0",
     "mocha": "^8.4.0",
     "prettier": "^2.3.0",
     "rlp": "^3.0.0",

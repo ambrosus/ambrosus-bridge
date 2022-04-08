@@ -1,17 +1,14 @@
 import {ethers} from "hardhat";
 import fs from "fs";
 
-const yaml = require("js-yaml");
-
-const yamlPath = "../relay/configs/integr.yml";
-const config = loadYaml();
+import config from "../../../relay/configs/integr.json";
 
 //
 
 
 // websocket need for events subscribe
-const ambNet = new ethers.providers.WebSocketProvider(config.network.amb["ws-url"]);
-const ethNet = new ethers.providers.WebSocketProvider(config.network.eth["ws-url"]);
+const ambNet = new ethers.providers.WebSocketProvider(config.network.eth.wsUrl);
+const ethNet = new ethers.providers.WebSocketProvider(config.network.eth.wsUrl);
 
 
 // accounts with money; details in /tests/README.md
@@ -27,21 +24,16 @@ export const ethSigner = new ethers.Wallet(ethPk, ethNet);
 
 export const relayAddress = new ethers.Wallet(relayPk).address;
 
-export const vsContractAddress = config.network.amb["vs-contract-addr"];
+export const vsContractAddress = config.network.amb.vsContractAddr;
 
 export const options = {gasLimit: 800000};  // amb & eth gas estimator broken
 
 //
 
-export function loadYaml() {
-  return yaml.load(fs.readFileSync(yamlPath));
-}
-
-export function setContractAddressesYml(ambAddress: String, ethAddress: String) {
-  const data = loadYaml()
-  data.network.amb["contract-addr"] = ambAddress;
-  data.network.eth["contract-addr"] = ethAddress;
-  fs.writeFileSync(yamlPath, yaml.dump(data));
+export function saveContractAddressesInCfg(ambAddress: string, ethAddress: string) {
+  config.network.amb.contractAddr = ambAddress;
+  config.network.eth.contractAddr = ethAddress;
+  fs.writeFileSync("../../../relay/configs/integr.json", JSON.stringify(config));
 }
 
 // wait for transaction to be mined
