@@ -47,7 +47,7 @@ func (t *externalLogger) LogError(msg string) error {
 
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
-		return err
+		return fmt.Errorf("json encode request: %w", err)
 	}
 	resp, err := http.Post(url, "application/json", payloadBuf)
 	if err != nil {
@@ -57,7 +57,7 @@ func (t *externalLogger) LogError(msg string) error {
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return err
+		return fmt.Errorf("json decode response: %w", err)
 	}
 	if !respData.Ok {
 		return fmt.Errorf(respData.ErrorDescription)
