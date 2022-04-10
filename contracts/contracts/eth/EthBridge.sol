@@ -4,7 +4,6 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/CommonStructs.sol";
 import "../checks/CheckAura.sol";
-import "hardhat/console.sol";
 
 
 contract EthBridge is CommonBridge, CheckAura {
@@ -19,8 +18,6 @@ contract EthBridge is CommonBridge, CheckAura {
     CommonBridge(args)
     CheckAura(initialValidators)
     {
-        emitTestEvent(address(this), msg.sender, 10, true);
-
         validatorSetAddress = validatorSetAddress_;
         lastProcessedBlock = lastProcessedBlock_;
     }
