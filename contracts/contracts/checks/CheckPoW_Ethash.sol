@@ -192,6 +192,14 @@ contract Ethash is SHA3_512 {
     constructor() {
     }
 
+    struct EthashCacheOptData {
+        uint[512]    merkleNodes;
+        uint         fullSizeIn128Resultion;
+        uint         branchDepth;
+    }
+
+    mapping(uint=>EthashCacheOptData) epochData;
+
     function fnv( uint v1, uint v2 ) pure internal returns(uint) {
         return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
     }
@@ -288,17 +296,6 @@ contract Ethash is SHA3_512 {
         return leaf;
     }
 
-    function toBE( uint x ) pure internal returns(uint) {
-        uint y = 0;
-        for( uint i = 0 ; i < 32 ; i++ ) {
-            y = y * 256;
-            y += (x & 0xFF);
-            x = x / 256;
-        }
-
-        return y;
-
-    }
 
     function computeSha3( uint[16] memory s, uint[8] memory cmix ) pure internal returns(uint) {
         uint s0 = s[0] + s[1] * (2**32) + s[2] * (2**64) + s[3] * (2**96) +
@@ -312,7 +309,7 @@ contract Ethash is SHA3_512 {
 
 
         /* god knows why need to convert to big endian */
-        return uint( keccak256(abi.encodePacked(toBE(s0),toBE(s1),toBE(c))) );
+        return uint( keccak256(abi.encodePacked(reverseBytes(s0),reverseBytes(s1),reverseBytes(c))) );
     }
 
 
@@ -345,24 +342,14 @@ contract Ethash is SHA3_512 {
     }
 
     function reverseBytes( uint input ) pure internal returns(uint) {
-        uint result = 0;
+        uint result;
         for(uint i = 0 ; i < 32 ; i++ ) {
-            result = result * 256;
-            result += input & 0xff;
-
-            input /= 256;
+            result = (result << 8) + (input & 0xff);
+            input = input >> 8;
         }
-
         return result;
     }
 
-    struct EthashCacheOptData {
-        uint[512]    merkleNodes;
-        uint         fullSizeIn128Resultion;
-        uint         branchDepth;
-    }
-
-    mapping(uint=>EthashCacheOptData) epochData;
 
     function isEpochDataSet( uint epochIndex ) public view returns(bool) {
         return epochData[epochIndex].fullSizeIn128Resultion != 0;
@@ -394,11 +381,11 @@ contract Ethash is SHA3_512 {
 
     function getMerkleLeave( uint epochIndex, uint p ) view internal returns(uint) {
         uint rootIndex = uint(p >> epochData[epochIndex].branchDepth);
-        uint expectedRoot = epochData[epochIndex].merkleNodes[(rootIndex/2)];
-        if( (rootIndex % 2) == 0 ) expectedRoot = expectedRoot & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-        else expectedRoot = expectedRoot / (2**128);
+        uint expectedRoot = epochData[epochIndex].merkleNodes[(rootIndex>>1)];
 
-        return expectedRoot;
+        if( (rootIndex % 2) == 0 )
+            return expectedRoot & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+        return expectedRoot >> 128;
     }
 
     function hashimoto( bytes32 header,
@@ -407,24 +394,20 @@ contract Ethash is SHA3_512 {
         uint[] memory witnessForLookup,
         uint          epochIndex ) private view returns(uint) {
 
-        uint[16] memory s;
+        uint[16] memory s = computeS(uint(header), nonceLe);
         uint[32] memory mix;
         uint[8]  memory cmix;
 
-        uint[2]  memory depthAndFullSize = [epochData[epochIndex].branchDepth,
-        epochData[epochIndex].fullSizeIn128Resultion];
+
+        uint depth = epochData[epochIndex].branchDepth;
+        uint fullSize = epochData[epochIndex].fullSizeIn128Resultion;
 
         uint i;
         uint j;
 
-        if( ! isEpochDataSet( epochIndex ) ) return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE;
-
-        if( depthAndFullSize[1] == 0 ) {
-            return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
-        }
+        require(fullSize != 0, "EpochData not set");
 
 
-        s = computeS(uint(header), nonceLe);
         for( i = 0 ; i < 16 ; i++ ) {
             assembly {
                 let offset := mul(i,0x20)
@@ -438,14 +421,14 @@ contract Ethash is SHA3_512 {
         }
 
         for( i = 0 ; i < 64 ; i++ ) {
-            uint p = fnv( i ^ s[0], mix[i % 32]) % depthAndFullSize[1];
+            uint p = fnv( i ^ s[0], mix[i % 32]) % fullSize;
 
             // console.log(computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0]));
             // console.log(getMerkleLeave( epochIndex, p ));
 
-            if( computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0] )  != getMerkleLeave( epochIndex, p ) ) {
+            if( computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depth )  != getMerkleLeave( epochIndex, p ) ) {
                 // PoW failed
-                return 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
+                revert("PoW failed");
             }
 
             for( j = 0 ; j < 8 ; j++ ) {
@@ -534,9 +517,7 @@ contract Ethash is SHA3_512 {
             cmix[i/4] = (fnv(fnv(fnv(mix[i], mix[i+1]), mix[i+2]), mix[i+3]));
         }
 
-        uint result = computeSha3(s,cmix);
-
-        return result;
+        return computeSha3(s,cmix);
 
     }
 
@@ -546,13 +527,7 @@ contract Ethash is SHA3_512 {
         uint epoch = blockNumber / EPOCH_LENGTH;
         uint ethash = hashimoto(rlpHeaderHashWithoutNonce, nonce, dataSetLookup, witnessForLookup, epoch);
 
-        if( ethash > (2**256-1)/difficulty) {
-
-            if( ethash == 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFE )
-                revert("Required epoch data-pow not set");
-            else revert("Ethash difficulty too low");
-
-        }
+        require(ethash <= (2**256-1)/difficulty, "Ethash difficulty too low");
     }
 
 }
