@@ -58,25 +58,6 @@ contract CommonBridge is AccessControl, Pausable {
         lockTime = args.lockTime;
     }
 
-
-    // todo remove
-    event Test(uint indexed a, address indexed b, string c, uint d);
-
-    function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount, bool transferEvent) public {
-        emit Test(1, address(this), "asd", 123);
-
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId, fee);
-
-        if (transferEvent) {
-            emit Transfer(outputEventId++, queue);
-            delete queue;
-        }
-
-        emit Test(2, address(msg.sender), "dfg", 456);
-    }
-
-
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         address tokenExternalAddress = tokenAddresses[tokenAmbAddress];
         require(tokenExternalAddress != address(0), "Unknown token address");
