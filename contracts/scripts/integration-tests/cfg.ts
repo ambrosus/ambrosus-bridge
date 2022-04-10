@@ -7,7 +7,7 @@ import config from "../../../relay/configs/integr.json";
 
 
 // websocket need for events subscribe
-const ambNet = new ethers.providers.WebSocketProvider(config.network.eth.wsUrl);
+const ambNet = new ethers.providers.WebSocketProvider(config.network.amb.wsUrl);
 const ethNet = new ethers.providers.WebSocketProvider(config.network.eth.wsUrl);
 
 
@@ -26,7 +26,7 @@ export const relayAddress = new ethers.Wallet(relayPk).address;
 
 export const vsContractAddress = config.network.amb.vsContractAddr;
 
-export const options = {gasLimit: 800000};  // amb & eth gas estimator broken
+export const options = {gasLimit: 6_000_000};  // amb & eth gas estimator broken
 
 //
 
