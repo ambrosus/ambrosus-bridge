@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./CommonStructs.sol";
-import "hardhat/console.sol";
 
 
 contract CommonBridge is AccessControl, Pausable {

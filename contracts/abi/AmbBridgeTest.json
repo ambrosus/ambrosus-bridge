@@ -156,37 +156,6 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "a",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "b",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "c",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "d",
-        "type": "uint256"
-      }
-    ],
-    "name": "Test",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
         "name": "event_id",
         "type": "uint256"
       },
@@ -514,7 +483,7 @@
     ],
     "name": "CheckPoW_",
     "outputs": [],
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -695,34 +664,6 @@
       }
     ],
     "name": "changeTimeframeSeconds",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenAmbAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "toAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "transferEvent",
-        "type": "bool"
-      }
-    ],
-    "name": "emitTestEvent",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1450,7 +1391,7 @@
     ],
     "name": "verifyEthash",
     "outputs": [],
-    "stateMutability": "view",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

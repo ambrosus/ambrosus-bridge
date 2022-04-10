@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
-import "hardhat/console.sol";
 /// @dev These contracts are used to verify Proof of Work within a smart contract.
 ///      The algorithms have been extracted from the implementation of smart pool (https://github.com/smartpool)
 contract SHA3_512 {
