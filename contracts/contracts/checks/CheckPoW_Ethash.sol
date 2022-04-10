@@ -200,6 +200,179 @@ contract Ethash is SHA3_512 {
 
     mapping(uint=>EthashCacheOptData) epochData;
 
+
+    function verifyPoW(uint blockNumber, bytes32 rlpHeaderHashWithoutNonce, uint nonce, uint difficulty,
+        uint[] memory dataSetLookup, uint[] memory witnessForLookup) internal view {
+
+        uint epoch = blockNumber / EPOCH_LENGTH;
+        uint ethash = hashimoto(rlpHeaderHashWithoutNonce, nonce, dataSetLookup, witnessForLookup, epoch);
+
+        require(ethash <= (2**256-1)/difficulty, "Ethash difficulty too low");
+    }
+
+    function isEpochDataSet( uint epochIndex ) public view returns(bool) {
+        return epochData[epochIndex].fullSizeIn128Resultion != 0;
+    }
+
+    function setEpochData(
+        uint epochNum,
+        uint fullSizeIn128Resultion,
+        uint branchDepth,
+        uint[] memory merkleNodes
+    ) public {
+
+        // we store only previous and current epochs
+        // so, delete second from the end epoch
+        if (epochNum >= 2)  // underflow check
+            delete epochData[epochNum - 2];
+
+
+        uint l = merkleNodes.length;
+        uint[512] storage nodes = epochData[epochNum].merkleNodes;
+
+        for( uint i = 0 ; i < l ; i++ ) {
+            nodes[i] = merkleNodes[i];
+        }
+
+        epochData[epochNum].fullSizeIn128Resultion = fullSizeIn128Resultion;
+        epochData[epochNum].branchDepth = branchDepth;
+    }
+
+
+    function hashimoto( bytes32 header,
+        uint          nonceLe,
+        uint[] memory dataSetLookup,
+        uint[] memory witnessForLookup,
+        uint          epochIndex ) private view returns(uint) {
+
+        uint[16] memory s = computeS(uint(header), nonceLe);
+        uint[32] memory mix;
+        uint[8]  memory cmix;
+
+
+        uint depth = epochData[epochIndex].branchDepth;
+        uint fullSize = epochData[epochIndex].fullSizeIn128Resultion;
+
+        uint i;
+        uint j;
+
+        require(fullSize != 0, "EpochData not set");
+
+
+        for( i = 0 ; i < 16 ; i++ ) {
+            assembly {
+                let offset := mul(i,0x20)
+
+            //mix[i] = s[i];
+                mstore(add(mix,offset),mload(add(s,offset)))
+
+            // mix[i+16] = s[i];
+                mstore(add(mix,add(0x200,offset)),mload(add(s,offset)))
+            }
+        }
+
+        for( i = 0 ; i < 64 ; i++ ) {
+            uint p = fnv( i ^ s[0], mix[i % 32]) % fullSize;
+
+            // console.log(computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0]));
+            // console.log(getMerkleLeave( epochIndex, p ));
+
+            if( computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depth )  != getMerkleLeave( epochIndex, p ) ) {
+                // PoW failed
+                revert("PoW failed");
+            }
+
+            for( j = 0 ; j < 8 ; j++ ) {
+
+                assembly{
+                //mix[j] = fnv(mix[j], dataSetLookup[4*i] & varFFFFFFFF );
+                    let dataOffset := add(mul(0x80,i),add(dataSetLookup,0x20))
+                    let dataValue   := and(mload(dataOffset),0xFFFFFFFF)
+
+                    let mixOffset := add(mix,mul(0x20,j))
+                    let mixValue  := mload(mixOffset)
+
+                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
+                    let fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
+                    mstore(mixOffset,fnvValue)
+
+                //mix[j+8] = fnv(mix[j+8], dataSetLookup[4*i + 1] & 0xFFFFFFFF );
+                    dataOffset := add(dataOffset,0x20)
+                    dataValue   := and(mload(dataOffset),0xFFFFFFFF)
+
+                    mixOffset := add(mixOffset,0x100)
+                    mixValue  := mload(mixOffset)
+
+                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
+                    fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
+                    mstore(mixOffset,fnvValue)
+
+                //mix[j+16] = fnv(mix[j+16], dataSetLookup[4*i + 2] & 0xFFFFFFFF );
+                    dataOffset := add(dataOffset,0x20)
+                    dataValue   := and(mload(dataOffset),0xFFFFFFFF)
+
+                    mixOffset := add(mixOffset,0x100)
+                    mixValue  := mload(mixOffset)
+
+                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
+                    fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
+                    mstore(mixOffset,fnvValue)
+
+                //mix[j+24] = fnv(mix[j+24], dataSetLookup[4*i + 3] & 0xFFFFFFFF );
+                    dataOffset := add(dataOffset,0x20)
+                    dataValue   := and(mload(dataOffset),0xFFFFFFFF)
+
+                    mixOffset := add(mixOffset,0x100)
+                    mixValue  := mload(mixOffset)
+
+                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
+                    fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
+                    mstore(mixOffset,fnvValue)
+
+                }
+
+
+                //mix[j] = fnv(mix[j], dataSetLookup[4*i] & 0xFFFFFFFF );
+                //mix[j+8] = fnv(mix[j+8], dataSetLookup[4*i + 1] & 0xFFFFFFFF );
+                //mix[j+16] = fnv(mix[j+16], dataSetLookup[4*i + 2] & 0xFFFFFFFF );
+                //mix[j+24] = fnv(mix[j+24], dataSetLookup[4*i + 3] & 0xFFFFFFFF );
+
+
+                //dataSetLookup[4*i    ] = dataSetLookup[4*i    ]/(2**32);
+                //dataSetLookup[4*i + 1] = dataSetLookup[4*i + 1]/(2**32);
+                //dataSetLookup[4*i + 2] = dataSetLookup[4*i + 2]/(2**32);
+                //dataSetLookup[4*i + 3] = dataSetLookup[4*i + 3]/(2**32);
+
+                assembly{
+                    let offset := add(add(dataSetLookup,0x20),mul(i,0x80))
+                    let value  := div(mload(offset),0x100000000)
+                    mstore(offset,value)
+
+                    offset := add(offset,0x20)
+                    value  := div(mload(offset),0x100000000)
+                    mstore(offset,value)
+
+                    offset := add(offset,0x20)
+                    value  := div(mload(offset),0x100000000)
+                    mstore(offset,value)
+
+                    offset := add(offset,0x20)
+                    value  := div(mload(offset),0x100000000)
+                    mstore(offset,value)
+                }
+            }
+        }
+
+
+        for( i = 0 ; i < 32 ; i += 4) {
+            cmix[i/4] = (fnv(fnv(fnv(mix[i], mix[i+1]), mix[i+2]), mix[i+3]));
+        }
+
+        return computeSha3(s,cmix);
+
+    }
+
+
     function fnv( uint v1, uint v2 ) pure internal returns(uint) {
         return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
     }
@@ -351,33 +524,6 @@ contract Ethash is SHA3_512 {
     }
 
 
-    function isEpochDataSet( uint epochIndex ) public view returns(bool) {
-        return epochData[epochIndex].fullSizeIn128Resultion != 0;
-    }
-
-    function setEpochData(
-        uint epochNum,
-        uint fullSizeIn128Resultion,
-        uint branchDepth,
-        uint[] memory merkleNodes
-    ) public {
-
-        // we store only previous and current epochs
-        // so, delete second from the end epoch
-        if (epochNum >= 2)  // underflow check
-            delete epochData[epochNum - 2];
-
-
-        uint l = merkleNodes.length;
-        uint[512] storage nodes = epochData[epochNum].merkleNodes;
-
-        for( uint i = 0 ; i < l ; i++ ) {
-            nodes[i] = merkleNodes[i];
-        }
-
-        epochData[epochNum].fullSizeIn128Resultion = fullSizeIn128Resultion;
-        epochData[epochNum].branchDepth = branchDepth;
-    }
 
     function getMerkleLeave( uint epochIndex, uint p ) view internal returns(uint) {
         uint rootIndex = uint(p >> epochData[epochIndex].branchDepth);
@@ -386,148 +532,6 @@ contract Ethash is SHA3_512 {
         if( (rootIndex % 2) == 0 )
             return expectedRoot & 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF;
         return expectedRoot >> 128;
-    }
-
-    function hashimoto( bytes32 header,
-        uint          nonceLe,
-        uint[] memory dataSetLookup,
-        uint[] memory witnessForLookup,
-        uint          epochIndex ) private view returns(uint) {
-
-        uint[16] memory s = computeS(uint(header), nonceLe);
-        uint[32] memory mix;
-        uint[8]  memory cmix;
-
-
-        uint depth = epochData[epochIndex].branchDepth;
-        uint fullSize = epochData[epochIndex].fullSizeIn128Resultion;
-
-        uint i;
-        uint j;
-
-        require(fullSize != 0, "EpochData not set");
-
-
-        for( i = 0 ; i < 16 ; i++ ) {
-            assembly {
-                let offset := mul(i,0x20)
-
-            //mix[i] = s[i];
-                mstore(add(mix,offset),mload(add(s,offset)))
-
-            // mix[i+16] = s[i];
-                mstore(add(mix,add(0x200,offset)),mload(add(s,offset)))
-            }
-        }
-
-        for( i = 0 ; i < 64 ; i++ ) {
-            uint p = fnv( i ^ s[0], mix[i % 32]) % fullSize;
-
-            // console.log(computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depthAndFullSize[0]));
-            // console.log(getMerkleLeave( epochIndex, p ));
-
-            if( computeCacheRoot( p, i, dataSetLookup,  witnessForLookup, depth )  != getMerkleLeave( epochIndex, p ) ) {
-                // PoW failed
-                revert("PoW failed");
-            }
-
-            for( j = 0 ; j < 8 ; j++ ) {
-
-                assembly{
-                //mix[j] = fnv(mix[j], dataSetLookup[4*i] & varFFFFFFFF );
-                    let dataOffset := add(mul(0x80,i),add(dataSetLookup,0x20))
-                    let dataValue   := and(mload(dataOffset),0xFFFFFFFF)
-
-                    let mixOffset := add(mix,mul(0x20,j))
-                    let mixValue  := mload(mixOffset)
-
-                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
-                    let fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
-                    mstore(mixOffset,fnvValue)
-
-                //mix[j+8] = fnv(mix[j+8], dataSetLookup[4*i + 1] & 0xFFFFFFFF );
-                    dataOffset := add(dataOffset,0x20)
-                    dataValue   := and(mload(dataOffset),0xFFFFFFFF)
-
-                    mixOffset := add(mixOffset,0x100)
-                    mixValue  := mload(mixOffset)
-
-                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
-                    fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
-                    mstore(mixOffset,fnvValue)
-
-                //mix[j+16] = fnv(mix[j+16], dataSetLookup[4*i + 2] & 0xFFFFFFFF );
-                    dataOffset := add(dataOffset,0x20)
-                    dataValue   := and(mload(dataOffset),0xFFFFFFFF)
-
-                    mixOffset := add(mixOffset,0x100)
-                    mixValue  := mload(mixOffset)
-
-                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
-                    fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
-                    mstore(mixOffset,fnvValue)
-
-                //mix[j+24] = fnv(mix[j+24], dataSetLookup[4*i + 3] & 0xFFFFFFFF );
-                    dataOffset := add(dataOffset,0x20)
-                    dataValue   := and(mload(dataOffset),0xFFFFFFFF)
-
-                    mixOffset := add(mixOffset,0x100)
-                    mixValue  := mload(mixOffset)
-
-                // fnv = return ((v1*0x01000193) ^ v2) & 0xFFFFFFFF;
-                    fnvValue := and(xor(mul(mixValue,0x01000193),dataValue),0xFFFFFFFF)
-                    mstore(mixOffset,fnvValue)
-
-                }
-
-
-                //mix[j] = fnv(mix[j], dataSetLookup[4*i] & 0xFFFFFFFF );
-                //mix[j+8] = fnv(mix[j+8], dataSetLookup[4*i + 1] & 0xFFFFFFFF );
-                //mix[j+16] = fnv(mix[j+16], dataSetLookup[4*i + 2] & 0xFFFFFFFF );
-                //mix[j+24] = fnv(mix[j+24], dataSetLookup[4*i + 3] & 0xFFFFFFFF );
-
-
-                //dataSetLookup[4*i    ] = dataSetLookup[4*i    ]/(2**32);
-                //dataSetLookup[4*i + 1] = dataSetLookup[4*i + 1]/(2**32);
-                //dataSetLookup[4*i + 2] = dataSetLookup[4*i + 2]/(2**32);
-                //dataSetLookup[4*i + 3] = dataSetLookup[4*i + 3]/(2**32);
-
-                assembly{
-                    let offset := add(add(dataSetLookup,0x20),mul(i,0x80))
-                    let value  := div(mload(offset),0x100000000)
-                    mstore(offset,value)
-
-                    offset := add(offset,0x20)
-                    value  := div(mload(offset),0x100000000)
-                    mstore(offset,value)
-
-                    offset := add(offset,0x20)
-                    value  := div(mload(offset),0x100000000)
-                    mstore(offset,value)
-
-                    offset := add(offset,0x20)
-                    value  := div(mload(offset),0x100000000)
-                    mstore(offset,value)
-                }
-            }
-        }
-
-
-        for( i = 0 ; i < 32 ; i += 4) {
-            cmix[i/4] = (fnv(fnv(fnv(mix[i], mix[i+1]), mix[i+2]), mix[i+3]));
-        }
-
-        return computeSha3(s,cmix);
-
-    }
-
-    function verifyPoW(uint blockNumber, bytes32 rlpHeaderHashWithoutNonce, uint nonce, uint difficulty,
-        uint[] memory dataSetLookup, uint[] memory witnessForLookup) internal view {
-
-        uint epoch = blockNumber / EPOCH_LENGTH;
-        uint ethash = hashimoto(rlpHeaderHashWithoutNonce, nonce, dataSetLookup, witnessForLookup, epoch);
-
-        require(ethash <= (2**256-1)/difficulty, "Ethash difficulty too low");
     }
 
 }
