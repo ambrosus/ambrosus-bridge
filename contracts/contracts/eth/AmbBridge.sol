@@ -54,11 +54,12 @@ contract AmbBridge is CommonBridge, CheckPoW {
         lockTransfers(powProof.transfer.transfers, powProof.transfer.event_id);
     }
 
-    function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {
+    function setSideBridge(address _sideBridgeAddress) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(sideBridgeAddress == address(0), "sideBridgeAddress already set");
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-    function setAmbWrapper(address wrapper) public onlyRole(ADMIN_ROLE) {
+    function setAmbWrapper(address wrapper) public onlyRole(DEFAULT_ADMIN_ROLE) {
         ambWrapperAddress = wrapper;
     }
 }

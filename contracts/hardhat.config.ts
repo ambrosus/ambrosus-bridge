@@ -3,6 +3,7 @@ import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
+import "hardhat-change-network";
 
 
 import * as dotenv from "dotenv";
@@ -32,7 +33,7 @@ module.exports = {
       companionNetworks: {amb: 'amb_main'},
     },
     amb_test: {
-      url: "https://network.ambrosus-test.io",
+      url: "https://network.ambrosus-dev.io",
       accounts: PK,
       tags: ["amb", "testnet"],
       hardfork: "byzantium",

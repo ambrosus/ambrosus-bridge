@@ -2,16 +2,16 @@ import path from "path";
 import fs from "fs";
 
 
-interface Tokens {
+interface Token {
   name: string;
   symbol: string;
-  address: string;
-  addressesOnOtherNetworks: {[net: string]: string}
+  addresses: { [net: string]: string }
+  primaryNet: string;
 }
 
 interface Config {
-  tokens: { [net:string]: Tokens[] };
-  bridges: { [net:string]: {amb: string, side: string} };
+  tokens: { [symb: string]: Token };
+  bridges: { [net: string]: { amb: string, side: string } };
 }
 
 
@@ -37,24 +37,21 @@ export function getTokensPair(thisNet: string, sideNet: string, network: any): a
 function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): any {
   const tokensPair: { [k: string]: string } = {};
 
-  for (const tokenThis of configFile.tokens[thisNet]) {
-    if (!tokenThis.address || !tokenThis.addressesOnOtherNetworks[sideNet]) continue;
-    tokensPair[tokenThis.address] = tokenThis.addressesOnOtherNetworks[sideNet];
+  for (const tokenThis of Object.values(configFile.tokens)) {
+    if (!tokenThis.addresses[thisNet] || !tokenThis.addresses[sideNet]) continue;
+    tokensPair[tokenThis.addresses[thisNet]] = tokenThis.addresses[sideNet];
   }
-
-  for (const tokenSide of configFile.tokens[sideNet]) {
-    if (!tokenSide.address || !tokenSide.addressesOnOtherNetworks[thisNet]) continue;
-    tokensPair[tokenSide.addressesOnOtherNetworks[thisNet]] = tokenSide.address;
-  }
-
   return [Object.keys(tokensPair), Object.values(tokensPair)];
 }
 
+// get all deployed bridges in `net` network;
+// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
+// for other networks is array of one address
 export function bridgesInNet(net: string, configFile: Config): string[] {
-  if (net == "amb")
-    return Object.values(configFile.bridges).map(i => i.amb)
-
-  return [configFile.bridges[net].side];
+  const bridges = (net == "amb") ?
+    Object.values(configFile.bridges).map(i => i.amb) :
+    [configFile.bridges[net].side];
+  return bridges.filter(i => !!i);  // filter out empty strings
 }
 
 export function configPath(network: any): string {

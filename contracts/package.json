@@ -12,16 +12,8 @@
     "coverage": "hardhat coverage",
     "lint": "eslint .",
     "console": "hardhat console",
-
     "verify": "hardhat etherscan-verify --network eth_test",
     "sourcify": "hardhat sourcify --network eth_test",
-
-    "deployamb": "hardhat deploy --network amb_test",
-    "deployrinkeby": "hardhat deploy --network eth_test",
-
-    "deploytokensamb": "hardhat run scripts/deployTokens.ts --network amb_test",
-    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network eth_test",
-
     "integr_deploy": "hardhat run scripts/integration-tests/deploy.ts",
     "integr_test": "hardhat test scripts/integration-tests/main.ts"
   },

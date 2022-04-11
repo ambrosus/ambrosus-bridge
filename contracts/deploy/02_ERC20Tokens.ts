@@ -7,23 +7,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const path = configPath(hre.network);
   let configFile = readConfig(path);
 
-  let tokens = configFile.tokens[networkName(hre.network)];
-
-  const bridgesInThisNetwork = bridgesInNet("eth", configFile)
+  const netName = networkName(hre.network);
+  const bridgesInThisNetwork = bridgesInNet('eth', configFile)
 
   const {owner} = await hre.getNamedAccounts();
 
-  for (const token of tokens) {
-    if (token.address) continue;  // already deployed
+  for (const token of Object.values(configFile.tokens)) {
+    if (token.addresses[netName]) continue;  // already deployed
+    if (token.primaryNet == netName) continue;  // it's not bridgeErc20
 
-    const {address} = await hre.deployments.deploy(token.name, {
+    const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20",
       from: owner,
       args: [token.name, token.symbol, bridgesInThisNetwork],
       log: true,
     });
 
-    token.address = address;
+    token.addresses[netName] = address;
     writeConfig(path, configFile);
   }
 
@@ -33,4 +33,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 export default func;
-func.tags = ["BridgeERC20Tokens"];
+func.tags = ["tokens"];

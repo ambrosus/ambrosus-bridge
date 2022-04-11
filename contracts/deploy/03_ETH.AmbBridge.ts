@@ -1,7 +1,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
-import {getTokensPair} from "./utils";
+import {configPath, getTokensPair, readConfig, writeConfig} from "./utils";
 
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
 
@@ -32,25 +32,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-
-  if (deployResult.newlyDeployed) {
-    console.log("Run ambBridge deploy after ethBridge deploy to set sideBridgeAddress")
-  } else {
-    const ethBridge = await hre.companionNetworks['eth'].deployments.getOrNull('EthBridge');
-    if (!ethBridge) throw new Error("[Setting sideBridgeAddress] Deploy EthBridge first")
-
-    const setAddr = await hre.deployments.read("AmbBridge", {from: owner}, 'sideBridgeAddress');
-    if (setAddr == ethBridge.address) return;
-
-    await hre.deployments.execute("AmbBridge",
-      {from: owner, log: true},
-      'setSideBridge', ethBridge.address
-    );
-    console.log("ambBridge.sideBridgeAddress set to", ethBridge.address)
-  }
+  const path = configPath(hre.network);
+  let configFile = readConfig(path);
+  configFile.bridges.eth.amb = deployResult.address;
+  writeConfig(path, configFile);
 
 };
 
 export default func;
-func.tags = ["AmbBridge"];
-func.dependencies = ['wAMB', 'BridgeERC20Tokens'];
+func.tags = ["bridges"];
