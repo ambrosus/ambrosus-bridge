@@ -4,17 +4,22 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 )
+
+type HttpClient interface {
+	Post(url, contentType string, body io.Reader) (resp *http.Response, err error)
+}
 
 type externalLogger struct {
 	Token      string
 	ChatId     int
-	HttpClient *http.Client
+	HttpClient HttpClient
 	Prefix     string
 }
 
-func NewExternalLogger(token string, chatId int, prefix string, httpClient *http.Client) *externalLogger {
+func NewExternalLogger(token string, chatId int, prefix string, httpClient HttpClient) *externalLogger {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
