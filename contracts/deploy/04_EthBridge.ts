@@ -16,7 +16,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const ambNet = hre.companionNetworks['amb']
   const {address: sideBridgeAddress} = await ambNet.deployments.get('AmbBridge');
   const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider, vsAddress);
-  hre.deployments
 
   const [tokensThis, tokensSide] = getTokensPair("eth", "amb", hre.network)
 
@@ -58,5 +57,5 @@ async function getValidators(ambProvider: EthereumProvider, vsContractAddress: s
 
 
 export default func;
-func.dependencies = ['AmbBridge'];
 func.tags = ["ethbridge"];
+func.dependencies = ['AmbBridge', 'BridgeERC20Tokens'];

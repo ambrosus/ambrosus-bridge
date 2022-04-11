@@ -1,6 +1,20 @@
 import path from "path";
 import fs from "fs";
 
+
+interface Tokens {
+  name: string;
+  symbol: string;
+  address: string;
+  addressesOnOtherNetworks: {[net: string]: string}
+}
+
+interface Config {
+  tokens: { [net:string]: Tokens[] };
+  bridges: { [net:string]: {amb: string, side: string} };
+}
+
+
 export function networkName(network: any): string {
   for (const networkName of ['amb', 'eth'])
     if (network.tags[networkName])
@@ -17,36 +31,41 @@ export function networkType(network: any): string {
 
 
 export function getTokensPair(thisNet: string, sideNet: string, network: any): any {
-  return _getTokensPair(thisNet, sideNet, readTokens(tokensPath(network)));
+  return _getTokensPair(thisNet, sideNet, readConfig(configPath(network)));
 }
 
-function _getTokensPair(thisNet: string, sideNet: string, tokensFile: any): any {
+function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): any {
   const tokensPair: { [k: string]: string } = {};
 
-  for (const tokenThis of tokensFile[thisNet].tokens) {
-    if (!tokenThis.address) continue;
-    if (!tokenThis.addressesOnOtherNetworks[sideNet]) continue;
+  for (const tokenThis of configFile.tokens[thisNet]) {
+    if (!tokenThis.address || !tokenThis.addressesOnOtherNetworks[sideNet]) continue;
     tokensPair[tokenThis.address] = tokenThis.addressesOnOtherNetworks[sideNet];
   }
 
-  for (const tokenSide of tokensFile[sideNet].tokens) {
-    if (!tokenSide.address) continue;
-    if (!tokenSide.addressesOnOtherNetworks[thisNet]) continue;
+  for (const tokenSide of configFile.tokens[sideNet]) {
+    if (!tokenSide.address || !tokenSide.addressesOnOtherNetworks[thisNet]) continue;
     tokensPair[tokenSide.addressesOnOtherNetworks[thisNet]] = tokenSide.address;
   }
 
   return [Object.keys(tokensPair), Object.values(tokensPair)];
 }
 
-export function tokensPath(network: any): string {
-  return path.resolve(__dirname, `../tokens-${networkType(network)}.json`);
+export function bridgesInNet(net: string, configFile: Config): string[] {
+  if (net == "amb")
+    return Object.values(configFile.bridges).map(i => i.amb)
+
+  return [configFile.bridges[net].side];
 }
 
-export function writeTokens(tokenPath: string, tokens: any) {
-  fs.writeFileSync(tokenPath, JSON.stringify(tokens, null, 2));
+export function configPath(network: any): string {
+  return path.resolve(__dirname, `../config-${networkType(network)}.json`);
 }
 
-export function readTokens(tokenPath: string): any {
+export function writeConfig(path: string, config: Config) {
+  fs.writeFileSync(path, JSON.stringify(config, null, 2));
+}
+
+export function readConfig(tokenPath: string): Config {
   return require(tokenPath);
 }
 

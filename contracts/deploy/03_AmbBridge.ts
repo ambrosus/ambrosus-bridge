@@ -53,4 +53,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ["AmbBridge"];
-func.dependencies = ['wAMB'];
+func.dependencies = ['wAMB', 'BridgeERC20Tokens'];

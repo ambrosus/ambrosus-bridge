@@ -1,16 +1,17 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {networkName, readTokens, tokensPath, writeTokens} from "./utils";
+import {networkName, readConfig, configPath, writeConfig, bridgesInNet} from "./utils";
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const tokenPath = tokensPath(hre.network);
-  let tokensFile = readTokens(tokenPath);
-  let tokens = tokensFile[networkName(hre.network)].tokens;
+  const path = configPath(hre.network);
+  let configFile = readConfig(path);
+
+  let tokens = configFile.tokens[networkName(hre.network)];
+
+  const bridgesInThisNetwork = bridgesInNet("eth", configFile)
 
   const {owner} = await hre.getNamedAccounts();
-
-  const bridgesInThisNetwork: string[] = [] // todo
 
   for (const token of tokens) {
     if (token.address) continue;  // already deployed
@@ -23,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
     token.address = address;
-    writeTokens(tokenPath, tokensFile);
+    writeConfig(path, configFile);
   }
 
 

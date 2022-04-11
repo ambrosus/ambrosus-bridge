@@ -1,0 +1,27 @@
+{
+  "bridges": {
+    "eth": {
+      "amb": "",
+      "side": ""
+    },
+    "bsc": {
+      "amb": "",
+      "side": ""
+    }
+  },
+  "tokens": {
+    "amb": [
+    ],
+    "eth": [
+      {
+        "name": "wAmber",
+        "symbol": "wAMB",
+        "address": "0x673012068803B1CD2e62709a3F6b5F4A37A3C2B5",
+        "addressesOnOtherNetworks": {
+          "amb": "0x6a8441e991d45EfD94C65eD8F200e6fCf94eeEE4",
+          "bsc": ""
+        }
+      }
+    ]
+  }
+}
