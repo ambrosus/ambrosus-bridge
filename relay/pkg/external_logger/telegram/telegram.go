@@ -49,7 +49,7 @@ func (t *externalLogger) LogError(msg string) error {
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
 		return fmt.Errorf("json encode request: %w", err)
 	}
-	resp, err := http.Post(url, "application/json", payloadBuf)
+	resp, err := t.HttpClient.Post(url, "application/json", payloadBuf)
 	if err != nil {
 		return err
 	}
