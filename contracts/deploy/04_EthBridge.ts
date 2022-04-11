@@ -1,7 +1,8 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction } from "hardhat-deploy/types";
+import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
+import {DeployFunction} from "hardhat-deploy/types";
 import vsAbi from "../abi/ModifiedValidatorSet.json";
-import { ethers, VoidSigner } from "ethers";
+import {ethers} from "ethers";
+import {getTokensPair, urlFromHHProvider} from "./utils";
 
 const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
@@ -10,11 +11,14 @@ const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get fr
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["eth"]) return;
 
-  const { owner } = await hre.getNamedAccounts();
+  const {owner} = await hre.getNamedAccounts();
 
   const ambNet = hre.companionNetworks['amb']
   const {address: sideBridgeAddress} = await ambNet.deployments.get('AmbBridge');
-  const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider as any, vsAddress);
+  const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider, vsAddress);
+  hre.deployments
+
+  const [tokensThis, tokensSide] = getTokensPair("eth", "amb", hre.network)
 
 
   await hre.deployments.deploy("EthBridge", {
@@ -24,8 +28,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       {
         sideBridgeAddress: sideBridgeAddress,
         relayAddress: relayAddress,
-        tokenThisAddresses: [],
-        tokenSideAddresses: [],
+        tokenThisAddresses: tokensThis,
+        tokenSideAddresses: tokensSide,
         fee: 10,    // todo
         feeRecipient: owner,   // todo
         timeframeSeconds: hre.network.live ? 14400 : 1,
@@ -39,16 +43,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  // todo set sideBridgeAddress in amb bridge
 
 };
 
 
-async function getValidators(ambProvider: ethers.providers.Provider, vsContractAddress: string): Promise<[string[], string]> {
-  const ambSigner = new VoidSigner(ethers.constants.AddressZero, ambProvider);
-  const vsContract = ethers.ContractFactory.getContract(vsContractAddress, vsAbi, ambSigner)
-  const block = await ambSigner.provider!.getBlock('latest');
-  const validators = await vsContract["getValidators()"]({blockTag: block.number});
+async function getValidators(ambProvider: EthereumProvider, vsContractAddress: string): Promise<[string[], string]> {
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
+
+  const vsContract = ethers.ContractFactory.getContract(vsContractAddress, vsAbi)
+  const block = await provider.getBlock('latest');
+  const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
   return [validators, block.hash];
 }
 
