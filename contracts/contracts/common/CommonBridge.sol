@@ -32,7 +32,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     uint public inputEventId;
     uint outputEventId;
-    uint oldestLockedEventId;
+    uint public oldestLockedEventId;
 
     uint lastTimeframe;
 
