@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -13,9 +14,9 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 )
@@ -133,6 +134,8 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLength); err != nil {
 		b.logger.Error().Msgf("error checking epoch data dir: %s", err.Error())
 	}
+
+	go b.UnlockOldestTransfersLoop()
 
 	b.logger.Info().Msg("Ethereum bridge runned!")
 
@@ -286,4 +289,81 @@ func (b *Bridge) GetMinSafetyBlocksNum() (uint64, error) {
 		return 0, err
 	}
 	return safetyBlocks.Uint64(), nil
+}
+
+func (b *Bridge) UnlockOldestTransfersLoop() {
+	for {
+		if err := b.UnlockOldestTransfers(); err != nil {
+			b.logger.Error().Msgf("UnlockOldestTransferLoop: %s", err)
+		}
+	}
+}
+
+func (b *Bridge) UnlockOldestTransfers() error {
+	// Get oldest transfer timestamp.
+	oldestLockedEventId, err := b.Contract.OldestLockedEventId(nil)
+	if err != nil {
+		return fmt.Errorf("get oldest locked event id: %w", err)
+	}
+	lockedTransferTime, err := b.Contract.LockedTransfers(nil, oldestLockedEventId)
+	if err != nil {
+		return fmt.Errorf("get locked transfer time %v: %w", oldestLockedEventId, err)
+	}
+	if lockedTransferTime.Cmp(big.NewInt(0)) == 0 {
+		lockTime, err := b.Contract.LockTime(nil)
+		if err != nil {
+			return fmt.Errorf("get lock time: %w", err)
+		}
+
+		b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+			"UnlockOldestTransfers: there are no locked transfers with that id. Sleep %v seconds...",
+			lockTime.Uint64(),
+		)
+		time.Sleep(time.Duration(lockTime.Uint64()) * time.Second)
+		return nil
+	}
+
+	// Get the latest block.
+	latestBlock, err := b.Client.BlockByNumber(context.Background(), nil)
+	if err != nil {
+		return fmt.Errorf("get latest block: %w", err)
+	}
+
+	// Check if the unlocking is allowed and get the sleep time.
+	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
+	if sleepTime > 0 {
+		b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+			"UnlockOldestTransfers: sleep %v seconds...",
+			sleepTime,
+		)
+		time.Sleep(time.Duration(sleepTime) * time.Second)
+	}
+
+	// Unlock the oldest transfer.
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
+	err = b.unlockTransfers(oldestLockedEventId)
+	if err != nil {
+		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
+	}
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocked")
+	return nil
+}
+
+func (b *Bridge) unlockTransfers(eventId *big.Int) error {
+	tx, txErr := b.Contract.UnlockTransfers(b.auth, eventId)
+	if txErr != nil {
+		return txErr
+	}
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
+	if err != nil {
+		return fmt.Errorf("wait mined: %w", err)
+	}
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		err = ethereum.GetFailureReason(b.Client, b.auth, tx)
+		if err != nil {
+			return fmt.Errorf("GetFailureReason: %w", err)
+		}
+	}
+	return nil
 }
