@@ -13,21 +13,45 @@ const PK = [process.env.PRIVATEKEY || "00000000"];
 module.exports = {
     networks: {
         hardhat: {
-            hardfork: "byzantium"
-
+            hardfork: "byzantium",
+            companionNetworks: {
+                amb: 'hardhat',
+                eth: 'hardhat',
+            },
         },
-        rinkeby: {
-            url: "https://rinkeby.infura.io/v3/" + process.env.INFURA_KEY,
+        eth_test: {
+            url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
             accounts: PK,
+            tags: ["eth", "testnet"],
+            companionNetworks: {
+                amb: 'amb_test',
+            },
         },
-        mainnet: {
+        eth_main: {
             url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
             accounts: PK,
+            tags: ["eth", "mainnet"],
+            companionNetworks: {
+                amb: 'amb_main',
+            },
         },
-        amb: {
-            url: "https://network.ambrosus-dev.io",
+        amb_test: {
+            url: "https://network.ambrosus-test.io",
             accounts: PK,
-            hardfork: "byzantium"
+            tags: ["amb", "testnet"],
+            hardfork: "byzantium",
+            companionNetworks: {
+                eth: 'eth_test',
+            },
+        },
+        amb_main: {
+            url: "https://network.ambrosus.io",
+            accounts: PK,
+            tags: ["amb", "mainnet"],
+            hardfork: "byzantium",
+            companionNetworks: {
+                eth: 'eth_main',
+            },
         }
     },
     namedAccounts: {
