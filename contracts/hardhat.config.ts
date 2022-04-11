@@ -3,7 +3,6 @@ import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
-import "hardhat-change-network";
 
 
 import * as dotenv from "dotenv";
@@ -64,7 +63,7 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 2000,
           },
           // Note: for amb deploy
           evmVersion: "byzantium"

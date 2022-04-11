@@ -12,8 +12,8 @@ const minSafetyBlocks = 10;
 
 
 async function main() {
-  const ambErc20 = await deploy("MockERC20", ambSigner, []);
-  const ethErc20 = await deploy("MockERC20", ethSigner, []);
+  const ambErc20 = await deploy("BridgeERC20Test", ambSigner, []);
+  const ethErc20 = await deploy("BridgeERC20Test", ethSigner, []);
   fs.writeFileSync(path.resolve(__dirname, "./mockTokensAddresses.json"), JSON.stringify({
     ambErc20Address: ambErc20.address,
     ethErc20Address: ethErc20.address,

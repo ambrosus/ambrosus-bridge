@@ -16,14 +16,6 @@ contract AmbBridge is CommonBridge, CheckPoW {
     )
     CommonBridge(args)
     {
-
-        // relay uses this event to know from what moment to synchronize the validator set;
-        // side bridge contract must be deployed with validator set actual at the time this event was emitted.
-        emit Transfer(0, queue);
-
-
-        emitTestEvent(address(this), msg.sender, 10, true);
-
         ambWrapperAddress = ambWrapper_;
     }
 

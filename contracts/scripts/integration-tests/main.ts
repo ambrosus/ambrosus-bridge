@@ -23,8 +23,8 @@ describe("Integration tests", function () {
 
     ambBridge = await ethers.getContractAt("AmbBridge", bridges.ambAddress, ambSigner);
     ethBridge = await ethers.getContractAt("EthBridge", bridges.ethAddress, ethSigner);
-    ambToken = await ethers.getContractAt("MockERC20", mockTokens.ambErc20Address, ambSigner);
-    ethToken = await ethers.getContractAt("MockERC20", mockTokens.ethErc20Address, ethSigner);
+    ambToken = await ethers.getContractAt("BridgeERC20Test", mockTokens.ambErc20Address, ambSigner);
+    ethToken = await ethers.getContractAt("BridgeERC20Test", mockTokens.ethErc20Address, ethSigner);
     // setup relay
     console.log("Setup relay");
     const relayRole = await ethBridge.ADMIN_ROLE();

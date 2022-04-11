@@ -2,6 +2,7 @@ import {ethers} from "hardhat";
 import fs from "fs";
 
 import config from "../../../relay/configs/integr.json";
+import path from "path";
 
 //
 
@@ -33,7 +34,7 @@ export const options = {gasLimit: 6_000_000};  // amb & eth gas estimator broken
 export function saveContractAddressesInCfg(ambAddress: string, ethAddress: string) {
   config.network.amb.contractAddr = ambAddress;
   config.network.eth.contractAddr = ethAddress;
-  fs.writeFileSync("../../../relay/configs/integr.json", JSON.stringify(config));
+  fs.writeFileSync(path.resolve(__dirname, "../../../relay/configs/integr.json"), JSON.stringify(config, null, 4));
 }
 
 // wait for transaction to be mined

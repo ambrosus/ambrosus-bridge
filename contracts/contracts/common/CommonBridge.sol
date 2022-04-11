@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./CommonStructs.sol";
-import "hardhat/console.sol";
 
 
 contract CommonBridge is AccessControl, Pausable {
@@ -33,7 +32,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     uint public inputEventId;
     uint outputEventId;
-    uint oldestLockedEventId;
+    uint public oldestLockedEventId;
 
     uint lastTimeframe;
 
@@ -58,25 +57,6 @@ contract CommonBridge is AccessControl, Pausable {
         timeframeSeconds = args.timeframeSeconds;
         lockTime = args.lockTime;
     }
-
-
-    // todo remove
-    event Test(uint indexed a, address indexed b, string c, uint d);
-
-    function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount, bool transferEvent) public {
-        emit Test(1, address(this), "asd", 123);
-
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId, fee);
-
-        if (transferEvent) {
-            emit Transfer(outputEventId++, queue);
-            delete queue;
-        }
-
-        emit Test(2, address(msg.sender), "dfg", 456);
-    }
-
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         address tokenExternalAddress = tokenAddresses[tokenAmbAddress];

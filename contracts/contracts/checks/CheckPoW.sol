@@ -4,7 +4,6 @@ pragma solidity 0.8.6;
 import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "./CheckPoW_Ethash.sol";
-import "hardhat/console.sol";
 
 contract CheckPoW is CheckReceiptsProof, Ethash  {
     struct BlockPoW {
@@ -31,7 +30,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
         CommonStructs.TransferProof transfer;
     }
 
-    function CheckPoW_(PoWProof memory powProof, address sideBridgeAddress) public view
+    function CheckPoW_(PoWProof memory powProof, address sideBridgeAddress) public
     {
         bytes32 hash = CalcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
         for (uint i = 0; i < powProof.blocks.length; i++) {
