@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const ambNet = hre.companionNetworks['amb']
   const {address: sideBridgeAddress} = await ambNet.deployments.get('AmbBridge');
-  const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider, hre);
+  const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider);
 
 
   const [tokensThis, tokensSide] = getTokensPair("eth", "amb", hre.network)
@@ -43,6 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       lastProcessedBlock,
     ],
     log: true,
+    skipIfAlreadyDeployed: true
   });
 
 
@@ -53,21 +54,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 
-async function getValidators(ambProvider: EthereumProvider, hre: HardhatRuntimeEnvironment): Promise<[string[], string]> {
+async function getValidators(ambProvider: EthereumProvider): Promise<[string[], string]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
 
   const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
   const block = await provider.getBlock('latest');
   const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
-
-  // contract will be redeployed if args are changed
-  // check that validatorSet is not changed, then use lastProcessedBlock from prev deployment
-  const oldDeployment = await hre.deployments.getOrNull("EthBridge");
-  if (oldDeployment && oldDeployment.args) {
-    const [_0, oldValidators, _2, oldLastProcessedBlock] = oldDeployment.args;
-    if (JSON.stringify(validators) === JSON.stringify(oldValidators))  // i'm fucking hate js
-      return [validators, oldLastProcessedBlock];
-  }
 
   return [validators, block.hash];
 }
