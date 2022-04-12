@@ -141,7 +141,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Err(err)
+			b.logger.Error().Err(err).Msg("Listen error")
 		}
 	}
 }
