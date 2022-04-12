@@ -1,0 +1,25 @@
+{
+  "bridges": {
+    "eth": {
+      "amb": "",
+      "side": ""
+    },
+    "bsc": {
+      "amb": "",
+      "side": ""
+    }
+  },
+  "tokens": {
+    "wAMB": {
+      "name": "wAmber",
+      "symbol": "wAMB",
+      "logo": "todo",
+      "primaryNet": "amb",
+      "addresses": {
+        "amb": "",
+        "eth": "",
+        "bsc": ""
+      }
+    }
+  }
+}

@@ -9,16 +9,11 @@
     "test": "hardhat test",
     "build": "hardhat compile",
     "abi": "hardhat export-abi",
-    "deployamb": "hardhat deploy --network amb",
-    "deployrinkeby": "hardhat deploy --network rinkeby",
-    "verify": "hardhat etherscan-verify --network rinkeby",
-    "sourcify": "hardhat sourcify --network rinkeby",
     "coverage": "hardhat coverage",
     "lint": "eslint .",
     "console": "hardhat console",
-    "deploytokensamb": "hardhat run scripts/deployTokens.ts --network amb",
-    "deploytokensrinkeby": "hardhat run scripts/deployTokens.ts --network rinkeby",
-
+    "verify": "hardhat etherscan-verify --network eth_test",
+    "sourcify": "hardhat sourcify --network eth_test",
     "integr_deploy": "hardhat run scripts/integration-tests/deploy.ts",
     "integr_test": "hardhat test scripts/integration-tests/main.ts"
   },

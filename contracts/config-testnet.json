@@ -1,0 +1,25 @@
+{
+  "bridges": {
+    "eth": {
+      "amb": "0x3bE8831061698833AD8a6b590A66dfA8577d4fe9",
+      "side": "0x442594A89F37318E5F6952C4dB83201c8029A43f"
+    },
+    "bsc": {
+      "amb": "",
+      "side": ""
+    }
+  },
+  "tokens": {
+    "wAMB": {
+      "name": "wAmber",
+      "symbol": "wAMB",
+      "logo": "todo",
+      "primaryNet": "amb",
+      "addresses": {
+        "amb": "0x55252974F0277023C6ad296D33c4FDB4ABF971f3",
+        "eth": "0xD45698dA44D8Dda5c80911617FA57fd5e39099c4",
+        "bsc": ""
+      }
+    }
+  }
+}
