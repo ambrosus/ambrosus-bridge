@@ -118,7 +118,7 @@ func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
 		}
 	}
 
-	for i := epoch; i <= length; i++ {
+	for i := epoch; i <= length+epoch; i++ {
 		if err := b.checkEpochDataFile(i); err != nil {
 			if errors.Is(err, ErrEpochDataFileNotFound) {
 				if _, err := b.createEpochDataFile(i); err != nil {
