@@ -7,10 +7,10 @@ const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get fr
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["amb"]) return;
+  const path = configPath(hre.network);
+  let configFile = readConfig(path);
 
   const {owner} = await hre.getNamedAccounts();
-  const {address: ambWrapper} = await hre.deployments.get('wAMB');
-
   const [tokensThis, tokensSide] = getTokensPair("amb", "eth", hre.network)
 
   const deployResult = await hre.deployments.deploy("AmbBridge", {
@@ -27,13 +27,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         lockTime: hre.network.live ? 1000 : 1,
         minSafetyBlocks: 10,
       },
-      ambWrapper
+      configFile.tokens.wAMB.addresses["amb"],
     ],
     log: true,
   });
 
-  const path = configPath(hre.network);
-  let configFile = readConfig(path);
+
   configFile.bridges.eth.amb = deployResult.address;
   writeConfig(path, configFile);
 
