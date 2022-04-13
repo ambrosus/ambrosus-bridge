@@ -10,12 +10,12 @@ import "../tokens/IwAMB.sol";
 contract AmbBridge is CommonBridge, CheckPoW {
     address ambWrapperAddress;
 
-    constructor(
+    function initialize(
         CommonStructs.ConstructorArgs memory args,
         address ambWrapper_
-    )
-    CommonBridge(args)
-    {
+    ) {
+        __CommonBridge_init(args);
+
         ambWrapperAddress = ambWrapper_;
     }
 

@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CommonStructs.sol";
 
 
-contract CommonBridge is AccessControl, Pausable {
+contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
@@ -41,9 +42,7 @@ contract CommonBridge is AccessControl, Pausable {
     event TransferFinish(uint indexed event_id);
     event TransferSubmit(uint indexed event_id);
 
-
-    constructor(CommonStructs.ConstructorArgs memory args)
-    {
+    function __CommonBridge_init(CommonStructs.ConstructorArgs memory args) internal initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
 

@@ -9,15 +9,15 @@ import "../checks/CheckAura.sol";
 contract EthBridge is CommonBridge, CheckAura {
     address validatorSetAddress;
 
-    constructor(
+    function initialize(
         CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
         address validatorSetAddress_,
         bytes32 lastProcessedBlock_
-    )
-    CommonBridge(args)
-    CheckAura(initialValidators)
-    {
+    ) public initializer {
+        __CommonBridge_init(args);
+        __CheckAura_init(initialValidators);
+
         validatorSetAddress = validatorSetAddress_;
         lastProcessedBlock = lastProcessedBlock_;
     }

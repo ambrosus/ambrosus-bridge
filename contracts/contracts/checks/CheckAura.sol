@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../common/CommonStructs.sol";
+import "../CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
-
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 contract CheckAura is CheckReceiptsProof {
     // bitmask
@@ -49,7 +49,7 @@ contract CheckAura is CheckReceiptsProof {
     address[] public validatorSet;
 
 
-    constructor(address[] memory _initialValidators) {
+    function __CheckAura_init(address[] memory _initialValidators) internal {  // CONSTRUCTOR Initializable
         require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
         validatorSet = _initialValidators;
     }
@@ -149,16 +149,16 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function CalcValidatorSetReceiptHash(AuraProof memory auraProof,
-                                         address validatorSetAddress,
-                                         address[] memory vSet) private pure returns(bytes32) {
+        address validatorSetAddress,
+        address[] memory vSet) private pure returns(bytes32) {
 
         bytes32 el = keccak256(abi.encodePacked(
-            auraProof.transfer.receipt_proof[0],
-            validatorSetAddress,
-            auraProof.transfer.receipt_proof[1],
-            abi.encode(vSet),
-            auraProof.transfer.receipt_proof[2]
-        ));
+                auraProof.transfer.receipt_proof[0],
+                validatorSetAddress,
+                auraProof.transfer.receipt_proof[1],
+                abi.encode(vSet),
+                auraProof.transfer.receipt_proof[2]
+            ));
         return CalcReceiptsHash(auraProof.transfer.receipt_proof, el, 3);
     }
 

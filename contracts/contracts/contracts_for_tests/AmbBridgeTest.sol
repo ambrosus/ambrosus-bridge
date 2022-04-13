@@ -8,8 +8,9 @@ contract AmbBridgeTest is AmbBridge {
     constructor(
         CommonStructs.ConstructorArgs memory args,
         address ambWrapper
-    )
-    AmbBridge(args, ambWrapper) {}
+    ) {
+        AmbBridge.initialize(args, ambWrapper);
+    }
 
     function getLockedTransferTest(uint event_id) public view returns (CommonStructs.LockedTransfers memory) {
         return lockedTransfers[event_id];

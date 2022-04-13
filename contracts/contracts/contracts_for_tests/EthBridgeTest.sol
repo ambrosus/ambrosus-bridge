@@ -10,8 +10,9 @@ contract EthBridgeTest is EthBridge {
         address[] memory initialValidators,
         address validatorSetAddress_,
         bytes32 lastProcessedBlock
-    )
-    EthBridge(args, initialValidators, validatorSetAddress_, lastProcessedBlock) {}
+    ) {
+        EthBridge.initialize(args, initialValidators, validatorSetAddress_, lastProcessedBlock);
+    }
 
     function CheckSignatureTest(address signer, bytes32 message, bytes memory signature) public pure {
         CheckSignature(signer, message, signature);
