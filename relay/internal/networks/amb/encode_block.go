@@ -46,7 +46,7 @@ func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
 		ReceiptHash: helpers.BytesToBytes32(splitEls[1]),
 		P3:          rlpParts[2],
 
-		Step:      header.Step(),
+		Step:      helpers.BytesToBytes4(header.Step()),
 		Signature: header.Signature(),
 	}, nil
 }

@@ -54,7 +54,7 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 	tm := AuraBlockAura{
 		t.P0Seal[:], t.P0Bare[:],
 		t.ParentHash[:], t.P2, t.ReceiptHash[:], t.P3,
-		t.Step, t.Signature,
+		t.Step[:], t.Signature,
 		t.Type, t.DeltaIndex,
 	}
 	return json.Marshal(&tm)

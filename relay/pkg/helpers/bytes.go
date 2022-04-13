@@ -35,6 +35,10 @@ func BytesToBytes3(bytes []byte) (bytes32 [3]byte) {
 	copy(bytes32[:], bytes[:])
 	return
 }
+func BytesToBytes4(bytes []byte) (bytes32 [4]byte) {
+	copy(bytes32[:], bytes[:])
+	return
+}
 
 func BytesConcat(slices ...[]byte) []byte {
 	var totalLen int

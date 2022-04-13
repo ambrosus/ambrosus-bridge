@@ -397,9 +397,9 @@
                 "type": "bytes"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes4",
                 "name": "step",
-                "type": "bytes"
+                "type": "bytes4"
               },
               {
                 "internalType": "bytes",
@@ -575,19 +575,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0_seal",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0_bare",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p1",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes32",
@@ -610,19 +605,9 @@
             "type": "bytes"
           },
           {
-            "internalType": "bytes",
-            "name": "s1",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
+            "internalType": "bytes4",
             "name": "step",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "s2",
-            "type": "bytes"
+            "type": "bytes4"
           },
           {
             "internalType": "bytes",
@@ -666,19 +651,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0_seal",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0_bare",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "p1",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes32",
@@ -701,19 +681,9 @@
             "type": "bytes"
           },
           {
-            "internalType": "bytes",
-            "name": "s1",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
+            "internalType": "bytes4",
             "name": "step",
-            "type": "bytes"
-          },
-          {
-            "internalType": "bytes",
-            "name": "s2",
-            "type": "bytes"
+            "type": "bytes4"
           },
           {
             "internalType": "bytes",
@@ -750,6 +720,25 @@
       }
     ],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "b",
+        "type": "bytes4"
+      }
+    ],
+    "name": "bytesToUintTest",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -1094,9 +1083,9 @@
                 "type": "bytes"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes4",
                 "name": "step",
-                "type": "bytes"
+                "type": "bytes4"
               },
               {
                 "internalType": "bytes",

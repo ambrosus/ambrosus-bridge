@@ -397,9 +397,9 @@
                 "type": "bytes"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes4",
                 "name": "step",
-                "type": "bytes"
+                "type": "bytes4"
               },
               {
                 "internalType": "bytes",
@@ -889,9 +889,9 @@
                 "type": "bytes"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes4",
                 "name": "step",
-                "type": "bytes"
+                "type": "bytes4"
               },
               {
                 "internalType": "bytes",

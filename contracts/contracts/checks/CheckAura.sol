@@ -24,12 +24,12 @@ contract CheckAura is CheckReceiptsProof {
         bytes3 p0_bare;
 
         bytes32 parent_hash;
-        bytes p2;  // todo maybe always 88 bytes; can be optimized?
+        bytes p2;
         bytes32 receipt_hash;
         bytes p3;
 
-        bytes step;
-        bytes signature;
+        bytes4 step;
+        bytes signature;  // todo maybe pass s r v values?
 
         uint8 type_;
         int64 delta_index;
@@ -165,7 +165,7 @@ contract CheckAura is CheckReceiptsProof {
         return CalcReceiptsHash(auraProof.transfer.receipt_proof, el, 3);
     }
 
-    function bytesToUint(bytes memory b) private pure returns (uint){
-        return uint(bytes32(b)) >> (256 - b.length * 8);
+    function bytesToUint(bytes4 b) internal pure returns (uint){
+        return uint(uint32(b));
     }
 }

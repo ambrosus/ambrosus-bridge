@@ -79,7 +79,7 @@ func TestEncoding(t *testing.T) {
 	}
 
 	// with seal
-	rlpWithSeal := helpers.BytesConcat(block.P0Seal[:], rlpCommon, stepPrefix, block.Step, signaturePrefix, block.Signature)
+	rlpWithSeal := helpers.BytesConcat(block.P0Seal[:], rlpCommon, stepPrefix, block.Step[:], signaturePrefix, block.Signature)
 	hashWithSeal := common.BytesToHash(mytrie.Hash(rlpWithSeal))
 
 	if hashWithSeal != h.Hash(true) {

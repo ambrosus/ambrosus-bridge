@@ -25,4 +25,8 @@ contract EthBridgeTest is EthBridge {
         return blockHash(block_);
     }
 
+    function bytesToUintTest(bytes4 b) public view returns (uint) {
+        return bytesToUint(b);
+    }
+
 }
