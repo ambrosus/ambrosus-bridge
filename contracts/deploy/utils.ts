@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
 
 
 interface Token {
@@ -44,6 +45,27 @@ function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): {
   }
   return tokensPair;
 }
+
+
+export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
+                                           hre: HardhatRuntimeEnvironment,
+                                           bridgeName: string): Promise<void> {
+  const {owner} = await hre.getNamedAccounts();
+
+  const newTokens = Object.entries(tokenPairs)
+    .filter(async (pair) => {
+      const tokenSide = await hre.deployments.read(bridgeName, {from: owner}, 'tokenAddresses', pair[0]);
+      return tokenSide != pair[1]
+    })
+  if (newTokens.length == 0) return;
+
+  const newTokens_ = Object.fromEntries(newTokens);
+  await hre.deployments.execute(bridgeName, {from: owner, log: true},
+    'tokensAdd', Object.keys(newTokens_), Object.values(newTokens_)
+  )
+
+}
+
 
 // get all deployed bridges in `net` network;
 // for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")

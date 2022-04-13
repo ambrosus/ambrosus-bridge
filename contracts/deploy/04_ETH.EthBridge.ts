@@ -2,7 +2,15 @@ import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import vsAbi from "../abi/ModifiedValidatorSet.json";
 import {ethers} from "ethers";
-import {configPath, getTokenPairs, networkType, readConfig, urlFromHHProvider, writeConfig} from "./utils";
+import {
+  addNewTokensToBridge,
+  configPath,
+  getTokenPairs,
+  networkType,
+  readConfig,
+  urlFromHHProvider,
+  writeConfig
+} from "./utils";
 
 const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
@@ -47,6 +55,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(path);
   configFile.bridges.eth.side = deployResult.address;
   writeConfig(path, configFile);
+
+
+  if (deployResult.newlyDeployed) {
+    console.log('Call this cmd second time to update tokens')
+    return;
+  }
+
+  // add new tokens
+  await addNewTokensToBridge(tokenPairs, hre, "EthBridge");
+
 };
 
 

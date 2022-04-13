@@ -1,7 +1,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
-import {configPath, getTokenPairs, networkType, readConfig, writeConfig} from "./utils";
+import {addNewTokensToBridge, configPath, getTokenPairs, networkType, readConfig, writeConfig} from "./utils";
 
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
 
@@ -32,11 +32,30 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       configFile.tokens.wAMB.addresses["amb"],
     ],
     log: true,
+    skipIfAlreadyDeployed: true
   });
-
 
   configFile.bridges.eth.amb = deployResult.address;
   writeConfig(path, configFile);
+
+
+  if (deployResult.newlyDeployed) {
+    console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
+    return;
+  }
+
+
+  // set sideBridgeAddress
+  const ethBridge = configFile.bridges.eth.side;
+  if (!ethBridge) throw new Error("[Setting sideBridgeAddress] Deploy EthBridge first")
+
+  const curAddr = await hre.deployments.read("AmbBridge", {from: owner}, 'sideBridgeAddress');
+  if (curAddr != ethBridge)
+    await hre.deployments.execute("AmbBridge", {from: owner, log: true}, 'setSideBridge', ethBridge);
+
+
+  // add new tokens
+  await addNewTokensToBridge(tokenPairs, hre, "AmbBridge");
 
 };
 
