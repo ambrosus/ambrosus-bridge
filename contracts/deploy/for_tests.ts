@@ -26,7 +26,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     minSafetyBlocks: 10,
   };
 
-  await hre.deployments.deploy("CommonBridge", {
+  await hre.deployments.deploy("CommonBridgeTest", {
     from: owner,
     args: [commonArgs],
     log: true,

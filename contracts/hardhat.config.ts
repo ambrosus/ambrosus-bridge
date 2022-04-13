@@ -63,7 +63,7 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 2000,
+            runs: 200,
           },
           // Note: for amb deploy
           evmVersion: "byzantium"

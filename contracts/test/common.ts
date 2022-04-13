@@ -38,7 +38,7 @@ describe("Common tests", () => {
     relayS = await ethers.getSigner(relay);
     userS = await ethers.getSigner(user);
 
-    commonBridge = await ethers.getContract("CommonBridge", ownerS);
+    commonBridge = await ethers.getContract("CommonBridgeTest", ownerS);
     ambBridge = await ethers.getContract("AmbBridgeTest", ownerS);
     ethBridge = await ethers.getContract("EthBridgeTest", ownerS);
     mockERC20 = await ethers.getContract("BridgeERC20Test", ownerS);

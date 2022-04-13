@@ -13,7 +13,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
     function initialize(
         CommonStructs.ConstructorArgs memory args,
         address ambWrapper_
-    ) {
+    ) public initializer {
         __CommonBridge_init(args);
 
         ambWrapperAddress = ambWrapper_;
