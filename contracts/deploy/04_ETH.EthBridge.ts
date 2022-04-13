@@ -2,7 +2,7 @@ import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import vsAbi from "../abi/ModifiedValidatorSet.json";
 import {ethers} from "ethers";
-import {configPath, getTokensPair, readConfig, urlFromHHProvider, writeConfig} from "./utils";
+import {configPath, getTokenPairs, readConfig, urlFromHHProvider, writeConfig} from "./utils";
 
 const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
@@ -21,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider);
 
 
-  const [tokensThis, tokensSide] = getTokensPair("eth", "amb", hre.network)
+  const tokenPairs = getTokenPairs("amb", "eth", hre.network)
 
   const deployResult = await hre.deployments.deploy("EthBridge", {
     contract: "EthBridge",
@@ -30,8 +30,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       {
         sideBridgeAddress: sideBridgeAddress,
         relayAddress: relayAddress,
-        tokenThisAddresses: tokensThis,
-        tokenSideAddresses: tokensSide,
+        tokenThisAddresses: Object.keys(tokenPairs),
+        tokenSideAddresses: Object.values(tokenPairs),
         fee: 10,    // todo
         feeRecipient: owner,   // todo
         timeframeSeconds: hre.network.live ? 14400 : 1,

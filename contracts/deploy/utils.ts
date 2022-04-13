@@ -31,18 +31,18 @@ export function networkType(network: any): string {
 }
 
 
-export function getTokensPair(thisNet: string, sideNet: string, network: any): any {
+export function getTokenPairs(thisNet: string, sideNet: string, network: any): { [k: string]: string } {
   return _getTokensPair(thisNet, sideNet, readConfig(configPath(network)));
 }
 
-function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): any {
+function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
   const tokensPair: { [k: string]: string } = {};
 
   for (const tokenThis of Object.values(configFile.tokens)) {
     if (!tokenThis.addresses[thisNet] || !tokenThis.addresses[sideNet]) continue;
     tokensPair[tokenThis.addresses[thisNet]] = tokenThis.addresses[sideNet];
   }
-  return [Object.keys(tokensPair), Object.values(tokensPair)];
+  return tokensPair;
 }
 
 // get all deployed bridges in `net` network;

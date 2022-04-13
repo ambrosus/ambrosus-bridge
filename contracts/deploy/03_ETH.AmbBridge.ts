@@ -1,7 +1,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
-import {configPath, getTokensPair, readConfig, writeConfig} from "./utils";
+import {configPath, getTokenPairs, readConfig, writeConfig} from "./utils";
 
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
 
@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(path);
 
   const {owner} = await hre.getNamedAccounts();
-  const [tokensThis, tokensSide] = getTokensPair("amb", "eth", hre.network)
+  const tokenPairs = getTokenPairs("amb", "eth", hre.network)
 
   const deployResult = await hre.deployments.deploy("AmbBridge", {
     from: owner,
@@ -19,8 +19,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       {
         sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
         relayAddress: relayAddress,
-        tokenThisAddresses: tokensThis,
-        tokenSideAddresses: tokensSide,
+        tokenThisAddresses: Object.keys(tokenPairs),
+        tokenSideAddresses: Object.values(tokenPairs),
         fee: 1000,  // todo
         feeRecipient: owner,   // todo
         timeframeSeconds: hre.network.live ? 14400 : 1,
