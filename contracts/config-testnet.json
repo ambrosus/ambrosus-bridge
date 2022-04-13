@@ -13,6 +13,7 @@
     "wAMB": {
       "name": "wAmber",
       "symbol": "wAMB",
+      "denomination": 18,
       "logo": "todo",
       "primaryNet": "amb",
       "addresses": {

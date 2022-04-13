@@ -56,7 +56,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: "BridgeERC20Test",
     from: owner,
     args: [
-      "Mock", "Mock",
+      "Mock", "Mock", 18,
       [ethers.constants.AddressZero], // bridgeAddresses
     ],
     log: true,

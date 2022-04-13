@@ -5,6 +5,7 @@ import fs from "fs";
 interface Token {
   name: string;
   symbol: string;
+  denomination: number;
   addresses: { [net: string]: string }
   primaryNet: string;
 }
