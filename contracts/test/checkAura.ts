@@ -35,7 +35,7 @@ describe("Check Aura", () => {
   });
 
   it("Test blockHash", async () => {
-    const block = require("./data-pow/BlockPoA-48879.json");
+    const block = require("./fixtures/BlockPoA-48879.json");
 
     const [bare, seal] = await ethBridge.blockHashTest(block);
     expect(bare).to.be.equal("0x36d67412a4917d85fc9334644fafb5e69ef71361c6ba17a9089d36e75918e3b3");

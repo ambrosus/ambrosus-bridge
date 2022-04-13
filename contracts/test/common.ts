@@ -264,7 +264,7 @@ describe("Common tests", () => {
 
 
   it('Test CalcTransferReceiptsHash', async () => {
-    const receiptProof = require("./data-pow/receipt-proof-checkpow.json");
+    const receiptProof = require("./fixtures/transfer-event-proof.json");
     const transferProof = [
       receiptProof, 1,
       [["0xc4b907fc242097D47eFd47f36eaee5Da2C239aDd", "0x8FC84c829d9cB1982f2121F135624E25aac679A9", 10]]
