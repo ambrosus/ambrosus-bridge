@@ -4,11 +4,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (te *CommonTransfer) Log() *types.Log {
+func (te *BridgeTransfer) Log() *types.Log {
 	return &te.Raw
 }
 
-func (te *CommonTransfer) ProofElements() [][]byte {
+func (te *BridgeTransfer) ProofElements() [][]byte {
 	return [][]byte{te.Raw.Address.Bytes(), te.EventId.Bytes(), te.Raw.Data}
 }
 

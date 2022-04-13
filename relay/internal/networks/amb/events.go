@@ -24,7 +24,7 @@ const (
 )
 
 // todo name
-func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.CommonTransfer) (*contracts.CheckAuraAuraProof, error) {
+func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*contracts.CheckAuraAuraProof, error) {
 	// populated by functions below
 	blocksMap := make(map[uint64]contracts.CheckAuraBlockAura)
 
@@ -89,7 +89,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.CommonTransfer) (*c
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockAura, event *contracts.CommonTransfer) (*contracts.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockAura, event *contracts.BridgeTransfer) (*contracts.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.
 	}, nil
 }
 
-func (b *Bridge) getVSChangeEvents(event *contracts.CommonTransfer) ([]*contracts.VsInitiateChange, error) {
+func (b *Bridge) getVSChangeEvents(event *contracts.BridgeTransfer) ([]*contracts.VsInitiateChange, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
