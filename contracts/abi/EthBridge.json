@@ -1010,7 +1010,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferAura",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

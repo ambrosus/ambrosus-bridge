@@ -26,8 +26,8 @@ const BridgeName = "ethereum"
 type Bridge struct {
 	Client     *ethclient.Client
 	WsClient   *ethclient.Client
-	Contract   *contracts.Eth
-	WsContract *contracts.Eth
+	Contract   *contracts.Bridge
+	WsContract *contracts.Bridge
 	sideBridge networks.BridgeReceiveEthash
 	config     *config.ETHConfig
 	auth       *bind.TransactOpts
@@ -56,14 +56,14 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	}
 
 	// Creating a new ambrosus bridge contract instance (HTTP & WS).
-	contract, err := contracts.NewEth(common.HexToAddress(cfg.ContractAddr), client)
+	contract, err := contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, fmt.Errorf("create contract http: %w", err)
 	}
 	// Compatibility with tests.
-	var wsContract *contracts.Eth
+	var wsContract *contracts.Bridge
 	if wsClient != nil {
-		wsContract, err = contracts.NewEth(common.HexToAddress(cfg.ContractAddr), wsClient)
+		wsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
 		if err != nil {
 			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
@@ -102,7 +102,7 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 }
 
 // GetEventById gets contract event by id.
-func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
+func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
 	opts := &bind.FilterOpts{Context: context.Background()}
 
 	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
@@ -111,7 +111,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	}
 
 	if logs.Next() {
-		return &logs.Event.TransferEvent, nil
+		return logs.Event, nil
 	}
 
 	return nil, networks.ErrEventNotFound
@@ -185,7 +185,7 @@ func (b *Bridge) listen() error {
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
-	eventChannel := make(chan *contracts.EthTransfer) // <-- тут я хз как сделать общий(common) тип для канала
+	eventChannel := make(chan *contracts.BridgeTransfer)
 	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransfer: %w", err)
@@ -201,14 +201,14 @@ func (b *Bridge) listen() error {
 		case event := <-eventChannel:
 			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
-			if err := b.sendEvent(&event.TransferEvent); err != nil {
+			if err := b.sendEvent(event); err != nil {
 				return fmt.Errorf("send event: %w", err)
 			}
 		}
 	}
 }
 
-func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
+func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
 
 	// Wait for safety blocks.
@@ -271,7 +271,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	// todo delete old epochs, generate new (if need)
 }
 
-func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
+func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
 	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
 		return fmt.Errorf("HeaderByNumber: %w", err)
