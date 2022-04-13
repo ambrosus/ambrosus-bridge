@@ -7,16 +7,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const {owner} = await hre.getNamedAccounts();
 
-  const wAmb = await hre.deployments.deploy("wAMB", {
-    contract: "wAMB",
+  const path = configPath(hre.network);
+  let configFile = readConfig(path);
+
+  const samb = configFile.tokens.SAMB;
+
+  const deployResult = await hre.deployments.deploy(samb.name, {
+    contract: "sAMB",
     from: owner,
-    args: ["wAMB", "wAmb"],
+    args: [samb.name, samb.symbol],
     log: true,
   });
 
-  const path = configPath(hre.network);
-  let configFile = readConfig(path);
-  configFile.tokens.wAMB.addresses.amb = wAmb.address;
+  samb.addresses.amb = deployResult.address;
   writeConfig(path, configFile);
 
 };
