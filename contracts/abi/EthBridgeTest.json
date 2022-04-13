@@ -367,19 +367,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0_seal",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0_bare",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p1",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes32",
@@ -403,17 +398,7 @@
               },
               {
                 "internalType": "bytes",
-                "name": "s1",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
                 "name": "step",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "s2",
                 "type": "bytes"
               },
               {
@@ -897,19 +882,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0_seal",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0_bare",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p1",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes32",
@@ -933,17 +913,7 @@
               },
               {
                 "internalType": "bytes",
-                "name": "s1",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
                 "name": "step",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "s2",
                 "type": "bytes"
               },
               {
@@ -1033,7 +1003,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferAura",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -39,25 +39,22 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 		P0Bare hexutil.Bytes `json:"p0_bare"`
 
 		// common (for bare and seal headers) part
-		P1          hexutil.Bytes `json:"p1"`
 		ParentHash  hexutil.Bytes `json:"parent_hash"`
 		P2          hexutil.Bytes `json:"p2"`
 		ReceiptHash hexutil.Bytes `json:"receipt_hash"`
 		P3          hexutil.Bytes `json:"p3"`
 
 		// seal part
-		S1        hexutil.Bytes `json:"s1"`
 		Step      hexutil.Bytes `json:"step"`
-		S2        hexutil.Bytes `json:"s2"`
 		Signature hexutil.Bytes `json:"signature"`
 
 		Type       uint8 `json:"type_"`
 		DeltaIndex int64 `json:"delta_index"`
 	}
 	tm := AuraBlockAura{
-		t.P0Seal, t.P0Bare,
-		t.P1, t.ParentHash[:], t.P2, t.ReceiptHash[:], t.P3,
-		t.S1, t.Step, t.S2, t.Signature,
+		t.P0Seal[:], t.P0Bare[:],
+		t.ParentHash[:], t.P2, t.ReceiptHash[:], t.P3,
+		t.Step, t.Signature,
 		t.Type, t.DeltaIndex,
 	}
 	return json.Marshal(&tm)
@@ -108,7 +105,7 @@ func (t *CheckPoWBlockPoW) MarshalJSON() ([]byte, error) {
 	}
 
 	tm := PoWBlockPoW{
-		t.P0WithNonce, t.P0WithoutNonce,
+		t.P0WithNonce[:], t.P0WithoutNonce[:],
 		t.P1, t.ParentOrReceiptHash[:], t.P2, t.Difficulty[:], t.P3, t.Number[:], t.P4,
 		t.P5, t.Nonce[:],
 		t.P6,

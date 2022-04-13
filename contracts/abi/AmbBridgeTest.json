@@ -357,14 +357,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithoutNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes",
@@ -517,14 +517,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithoutNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes",
@@ -1058,14 +1058,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithoutNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes",
@@ -1177,7 +1177,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferPoW",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1327,14 +1327,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithoutNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes",

@@ -12,21 +12,23 @@ contract CheckAura is CheckReceiptsProof {
     uint8 constant BlTypeTransfer = 4;
     uint8 constant BlTypeVSChange = 8;
 
+    bytes1 constant parentHashPrefix = 0xA0;
+    bytes1 constant stepPrefix = 0x84;
+    bytes2 constant signaturePrefix = 0xB841;
+
+
     bytes32 public lastProcessedBlock;
 
     struct BlockAura {
-        bytes p0_seal;
-        bytes p0_bare;
+        bytes3 p0_seal;
+        bytes3 p0_bare;
 
-        bytes p1;
         bytes32 parent_hash;
-        bytes p2;
+        bytes p2;  // todo maybe always 88 bytes; can be optimized?
         bytes32 receipt_hash;
         bytes p3;
 
-        bytes s1;
         bytes step;
-        bytes s2;
         bytes signature;
 
         uint8 type_;
@@ -113,7 +115,7 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function CheckBlock(BlockAura memory block_) internal view returns (bytes32) {
-        bytes memory common_rlp = abi.encodePacked(block_.p1, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
+        bytes memory common_rlp = abi.encodePacked(parentHashPrefix, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
 
         // hash without seal for signature check
         bytes32 bare_hash = keccak256(abi.encodePacked(block_.p0_bare, common_rlp));
@@ -122,7 +124,7 @@ contract CheckAura is CheckReceiptsProof {
         // revert if wrong
 
         // hash with seal, for prev_hash check
-        return keccak256(abi.encodePacked(block_.p0_seal, common_rlp, block_.s1, block_.step, block_.s2, block_.signature));
+        return keccak256(abi.encodePacked(block_.p0_seal, common_rlp, stepPrefix, block_.step, signaturePrefix, block_.signature));
 
     }
 

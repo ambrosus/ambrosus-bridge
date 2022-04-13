@@ -7,8 +7,8 @@ import "./CheckPoW_Ethash.sol";
 
 contract CheckPoW is CheckReceiptsProof, Ethash  {
     struct BlockPoW {
-        bytes p0WithNonce;
-        bytes p0WithoutNonce;
+        bytes3 p0WithNonce;
+        bytes3 p0WithoutNonce;
 
         bytes p1;
         bytes32 parentOrReceiptHash;
