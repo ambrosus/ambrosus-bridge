@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/CommonStructs.sol";
 import "../checks/CheckPoW.sol";
-import "../tokens/IwAMB.sol";
+import "../tokens/IWrapper.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
@@ -27,7 +27,7 @@ contract AmbBridge is CommonBridge, CheckPoW {
         feeRecipient.transfer(fee);
 
         uint restOfValue = msg.value - fee;
-        IwAMB(ambWrapperAddress).wrap{value: restOfValue}();
+        IWrapper(ambWrapperAddress).deposit{value: restOfValue}();
 
         //
         queue.push(CommonStructs.Transfer(tokenExternalAddress, toAddress, restOfValue));
