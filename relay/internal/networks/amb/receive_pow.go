@@ -13,7 +13,7 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	// Metric
 	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
-	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
+	tx, txErr := b.Contract.SubmitTransferPoW(b.auth, *proof)
 
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
