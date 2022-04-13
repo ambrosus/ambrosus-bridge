@@ -588,6 +588,188 @@
   {
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "p0_seal",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p0_bare",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "parent_hash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "receipt_hash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p3",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "s1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "step",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "s2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint8",
+            "name": "type_",
+            "type": "uint8"
+          },
+          {
+            "internalType": "int64",
+            "name": "delta_index",
+            "type": "int64"
+          }
+        ],
+        "internalType": "struct CheckAura.BlockAura",
+        "name": "block_",
+        "type": "tuple"
+      }
+    ],
+    "name": "blockHashTest",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "bytes",
+            "name": "p0_seal",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p0_bare",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "parent_hash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "receipt_hash",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes",
+            "name": "p3",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "s1",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "step",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "s2",
+            "type": "bytes"
+          },
+          {
+            "internalType": "bytes",
+            "name": "signature",
+            "type": "bytes"
+          },
+          {
+            "internalType": "uint8",
+            "name": "type_",
+            "type": "uint8"
+          },
+          {
+            "internalType": "int64",
+            "name": "delta_index",
+            "type": "int64"
+          }
+        ],
+        "internalType": "struct CheckAura.BlockAura",
+        "name": "block_",
+        "type": "tuple"
+      }
+    ],
+    "name": "blockHashTestPaid",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "fee_",
         "type": "uint256"
@@ -1033,7 +1215,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferAura",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

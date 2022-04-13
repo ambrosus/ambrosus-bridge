@@ -113,27 +113,28 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function CheckBlock(BlockAura memory block_) internal view returns (bytes32) {
-        bytes memory common_rlp = abi.encodePacked(block_.p1, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
+        (bytes32 bare_hash, bytes32 seal_hash) = blockHash(block_);
 
-        // hash without seal for signature check
-        bytes32 bare_hash = keccak256(abi.encodePacked(block_.p0_bare, common_rlp));
-        address validator = GetValidator(bytesToUint(block_.step));
+        address validator = validatorSet[bytesToUint(block_.step) % validatorSet.length];
         CheckSignature(validator, bare_hash, block_.signature);
-        // revert if wrong
 
-        // hash with seal, for prev_hash check
-        return keccak256(abi.encodePacked(block_.p0_seal, common_rlp, block_.s1, block_.step, block_.s2, block_.signature));
-
+        return seal_hash;
     }
 
-
-    function GetValidator(uint step) internal view returns (address) {
-        return validatorSet[step % validatorSet.length];
+    function blockHash(BlockAura memory block_) internal pure returns (bytes32, bytes32) {
+        bytes memory common_rlp = abi.encodePacked(block_.p1, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
+        return  (
+            // hash without seal (bare), for signature check
+            keccak256(abi.encodePacked(block_.p0_bare, common_rlp)),
+            // hash with seal, for prev_hash check
+            keccak256(abi.encodePacked(block_.p0_seal, common_rlp, block_.s1, block_.step, block_.s2, block_.signature))
+        );
     }
 
     function GetValidatorSet() public view returns (address[] memory) {
         return validatorSet;
     }
+
 
     function CheckSignature(address signer, bytes32 message_hash, bytes memory signature) internal pure {
         bytes32 r;

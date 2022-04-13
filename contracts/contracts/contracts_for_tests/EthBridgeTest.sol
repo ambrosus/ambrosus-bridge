@@ -16,4 +16,13 @@ contract EthBridgeTest is EthBridge {
     function CheckSignatureTest(address signer, bytes32 message, bytes memory signature) public pure {
         CheckSignature(signer, message, signature);
     }
+
+    function blockHashTest(BlockAura memory block_) public view returns (bytes32, bytes32) {
+        return blockHash(block_);
+    }
+
+    function blockHashTestPaid(BlockAura memory block_) public returns (bytes32, bytes32) {
+        return blockHash(block_);
+    }
+
 }

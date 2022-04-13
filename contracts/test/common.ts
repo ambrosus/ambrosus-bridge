@@ -275,13 +275,6 @@ describe("Common tests", () => {
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 
-  it('CheckSignature', async () => {
-    const hash = "0x74dfc2c4994f9393f823773a399849e0241c8f4c549f7e019960bd64b938b6ae"
-    const signature = "0x44c08b83a120ad90f645f645f3fe1bc49dd88e703fce665de1f941c0cede65d81968ac2ad0b5bb9db7cb32a23064c199c0ab5378957f99b1c361fc3ed3b209eb00";
-    const needAddress = "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0"
-    expect(ethers.utils.recoverAddress(ethers.utils.arrayify(hash), signature)).eq(needAddress);
-    await ethBridge.CheckSignatureTest(needAddress, hash, signature)
-  });
 
 });
 

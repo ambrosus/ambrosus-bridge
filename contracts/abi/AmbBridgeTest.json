@@ -1177,7 +1177,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferPoW",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
