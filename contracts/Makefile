@@ -8,5 +8,7 @@ deploy_all:
 	yarn hardhat deploy --network amb_test --tags bridges
 	yarn hardhat deploy --network eth_test --tags bridges
 
-	yarn hardhat deploy --network amb_test --tags after_deploy
-	yarn hardhat deploy --network eth_test --tags after_deploy
+	yarn hardhat deploy --network amb_test --tags bridges  # setSideBridge to newly eth deployment
+
+	yarn hardhat deploy --network amb_test --tags tokens_add_bridges
+	yarn hardhat deploy --network eth_test --tags tokens_add_bridges

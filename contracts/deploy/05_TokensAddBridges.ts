@@ -35,4 +35,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 export default func;
-func.tags = ["after_deploy"];
+func.tags = ["tokens_add_bridges"];
