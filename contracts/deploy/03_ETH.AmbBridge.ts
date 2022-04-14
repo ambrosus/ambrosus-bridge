@@ -1,7 +1,15 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
-import {addNewTokensToBridge, configPath, getTokenPairs, networkType, readConfig, writeConfig} from "./utils";
+import {
+  addNewTokensToBridge,
+  configPath,
+  getTokenPairs,
+  networkType,
+  readConfig,
+  setAdminRole,
+  writeConfig
+} from "./utils";
 
 const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
 
@@ -38,6 +46,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   configFile.bridges.eth.amb = deployResult.address;
   writeConfig(path, configFile);
 
+  // todo set role in constructor
+  // set adminRole
+  await setAdminRole(hre, "AmbBridge")
 
   if (deployResult.newlyDeployed) {
     console.log('Call this cmd second time to set sideBridgeAddress or update tokens')

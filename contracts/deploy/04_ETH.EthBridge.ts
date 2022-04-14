@@ -7,7 +7,7 @@ import {
   configPath,
   getTokenPairs,
   networkType,
-  readConfig,
+  readConfig, setAdminRole,
   urlFromHHProvider,
   writeConfig
 } from "./utils";
@@ -56,6 +56,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   configFile.bridges.eth.side = deployResult.address;
   writeConfig(path, configFile);
 
+  // set adminRole
+  await setAdminRole(hre, "EthBridge")
 
   if (deployResult.newlyDeployed) {
     console.log('Call this cmd second time to update tokens')
