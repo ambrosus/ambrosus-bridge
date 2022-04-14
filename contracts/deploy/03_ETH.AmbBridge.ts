@@ -15,27 +15,39 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const deployResult = await hre.deployments.deploy("AmbBridge", {
     from: owner,
-    args: [
-      {
-        sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-        relayAddress: relayAddress,
-        tokenThisAddresses: tokensThis,
-        tokenSideAddresses: tokensSide,
-        fee: 1000,  // todo
-        feeRecipient: owner,   // todo
-        timeframeSeconds: hre.network.live ? 14400 : 1,
-        lockTime: hre.network.live ? 1000 : 1,
-        minSafetyBlocks: 10,
-      },
-      configFile.tokens.wAMB.addresses["amb"],
-    ],
+    proxy: {
+      proxyContract: "TransparentUpgradeableProxy",
+      // viaAdminContract: {
+      //   name: "ProxyAdmin",
+      //   artifact: "ProxyAdmin"
+      // },
+      viaAdminContract: "ProxyAdmin",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [
+            {
+              sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+              relayAddress: relayAddress,
+              tokenThisAddresses: tokensThis,
+              tokenSideAddresses: tokensSide,
+              fee: 1000,  // todo
+              feeRecipient: owner,   // todo
+              timeframeSeconds: hre.network.live ? 14400 : 1,
+              lockTime: hre.network.live ? 1000 : 1,
+              minSafetyBlocks: 10,
+            },
+            configFile.tokens.wAMB.addresses["amb"],
+          ]
+        }
+      }
+    },
     log: true,
   });
 
 
   configFile.bridges.eth.amb = deployResult.address;
   writeConfig(path, configFile);
-
 };
 
 export default func;

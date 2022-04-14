@@ -15,7 +15,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   // set sideBridge to ambrosus bridge
-
   if (netName == "amb") {
     const ethBridge = await hre.companionNetworks['eth'].deployments.getOrNull('EthBridge');
     if (!ethBridge) throw new Error("[Setting sideBridgeAddress] Deploy EthBridge first")
@@ -32,7 +31,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // add bridge address to tokens
   console.log("add bridge address to tokens")
-
   for (const token of Object.values(configFile.tokens)) {
     if (!token.addresses[netName]) continue;  // not deployed
     if (token.primaryNet == netName) continue;  // it's not bridgeErc20, no need to set role
@@ -43,9 +41,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         "hasRole", BRIDGE_ROLE, br)
     }))
 
-    if (notSetBridges.length > 0)
+    if (notSetBridges.length > 0) {
+      console.log(token.symbol)
       await hre.deployments.execute(token.symbol, {from: owner, log: true},
-        "setBridgeAddressesRole", notSetBridges)
+          "setBridgeAddressesRole", notSetBridges)
+      console.log(321)
+    }
   }
 
 

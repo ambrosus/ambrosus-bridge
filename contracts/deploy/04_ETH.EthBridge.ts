@@ -26,22 +26,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployResult = await hre.deployments.deploy("EthBridge", {
     contract: "EthBridge",
     from: owner,
-    args: [
-      {
-        sideBridgeAddress: sideBridgeAddress,
-        relayAddress: relayAddress,
-        tokenThisAddresses: tokensThis,
-        tokenSideAddresses: tokensSide,
-        fee: 10,    // todo
-        feeRecipient: owner,   // todo
-        timeframeSeconds: hre.network.live ? 14400 : 1,
-        lockTime: hre.network.live ? 1000 : 1,
-        minSafetyBlocks: 10,
-      },
-      initialValidators,
-      vsAddress,
-      lastProcessedBlock,
-    ],
+    proxy: {
+      proxyContract: "TransparentUpgradeableProxy",
+      viaAdminContract: "ProxyAdmin",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [
+            {
+              sideBridgeAddress: sideBridgeAddress,
+              relayAddress: relayAddress,
+              tokenThisAddresses: tokensThis,
+              tokenSideAddresses: tokensSide,
+              fee: 10,    // todo
+              feeRecipient: owner,   // todo
+              timeframeSeconds: hre.network.live ? 14400 : 1,
+              lockTime: hre.network.live ? 1000 : 1,
+              minSafetyBlocks: 10,
+            },
+            initialValidators,
+            vsAddress,
+            lastProcessedBlock,
+          ]
+        }
+      }
+    },
     log: true,
     skipIfAlreadyDeployed: true
   });
