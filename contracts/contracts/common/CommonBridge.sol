@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./CommonStructs.sol";
+import "../tokens/IWrapper.sol";
+
 
 
 contract CommonBridge is AccessControl, Pausable {
@@ -15,12 +17,15 @@ contract CommonBridge is AccessControl, Pausable {
 
     // queue to be pushed in another network
     CommonStructs.Transfer[] queue;
+
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
+    uint public oldestLockedEventId;  // head index of lockedTransfers 'queue' mapping
 
 
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
+    address public wrapperAddress;
 
     uint public fee;
     address payable feeRecipient;
@@ -30,25 +35,26 @@ contract CommonBridge is AccessControl, Pausable {
     uint public timeframeSeconds;
     uint public lockTime;
 
-    uint public inputEventId;
-    uint outputEventId;
-    uint public oldestLockedEventId;
+    uint public inputEventId; // last processed event from side network
+    uint outputEventId = 1;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint lastTimeframe;
 
     event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
-    event TransferFinish(uint indexed event_id);
     event TransferSubmit(uint indexed event_id);
+    event TransferFinish(uint indexed event_id);
 
 
     constructor(CommonStructs.ConstructorArgs memory args)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
+        _setupRole(ADMIN_ROLE, args.adminAddress);
 
         // initialise tokenAddresses with start values
         _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);
+        wrapperAddress = args.wrappingTokenAddress;
 
         sideBridgeAddress = args.sideBridgeAddress;
         fee = args.fee;
@@ -58,16 +64,34 @@ contract CommonBridge is AccessControl, Pausable {
         lockTime = args.lockTime;
     }
 
-    function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
-        address tokenExternalAddress = tokenAddresses[tokenAmbAddress];
-        require(tokenExternalAddress != address(0), "Unknown token address");
+
+    function wrap_withdraw(address toAddress) public payable {
+        address tokenSideAddress = tokenAddresses[wrapperAddress];
+        require(tokenSideAddress != address(0), "Unknown token address");
+
+        require(msg.value > fee, "msg.value can't be lesser than fee");
+        feeRecipient.transfer(fee);
+
+        uint restOfValue = msg.value - fee;
+        IWrapper(wrapperAddress).deposit{value: restOfValue}();
+
+        //
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
+        emit Withdraw(msg.sender, outputEventId, fee);
+
+        withdraw_finish();
+    }
+
+    function withdraw(address tokenThisAddress, address toAddress, uint amount) payable public {
+        address tokenSideAddress = tokenAddresses[tokenThisAddress];
+        require(tokenSideAddress != address(0), "Unknown token address");
 
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
 
-        require(IERC20(tokenAmbAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
+        require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);
 
         withdraw_finish();
@@ -76,7 +100,7 @@ contract CommonBridge is AccessControl, Pausable {
     function withdraw_finish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
-            emit Transfer(++outputEventId, queue);
+            emit Transfer(outputEventId++, queue);
             delete queue;
 
             lastTimeframe = nowTimeframe;

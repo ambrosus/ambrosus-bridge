@@ -4,37 +4,10 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../common/CommonStructs.sol";
 import "../checks/CheckPoW.sol";
-import "../tokens/IWrapper.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
-    address ambWrapperAddress;
-
-    constructor(
-        CommonStructs.ConstructorArgs memory args,
-        address ambWrapper_
-    )
-    CommonBridge(args)
-    {
-        ambWrapperAddress = ambWrapper_;
-    }
-
-    function wrap_withdraw(address toAddress) public payable {
-        address tokenExternalAddress = tokenAddresses[ambWrapperAddress];
-        require(tokenExternalAddress != address(0), "Unknown token address");
-
-        require(msg.value > fee, "msg.value can't be lesser than fee");
-        feeRecipient.transfer(fee);
-
-        uint restOfValue = msg.value - fee;
-        IWrapper(ambWrapperAddress).deposit{value: restOfValue}();
-
-        //
-        queue.push(CommonStructs.Transfer(tokenExternalAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, outputEventId, fee);
-
-        withdraw_finish();
-    }
+    constructor(CommonStructs.ConstructorArgs memory args) CommonBridge(args) {}
 
     function submitTransferPoW(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
         emit TransferSubmit(powProof.transfer.event_id);
@@ -51,7 +24,4 @@ contract AmbBridge is CommonBridge, CheckPoW {
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-    function setAmbWrapper(address wrapper) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        ambWrapperAddress = wrapper;
-    }
 }

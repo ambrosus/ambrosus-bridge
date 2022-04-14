@@ -1,7 +1,6 @@
 import path from "path";
 import fs from "fs";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
-import { ethers } from "ethers";
 
 
 interface Token {
@@ -68,24 +67,6 @@ export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
   console.log("Adding new tokens to bridge:", tokenPairs);
   await hre.deployments.execute(bridgeName, {from: owner, log: true},
     'tokensAddBatch', Object.keys(tokenPairs), Object.values(tokenPairs)
-  )
-
-}
-
-const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
-
-export async function setAdminRole(hre: HardhatRuntimeEnvironment, bridgeName: string): Promise<void> {
-  const {owner, owner: admin} = await hre.getNamedAccounts();
-  // todo use different admin on production
-
-  if (await hre.deployments.read(bridgeName, {from: owner}, 'hasRole', ADMIN_ROLE, admin)) {
-    console.log("Admin role already set");
-    return;
-  }
-
-  console.log("Setting admin role to", admin);
-  await hre.deployments.execute(bridgeName, {from: owner, log: true},
-    'grantRole', ADMIN_ROLE, admin
   )
 
 }

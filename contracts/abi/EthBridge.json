@@ -10,7 +10,17 @@
           },
           {
             "internalType": "address",
+            "name": "adminAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
             "name": "relayAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
             "type": "address"
           },
           {
@@ -1165,6 +1175,32 @@
     "name": "withdraw",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "toAddress",
+        "type": "address"
+      }
+    ],
+    "name": "wrap_withdraw",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapperAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

@@ -5,11 +5,7 @@ import "../eth/AmbBridge.sol";
 import "../common/CommonStructs.sol";
 
 contract AmbBridgeTest is AmbBridge {
-    constructor(
-        CommonStructs.ConstructorArgs memory args,
-        address ambWrapper
-    )
-    AmbBridge(args, ambWrapper) {}
+    constructor(CommonStructs.ConstructorArgs memory args) AmbBridge(args) {}
 
     function getLockedTransferTest(uint event_id) public view returns (CommonStructs.LockedTransfers memory) {
         return lockedTransfers[event_id];

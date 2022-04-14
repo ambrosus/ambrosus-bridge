@@ -55,7 +55,6 @@ describe("Common tests", () => {
       await bridge.tokensAddBatch([sAmb.address, mockERC20.address], [token1, token2]);
       await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
     }
-    await ambBridge.setAmbWrapper(sAmb.address);
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
@@ -94,33 +93,33 @@ describe("Common tests", () => {
   });
 
 
-  describe('Test wrap_withdraw in AmbBridge', async () => {
+  describe('Test wrap_withdraw', async () => {
 
     it('Test wrap part', async () => {
-      const fee = +await ambBridge.fee();
+      const fee = +await commonBridge.fee();
 
-      await ambBridge.wrap_withdraw(user, {value: fee + 50});
+      await commonBridge.wrap_withdraw(user, {value: fee + 50});
 
-      await expect(() => ambBridge.wrap_withdraw(user, {value: fee + 50}))
-        .to.changeTokenBalance(sAmb, ambBridge, 50);
+      await expect(() => commonBridge.wrap_withdraw(user, {value: fee + 50}))
+        .to.changeTokenBalance(sAmb, commonBridge, 50);
     });
 
     it('Test withdraw part', async () => {
-      const fee = +await ambBridge.fee();
+      const fee = +await commonBridge.fee();
 
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
       await nextTimeframe();
 
       // will catch previous txs (because nextTimeframe happened)
-      let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      let tx1Amb: ContractTransaction = await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
       await nextTimeframe();
 
       // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      let tx2Amb: ContractTransaction = await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
 
       let receipt1Amb: ContractReceipt = await tx1Amb.wait();
       let receipt2Amb: ContractReceipt = await tx2Amb.wait();

@@ -7,11 +7,9 @@ import {
   getTokenPairs,
   networkType,
   readConfig,
-  setAdminRole,
   writeConfig
 } from "./utils";
 
-const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["amb"]) return;
@@ -21,6 +19,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(path);
 
   const {owner} = await hre.getNamedAccounts();
+  // todo get admin and relay from getNamedAccounts
+  const admin = owner;
+  const relay = owner;
+
   const tokenPairs = getTokenPairs("amb", "eth", hre.network)
 
   const deployResult = await hre.deployments.deploy("AmbBridge", {
@@ -28,7 +30,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [
       {
         sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-        relayAddress: relayAddress,
+        adminAddress: admin,
+        relayAddress: relay,
+        wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
         tokenThisAddresses: Object.keys(tokenPairs),
         tokenSideAddresses: Object.values(tokenPairs),
         fee: 1000,  // todo
@@ -36,8 +40,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         timeframeSeconds: isMainNet ? 14400 : 1,
         lockTime: isMainNet ? 1000 : 1,
         minSafetyBlocks: 10,
-      },
-      configFile.tokens.SAMB.addresses.amb,
+      }
     ],
     log: true,
     skipIfAlreadyDeployed: true
@@ -45,10 +48,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   configFile.bridges.eth.amb = deployResult.address;
   writeConfig(path, configFile);
-
-  // todo set role in constructor
-  // set adminRole
-  await setAdminRole(hre, "AmbBridge")
 
   if (deployResult.newlyDeployed) {
     console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
