@@ -6,19 +6,39 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name !== "hardhat") return;
   const {owner} = await hre.getNamedAccounts();
 
+
+  const {address: mockAddr} = await hre.deployments.deploy("BridgeERC20Test", {
+    contract: "BridgeERC20Test",
+    from: owner,
+    args: [
+      "Mock", "Mock", 18,
+      [ethers.constants.AddressZero], // bridgeAddresses
+    ],
+    log: true,
+  });
+
+  const {address: wrapperAddr} = await hre.deployments.deploy("sAMB", {
+    contract: "sAMB",
+    from: owner,
+    args: ["sAMB", "sAMB"],
+    log: true,
+  });
+
+
   const commonArgs = {
     sideBridgeAddress: ethers.constants.AddressZero,
     adminAddress: ethers.constants.AddressZero,
     relayAddress: ethers.constants.AddressZero,
+    wrappingTokenAddress: wrapperAddr,
     tokenThisAddresses: [
+      wrapperAddr,
+      mockAddr,
       "0x0000000000000000000000000000000000000001",
-      "0x0000000000000000000000000000000000000003",
-      "0x0000000000000000000000000000000000000005",
     ],
     tokenSideAddresses: [
+      mockAddr,
+      wrapperAddr,
       "0x0000000000000000000000000000000000000002",
-      "0x0000000000000000000000000000000000000004",
-      "0x0000000000000000000000000000000000000006",
     ],
     fee: 1000,
     feeRecipient: ethers.constants.AddressZero,
@@ -35,7 +55,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   await hre.deployments.deploy("AmbBridgeTest", {
     from: owner,
-    args: [commonArgs, ethers.constants.AddressZero],
+    args: [commonArgs],
     log: true,
   });
 
@@ -53,22 +73,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  await hre.deployments.deploy("BridgeERC20Test", {
-    contract: "BridgeERC20Test",
-    from: owner,
-    args: [
-      "Mock", "Mock", 18,
-      [ethers.constants.AddressZero], // bridgeAddresses
-    ],
-    log: true,
-  });
-
-  await hre.deployments.deploy("sAMB", {
-    contract: "sAMB",
-    from: owner,
-    args: ["sAMB", "sAMB"],
-    log: true,
-  });
 };
 
 export default func;

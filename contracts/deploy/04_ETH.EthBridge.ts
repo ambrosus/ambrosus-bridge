@@ -19,9 +19,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["eth"]) return;
   const isMainNet = networkType(hre.network) === 'mainnet'
 
-  const ambNet = hre.companionNetworks['amb']
-  const {address: sideBridgeAddress} = await ambNet.deployments.get('AmbBridge');
-  const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider);
+  const path = configPath(hre.network);
+  let configFile = readConfig(path);
 
   const {owner} = await hre.getNamedAccounts();
   // todo get admin and relay from getNamedAccounts
@@ -29,6 +28,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const relay = owner;
 
   const tokenPairs = getTokenPairs("eth", "amb", hre.network)
+
+  const ambNet = hre.companionNetworks['amb']
+  const {address: sideBridgeAddress} = await ambNet.deployments.get('AmbBridge');
+  const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider);
+
 
   const deployResult = await hre.deployments.deploy("EthBridge", {
     contract: "EthBridge",
@@ -38,6 +42,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         sideBridgeAddress: sideBridgeAddress,
         adminAddress: admin,
         relayAddress: relay,
+        wrappingTokenAddress: configFile.tokens.WETH.addresses.eth,
         tokenThisAddresses: Object.keys(tokenPairs),
         tokenSideAddresses: Object.values(tokenPairs),
         fee: 10,    // todo
@@ -55,8 +60,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
 
-  const path = configPath(hre.network);
-  let configFile = readConfig(path);
   configFile.bridges.eth.side = deployResult.address;
   writeConfig(path, configFile);
 

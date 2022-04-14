@@ -19,6 +19,11 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
+            "type": "address"
+          },
+          {
             "internalType": "address[]",
             "name": "tokenThisAddresses",
             "type": "address[]"
@@ -1364,6 +1369,32 @@
     "name": "withdraw",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "toAddress",
+        "type": "address"
+      }
+    ],
+    "name": "wrap_withdraw",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapperAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

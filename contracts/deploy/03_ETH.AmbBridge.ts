@@ -23,7 +23,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const admin = owner;
   const relay = owner;
 
-
   const tokenPairs = getTokenPairs("amb", "eth", hre.network)
 
   const deployResult = await hre.deployments.deploy("AmbBridge", {
@@ -33,6 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
         adminAddress: admin,
         relayAddress: relay,
+        wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
         tokenThisAddresses: Object.keys(tokenPairs),
         tokenSideAddresses: Object.values(tokenPairs),
         fee: 1000,  // todo
@@ -40,8 +40,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         timeframeSeconds: isMainNet ? 14400 : 1,
         lockTime: isMainNet ? 1000 : 1,
         minSafetyBlocks: 10,
-      },
-      configFile.tokens.SAMB.addresses.amb,
+      }
     ],
     log: true,
     skipIfAlreadyDeployed: true

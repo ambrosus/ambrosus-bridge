@@ -19,6 +19,11 @@
             "type": "address"
           },
           {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
+            "type": "address"
+          },
+          {
             "internalType": "address[]",
             "name": "tokenThisAddresses",
             "type": "address[]"
@@ -57,11 +62,6 @@
         "internalType": "struct CommonStructs.ConstructorArgs",
         "name": "args",
         "type": "tuple"
-      },
-      {
-        "internalType": "address",
-        "name": "ambWrapper",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -992,19 +992,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "wrapper",
-        "type": "address"
-      }
-    ],
-    "name": "setAmbWrapper",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "epochNum",
         "type": "uint256"
@@ -1446,6 +1433,19 @@
     "name": "wrap_withdraw",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapperAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

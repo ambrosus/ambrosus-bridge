@@ -5,6 +5,8 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./CommonStructs.sol";
+import "../tokens/IWrapper.sol";
+
 
 
 contract CommonBridge is AccessControl, Pausable {
@@ -21,6 +23,8 @@ contract CommonBridge is AccessControl, Pausable {
 
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
+    address public wrapperAddress;
+
 
     uint public fee;
     address payable feeRecipient;
@@ -50,6 +54,7 @@ contract CommonBridge is AccessControl, Pausable {
 
         // initialise tokenAddresses with start values
         _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);
+        wrapperAddress = args.wrappingTokenAddress;
 
         sideBridgeAddress = args.sideBridgeAddress;
         fee = args.fee;
@@ -57,6 +62,24 @@ contract CommonBridge is AccessControl, Pausable {
         minSafetyBlocks = args.minSafetyBlocks;
         timeframeSeconds = args.timeframeSeconds;
         lockTime = args.lockTime;
+    }
+
+
+    function wrap_withdraw(address toAddress) public payable {
+        address tokenExternalAddress = tokenAddresses[wrapperAddress];
+        require(tokenExternalAddress != address(0), "Unknown token address");
+
+        require(msg.value > fee, "msg.value can't be lesser than fee");
+        feeRecipient.transfer(fee);
+
+        uint restOfValue = msg.value - fee;
+        IWrapper(wrapperAddress).deposit{value: restOfValue}();
+
+        //
+        queue.push(CommonStructs.Transfer(tokenExternalAddress, toAddress, restOfValue));
+        emit Withdraw(msg.sender, outputEventId, fee);
+
+        withdraw_finish();
     }
 
     function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
