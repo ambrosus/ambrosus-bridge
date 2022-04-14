@@ -8,6 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const commonArgs = {
     sideBridgeAddress: ethers.constants.AddressZero,
+    adminAddress: ethers.constants.AddressZero,
     relayAddress: ethers.constants.AddressZero,
     tokenThisAddresses: [
       "0x0000000000000000000000000000000000000001",

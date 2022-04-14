@@ -7,13 +7,12 @@ import {
   configPath,
   getTokenPairs,
   networkType,
-  readConfig, setAdminRole,
+  readConfig,
   urlFromHHProvider,
   writeConfig
 } from "./utils";
 
 const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
-const relayAddress = "0x295c2707319ad4beca6b5bb4086617fd6f240cfe" // todo get from something?
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -25,6 +24,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider);
 
   const {owner} = await hre.getNamedAccounts();
+  // todo get admin and relay from getNamedAccounts
+  const admin = owner;
+  const relay = owner;
+
   const tokenPairs = getTokenPairs("eth", "amb", hre.network)
 
   const deployResult = await hre.deployments.deploy("EthBridge", {
@@ -33,7 +36,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [
       {
         sideBridgeAddress: sideBridgeAddress,
-        relayAddress: relayAddress,
+        adminAddress: admin,
+        relayAddress: relay,
         tokenThisAddresses: Object.keys(tokenPairs),
         tokenSideAddresses: Object.values(tokenPairs),
         fee: 10,    // todo
@@ -55,9 +59,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(path);
   configFile.bridges.eth.side = deployResult.address;
   writeConfig(path, configFile);
-
-  // set adminRole
-  await setAdminRole(hre, "EthBridge")
 
   if (deployResult.newlyDeployed) {
     console.log('Call this cmd second time to update tokens')

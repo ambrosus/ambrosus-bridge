@@ -38,14 +38,15 @@ contract CommonBridge is AccessControl, Pausable {
 
     event Withdraw(address indexed from, uint event_id, uint feeAmount);
     event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
-    event TransferFinish(uint indexed event_id);
     event TransferSubmit(uint indexed event_id);
+    event TransferFinish(uint indexed event_id);
 
 
     constructor(CommonStructs.ConstructorArgs memory args)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
+        _setupRole(ADMIN_ROLE, args.adminAddress);
 
         // initialise tokenAddresses with start values
         _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);

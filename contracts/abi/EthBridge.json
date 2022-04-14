@@ -10,6 +10,11 @@
           },
           {
             "internalType": "address",
+            "name": "adminAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
             "name": "relayAddress",
             "type": "address"
           },
