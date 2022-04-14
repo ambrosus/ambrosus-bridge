@@ -12,22 +12,24 @@ contract CheckAura is CheckReceiptsProof {
     uint8 constant BlTypeTransfer = 4;
     uint8 constant BlTypeVSChange = 8;
 
+    bytes1 constant parentHashPrefix = 0xA0;
+    bytes1 constant stepPrefix = 0x84;
+    bytes2 constant signaturePrefix = 0xB841;
+
+
     bytes32 public lastProcessedBlock;
 
     struct BlockAura {
-        bytes p0_seal;
-        bytes p0_bare;
+        bytes3 p0_seal;
+        bytes3 p0_bare;
 
-        bytes p1;
         bytes32 parent_hash;
         bytes p2;
         bytes32 receipt_hash;
         bytes p3;
 
-        bytes s1;
-        bytes step;
-        bytes s2;
-        bytes signature;
+        bytes4 step;
+        bytes signature;  // todo maybe pass s r v values?
 
         uint8 type_;
         int64 delta_index;
@@ -122,12 +124,12 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function blockHash(BlockAura memory block_) internal pure returns (bytes32, bytes32) {
-        bytes memory common_rlp = abi.encodePacked(block_.p1, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
+        bytes memory common_rlp = abi.encodePacked(parentHashPrefix, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
         return  (
             // hash without seal (bare), for signature check
             keccak256(abi.encodePacked(block_.p0_bare, common_rlp)),
             // hash with seal, for prev_hash check
-            keccak256(abi.encodePacked(block_.p0_seal, common_rlp, block_.s1, block_.step, block_.s2, block_.signature))
+            keccak256(abi.encodePacked(block_.p0_seal, common_rlp, stepPrefix, block_.step, signaturePrefix, block_.signature))
         );
     }
 
@@ -163,7 +165,7 @@ contract CheckAura is CheckReceiptsProof {
         return CalcReceiptsHash(auraProof.transfer.receipt_proof, el, 3);
     }
 
-    function bytesToUint(bytes memory b) private pure returns (uint){
-        return uint(bytes32(b)) >> (256 - b.length * 8);
+    function bytesToUint(bytes4 b) internal pure returns (uint){
+        return uint(uint32(b));
     }
 }

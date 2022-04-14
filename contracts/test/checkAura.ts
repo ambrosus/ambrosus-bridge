@@ -52,5 +52,9 @@ describe("Check Aura", () => {
     await ethBridge.CheckSignatureTest(needAddress, hash, signature)
   });
 
+  it('Test bytesToUintTest', async () => {
+    expect(await ethBridge.bytesToUintTest("0xdeadbeef")).to.be.equal(3735928559);
+  });
+
 
 });

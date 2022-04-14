@@ -71,8 +71,8 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 	}
 
 	return &contracts.CheckPoWBlockPoW{
-		P0WithNonce:    p0WithNonce,
-		P0WithoutNonce: p0WithoutNonce,
+		P0WithNonce:    helpers.BytesToBytes3(p0WithNonce),
+		P0WithoutNonce: helpers.BytesToBytes3(p0WithoutNonce),
 
 		P1:                  split[0],
 		ParentOrReceiptHash: helpers.BytesToBytes32(splitEls[0]),
