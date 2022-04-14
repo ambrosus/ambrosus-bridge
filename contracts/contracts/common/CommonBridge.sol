@@ -20,7 +20,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
-    uint public oldestLockedEventId;  // head index of lockedTransfers 'queue' mapping
+    uint public oldestLockedEventId = 1;  // head index of lockedTransfers 'queue' mapping
 
 
     // this network to side network token addresses mapping
