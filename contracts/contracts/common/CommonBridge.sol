@@ -17,14 +17,15 @@ contract CommonBridge is AccessControl, Pausable {
 
     // queue to be pushed in another network
     CommonStructs.Transfer[] queue;
+
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
+    uint public oldestLockedEventId;  // head index of lockedTransfers 'queue' mapping
 
 
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
     address public wrapperAddress;
-
 
     uint public fee;
     address payable feeRecipient;
@@ -34,9 +35,8 @@ contract CommonBridge is AccessControl, Pausable {
     uint public timeframeSeconds;
     uint public lockTime;
 
-    uint public inputEventId;
-    uint outputEventId;
-    uint public oldestLockedEventId;
+    uint public inputEventId; // last processed event from side network
+    uint outputEventId = 1;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint lastTimeframe;
 
@@ -66,8 +66,8 @@ contract CommonBridge is AccessControl, Pausable {
 
 
     function wrap_withdraw(address toAddress) public payable {
-        address tokenExternalAddress = tokenAddresses[wrapperAddress];
-        require(tokenExternalAddress != address(0), "Unknown token address");
+        address tokenSideAddress = tokenAddresses[wrapperAddress];
+        require(tokenSideAddress != address(0), "Unknown token address");
 
         require(msg.value > fee, "msg.value can't be lesser than fee");
         feeRecipient.transfer(fee);
@@ -76,22 +76,22 @@ contract CommonBridge is AccessControl, Pausable {
         IWrapper(wrapperAddress).deposit{value: restOfValue}();
 
         //
-        queue.push(CommonStructs.Transfer(tokenExternalAddress, toAddress, restOfValue));
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
         emit Withdraw(msg.sender, outputEventId, fee);
 
         withdraw_finish();
     }
 
-    function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
-        address tokenExternalAddress = tokenAddresses[tokenAmbAddress];
-        require(tokenExternalAddress != address(0), "Unknown token address");
+    function withdraw(address tokenThisAddress, address toAddress, uint amount) payable public {
+        address tokenSideAddress = tokenAddresses[tokenThisAddress];
+        require(tokenSideAddress != address(0), "Unknown token address");
 
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
 
-        require(IERC20(tokenAmbAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
+        require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);
 
         withdraw_finish();
@@ -100,7 +100,7 @@ contract CommonBridge is AccessControl, Pausable {
     function withdraw_finish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
-            emit Transfer(++outputEventId, queue);
+            emit Transfer(outputEventId++, queue);
             delete queue;
 
             lastTimeframe = nowTimeframe;
