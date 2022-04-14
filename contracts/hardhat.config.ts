@@ -38,7 +38,7 @@ module.exports = {
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'eth_test'},
-      gasPrice: 200_000_000_000
+      gasPrice: 100_000_000_000
     },
     amb_main: {
       url: "https://network.ambrosus.io",

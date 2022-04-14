@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x52Ad187140b725dfFb49FF3f1f62A9650ab8aCB1",
-      "side": "0x2c7016a40E24BC83f791866fE82c78f0f599f2C5"
+      "amb": "0x8F99130F9a5E9afA45079a7128817A87Fd383C9E",
+      "side": "0xAc1122E2A636E23eE93f1D1621Daf4C36Ae1719E"
     },
     "bsc": {
       "amb": "",
@@ -17,7 +17,7 @@
       "logo": "todo",
       "primaryNet": "amb",
       "addresses": {
-        "amb": "0x500268485CB411696bd48629f78E8846C1929a43",
+        "amb": "0x37A715513f6DdEb9db9235f82dd823f5923791C4",
         "eth": "0xd390d1bFd4AAeCd1635da5dDa419d388a7CF8766",
         "bsc": ""
       }

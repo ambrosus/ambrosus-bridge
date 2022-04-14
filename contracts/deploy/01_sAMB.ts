@@ -16,7 +16,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     return;
   }
 
-  const deployResult = await hre.deployments.deploy(samb.name, {
+  const deployResult = await hre.deployments.deploy(samb.symbol, {
     contract: "sAMB",
     from: owner,
     args: [samb.name, samb.symbol],
