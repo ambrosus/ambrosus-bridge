@@ -194,38 +194,38 @@ describe("Common tests", () => {
 
   describe("Test Transfer lock/unlock/remove", () => {
     beforeEach(async () => {
-      const data0 = [[mockERC20.address, user, 10]];
-      const data1 = [[mockERC20.address, user, 20], [mockERC20.address, user, 30]];
+      const data1 = [[mockERC20.address, user, 10]];
+      const data2 = [[mockERC20.address, user, 20], [mockERC20.address, user, 30]];
 
-      await ambBridge.lockTransfersTest(data0, 0);
       await ambBridge.lockTransfersTest(data1, 1);
+      await ambBridge.lockTransfersTest(data2, 2);
     });
 
     it("locked correctly", async () => {
-      const d0 = await ambBridge.getLockedTransferTest(0);
       const d1 = await ambBridge.getLockedTransferTest(1);
+      const d2 = await ambBridge.getLockedTransferTest(2);
 
-      expect(d0.transfers[0].amount).eq(10)
-      expect(d1.transfers[0].amount).eq(20)
-      expect(d1.transfers[1].amount).eq(30)
+      expect(d1.transfers[0].amount).eq(10)
+      expect(d2.transfers[0].amount).eq(20)
+      expect(d2.transfers[1].amount).eq(30)
     });
 
     it("unlock", async () => {
       await nextTimeframe();
 
-      await expect(() => ambBridge.unlockTransfers(0))
+      await expect(() => ambBridge.unlockTransfers(1))
         .to.changeTokenBalance(mockERC20, userS, 10);
     });
 
     it("unlock before endTime passed", async () => {
-      await expect(ambBridge.unlockTransfers(0))
+      await expect(ambBridge.unlockTransfers(1))
         .to.be.revertedWith("lockTime has not yet passed")
     });
 
     it("unlock not oldest", async () => {
       await nextTimeframe();
 
-      await expect(ambBridge.unlockTransfers(1))
+      await expect(ambBridge.unlockTransfers(2))
         .to.be.revertedWith("can unlock only oldest event")
     });
 
@@ -236,28 +236,28 @@ describe("Common tests", () => {
         .to.changeTokenBalance(mockERC20, userS, 10 + 20 + 30);
     });
 
-    it("remove transfers from 0", async () => {
-      await ambBridge.pause();
-      await ambBridge.removeLockedTransfers(0);
-
-      expect((await ambBridge.getLockedTransferTest(0)).transfers).to.be.empty;
-      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
-    });
-
     it("remove transfers from 1", async () => {
       await ambBridge.pause();
       await ambBridge.removeLockedTransfers(1);
 
-      expect((await ambBridge.getLockedTransferTest(0)).transfers).to.not.be.empty;
       expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
+      expect((await ambBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+    });
+
+    it("remove transfers from 2", async () => {
+      await ambBridge.pause();
+      await ambBridge.removeLockedTransfers(2);
+
+      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
+      expect((await ambBridge.getLockedTransferTest(2)).transfers).to.be.empty;
     });
 
     it("remove unlocked", async () => {
       await nextTimeframe();
-      await ambBridge.unlockTransfers(0);
+      await ambBridge.unlockTransfers(1);
 
       await ambBridge.pause();
-      await expect(ambBridge.removeLockedTransfers(0)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
+      await expect(ambBridge.removeLockedTransfers(1)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
     });
   });
 
