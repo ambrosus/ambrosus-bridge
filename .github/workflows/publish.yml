@@ -31,7 +31,7 @@ jobs:
 
       - uses: docker/build-push-action@v2
         with:
-          file: ./relay/Dockerfile
+          context: ./relay
           push: true
           tags: ${{ steps.meta_relay.outputs.tags }}
           labels: ${{ steps.meta_relay.outputs.labels }}
