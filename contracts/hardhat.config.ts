@@ -8,6 +8,7 @@ import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
 
 dotenv.config();
+// todo add other roles
 const PK = [process.env.PRIVATEKEY || "00000000"];
 
 module.exports = {
@@ -37,6 +38,7 @@ module.exports = {
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'eth_test'},
+      gasPrice: 200_000_000_000
     },
     amb_main: {
       url: "https://network.ambrosus.io",
@@ -63,7 +65,7 @@ module.exports = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 2000,
+            runs: 200,  // todo bigger
           },
           // Note: for amb deploy
           evmVersion: "byzantium"
@@ -89,6 +91,8 @@ module.exports = {
       "AmbBridge",
       "EthBridge",
       "ValidatorSet$",
+      "sAMB",
+      "IWrapper",
     ]
   }
 };

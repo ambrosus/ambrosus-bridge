@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x3bE8831061698833AD8a6b590A66dfA8577d4fe9",
-      "side": "0x442594A89F37318E5F6952C4dB83201c8029A43f"
+      "amb": "0x52Ad187140b725dfFb49FF3f1f62A9650ab8aCB1",
+      "side": "0x2c7016a40E24BC83f791866fE82c78f0f599f2C5"
     },
     "bsc": {
       "amb": "",
@@ -10,14 +10,27 @@
     }
   },
   "tokens": {
-    "wAMB": {
-      "name": "wAmber",
-      "symbol": "wAMB",
+    "SAMB": {
+      "name": "Synthetic Amber",
+      "symbol": "SAMB",
+      "denomination": 18,
       "logo": "todo",
       "primaryNet": "amb",
       "addresses": {
-        "amb": "0x55252974F0277023C6ad296D33c4FDB4ABF971f3",
-        "eth": "0xD45698dA44D8Dda5c80911617FA57fd5e39099c4",
+        "amb": "0x500268485CB411696bd48629f78E8846C1929a43",
+        "eth": "0xd390d1bFd4AAeCd1635da5dDa419d388a7CF8766",
+        "bsc": ""
+      }
+    },
+    "WETH": {
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
+      "denomination": 18,
+      "logo": "todo",
+      "primaryNet": "eth",
+      "addresses": {
+        "amb": "0xE0b5DfA73BF1299e131000d5279a871c0ae1c17e",
+        "eth": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
         "bsc": ""
       }
     }

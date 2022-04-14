@@ -6,11 +6,11 @@ import chai from "chai";
 chai.should();
 export const expect = chai.expect;
 
-describe("wAMB", () => {
+describe("sAMB", () => {
     let userS: Signer;
     let user: string;
 
-    let wAMB: Contract;
+    let sAMB: Contract;
 
     const val = 1000;
 
@@ -19,18 +19,18 @@ describe("wAMB", () => {
         ({ user } = await getNamedAccounts());
         userS = await ethers.getSigner(user);
 
-        wAMB = await ethers.getContract("wAMB", userS);
+        sAMB = await ethers.getContract("sAMB", userS);
     });
 
     describe("wrap/unwrap", () => {
         it("Test wrap", async () => {
-            await wAMB.wrap({value: val});
-            expect(await wAMB.balanceOf(user)).eq(val);
+            await sAMB.deposit({value: val});
+            expect(await sAMB.balanceOf(user)).eq(val);
         });
 
         it("Test unwrap", async () => {
             await expect(
-                () => wAMB.unwrap(val)
+                () => sAMB.withdraw(val)
             ).to.changeEtherBalance(userS, val);
         });
     });

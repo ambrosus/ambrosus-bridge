@@ -1,10 +1,13 @@
 import path from "path";
 import fs from "fs";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
+import { ethers } from "ethers";
 
 
 interface Token {
   name: string;
   symbol: string;
+  denomination: number;
   addresses: { [net: string]: string }
   primaryNet: string;
 }
@@ -30,19 +33,63 @@ export function networkType(network: any): string {
 }
 
 
-export function getTokensPair(thisNet: string, sideNet: string, network: any): any {
+export function getTokenPairs(thisNet: string, sideNet: string, network: any): { [k: string]: string } {
   return _getTokensPair(thisNet, sideNet, readConfig(configPath(network)));
 }
 
-function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): any {
+function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
   const tokensPair: { [k: string]: string } = {};
 
   for (const tokenThis of Object.values(configFile.tokens)) {
     if (!tokenThis.addresses[thisNet] || !tokenThis.addresses[sideNet]) continue;
     tokensPair[tokenThis.addresses[thisNet]] = tokenThis.addresses[sideNet];
   }
-  return [Object.keys(tokensPair), Object.values(tokensPair)];
+  return tokensPair;
 }
+
+
+export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
+                                           hre: HardhatRuntimeEnvironment,
+                                           bridgeName: string): Promise<void> {
+  const {owner} = await hre.getNamedAccounts();
+
+  // remove from tokenPairs all tokens that are already in the bridge
+  await Promise.all(Object.keys(tokenPairs).map(async (tokenThis) => {
+    const tokenSide = await hre.deployments.read(bridgeName, {from: owner}, 'tokenAddresses', tokenThis);
+    if (tokenPairs[tokenThis] == tokenSide)
+      delete tokenPairs[tokenThis];
+  }));
+
+  if (Object.keys(tokenPairs).length == 0) {
+    console.log("No new tokens to add to bridge");
+    return;
+  }
+
+  console.log("Adding new tokens to bridge:", tokenPairs);
+  await hre.deployments.execute(bridgeName, {from: owner, log: true},
+    'tokensAddBatch', Object.keys(tokenPairs), Object.values(tokenPairs)
+  )
+
+}
+
+const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
+
+export async function setAdminRole(hre: HardhatRuntimeEnvironment, bridgeName: string): Promise<void> {
+  const {owner, owner: admin} = await hre.getNamedAccounts();
+  // todo use different admin on production
+
+  if (await hre.deployments.read(bridgeName, {from: owner}, 'hasRole', ADMIN_ROLE, admin)) {
+    console.log("Admin role already set");
+    return;
+  }
+
+  console.log("Setting admin role to", admin);
+  await hre.deployments.execute(bridgeName, {from: owner, log: true},
+    'grantRole', ADMIN_ROLE, admin
+  )
+
+}
+
 
 // get all deployed bridges in `net` network;
 // for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
