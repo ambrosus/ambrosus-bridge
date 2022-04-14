@@ -28,7 +28,7 @@ describe("Common tests", () => {
   let ethBridge: Contract;
   let ambBridge: Contract;
   let mockERC20: Contract;
-  let wAmb: Contract;
+  let sAmb: Contract;
 
 
   before(async () => {
@@ -42,7 +42,7 @@ describe("Common tests", () => {
     ambBridge = await ethers.getContract("AmbBridgeTest", ownerS);
     ethBridge = await ethers.getContract("EthBridgeTest", ownerS);
     mockERC20 = await ethers.getContract("BridgeERC20Test", ownerS);
-    wAmb = await ethers.getContract("wAMB", ownerS);
+    sAmb = await ethers.getContract("sAMB", ownerS);
 
   });
 
@@ -52,10 +52,10 @@ describe("Common tests", () => {
     for (let bridge of [commonBridge, ethBridge, ambBridge]) {
       await bridge.grantRole(ADMIN_ROLE, owner);
       await bridge.grantRole(RELAY_ROLE, relay);
-      await bridge.tokensAddBatch([wAmb.address, mockERC20.address], [token1, token2]);
+      await bridge.tokensAddBatch([sAmb.address, mockERC20.address], [token1, token2]);
       await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
     }
-    await ambBridge.setAmbWrapper(wAmb.address);
+    await ambBridge.setAmbWrapper(sAmb.address);
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
@@ -102,7 +102,7 @@ describe("Common tests", () => {
       await ambBridge.wrap_withdraw(user, {value: fee + 50});
 
       await expect(() => ambBridge.wrap_withdraw(user, {value: fee + 50}))
-        .to.changeTokenBalance(wAmb, ambBridge, 50);
+        .to.changeTokenBalance(sAmb, ambBridge, 50);
     });
 
     it('Test withdraw part', async () => {
