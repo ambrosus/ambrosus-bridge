@@ -89,6 +89,8 @@ module.exports = {
       "AmbBridge",
       "EthBridge",
       "ValidatorSet$",
+      "sAMB",
+      "IWrapper",
     ]
   }
 };
