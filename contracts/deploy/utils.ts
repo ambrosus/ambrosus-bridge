@@ -52,16 +52,21 @@ export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
                                            bridgeName: string): Promise<void> {
   const {owner} = await hre.getNamedAccounts();
 
-  const newTokens = Object.entries(tokenPairs)
-    .filter(async (pair) => {
-      const tokenSide = await hre.deployments.read(bridgeName, {from: owner}, 'tokenAddresses', pair[0]);
-      return tokenSide != pair[1]
-    })
-  if (newTokens.length == 0) return;
+  // remove from tokenPairs all tokens that are already in the bridge
+  await Promise.all(Object.keys(tokenPairs).map(async (tokenThis) => {
+    const tokenSide = await hre.deployments.read(bridgeName, {from: owner}, 'tokenAddresses', tokenThis);
+    if (tokenPairs[tokenThis] == tokenSide)
+      delete tokenPairs[tokenThis];
+  }));
 
-  const newTokens_ = Object.fromEntries(newTokens);
+  if (Object.keys(tokenPairs).length == 0) {
+    console.log("No new tokens to add to bridge");
+    return;
+  }
+
+  console.log("Adding new tokens to bridge:", tokenPairs);
   await hre.deployments.execute(bridgeName, {from: owner, log: true},
-    'tokensAdd', Object.keys(newTokens_), Object.values(newTokens_)
+    'tokensAddBatch', Object.keys(tokenPairs), Object.values(tokenPairs)
   )
 
 }

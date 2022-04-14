@@ -29,7 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         lockTime: isMainNet ? 1000 : 1,
         minSafetyBlocks: 10,
       },
-      configFile.tokens.wAMB.addresses["amb"],
+      configFile.tokens.SAMB.addresses.amb,
     ],
     log: true,
     skipIfAlreadyDeployed: true
@@ -47,12 +47,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // set sideBridgeAddress
   const ethBridge = configFile.bridges.eth.side;
-  if (!ethBridge) throw new Error("[Setting sideBridgeAddress] Deploy EthBridge first")
+  if (!ethBridge) {
+    console.log("[Setting sideBridgeAddress] Deploy EthBridge first")
+    return
+  }
 
   const curAddr = await hre.deployments.read("AmbBridge", {from: owner}, 'sideBridgeAddress');
-  if (curAddr != ethBridge)
+  if (curAddr != ethBridge) {
+    console.log("[Setting sideBridgeAddress] old", curAddr, "new", ethBridge)
     await hre.deployments.execute("AmbBridge", {from: owner, log: true}, 'setSideBridge', ethBridge);
-
+  }
 
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, "AmbBridge");

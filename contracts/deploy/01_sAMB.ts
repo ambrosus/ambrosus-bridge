@@ -11,6 +11,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(path);
 
   const samb = configFile.tokens.SAMB;
+  if (!!samb.addresses.amb) {
+    console.log("sAMB already deployed");
+    return;
+  }
 
   const deployResult = await hre.deployments.deploy(samb.name, {
     contract: "sAMB",
