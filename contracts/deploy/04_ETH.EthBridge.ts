@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const [initialValidators, lastProcessedBlock] = await getValidators(ambNet.provider);
 
   const {owner} = await hre.getNamedAccounts();
-  const tokenPairs = getTokenPairs("amb", "eth", hre.network)
+  const tokenPairs = getTokenPairs("eth", "amb", hre.network)
 
   const deployResult = await hre.deployments.deploy("EthBridge", {
     contract: "EthBridge",

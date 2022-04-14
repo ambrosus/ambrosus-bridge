@@ -76,7 +76,7 @@ contract CommonBridge is AccessControl, Pausable {
     function withdraw_finish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
-            emit Transfer(outputEventId++, queue);
+            emit Transfer(++outputEventId, queue);
             delete queue;
 
             lastTimeframe = nowTimeframe;
