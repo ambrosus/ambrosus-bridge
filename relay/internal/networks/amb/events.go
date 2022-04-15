@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 
@@ -16,9 +16,9 @@ import (
 )
 
 // todo name
-func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*contracts.CheckAuraAuraProof, error) {
+func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer) (*c.CheckAuraAuraProof, error) {
 	// populated by functions below
-	blocksMap := make(map[uint64]contracts.CheckAuraBlockAura)
+	blocksMap := make(map[uint64]c.CheckAuraBlockAura)
 
 	// encode transferProof and save event block to blocksMap
 	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
@@ -47,7 +47,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 	}
 
 	// sort blocks in blocksMap and use resulting indexes
-	blocks := make([]contracts.CheckAuraBlockAura, len(blocksMap))
+	blocks := make([]c.CheckAuraBlockAura, len(blocksMap))
 	indexToBlockNum := sortedKeys(blocksMap)
 	var transferEventIndex uint64
 
@@ -65,7 +65,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 		}
 	}
 
-	return &contracts.CheckAuraAuraProof{
+	return &c.CheckAuraAuraProof{
 		Blocks:             blocks,
 		Transfer:           transfer,
 		VsChanges:          vsChanges,
@@ -73,26 +73,26 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockAura, event *contracts.BridgeTransfer) (contracts.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(blocks map[uint64]c.CheckAuraBlockAura, event *c.BridgeTransfer) (c.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
-		return contracts.CommonStructsTransferProof{}, err
+		return c.CommonStructsTransferProof{}, err
 	}
 
 	blocks[event.Raw.BlockNumber], err = b.encodeBlock(event.Raw.BlockNumber)
 	if err != nil {
-		return contracts.CommonStructsTransferProof{}, err
+		return c.CommonStructsTransferProof{}, err
 	}
 
-	return contracts.CommonStructsTransferProof{
+	return c.CommonStructsTransferProof{
 		ReceiptProof: proof,
 		EventId:      event.EventId,
 		Transfers:    event.Queue,
 	}, nil
 }
 
-func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]contracts.CheckAuraValidatorSetProof, error) {
-	vsChanges := make([]contracts.CheckAuraValidatorSetProof, len(events))
+func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]c.CheckAuraBlockAura, events []*c.VsInitiateChange) ([]c.CheckAuraValidatorSetProof, error) {
+	vsChanges := make([]c.CheckAuraValidatorSetProof, len(events))
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
@@ -123,7 +123,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 }
 
 // add safety blocks after each event block
-func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]contracts.CheckAuraBlockAura, minSafetyBlocks uint64) (err error) {
+func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]c.CheckAuraBlockAura, minSafetyBlocks uint64) (err error) {
 
 	for blockNum, _ := range blocksMap {
 		for i := uint64(0); i <= minSafetyBlocks; i++ {
@@ -144,25 +144,25 @@ func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]contracts.CheckAuraBlockAu
 	return nil
 }
 
-func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.VsInitiateChange) (contracts.CheckAuraValidatorSetProof, error) {
+func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *c.VsInitiateChange) (c.CheckAuraValidatorSetProof, error) {
 	address, index, err := deltaVS(prevSet, event.NewSet)
 	if err != nil {
-		return contracts.CheckAuraValidatorSetProof{}, fmt.Errorf("deltaVS: %w", err)
+		return c.CheckAuraValidatorSetProof{}, fmt.Errorf("deltaVS: %w", err)
 	}
 
 	proof, err := b.getProof(event)
 	if err != nil {
-		return contracts.CheckAuraValidatorSetProof{}, fmt.Errorf("getProof: %w", err)
+		return c.CheckAuraValidatorSetProof{}, fmt.Errorf("getProof: %w", err)
 	}
 
-	return contracts.CheckAuraValidatorSetProof{
+	return c.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
 		DeltaAddress: address,
 		DeltaIndex:   index,
 	}, nil
 }
 
-func (b *Bridge) fetchVSChangeEvents(event *contracts.BridgeTransfer) ([]*contracts.VsInitiateChange, error) {
+func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer) ([]*c.VsInitiateChange, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
@@ -185,7 +185,7 @@ func (b *Bridge) fetchVSChangeEvents(event *contracts.BridgeTransfer) ([]*contra
 		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
 
-	var res []*contracts.VsInitiateChange
+	var res []*c.VsInitiateChange
 	for logs.Next() {
 		res = append(res, logs.Event)
 	}
@@ -201,14 +201,14 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *Bridge) encodeBlock(blockNumber uint64) (contracts.CheckAuraBlockAura, error) {
+func (b *Bridge) encodeBlock(blockNumber uint64) (c.CheckAuraBlockAura, error) {
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
-		return contracts.CheckAuraBlockAura{}, fmt.Errorf("HeaderByNumber: %w", err)
+		return c.CheckAuraBlockAura{}, fmt.Errorf("HeaderByNumber: %w", err)
 	}
 	encodedBlock, err := EncodeBlock(block)
 	if err != nil {
-		return contracts.CheckAuraBlockAura{}, fmt.Errorf("encode: %w", err)
+		return c.CheckAuraBlockAura{}, fmt.Errorf("encode: %w", err)
 	}
 	return *encodedBlock, nil
 }
@@ -251,7 +251,7 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 }
 
 // used for 'ordered' map
-func sortedKeys(m map[uint64]contracts.CheckAuraBlockAura) []uint64 {
+func sortedKeys(m map[uint64]c.CheckAuraBlockAura) []uint64 {
 	keys := make([]uint64, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
