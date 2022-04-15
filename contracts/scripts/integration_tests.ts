@@ -2,7 +2,7 @@ import chai from "chai";
 import {ethers} from "hardhat";
 import 'mocha';
 import {Contract, providers} from "ethers";
-import config_c from "../config-testnet.json";
+import config_c from "../config-integr.json";
 import config_r from "../../relay/configs/integr.json";
 
 // websocket need for events subscribe
@@ -37,6 +37,12 @@ describe("Integration tests", function () {
     ethBridge = await ethers.getContractAt("EthBridge", config_c.bridges.eth.side, ethSigner);
     ambToken = await ethers.getContractAt("sAMB", config_c.tokens.SAMB.addresses.amb, ambSigner);
     ethToken = await ethers.getContractAt("BridgeERC20Test", config_c.tokens.SAMB.addresses.eth, ethSigner);
+
+    console.log("Setup relay")
+    // set relay role
+    const relayRole = await ethBridge.RELAY_ROLE();
+    await w(ethBridge.grantRole(relayRole, relayAddress, options));
+    await w(ambBridge.grantRole(relayRole, relayAddress, options));
 
     // send money to relay
     await w(ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1"), ...options}));
@@ -80,7 +86,7 @@ describe("Integration tests", function () {
     // withdraw
     console.log("Withdraw");
     const fee = await ambBridge.fee();
-    await w(ambBridge.wrap_withdraw({value: +fee+5, ...options}));
+    await w(ambBridge.wrap_withdraw(ambSigner.address, {value: +fee+5, ...options}));
 
 
     // wait for minSafetyBlocks confirmations
