@@ -63,9 +63,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: "EthBridgeTest",
     from: owner,
     args: [commonArgs,
-      [ // initial validators
-        "0x0000000000000000000000000000000000000001",
-        "0x0000000000000000000000000000000000000002",
+      [
+        "0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79",
+        "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
+        "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
       ],
       ethers.constants.AddressZero, // validatorSetAddress_
       ethers.constants.HashZero, // lastProcessedBlock

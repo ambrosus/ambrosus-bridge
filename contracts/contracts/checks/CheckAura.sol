@@ -51,7 +51,7 @@ contract CheckAura is CheckReceiptsProof {
     }
 
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
-        address sideBridgeAddress, address validatorSetAddress) public {
+        address sideBridgeAddress, address validatorSetAddress) internal {
 
         uint safetyChainLength;
         bytes32 block_hash;
@@ -85,7 +85,7 @@ contract CheckAura is CheckReceiptsProof {
             block_hash = CheckBlock(block_);
 
 
-            if (block_hash == auraProof.blocks[i + 1].parent_hash) {
+            if (i+1 != auraProof.blocks.length && block_hash == auraProof.blocks[i + 1].parent_hash) {
                 safetyChainLength++;
             } else if (i == auraProof.transfer_event_block) {
                 safetyChainLength == 0;

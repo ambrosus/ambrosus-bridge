@@ -513,7 +513,7 @@
         "type": "address"
       }
     ],
-    "name": "CheckAura_",
+    "name": "CheckAuraTest",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
