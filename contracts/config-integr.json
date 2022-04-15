@@ -3,23 +3,18 @@
     "eth": {
       "amb": "",
       "side": ""
-    },
-    "bsc": {
-      "amb": "",
-      "side": ""
     }
   },
   "tokens": {
-    "wAMB": {
-      "name": "wAmber",
-      "symbol": "wAMB",
+    "SAMB": {
+      "name": "Synthetic Amber",
+      "symbol": "SAMB",
       "denomination": 18,
-      "logo": "todo",
+      "logo": "",
       "primaryNet": "amb",
       "addresses": {
         "amb": "",
-        "eth": "",
-        "bsc": ""
+        "eth": ""
       },
       "nativeAnalog": "AMB"
     }

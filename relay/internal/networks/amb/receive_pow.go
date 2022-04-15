@@ -19,7 +19,7 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
-		err := b.getFailureReasonViaCall("submitTransfer", *proof)
+		err := b.getFailureReasonViaCall("submitTransferPoW", *proof)
 		if err != nil {
 			return fmt.Errorf("getFailureReasonViaCall: %w", err)
 		}

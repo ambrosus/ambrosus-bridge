@@ -25,7 +25,7 @@ export function networkName(network: any): string {
 }
 
 export function networkType(network: any): string {
-  for (const networkType of ['testnet', 'mainnet'])
+  for (const networkType of ['testnet', 'mainnet', 'integr'])
     if (network.tags[networkType])
       return networkType;
   throw "Network missing networkType tag";
