@@ -6,18 +6,13 @@ import "./CheckReceiptsProof.sol";
 
 
 contract CheckAura is CheckReceiptsProof {
-    // bitmask
-    uint8 constant BlTypeSafetyEnd = 1;
-    uint8 constant BlTypeSafety = 2;
-    uint8 constant BlTypeTransfer = 4;
-    uint8 constant BlTypeVSChange = 8;
-
     bytes1 constant parentHashPrefix = 0xA0;
     bytes1 constant stepPrefix = 0x84;
     bytes2 constant signaturePrefix = 0xB841;
 
-
     bytes32 public lastProcessedBlock;
+    address[] public validatorSet;
+
 
     struct BlockAura {
         bytes3 p0_seal;
@@ -31,8 +26,7 @@ contract CheckAura is CheckReceiptsProof {
         bytes4 step;
         bytes signature;  // todo maybe pass s r v values?
 
-        uint8 type_;
-        int64 delta_index;
+        uint64 finalized_vs;
     }
 
 
@@ -46,9 +40,9 @@ contract CheckAura is CheckReceiptsProof {
         BlockAura[] blocks;
         CommonStructs.TransferProof transfer;
         ValidatorSetProof[] vs_changes;
+        uint64 transfer_event_block;
     }
 
-    address[] public validatorSet;
 
 
     constructor(address[] memory _initialValidators) {
@@ -59,43 +53,46 @@ contract CheckAura is CheckReceiptsProof {
     function CheckAura_(AuraProof memory auraProof, uint minSafetyBlocks,
         address sideBridgeAddress, address validatorSetAddress) public {
 
-        // validator set change event
-        uint n = uint(int(auraProof.blocks[0].delta_index));
-        for (uint i = 0; i < n; i++) {
-            handleVS(auraProof.vs_changes[i]);
-        }
-
         uint safetyChainLength;
         bytes32 block_hash;
+        uint last_finalized_vs;
+
+        bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
+        require(auraProof.blocks[auraProof.transfer_event_block].receipt_hash == receiptHash, "Transfer event validation failed");
+
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block_ = auraProof.blocks[i];
-            // check signature, calc hash
+
+            if (block_.finalized_vs != 0) {
+                for (uint j = last_finalized_vs; j <= block_.finalized_vs; j++) {
+                    ValidatorSetProof memory vs_change = auraProof.vs_changes[j];
+
+                    handleVS(vs_change);
+                    if (vs_change.receipt_proof.length != 0) {
+                        bytes32 receiptHash = CalcValidatorSetReceiptHash(vs_change.receipt_proof, validatorSetAddress, validatorSet);
+
+                        // event finalize always happened on next block after event
+                        // so event_block is finalized_block - 1
+                        require(auraProof.blocks[i - 1].receipt_hash == receiptHash, "Wrong Hash");
+                        safetyChainLength = 1;
+                    }
+                }
+
+                last_finalized_vs = block_.finalized_vs + 1;
+            }
+
             block_hash = CheckBlock(block_);
 
-            if (block_.type_ & BlTypeSafetyEnd != 0) { // end of safety chain
-                require(safetyChainLength >= minSafetyBlocks, "safety chain too short");
-                safetyChainLength = 0;
-            } else {
-                require(block_hash == auraProof.blocks[i + 1].parent_hash, "wrong parent hash");
+
+            if (block_hash == auraProof.blocks[i + 1].parent_hash) {
                 safetyChainLength++;
+            } else if (i == auraProof.transfer_event_block) {
+                safetyChainLength == 0;
+            } else {
+                require(safetyChainLength >= minSafetyBlocks, "wrong parent hash");
             }
 
-            if (block_.type_ & BlTypeVSChange != 0) {// validator set change event
-                ValidatorSetProof memory vsEvent = auraProof.vs_changes[i];
-                handleVS(vsEvent);
-
-                if (vsEvent.receipt_proof.length != 0) {
-                    bytes32 receiptHash = CalcValidatorSetReceiptHash(auraProof, validatorSetAddress, validatorSet);
-                    require(block_.receipt_hash == receiptHash, "Wrong Hash");
-                }
-            }
-
-            // transfer event
-            if (block_.type_ & BlTypeTransfer != 0) {
-                bytes32 receiptHash = CalcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
-                require(block_.receipt_hash == receiptHash, "Transfer event validation failed");
-            }
         }
 
         lastProcessedBlock = block_hash;
@@ -103,7 +100,7 @@ contract CheckAura is CheckReceiptsProof {
 
     function handleVS(ValidatorSetProof memory vsEvent) private {
         if (vsEvent.delta_index < 0) {
-            uint index = uint(int(vsEvent.delta_index * (-1) - 1));
+            uint index = uint(int(vsEvent.delta_index * (- 1) - 1));
             validatorSet[index] = validatorSet[validatorSet.length - 1];
             validatorSet.pop();
         }
@@ -125,11 +122,11 @@ contract CheckAura is CheckReceiptsProof {
 
     function blockHash(BlockAura memory block_) internal pure returns (bytes32, bytes32) {
         bytes memory common_rlp = abi.encodePacked(parentHashPrefix, block_.parent_hash, block_.p2, block_.receipt_hash, block_.p3);
-        return  (
-            // hash without seal (bare), for signature check
-            keccak256(abi.encodePacked(block_.p0_bare, common_rlp)),
-            // hash with seal, for prev_hash check
-            keccak256(abi.encodePacked(block_.p0_seal, common_rlp, stepPrefix, block_.step, signaturePrefix, block_.signature))
+        return (
+        // hash without seal (bare), for signature check
+        keccak256(abi.encodePacked(block_.p0_bare, common_rlp)),
+        // hash with seal, for prev_hash check
+        keccak256(abi.encodePacked(block_.p0_seal, common_rlp, stepPrefix, block_.step, signaturePrefix, block_.signature))
         );
     }
 
@@ -146,23 +143,23 @@ contract CheckAura is CheckReceiptsProof {
             r := mload(add(signature, 32))
             s := mload(add(signature, 64))
             v := byte(0, mload(add(signature, 96)))
-            if lt(v, 27) { v := add(v, 27) }
+            if lt(v, 27) {v := add(v, 27)}
         }
         require(ecrecover(message_hash, v, r, s) == signer, "Failed to verify sign");
     }
 
-    function CalcValidatorSetReceiptHash(AuraProof memory auraProof,
-                                         address validatorSetAddress,
-                                         address[] memory vSet) private pure returns(bytes32) {
+    function CalcValidatorSetReceiptHash(bytes[] memory receipt_proof,
+        address validatorSetAddress,
+        address[] memory vSet) private pure returns (bytes32) {
 
         bytes32 el = keccak256(abi.encodePacked(
-            auraProof.transfer.receipt_proof[0],
-            validatorSetAddress,
-            auraProof.transfer.receipt_proof[1],
-            abi.encode(vSet),
-            auraProof.transfer.receipt_proof[2]
-        ));
-        return CalcReceiptsHash(auraProof.transfer.receipt_proof, el, 3);
+                receipt_proof[0],
+                validatorSetAddress,
+                receipt_proof[1],
+                abi.encode(vSet),
+                receipt_proof[2]
+            ));
+        return CalcReceiptsHash(receipt_proof, el, 3);
     }
 
     function bytesToUint(bytes4 b) internal pure returns (uint){

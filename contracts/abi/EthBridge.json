@@ -417,14 +417,9 @@
                 "type": "bytes"
               },
               {
-                "internalType": "uint8",
-                "name": "type_",
-                "type": "uint8"
-              },
-              {
-                "internalType": "int64",
-                "name": "delta_index",
-                "type": "int64"
+                "internalType": "uint64",
+                "name": "finalized_vs",
+                "type": "uint64"
               }
             ],
             "internalType": "struct CheckAura.BlockAura[]",
@@ -491,6 +486,11 @@
             "internalType": "struct CheckAura.ValidatorSetProof[]",
             "name": "vs_changes",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint64",
+            "name": "transfer_event_block",
+            "type": "uint64"
           }
         ],
         "internalType": "struct CheckAura.AuraProof",
@@ -909,14 +909,9 @@
                 "type": "bytes"
               },
               {
-                "internalType": "uint8",
-                "name": "type_",
-                "type": "uint8"
-              },
-              {
-                "internalType": "int64",
-                "name": "delta_index",
-                "type": "int64"
+                "internalType": "uint64",
+                "name": "finalized_vs",
+                "type": "uint64"
               }
             ],
             "internalType": "struct CheckAura.BlockAura[]",
@@ -983,6 +978,11 @@
             "internalType": "struct CheckAura.ValidatorSetProof[]",
             "name": "vs_changes",
             "type": "tuple[]"
+          },
+          {
+            "internalType": "uint64",
+            "name": "transfer_event_block",
+            "type": "uint64"
           }
         ],
         "internalType": "struct CheckAura.AuraProof",
