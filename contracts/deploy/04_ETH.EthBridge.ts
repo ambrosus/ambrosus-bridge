@@ -42,7 +42,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         sideBridgeAddress: sideBridgeAddress,
         adminAddress: admin,
         relayAddress: relay,
-        wrappingTokenAddress: configFile.tokens.WETH.addresses.eth,
+        wrappingTokenAddress: configFile.tokens.WETH?.addresses.eth || ethers.constants.AddressZero,
         tokenThisAddresses: Object.keys(tokenPairs),
         tokenSideAddresses: Object.values(tokenPairs),
         fee: 10,    // todo
