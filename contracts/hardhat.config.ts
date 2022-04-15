@@ -32,7 +32,7 @@ module.exports = {
     },
     eth_integr: {
       url: "http://127.0.0.1:8502",
-      accounts: ["51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc"],
+      accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc"],
       tags: ["eth", "integr"],
       companionNetworks: {amb: 'amb_integr'},
     },
