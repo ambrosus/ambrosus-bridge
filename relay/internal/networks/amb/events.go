@@ -15,14 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// bitmask
-const (
-	BlTypeSafetyEnd uint8 = 1
-	BlTypeSafety    uint8 = 2
-	BlTypeTransfer  uint8 = 4
-	BlTypeVSChange  uint8 = 8
-)
-
 // todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*contracts.CheckAuraAuraProof, error) {
 	// populated by functions below
@@ -77,15 +69,28 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 	}
 
 	blocks := make([]contracts.CheckAuraBlockAura, len(blocksMap))
-	blockNums = sortedKeys(blocksMap)
-	for i, blockNum := range blockNums {
+	indexToBlockNum := sortedKeys(blocksMap)
+	var transferEventIndex uint64
+
+	for i, blockNum := range indexToBlockNum {
 		blocks[i] = blocksMap[blockNum]
+
+		// change FinalizeVs (if it set) from offset to absolute index in blocks array
+		if blocks[i].FinalizedVs != 0 {
+			blocks[i].FinalizedVs = uint64(i) - blocks[i].FinalizedVs
+		}
+
+		// set transferEventIndex to index in blocks array
+		if blockNum == transferEvent.Raw.BlockNumber {
+			transferEventIndex = uint64(i)
+		}
 	}
 
 	return &contracts.CheckAuraAuraProof{
-		Blocks:    blocks,
-		Transfer:  *transfer,
-		VsChanges: vsChanges,
+		Blocks:             blocks,
+		Transfer:           *transfer,
+		VsChanges:          vsChanges,
+		TransferEventBlock: transferEventIndex,
 	}, nil
 }
 
@@ -124,17 +129,19 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 		vsChanges[i] = *encodedEvent
 		prevSet = event.NewSet
 
-		if bl, ok := blocks[event.Raw.BlockNumber]; ok {
-			bl.Type |= BlTypeVSChange
-			bl.DeltaIndex = int64(i)
-		} else {
-			encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeVSChange)
+		if _, ok := blocks[event.Raw.BlockNumber]; !ok {
+			bl, err = b.encodeBlock(event.Raw.BlockNumber)
 			if err != nil {
-				return nil, fmt.Errorf("encode block as vs change: %w", err)
+				return nil, err
 			}
-			encodedBlockWithType.DeltaIndex = int64(i)
-			blocks[event.Raw.BlockNumber] = *encodedBlockWithType
+			blocks[event.Raw.BlockNumber] = *bl
 		}
+
+		bl := blocks[event.Raw.BlockNumber]
+		// FinalizeVs field must be block **index** in CheckAuraAuraProof.blocks, but we don't have it now
+		// so we set **offset** value here and will change it later
+		bl.FinalizedVs = 1 // vs_change finalize on next block, offset always 1
+
 	}
 	return vsChanges, nil
 }
@@ -157,7 +164,30 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.
 	}, nil
 }
 
-func (b *Bridge) getVSChangeEvents(event *contracts.BridgeTransfer) ([]*contracts.VsInitiateChange, error) {
+// add safety blocks after each event block
+func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]contracts.CheckAuraBlockAura, minSafetyBlocks uint64) (err error) {
+
+	for blockNum, _ := range blocksMap {
+		for i := uint64(0); i <= minSafetyBlocks; i++ {
+			targetBlockNum := blockNum + i
+
+			if _, ok := blocksMap[targetBlockNum]; ok {
+				continue
+			}
+
+			bl, err := b.encodeBlock(targetBlockNum)
+			if err != nil {
+				return err
+			}
+			blocksMap[targetBlockNum] = *bl
+
+		}
+	}
+
+	return nil
+}
+
+func (b *Bridge) fetchVSChangeEvents(event *contracts.BridgeTransfer) ([]*contracts.VsInitiateChange, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
@@ -196,7 +226,7 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contracts.CheckAuraBlockAura, error) {
+func (b *Bridge) encodeBlock(blockNumber uint64) (*contracts.CheckAuraBlockAura, error) {
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return nil, fmt.Errorf("HeaderByNumber: %w", err)
@@ -205,7 +235,6 @@ func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contract
 	if err != nil {
 		return nil, fmt.Errorf("encode: %w", err)
 	}
-	encodedBlock.Type |= type_
 	return encodedBlock, nil
 }
 
