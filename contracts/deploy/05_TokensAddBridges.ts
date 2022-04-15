@@ -8,8 +8,8 @@ const BRIDGE_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BRIDGE_ROLE
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(configPath(hre.network));
-  const bridgesInThisNetwork = bridgesInNet("eth", configFile)
   const netName = networkName(hre.network)
+  const bridgesInThisNetwork = bridgesInNet(netName, configFile)
 
   const {owner} = await hre.getNamedAccounts();
 
