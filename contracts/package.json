@@ -14,6 +14,7 @@
     "console": "hardhat console",
     "verify": "hardhat etherscan-verify --network eth_test",
     "sourcify": "hardhat sourcify --network eth_test",
+    "integr_deploy": "./deploy.sh eth integr",
     "integr_test": "hardhat test scripts/integration_tests.ts"
   },
   "devDependencies": {

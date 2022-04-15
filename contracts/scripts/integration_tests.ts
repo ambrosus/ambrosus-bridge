@@ -9,7 +9,7 @@ import config_r from "../../relay/configs/integr.json";
 const ambNet = new ethers.providers.WebSocketProvider(config_r.network.amb.wsUrl);
 const ethNet = new ethers.providers.WebSocketProvider(config_r.network.eth.wsUrl);
 
-// accounts with money; details in /tests/README.md
+// accounts with money; details in /tests/README.md; also set in hardhat config
 const ambSigner = new ethers.Wallet("80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446", ambNet);
 const ethSigner = new ethers.Wallet("51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc", ethNet);
 
