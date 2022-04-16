@@ -39,6 +39,11 @@ describe("Check Aura", () => {
     await ethBridge.CheckAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
   });
 
+  it("Test CheckAura (changes in VS)", async () => {
+    const proof = require("./fixtures/auraProof-changeVs.json");
+    await ethBridge.CheckAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
+  });
+
   it("Test blockHash", async () => {
     const block = require("./fixtures/BlockPoA-48879.json");
 

@@ -17,6 +17,11 @@ const ethSigner = new ethers.Wallet("51d098d8aee092622149d8f3a79cc7b1ce36ff97fad
 const relayAddress = new ethers.Wallet("34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5").address;
 const vsContractAddress = config_r.network.amb.vsContractAddr;
 
+const validators = [
+  "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
+  "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
+];
+
 const options = {gasLimit: 8_000_000};  // amb & eth gas estimator broken
 
 
@@ -31,12 +36,14 @@ describe("Integration tests", function () {
   let ethBridge: Contract;
   let ambToken: Contract;
   let ethToken: Contract;
+  let vs: Contract;
 
   before(async () => {
     ambBridge = await ethers.getContractAt("AmbBridge", config_c.bridges.eth.amb, ambSigner);
     ethBridge = await ethers.getContractAt("EthBridge", config_c.bridges.eth.side, ethSigner);
     ambToken = await ethers.getContractAt("sAMB", config_c.tokens.SAMB.addresses.amb, ambSigner);
     ethToken = await ethers.getContractAt("BridgeERC20Test", config_c.tokens.SAMB.addresses.eth, ethSigner);
+    vs = await ethers.getContractAt("ModifiedValidatorSet", vsContractAddress, ambSigner);
 
     console.log("Setup relay")
     // set relay role
@@ -83,10 +90,19 @@ describe("Integration tests", function () {
     console.log("AMB");
     const ethBefore = await ethToken.balanceOf(ethSigner.address);
 
+    // validator set changes
+    console.log("Validator set changes");
+    const currentSet = await vs.getValidators();
+    for (const v of validators)
+      (!currentSet.includes(v)) ?
+        await w(vs.addValidator(v, options)) :
+        await w(vs.removeValidator(v, options))
+
+
     // withdraw
     console.log("Withdraw");
     const fee = await ambBridge.fee();
-    await w(ambBridge.wrap_withdraw(ambSigner.address, {value: +fee+5, ...options}));
+    await w(ambBridge.wrap_withdraw(ambSigner.address, {value: +fee + 5, ...options}));
 
 
     // wait for minSafetyBlocks confirmations

@@ -64,22 +64,22 @@ contract CheckAura is CheckReceiptsProof {
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura memory block_ = auraProof.blocks[i];
 
-            if (block_.finalized_vs != 0) {
-                for (uint j = last_finalized_vs; j <= block_.finalized_vs; j++) {
+            if (block_.finalized_vs != 0) {  // 0 means no events should be finalized; so indexes are shifted by 1
+                for (uint j = last_finalized_vs; j < block_.finalized_vs; j++) {
                     ValidatorSetProof memory vs_change = auraProof.vs_changes[j];
 
                     handleVS(vs_change);
                     if (vs_change.receipt_proof.length != 0) {
                         bytes32 receiptHash = CalcValidatorSetReceiptHash(vs_change.receipt_proof, validatorSetAddress, validatorSet);
 
-                        // event finalize always happened on next block after event
-                        // so event_block is finalized_block - 1
-                        require(auraProof.blocks[i - 1].receipt_hash == receiptHash, "Wrong Hash");
-                        safetyChainLength = 1;
+                        // event finalize always happened on block one after the block with event
+                        // so event_block is finalized_block - 2
+                        require(auraProof.blocks[i - 2].receipt_hash == receiptHash, "Wrong VS receipt hash");
+                        safetyChainLength = 2;
                     }
                 }
 
-                last_finalized_vs = block_.finalized_vs + 1;
+                last_finalized_vs = block_.finalized_vs - 1;
             }
 
             block_hash = CheckBlock(block_);
