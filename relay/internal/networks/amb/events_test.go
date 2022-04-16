@@ -101,7 +101,7 @@ func set(addresses ...string) []common.Address {
 
 func Test_sortedKeys(t *testing.T) {
 	type args struct {
-		m map[uint64]contracts.CheckAuraBlockAura
+		m map[uint64]*contracts.CheckAuraBlockAura
 	}
 	tests := []struct {
 		name string
@@ -110,7 +110,7 @@ func Test_sortedKeys(t *testing.T) {
 	}{
 		{
 			name: "Check order",
-			args: args{map[uint64]contracts.CheckAuraBlockAura{
+			args: args{map[uint64]*contracts.CheckAuraBlockAura{
 				1002: {},
 				1000: {},
 				1001: {},

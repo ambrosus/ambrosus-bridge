@@ -48,14 +48,13 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 		Step      hexutil.Bytes `json:"step"`
 		Signature hexutil.Bytes `json:"signature"`
 
-		Type       uint8 `json:"type_"`
-		DeltaIndex int64 `json:"delta_index"`
+		FinalizedVs uint64 `json:"finalized_vs"`
 	}
 	tm := AuraBlockAura{
 		t.P0Seal[:], t.P0Bare[:],
 		t.ParentHash[:], t.P2, t.ReceiptHash[:], t.P3,
 		t.Step[:], t.Signature,
-		t.Type, t.DeltaIndex,
+		t.FinalizedVs,
 	}
 	return json.Marshal(&tm)
 }

@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"sort"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 
@@ -15,101 +15,80 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// bitmask
-const (
-	BlTypeSafetyEnd uint8 = 1
-	BlTypeSafety    uint8 = 2
-	BlTypeTransfer  uint8 = 4
-	BlTypeVSChange  uint8 = 8
-)
-
 // todo name
-func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*contracts.CheckAuraAuraProof, error) {
+func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer) (*c.CheckAuraAuraProof, error) {
 	// populated by functions below
-	blocksMap := make(map[uint64]contracts.CheckAuraBlockAura)
+	blocksMap := make(map[uint64]*c.CheckAuraBlockAura)
 
+	// encode transferProof and save event block to blocksMap
 	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
 	}
 
-	vsChangeEvents, err := b.getVSChangeEvents(transferEvent)
+	// encode vsChangeProofs and save event blocks to blocksMap
+	vsChangeEvents, err := b.fetchVSChangeEvents(transferEvent)
 	if err != nil {
-		return nil, fmt.Errorf("getVSChangeEvents: %w", err)
+		return nil, fmt.Errorf("fetchVSChangeEvents: %w", err)
 	}
 	vsChanges, err := b.encodeVSChangeEvents(blocksMap, vsChangeEvents)
 	if err != nil {
 		return nil, fmt.Errorf("encodeVSChangeEvents: %w", err)
 	}
 
-	// add safety blocks after each event block
-	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
+	// save safety blocks to blocksMap
+	minSafetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
 	}
+	err = b.addSafetyBlocks(blocksMap, minSafetyBlocks)
+	if err != nil {
+		return nil, fmt.Errorf("encodeSafetyBlocks: %w", err)
+	}
 
-	blockNums := sortedKeys(blocksMap)
-	for _, blockNum := range blockNums {
-		for i := uint64(0); i <= safetyBlocks; i++ {
-			targetBlockNum := blockNum + i
+	// sort blocks in blocksMap and use resulting indexes
+	blocks := make([]c.CheckAuraBlockAura, len(blocksMap))
+	indexToBlockNum := sortedKeys(blocksMap)
+	var transferEventIndex uint64
 
-			// set block type == safety; need to explicitly specify if this is the end of safety chain
-			blType := BlTypeSafety
-			if i == safetyBlocks {
-				blType = BlTypeSafetyEnd
-			}
-
-			if bl, ok := blocksMap[targetBlockNum]; ok {
-				// if the block existed and was the end of safety chain, then that could change now
-				if bl.Type&BlTypeSafetyEnd != 0 {
-					bl.Type |= blType
-				}
-			} else {
-				// save block as safety
-				encodedBlockWithType, err := b.encodeBlockWithType(targetBlockNum, blType)
-				if err != nil {
-					return nil, fmt.Errorf("encode block as safety: %w", err)
-				}
-				blocksMap[targetBlockNum] = *encodedBlockWithType
-			}
-
+	for i, blockNum := range indexToBlockNum {
+		if blockNum == transferEvent.Raw.BlockNumber {
+			transferEventIndex = uint64(i) // set transferEventIndex to index in blocks array
+		} else if blockNum > transferEvent.Raw.BlockNumber+minSafetyBlocks {
+			blocks = blocks[:i] // in some cases we can fetch more blocks that we need
+			break
 		}
+
+		blocks[i] = *blocksMap[blockNum]
 	}
 
-	blocks := make([]contracts.CheckAuraBlockAura, len(blocksMap))
-	blockNums = sortedKeys(blocksMap)
-	for i, blockNum := range blockNums {
-		blocks[i] = blocksMap[blockNum]
-	}
-
-	return &contracts.CheckAuraAuraProof{
-		Blocks:    blocks,
-		Transfer:  *transfer,
-		VsChanges: vsChanges,
+	return &c.CheckAuraAuraProof{
+		Blocks:             blocks,
+		Transfer:           transfer,
+		VsChanges:          vsChanges,
+		TransferEventBlock: transferEventIndex,
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]contracts.CheckAuraBlockAura, event *contracts.BridgeTransfer) (*contracts.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckAuraBlockAura, event *c.BridgeTransfer) (c.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
-		return nil, err
+		return c.CommonStructsTransferProof{}, err
 	}
 
-	encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeTransfer)
-	if err != nil {
-		return nil, fmt.Errorf("encode block as transfer: %w", err)
+	if err := b.saveBlock(event.Raw.BlockNumber, blocks); err != nil {
+		return c.CommonStructsTransferProof{}, err
 	}
-	blocks[event.Raw.BlockNumber] = *encodedBlockWithType
 
-	return &contracts.CommonStructsTransferProof{
+	return c.CommonStructsTransferProof{
 		ReceiptProof: proof,
 		EventId:      event.EventId,
 		Transfers:    event.Queue,
 	}, nil
 }
 
-func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlockAura, events []*contracts.VsInitiateChange) ([]contracts.CheckAuraValidatorSetProof, error) {
-	vsChanges := make([]contracts.CheckAuraValidatorSetProof, len(events))
+func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*c.CheckAuraBlockAura, events []*c.VsInitiateChange) ([]c.CheckAuraValidatorSetProof, error) {
+	vsChanges := make([]c.CheckAuraValidatorSetProof, len(events))
 
 	prevSet, err := b.sideBridge.GetValidatorSet()
 	if err != nil {
@@ -117,47 +96,60 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]contracts.CheckAuraBlock
 	}
 
 	for i, event := range events {
-		encodedEvent, err := b.encodeVSChangeEvent(prevSet, event)
+		vsChanges[i], err = b.encodeVSChangeEvent(prevSet, event)
 		if err != nil {
 			return nil, fmt.Errorf("encodeVSChangeEvent: %w", err)
 		}
-		vsChanges[i] = *encodedEvent
 		prevSet = event.NewSet
 
-		if bl, ok := blocks[event.Raw.BlockNumber]; ok {
-			bl.Type |= BlTypeVSChange
-			bl.DeltaIndex = int64(i)
-		} else {
-			encodedBlockWithType, err := b.encodeBlockWithType(event.Raw.BlockNumber, BlTypeVSChange)
-			if err != nil {
-				return nil, fmt.Errorf("encode block as vs change: %w", err)
-			}
-			encodedBlockWithType.DeltaIndex = int64(i)
-			blocks[event.Raw.BlockNumber] = *encodedBlockWithType
+		if err := b.saveBlock(event.Raw.BlockNumber, blocks); err != nil {
+			return nil, err
 		}
+
+		// block in which VS will be finalized
+		if err := b.saveBlock(event.Raw.BlockNumber+1, blocks); err != nil {
+			return nil, err
+		}
+
+		// in this block (one after event block) contracts should finalize all events
+		// in vsChanges array up to `FinalizedVs` index (this event)
+		blocks[event.Raw.BlockNumber+2].FinalizedVs = uint64(i) + 1
+
 	}
 	return vsChanges, nil
 }
 
-func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *contracts.VsInitiateChange) (*contracts.CheckAuraValidatorSetProof, error) {
+// add safety blocks after each event block
+func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*c.CheckAuraBlockAura, minSafetyBlocks uint64) error {
+	for blockNum, _ := range blocksMap {
+		for i := uint64(0); i <= minSafetyBlocks; i++ {
+			if err := b.saveBlock(blockNum+i, blocksMap); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *c.VsInitiateChange) (c.CheckAuraValidatorSetProof, error) {
 	address, index, err := deltaVS(prevSet, event.NewSet)
 	if err != nil {
-		return nil, fmt.Errorf("deltaVS: %w", err)
+		return c.CheckAuraValidatorSetProof{}, fmt.Errorf("deltaVS: %w", err)
 	}
 
 	proof, err := b.getProof(event)
 	if err != nil {
-		return nil, fmt.Errorf("getProof: %w", err)
+		return c.CheckAuraValidatorSetProof{}, fmt.Errorf("getProof: %w", err)
 	}
 
-	return &contracts.CheckAuraValidatorSetProof{
+	return c.CheckAuraValidatorSetProof{
 		ReceiptProof: proof,
 		DeltaAddress: address,
 		DeltaIndex:   index,
 	}, nil
 }
 
-func (b *Bridge) getVSChangeEvents(event *contracts.BridgeTransfer) ([]*contracts.VsInitiateChange, error) {
+func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer) ([]*c.VsInitiateChange, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
@@ -180,7 +172,7 @@ func (b *Bridge) getVSChangeEvents(event *contracts.BridgeTransfer) ([]*contract
 		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
 
-	var res []*contracts.VsInitiateChange
+	var res []*c.VsInitiateChange
 	for logs.Next() {
 		res = append(res, logs.Event)
 	}
@@ -196,17 +188,22 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *Bridge) encodeBlockWithType(blockNumber uint64, type_ uint8) (*contracts.CheckAuraBlockAura, error) {
+func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckAuraBlockAura) error {
+	if _, ok := blocksMap[blockNumber]; ok {
+		return nil
+	}
+
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
-		return nil, fmt.Errorf("HeaderByNumber: %w", err)
+		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
 	encodedBlock, err := EncodeBlock(block)
 	if err != nil {
-		return nil, fmt.Errorf("encode: %w", err)
+		return fmt.Errorf("encode: %w", err)
 	}
-	encodedBlock.Type |= type_
-	return encodedBlock, nil
+
+	blocksMap[blockNumber] = encodedBlock
+	return nil
 }
 
 func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
@@ -247,15 +244,11 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 }
 
 // used for 'ordered' map
-func sortedKeys(m map[uint64]contracts.CheckAuraBlockAura) []uint64 {
-	keys := make([]uint64, len(m))
-	i := 0
+func sortedKeys(m map[uint64]*c.CheckAuraBlockAura) []uint64 {
+	keys := make([]uint64, 0, len(m))
 	for k := range m {
-		keys[i] = k
-		i++
+		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
+	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
 	return keys
 }

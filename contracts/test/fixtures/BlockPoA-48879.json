@@ -10,6 +10,5 @@
  "step": "0x128b8e34",
  "s2": "0xb841",
  "signature": "0x0f68482e0504b71d945f9796957a912786e1d3a5a7958b5c44f951f567c41b997c68bdd9c06eaa63c67c91c9d40ac985e5c1e3e4405e03d60596ef16d33c376300",
- "type_": 0,
- "delta_index": 0
+ "finalized_vs": 0
 }
