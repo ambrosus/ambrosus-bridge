@@ -2,7 +2,6 @@ package eth
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -125,38 +124,8 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	}
 }
 
-func (b *Bridge) checkOldEvents() error {
-	b.Logger.Info().Msg("Checking old events...")
-
-	lastEventId, err := b.sideBridge.GetLastEventId()
-	if err != nil {
-		return fmt.Errorf("GetLastEventId: %w", err)
-	}
-
-	i := big.NewInt(1)
-	for {
-		nextEventId := big.NewInt(0).Add(lastEventId, i)
-		nextEvent, err := b.GetEventById(nextEventId)
-		if err != nil {
-			if errors.Is(err, networks.ErrEventNotFound) {
-				// no more old events
-				return nil
-			}
-			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
-		}
-
-		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
-
-		if err := b.SendEvent(nextEvent); err != nil {
-			return fmt.Errorf("send event: %w", err)
-		}
-
-		i = big.NewInt(0).Add(i, big.NewInt(1))
-	}
-}
-
 func (b *Bridge) listen() error {
-	if err := b.checkOldEvents(); err != nil {
+	if err := b.CheckOldEvents(); err != nil {
 		return fmt.Errorf("checkOldEvents: %w", err)
 	}
 

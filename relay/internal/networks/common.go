@@ -2,6 +2,7 @@ package networks
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -52,3 +53,32 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 	return safetyBlocks.Uint64(), nil
 }
 
+func (b *CommonBridge) CheckOldEvents() error {
+	b.Logger.Info().Msg("Checking old events...")
+
+	lastEventId, err := b.SideBridge.GetLastEventId()
+	if err != nil {
+		return fmt.Errorf("GetLastEventId: %w", err)
+	}
+
+	i := big.NewInt(1)
+	for {
+		nextEventId := big.NewInt(0).Add(lastEventId, i)
+		nextEvent, err := b.GetEventById(nextEventId)
+		if err != nil {
+			if errors.Is(err, ErrEventNotFound) {
+				// no more old events
+				return nil
+			}
+			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
+		}
+
+		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
+
+		if err := b.SendEvent(nextEvent); err != nil {
+			return fmt.Errorf("send event: %w", err)
+		}
+
+		i = big.NewInt(0).Add(i, big.NewInt(1))
+	}
+}
