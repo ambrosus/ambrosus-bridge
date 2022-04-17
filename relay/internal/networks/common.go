@@ -82,3 +82,35 @@ func (b *CommonBridge) CheckOldEvents() error {
 		i = big.NewInt(0).Add(i, big.NewInt(1))
 	}
 }
+
+func (b *CommonBridge) Listen() error {
+	if err := b.CheckOldEvents(); err != nil {
+		return fmt.Errorf("CheckOldEvents: %w", err)
+	}
+
+	b.Logger.Info().Msg("Listening new events...")
+
+	// Subscribe to events
+	watchOpts := &bind.WatchOpts{Context: context.Background()}
+	eventChannel := make(chan *contracts.BridgeTransfer)
+	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
+	if err != nil {
+		return fmt.Errorf("watchTransfer: %w", err)
+	}
+
+	defer eventSub.Unsubscribe()
+
+	// main loop
+	for {
+		select {
+		case err := <-eventSub.Err():
+			return fmt.Errorf("watching transfers: %w", err)
+		case event := <-eventChannel:
+			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
+
+			if err := b.SendEvent(event); err != nil {
+				return fmt.Errorf("send event: %w", err)
+			}
+		}
+	}
+}
