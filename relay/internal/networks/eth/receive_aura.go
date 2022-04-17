@@ -15,9 +15,9 @@ import (
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	// Metric
-	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+	defer metric.SetContractBalance(BridgeName, b.Client, b.Auth.From)
 
-	tx, txErr := b.Contract.SubmitTransferAura(b.auth, *proof)
+	tx, txErr := b.Contract.SubmitTransferAura(b.Auth, *proof)
 	if txErr != nil {
 		if txErr.Error() == "execution reverted" {
 			dataErr := txErr.(rpc.DataError)
@@ -34,7 +34,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		// we've got here probably due to low gas limit,
 		// and revert() that hasn't been caught at eth_estimateGas
-		err = ethereum.GetFailureReason(b.Client, b.auth, tx)
+		err = ethereum.GetFailureReason(b.Client, b.Auth, tx)
 		if err != nil {
 			return fmt.Errorf("GetFailureReason: %w", err)
 		}

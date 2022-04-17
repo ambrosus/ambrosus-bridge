@@ -11,9 +11,9 @@ import (
 
 func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	// Metric
-	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+	defer metric.SetContractBalance(BridgeName, b.Client, b.Auth.From)
 
-	tx, txErr := b.Contract.SubmitTransferPoW(b.auth, *proof)
+	tx, txErr := b.Contract.SubmitTransferPoW(b.Auth, *proof)
 
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
@@ -35,9 +35,9 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 
 func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 	// Metric
-	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
+	defer metric.SetContractBalance(BridgeName, b.Client, b.Auth.From)
 
-	tx, txErr := b.Contract.SetEpochData(b.auth,
+	tx, txErr := b.Contract.SetEpochData(b.Auth,
 		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
 	if txErr != nil {
 		err := b.getFailureReasonViaCall(

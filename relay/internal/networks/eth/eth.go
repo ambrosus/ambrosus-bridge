@@ -18,21 +18,14 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/rs/zerolog"
 )
 
 const BridgeName = "ethereum"
 
 type Bridge struct {
-	Client     *ethclient.Client
-	WsClient   *ethclient.Client
-	Contract   *contracts.Bridge
-	WsContract *contracts.Bridge
+	networks.CommonBridge
+	Config     *config.ETHConfig
 	sideBridge networks.BridgeReceiveEthash
-	config     *config.ETHConfig
-	auth       *bind.TransactOpts
-	cfg        *config.ETHConfig
-	logger     zerolog.Logger
 }
 
 // New creates a new ethereum bridge.
@@ -86,15 +79,20 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
-	return &Bridge{
-		Client:     client,
-		WsClient:   wsClient,
-		Contract:   contract,
-		WsContract: wsContract,
-		auth:       auth,
-		cfg:        cfg,
-		logger:     logger,
-	}, nil
+	b := &Bridge{
+		CommonBridge: networks.CommonBridge{
+			Client:      client,
+			WsClient:    wsClient,
+			Contract:    contract,
+			WsContract:  wsContract,
+			Auth:        auth,
+			Logger:      logger,
+			ContractRaw: &contracts.BridgeRaw{Contract: contract},
+		},
+		Config: cfg,
+	}
+	b.CommonBridge.Bridge = b
+	return b, nil
 }
 
 func (b *Bridge) GetLastEventId() (*big.Int, error) {
@@ -120,34 +118,35 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, erro
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
-	b.logger.Debug().Msg("Running ethereum bridge...")
+	b.Logger.Debug().Msg("Running ethereum bridge...")
 
 	b.sideBridge = sideBridge
+	b.CommonBridge.SideBridge = sideBridge
 
 	// Getting last ethereum block number.
 	blockNumber, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
-		b.logger.Error().Msgf("error getting last block number: %s", err.Error())
+		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
 	}
 
 	// Checking epoch data dir.
-	if err = b.checkEpochDataDir(blockNumber/30000, b.cfg.EpochLength); err != nil {
-		b.logger.Error().Msgf("error checking epoch data dir: %s", err.Error())
+	if err = b.checkEpochDataDir(blockNumber/30000, b.Config.EpochLength); err != nil {
+		b.Logger.Error().Msgf("error checking epoch data dir: %s", err.Error())
 	}
 
 	go b.UnlockOldestTransfersLoop()
 
-	b.logger.Info().Msg("Ethereum bridge runned!")
+	b.Logger.Info().Msg("Ethereum bridge runned!")
 
 	for {
 		if err := b.listen(); err != nil {
-			b.logger.Error().Err(err).Msg("Listen error")
+			b.Logger.Error().Err(err).Msg("Listen error")
 		}
 	}
 }
 
 func (b *Bridge) checkOldEvents() error {
-	b.logger.Info().Msg("Checking old events...")
+	b.Logger.Info().Msg("Checking old events...")
 
 	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
@@ -166,7 +165,7 @@ func (b *Bridge) checkOldEvents() error {
 			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
 		}
 
-		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
+		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
 
 		if err := b.sendEvent(nextEvent); err != nil {
 			return fmt.Errorf("send event: %w", err)
@@ -181,7 +180,7 @@ func (b *Bridge) listen() error {
 		return fmt.Errorf("checkOldEvents: %w", err)
 	}
 
-	b.logger.Info().Msg("Listening new events...")
+	b.Logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
@@ -199,7 +198,7 @@ func (b *Bridge) listen() error {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching transfers: %w", err)
 		case event := <-eventChannel:
-			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
+			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
 			if err := b.sendEvent(event); err != nil {
 				return fmt.Errorf("send event: %w", err)
@@ -209,7 +208,7 @@ func (b *Bridge) listen() error {
 }
 
 func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
 
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
@@ -221,7 +220,7 @@ func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.isEventRemoved(event); err != nil {
@@ -239,7 +238,7 @@ func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
 		}
 	}
 
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
 	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
@@ -257,7 +256,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 		return nil
 	}
 
-	b.logger.Info().Str("event_id", eventId.String()).Msg("Submit epoch data...")
+	b.Logger.Info().Str("event_id", eventId.String()).Msg("Submit epoch data...")
 	epochData, err := b.loadEpochDataFile(epoch)
 	if err != nil {
 		return fmt.Errorf("loadEpochDataFile: %w", err)
@@ -294,7 +293,7 @@ func (b *Bridge) GetMinSafetyBlocksNum() (uint64, error) {
 func (b *Bridge) UnlockOldestTransfersLoop() {
 	for {
 		if err := b.UnlockOldestTransfers(); err != nil {
-			b.logger.Error().Msgf("UnlockOldestTransferLoop: %s", err)
+			b.Logger.Error().Msgf("UnlockOldestTransferLoop: %s", err)
 		}
 	}
 }
@@ -315,7 +314,7 @@ func (b *Bridge) UnlockOldestTransfers() error {
 			return fmt.Errorf("get lock time: %w", err)
 		}
 
-		b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"UnlockOldestTransfers: there are no locked transfers with that id. Sleep %v seconds...",
 			lockTime.Uint64(),
 		)
@@ -332,7 +331,7 @@ func (b *Bridge) UnlockOldestTransfers() error {
 	// Check if the unlocking is allowed and get the sleep time.
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
-		b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"UnlockOldestTransfers: sleep %v seconds...",
 			sleepTime,
 		)
@@ -340,17 +339,17 @@ func (b *Bridge) UnlockOldestTransfers() error {
 	}
 
 	// Unlock the oldest transfer.
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
 	err = b.unlockTransfers(oldestLockedEventId)
 	if err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocked")
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocked")
 	return nil
 }
 
 func (b *Bridge) unlockTransfers(eventId *big.Int) error {
-	tx, txErr := b.Contract.UnlockTransfers(b.auth, eventId)
+	tx, txErr := b.Contract.UnlockTransfers(b.Auth, eventId)
 	if txErr != nil {
 		return txErr
 	}
@@ -360,7 +359,7 @@ func (b *Bridge) unlockTransfers(eventId *big.Int) error {
 		return fmt.Errorf("wait mined: %w", err)
 	}
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		err = ethereum.GetFailureReason(b.Client, b.auth, tx)
+		err = ethereum.GetFailureReason(b.Client, b.Auth, tx)
 		if err != nil {
 			return fmt.Errorf("GetFailureReason: %w", err)
 		}
