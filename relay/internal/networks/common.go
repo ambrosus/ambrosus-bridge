@@ -1,6 +1,8 @@
 package networks
 
 import (
+	"context"
+	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -24,5 +26,21 @@ type CommonBridge struct {
 // GetLastEventId gets last contract event id.
 func (b *CommonBridge) GetLastEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
+}
+
+// GetEventById gets contract event by id.
+func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
+	opts := &bind.FilterOpts{Context: context.Background()}
+
+	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer: %w", err)
+	}
+
+	if logs.Next() {
+		return logs.Event, nil
+	}
+
+	return nil, ErrEventNotFound
 }
 
