@@ -102,11 +102,6 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	return b, nil
 }
 
-// GetLastEventId gets last contract event id.
-func (b *Bridge) GetLastEventId() (*big.Int, error) {
-	return b.Contract.InputEventId(nil)
-}
-
 // GetEventById gets contract event by id.
 func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
 	opts := &bind.FilterOpts{Context: context.Background()}

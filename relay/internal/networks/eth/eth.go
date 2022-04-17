@@ -95,10 +95,6 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	return b, nil
 }
 
-func (b *Bridge) GetLastEventId() (*big.Int, error) {
-	return b.Contract.InputEventId(nil)
-}
-
 // GetEventById gets contract event by id.
 func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
 	opts := &bind.FilterOpts{Context: context.Background()}
