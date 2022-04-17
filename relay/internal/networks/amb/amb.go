@@ -227,14 +227,6 @@ func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
-func (b *Bridge) GetMinSafetyBlocksNum() (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
-	if err != nil {
-		return 0, err
-	}
-	return safetyBlocks.Uint64(), nil
-}
-
 func (b *Bridge) UnlockOldestTransfersLoop() {
 	for {
 		if err := b.UnlockOldestTransfers(); err != nil {

@@ -44,3 +44,11 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	return nil, ErrEventNotFound
 }
 
+func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
+	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
+	if err != nil {
+		return 0, err
+	}
+	return safetyBlocks.Uint64(), nil
+}
+
