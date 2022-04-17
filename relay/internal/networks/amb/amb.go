@@ -152,6 +152,25 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
+func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+	if params.TxErr != nil {
+		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
+		// openethereum doesn't give us a full error message
+		// so, make low-level call method to get the full error message
+		err := b.getFailureReasonViaCall(params.MethodName, txParams...)
+		if err != nil {
+			return fmt.Errorf("getFailureReasonViaCall: %w", err)
+		}
+		return params.TxErr
+	}
+
+	err := b.waitForTxMined(params.Tx)
+	if err != nil {
+		return fmt.Errorf("waitForTxMined: %w", err)
+	}
+	return nil
+}
+
 func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
 	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
@@ -224,17 +243,8 @@ func (b *Bridge) UnlockOldestTransfers() error {
 
 func (b *Bridge) unlockTransfers(eventId *big.Int) error {
 	tx, txErr := b.Contract.UnlockTransfers(b.Auth, eventId)
-	if txErr != nil {
-		err := b.getFailureReasonViaCall("unlockTransfers", eventId)
-		if err != nil {
-			return fmt.Errorf("getFailureReasonViaCall: %w", err)
-		}
-		return txErr
-	}
-
-	err := b.waitForTxMined(tx)
-	if err != nil {
-		return fmt.Errorf("waitForTxMined: %w", err)
-	}
-	return nil
+	return b.GetTransactionError(
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
+		eventId,
+	)
 }

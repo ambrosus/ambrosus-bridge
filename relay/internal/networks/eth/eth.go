@@ -17,6 +17,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const BridgeName = "ethereum"
@@ -163,6 +164,31 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
+func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+	if params.TxErr != nil {
+		if params.TxErr.Error() == "execution reverted" {
+			dataErr := params.TxErr.(rpc.DataError)
+			return fmt.Errorf("contract runtime error: %s", dataErr.ErrorData())
+		}
+		return params.TxErr
+	}
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
+	if err != nil {
+		return fmt.Errorf("wait mined: %w", err)
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		// we've got here probably due to low gas limit,
+		// and revert() that hasn't been caught at eth_estimateGas
+		err = ethereum.GetFailureReason(b.Client, b.Auth, params.Tx)
+		if err != nil {
+			return fmt.Errorf("GetFailureReason: %w", err)
+		}
+	}
+	return nil
+}
+
 func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	epoch := blockNumber / 30000
 	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
@@ -259,19 +285,5 @@ func (b *Bridge) UnlockOldestTransfers() error {
 
 func (b *Bridge) unlockTransfers(eventId *big.Int) error {
 	tx, txErr := b.Contract.UnlockTransfers(b.Auth, eventId)
-	if txErr != nil {
-		return txErr
-	}
-
-	receipt, err := bind.WaitMined(context.Background(), b.Client, tx)
-	if err != nil {
-		return fmt.Errorf("wait mined: %w", err)
-	}
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		err = ethereum.GetFailureReason(b.Client, b.Auth, tx)
-		if err != nil {
-			return fmt.Errorf("GetFailureReason: %w", err)
-		}
-	}
-	return nil
+	return b.GetTransactionError(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr})
 }

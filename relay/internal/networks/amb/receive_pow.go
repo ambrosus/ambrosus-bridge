@@ -1,10 +1,10 @@
 package amb
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 )
@@ -14,23 +14,10 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	defer metric.SetContractBalance(BridgeName, b.Client, b.Auth.From)
 
 	tx, txErr := b.Contract.SubmitTransferPoW(b.Auth, *proof)
-
-	if txErr != nil {
-		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
-		// openethereum doesn't give us a full error message
-		// so, make low-level call method to get the full error message
-		err := b.getFailureReasonViaCall("submitTransferPoW", *proof)
-		if err != nil {
-			return fmt.Errorf("getFailureReasonViaCall: %w", err)
-		}
-		return txErr
-	}
-
-	err := b.waitForTxMined(tx)
-	if err != nil {
-		return fmt.Errorf("waitForTxMined: %w", err)
-	}
-	return nil
+	return b.GetTransactionError(
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "submitTransferPoW"},
+		*proof,
+	)
 }
 
 func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
@@ -39,22 +26,10 @@ func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 
 	tx, txErr := b.Contract.SetEpochData(b.Auth,
 		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
-	if txErr != nil {
-		err := b.getFailureReasonViaCall(
-			"setEpochData",
-			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
-		)
-		if err != nil {
-			return fmt.Errorf("getFailureReasonViaCall: %w", err)
-		}
-		return txErr
-	}
-
-	err := b.waitForTxMined(tx)
-	if err != nil {
-		return fmt.Errorf("waitForTxMined: %w", err)
-	}
-	return nil
+	return b.GetTransactionError(
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "setEpochData"},
+		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
+	)
 }
 
 func (b *Bridge) IsEpochSet(epoch uint64) (bool, error) {
