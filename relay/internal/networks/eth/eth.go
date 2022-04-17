@@ -147,7 +147,7 @@ func (b *Bridge) checkOldEvents() error {
 
 		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
 
-		if err := b.sendEvent(nextEvent); err != nil {
+		if err := b.SendEvent(nextEvent); err != nil {
 			return fmt.Errorf("send event: %w", err)
 		}
 
@@ -180,14 +180,14 @@ func (b *Bridge) listen() error {
 		case event := <-eventChannel:
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
-			if err := b.sendEvent(event); err != nil {
+			if err := b.SendEvent(event); err != nil {
 				return fmt.Errorf("send event: %w", err)
 			}
 		}
 	}
 }
 
-func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
+func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
 
 	// Wait for safety blocks.
