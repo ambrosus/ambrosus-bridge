@@ -89,9 +89,7 @@ func (b *CommonBridge) GetLastEventId() (*big.Int, error) {
 
 // GetEventById gets contract event by id.
 func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
-	opts := &bind.FilterOpts{Context: context.Background()}
-
-	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
+	logs, err := b.Contract.FilterTransfer(nil, []*big.Int{eventId})
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
@@ -119,25 +117,19 @@ func (b *CommonBridge) CheckOldEvents() error {
 		return fmt.Errorf("GetLastEventId: %w", err)
 	}
 
-	i := big.NewInt(1)
-	for {
-		nextEventId := big.NewInt(0).Add(lastEventId, i)
+	for i := int64(1); ; i++ {
+		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
 		nextEvent, err := b.GetEventById(nextEventId)
-		if err != nil {
-			if errors.Is(err, networks.ErrEventNotFound) {
-				// no more old events
-				return nil
-			}
+		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
+			return nil
+		} else if err != nil {
 			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
 		}
 
 		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
-
 		if err := b.SendEvent(nextEvent); err != nil {
 			return fmt.Errorf("send event: %w", err)
 		}
-
-		i = big.NewInt(0).Add(i, big.NewInt(1))
 	}
 }
 
@@ -145,17 +137,14 @@ func (b *CommonBridge) Listen() error {
 	if err := b.CheckOldEvents(); err != nil {
 		return fmt.Errorf("CheckOldEvents: %w", err)
 	}
-
 	b.Logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
-	watchOpts := &bind.WatchOpts{Context: context.Background()}
-	eventChannel := make(chan *contracts.BridgeTransfer)
-	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
+	eventCh := make(chan *contracts.BridgeTransfer)
+	eventSub, err := b.WsContract.WatchTransfer(nil, eventCh, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransfer: %w", err)
 	}
-
 	defer eventSub.Unsubscribe()
 
 	// main loop
@@ -163,7 +152,7 @@ func (b *CommonBridge) Listen() error {
 		select {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching transfers: %w", err)
-		case event := <-eventChannel:
+		case event := <-eventCh:
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
 			if err := b.SendEvent(event); err != nil {
