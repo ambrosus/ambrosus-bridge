@@ -8,7 +8,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	networks_common "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
@@ -18,7 +18,7 @@ import (
 const BridgeName = "ambrosus"
 
 type Bridge struct {
-	networks_common.CommonBridge
+	nc.CommonBridge
 	VSContract *contracts.Vs
 	Config     *config.AMBConfig
 	sideBridge networks.BridgeReceiveAura
@@ -26,7 +26,7 @@ type Bridge struct {
 
 // New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	commonBridge, err := networks_common.New(cfg.Network)
+	commonBridge, err := nc.New(cfg.Network)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}

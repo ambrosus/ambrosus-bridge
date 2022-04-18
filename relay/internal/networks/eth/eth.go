@@ -9,7 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	networks_common "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
@@ -21,14 +21,14 @@ import (
 const BridgeName = "ethereum"
 
 type Bridge struct {
-	networks_common.CommonBridge
+	nc.CommonBridge
 	Config     *config.ETHConfig
 	sideBridge networks.BridgeReceiveEthash
 }
 
 // New creates a new ethereum bridge.
 func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	commonBridge, err := networks_common.New(cfg.Network)
+	commonBridge, err := nc.New(cfg.Network)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
