@@ -120,6 +120,23 @@ contract CommonBridge is AccessControl, Pausable {
         return lockedTransfers[eventId];
     }
 
+
+    function proceedTransfers(CommonStructs.Transfer[] memory transfers) internal {
+        for (uint i = 0; i < transfers.length; i++) {
+
+            if (transfers[i].tokenAddress == address(0)) {  // native token
+                IWrapper(wrapperAddress).withdraw(transfers[i].amount);
+                payable(transfers[i].toAddress).transfer(transfers[i].amount);
+            } else {  // ERC20 token
+                require(
+                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
+                    "Fail transfer coins");
+            }
+
+        }
+    }
+
+
     // submitted transfers save here for `lockTime` period
     function lockTransfers(CommonStructs.Transfer[] memory events, uint eventId) internal {
         lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
@@ -135,9 +152,7 @@ contract CommonBridge is AccessControl, Pausable {
         require(transfersLocked.endTimestamp > 0, "no locked transfers with this id");
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
-        for (uint i = 0; i < transfers.length; i++)
-            require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
+        proceedTransfers(transfersLocked.transfers);
 
         delete lockedTransfers[eventId];
         emit TransferFinish(eventId);
@@ -152,9 +167,7 @@ contract CommonBridge is AccessControl, Pausable {
             CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[eventId];
             if (transfersLocked.endTimestamp == 0 || transfersLocked.endTimestamp > block.timestamp) break;
 
-            CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
-            for (uint i = 0; i < transfers.length; i++)
-                require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
+            proceedTransfers(transfersLocked.transfers);
 
             delete lockedTransfers[eventId];
             emit TransferFinish(eventId);
@@ -235,4 +248,7 @@ contract CommonBridge is AccessControl, Pausable {
     function checkEventId(uint eventId) internal {
         require(eventId == ++inputEventId, "EventId out of order");
     }
+
+    receive() external payable {}  // need to receive native token from wrapper contract
+
 }

@@ -276,6 +276,16 @@ describe("Common tests", () => {
       await ambBridge.pause();
       await expect(ambBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
     });
+
+    it("unlock native coins", async () => {
+      await ambBridge.wrap_withdraw(user, {value: +await commonBridge.fee() + 50});  // lock some SAMB tokens on bridge
+      console.log(ambBridge.address)
+      await ambBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
+      await nextTimeframe();
+
+      await expect(() => ambBridge.unlockTransfers(1))
+        .to.changeEtherBalance(userS, 25);
+    });
   });
 
 
