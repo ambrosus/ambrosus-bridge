@@ -58,12 +58,16 @@ func New(cfg config.Network) (*CommonBridge, error) {
 
 	// create auth if privateKey provided
 	var auth *bind.TransactOpts
-	if cfg.PrivateKey != nil {
+	if cfg.PrivateKey != "" {
+		pk, err := parsePK(cfg.PrivateKey)
+		if err != nil {
+			return nil, fmt.Errorf("parse private key: %w", err)
+		}
 		chainId, err := client.ChainID(context.Background())
 		if err != nil {
 			return nil, fmt.Errorf("chain id: %w", err)
 		}
-		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+		auth, err = bind.NewKeyedTransactorWithChainID(pk, chainId)
 		if err != nil {
 			return nil, fmt.Errorf("new keyed transactor: %w", err)
 		}
@@ -168,4 +172,12 @@ func (b *CommonBridge) Listen() error {
 			}
 		}
 	}
+}
+
+func parsePK(pk string) (*ecdsa.PrivateKey, error) {
+	b, err := hex.DecodeString(pk)
+	if err != nil {
+		return nil, err
+	}
+	return crypto.ToECDSA(b)
 }
