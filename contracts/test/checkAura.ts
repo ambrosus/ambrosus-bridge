@@ -36,12 +36,12 @@ describe("Check Aura", () => {
 
   it("Test CheckAura (no changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-staticVs.json");
-    await ethBridge.CheckAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
+    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
   });
 
   it("Test CheckAura (changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-changeVs.json");
-    await ethBridge.CheckAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
+    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
   });
 
   it("Test blockHash", async () => {
@@ -59,7 +59,7 @@ describe("Check Aura", () => {
     const signature = "0x44c08b83a120ad90f645f645f3fe1bc49dd88e703fce665de1f941c0cede65d81968ac2ad0b5bb9db7cb32a23064c199c0ab5378957f99b1c361fc3ed3b209eb00";
     const needAddress = "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0"
     expect(ethers.utils.recoverAddress(ethers.utils.arrayify(hash), signature)).eq(needAddress);
-    await ethBridge.CheckSignatureTest(needAddress, hash, signature)
+    await ethBridge.checkSignatureTest(needAddress, hash, signature)
   });
 
   it('Test bytesToUintTest', async () => {
