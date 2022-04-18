@@ -1,4 +1,4 @@
-package networks
+package common
 
 import (
 	"context"
@@ -10,20 +10,21 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 )
 
 type CommonBridge struct {
-	Bridge
-	Client      *ethclient.Client
-	WsClient    *ethclient.Client
-	Contract    *contracts.Bridge
-	WsContract  *contracts.Bridge
-	Auth        *bind.TransactOpts
-	SideBridge  Bridge
-	Logger      zerolog.Logger
+	networks.Bridge
+	Client     *ethclient.Client
+	WsClient   *ethclient.Client
+	Contract   *contracts.Bridge
+	WsContract *contracts.Bridge
+	Auth       *bind.TransactOpts
+	SideBridge networks.Bridge
+	Logger     zerolog.Logger
 }
 
 // GetLastEventId gets last contract event id.
@@ -44,7 +45,7 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 		return logs.Event, nil
 	}
 
-	return nil, ErrEventNotFound
+	return nil, networks.ErrEventNotFound
 }
 
 func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
@@ -68,7 +69,7 @@ func (b *CommonBridge) CheckOldEvents() error {
 		nextEventId := big.NewInt(0).Add(lastEventId, i)
 		nextEvent, err := b.GetEventById(nextEventId)
 		if err != nil {
-			if errors.Is(err, ErrEventNotFound) {
+			if errors.Is(err, networks.ErrEventNotFound) {
 				// no more old events
 				return nil
 			}
@@ -178,7 +179,7 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 func (b *CommonBridge) unlockTransfers(eventId *big.Int) error {
 	tx, txErr := b.Contract.UnlockTransfers(b.Auth, eventId)
 	return b.GetTransactionError(
-		GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
 		eventId,
 	)
 }
@@ -243,7 +244,7 @@ func (b *CommonBridge) checkValidityLockedTransfers(event *contracts.BridgeTrans
 		)
 
 		tx, txErr := b.Contract.Pause(b.Auth)
-		if err := b.GetTransactionError(GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+		if err := b.GetTransactionError(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
 			return fmt.Errorf("Pause: %w", err)
 		}
 
@@ -273,7 +274,7 @@ side network locked transfer: %s
 Pause contract...`, event.EventId, i, thisLockedTransferJson, sideLockedTransferJson)
 
 			tx, txErr := b.Contract.Pause(b.Auth)
-			if err := b.GetTransactionError(GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+			if err := b.GetTransactionError(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
 				return fmt.Errorf("Pause: %w", err)
 			}
 

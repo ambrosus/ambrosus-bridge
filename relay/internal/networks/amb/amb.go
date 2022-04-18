@@ -9,6 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	networks_common "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
@@ -20,7 +21,7 @@ import (
 const BridgeName = "ambrosus"
 
 type Bridge struct {
-	networks.CommonBridge
+	networks_common.CommonBridge
 	VSContract *contracts.Vs
 	Config     *config.AMBConfig
 	sideBridge networks.BridgeReceiveAura
@@ -84,13 +85,13 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}
 
 	b := &Bridge{
-		CommonBridge: networks.CommonBridge{
-			Client:      client,
-			WsClient:    wsClient,
-			Contract:    contract,
-			WsContract:  wsContract,
-			Auth:        auth,
-			Logger:      logger,
+		CommonBridge: networks_common.CommonBridge{
+			Client:     client,
+			WsClient:   wsClient,
+			Contract:   contract,
+			WsContract: wsContract,
+			Auth:       auth,
+			Logger:     logger,
 		},
 		VSContract: vsContract,
 		Config:     cfg,
