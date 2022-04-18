@@ -2,13 +2,18 @@ package common
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"math/big"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 )
@@ -22,6 +27,56 @@ type CommonBridge struct {
 	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
 	Logger     zerolog.Logger
+}
+
+func New(cfg config.Network) (*CommonBridge, error) {
+	client, err := ethclient.Dial(cfg.HttpURL)
+	if err != nil {
+		return nil, fmt.Errorf("dial http: %w", err)
+	}
+
+	// Creating a new bridge contract instance.
+	contract, err := contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
+	if err != nil {
+		return nil, fmt.Errorf("create contract http: %w", err)
+	}
+
+	// Create websocket instances if wsUrl provided
+	var wsClient *ethclient.Client
+	var wsContract *contracts.Bridge
+	if cfg.WsURL != "" {
+		wsClient, err = ethclient.Dial(cfg.WsURL)
+		if err != nil {
+			return nil, fmt.Errorf("dial ws: %w", err)
+		}
+
+		wsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
+		if err != nil {
+			return nil, fmt.Errorf("create contract ws: %w", err)
+		}
+	}
+
+	// create auth if privateKey provided
+	var auth *bind.TransactOpts
+	if cfg.PrivateKey != nil {
+		chainId, err := client.ChainID(context.Background())
+		if err != nil {
+			return nil, fmt.Errorf("chain id: %w", err)
+		}
+		auth, err = bind.NewKeyedTransactorWithChainID(cfg.PrivateKey, chainId)
+		if err != nil {
+			return nil, fmt.Errorf("new keyed transactor: %w", err)
+		}
+	}
+
+	return &CommonBridge{
+		Client:     client,
+		WsClient:   wsClient,
+		Contract:   contract,
+		WsContract: wsContract,
+		Auth:       auth,
+	}, nil
+
 }
 
 // GetLastEventId gets last contract event id.
