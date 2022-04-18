@@ -65,7 +65,7 @@ contract CommonBridge is AccessControl, Pausable {
     }
 
 
-    function wrap_withdraw(address toAddress) public payable {
+    function wrapWithdraw(address toAddress) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 

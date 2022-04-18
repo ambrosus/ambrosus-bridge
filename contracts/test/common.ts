@@ -110,33 +110,33 @@ describe("Common tests", () => {
   });
 
 
-  describe('Test wrap_withdraw', async () => {
+  describe('Test wrapWithdraw', async () => {
 
     it('Test wrap part', async () => {
       const fee = +await commonBridge.fee();
 
-      await commonBridge.wrap_withdraw(user, {value: fee + 50});
+      await commonBridge.wrapWithdraw(user, {value: fee + 50});
 
-      await expect(() => commonBridge.wrap_withdraw(user, {value: fee + 50}))
+      await expect(() => commonBridge.wrapWithdraw(user, {value: fee + 50}))
         .to.changeTokenBalance(sAmb, commonBridge, 50);
     });
 
     it('Test withdraw part', async () => {
       const fee = +await commonBridge.fee();
 
-      await commonBridge.wrap_withdraw(user, {value: fee + 1});
-      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrapWithdraw(user, {value: fee + 1});
+      await commonBridge.wrapWithdraw(user, {value: fee + 1});
       await nextTimeframe();
 
       // will catch previous txs (because nextTimeframe happened)
-      let tx1Amb: ContractTransaction = await commonBridge.wrap_withdraw(user, {value: fee + 1});
-      await commonBridge.wrap_withdraw(user, {value: fee + 1});
-      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      let tx1Amb: ContractTransaction = await commonBridge.wrapWithdraw(user, {value: fee + 1});
+      await commonBridge.wrapWithdraw(user, {value: fee + 1});
+      await commonBridge.wrapWithdraw(user, {value: fee + 1});
       await nextTimeframe();
 
       // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      let tx2Amb: ContractTransaction = await commonBridge.wrap_withdraw(user, {value: fee + 1});
-      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      let tx2Amb: ContractTransaction = await commonBridge.wrapWithdraw(user, {value: fee + 1});
+      await commonBridge.wrapWithdraw(user, {value: fee + 1});
 
       let receipt1Amb: ContractReceipt = await tx1Amb.wait();
       let receipt2Amb: ContractReceipt = await tx2Amb.wait();
@@ -278,8 +278,7 @@ describe("Common tests", () => {
     });
 
     it("unlock native coins", async () => {
-      await ambBridge.wrap_withdraw(user, {value: +await commonBridge.fee() + 50});  // lock some SAMB tokens on bridge
-      console.log(ambBridge.address)
+      await ambBridge.wrapWithdraw(user, {value: +await commonBridge.fee() + 50});  // lock some SAMB tokens on bridge
       await ambBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
       await nextTimeframe();
 
