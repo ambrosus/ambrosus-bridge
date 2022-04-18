@@ -110,6 +110,10 @@ contract CommonBridge is AccessControl, Pausable {
 
     // locked transfers from another network
 
+    function getLockedTransfers(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[eventId];
+    }
+
     // submitted transfers save here for `lockTime` period
     function lockTransfers(CommonStructs.Transfer[] memory events, uint eventId) internal {
         lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
