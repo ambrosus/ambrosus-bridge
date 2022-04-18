@@ -9,8 +9,8 @@ library CommonStructs {
     }
 
     struct TransferProof {
-        bytes[] receipt_proof;
-        uint event_id;
+        bytes[] receiptProof;
+        uint eventId;
         Transfer[] transfers;
     }
 

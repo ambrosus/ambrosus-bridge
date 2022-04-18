@@ -30,9 +30,9 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
         CommonStructs.TransferProof transfer;
     }
 
-    function CheckPoW_(PoWProof memory powProof, address sideBridgeAddress) public
+    function checkPoW_(PoWProof memory powProof, address sideBridgeAddress) internal view
     {
-        bytes32 hash = CalcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
+        bytes32 hash = calcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
         for (uint i = 0; i < powProof.blocks.length; i++) {
             require(powProof.blocks[i].parentOrReceiptHash == hash, "parentHash or receiptHash wrong");
             hash = blockHash(powProof.blocks[i]);
@@ -41,6 +41,17 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
         }
     }
 
+
+    function verifyEthash(BlockPoW memory block_) internal view {
+        verifyPoW(
+            bytesToUint(block_.number),
+            blockHashWithoutNonce(block_),
+            bytesToUint(block_.nonce),
+            bytesToUint(block_.difficulty),
+            block_.dataSetLookup,
+            block_.witnessForLookup
+        );
+    }
 
     function blockHash(BlockPoW memory block_) internal pure returns (bytes32) {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
@@ -63,19 +74,7 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
             ));
     }
 
-    function verifyEthash(BlockPoW memory block_) public view {
-        verifyPoW(
-            bytesToUint(block_.number),
-            blockHashWithoutNonce(block_),
-            bytesToUint(block_.nonce),
-            bytesToUint(block_.difficulty),
-            block_.dataSetLookup,
-            block_.witnessForLookup
-        );
-
-    }
-
-    function blockHashWithoutNonce(BlockPoW memory block_) private pure returns (bytes32) {
+    function blockHashWithoutNonce(BlockPoW memory block_) internal pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
             block_.p0WithoutNonce,
             block_.p1,
