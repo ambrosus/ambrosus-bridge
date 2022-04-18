@@ -21,7 +21,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
-    uint public oldestLockedEventId = 1;  // head index of lockedTransfers 'queue' mapping
+    uint public oldestLockedEventId;  // head index of lockedTransfers 'queue' mapping
 
 
     // this network to side network token addresses mapping
@@ -37,7 +37,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     uint public lockTime;
 
     uint public inputEventId; // last processed event from side network
-    uint outputEventId = 1;  // last created event in this network. start from 1 coz 0 consider already processed
+    uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint lastTimeframe;
 
@@ -61,6 +61,9 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         minSafetyBlocks = args.minSafetyBlocks;
         timeframeSeconds = args.timeframeSeconds;
         lockTime = args.lockTime;
+
+        oldestLockedEventId = 1;
+        outputEventId = 1;
     }
 
 

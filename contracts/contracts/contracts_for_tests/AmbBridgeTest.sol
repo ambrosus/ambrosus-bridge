@@ -5,7 +5,7 @@ import "../eth/AmbBridge.sol";
 import "../common/CommonStructs.sol";
 
 contract AmbBridgeTest is AmbBridge {
-    constructor(CommonStructs.ConstructorArgs memory args) {
+    function initialize_(CommonStructs.ConstructorArgs memory args) public initializer {
         AmbBridge.initialize(args);
     }
 
