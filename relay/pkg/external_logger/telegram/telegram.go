@@ -38,10 +38,18 @@ type response struct {
 }
 
 func (t *externalLogger) LogError(msg string) error {
+	return t.log("We got an unexpected error:", msg)
+}
+
+func (t *externalLogger) LogWarning(msg string) error {
+	return t.log("Warning!", msg)
+}
+
+func (t *externalLogger) log(title, msg string) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Token)
 	body := &request{
 		ChatId:    t.ChatId,
-		Text:      fmt.Sprintf("%s <b>We got an unexpected error:</b>\n%s", t.Prefix, msg),
+		Text:      fmt.Sprintf("%s <b>%s</b>\n%s", t.Prefix, title, msg),
 		ParseMode: "html",
 	}
 
@@ -63,4 +71,5 @@ func (t *externalLogger) LogError(msg string) error {
 		return fmt.Errorf(respData.ErrorDescription)
 	}
 	return nil
+
 }
