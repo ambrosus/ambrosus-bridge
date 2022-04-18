@@ -55,7 +55,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   await hre.deployments.deploy("AmbBridgeTest", {
     from: owner,
-    args: [commonArgs],
+    proxy: {
+      proxyContract: "proxyTransparent",
+      viaAdminContract: "proxyAdmin",
+      execute: {
+        init: {
+          methodName: "initialize_",
+          args: [commonArgs]
+        }
+      }
+    },
     log: true,
   });
 
