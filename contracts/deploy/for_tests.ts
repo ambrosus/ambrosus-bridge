@@ -68,7 +68,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
         "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
       ],
-      ethers.constants.AddressZero, // validatorSetAddress_
+      "0x0000000000000000000000000000000000000F00", // validatorSetAddress_
       ethers.constants.HashZero, // lastProcessedBlock
     ],
     log: true,
