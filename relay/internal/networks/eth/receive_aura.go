@@ -17,7 +17,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	// Metric
 	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
-	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
+	tx, txErr := b.Contract.SubmitTransferAura(b.auth, *proof)
 	if txErr != nil {
 		if txErr.Error() == "execution reverted" {
 			dataErr := txErr.(rpc.DataError)

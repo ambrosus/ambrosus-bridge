@@ -28,7 +28,7 @@ describe("Common tests", () => {
   let ethBridge: Contract;
   let ambBridge: Contract;
   let mockERC20: Contract;
-  let wAmb: Contract;
+  let sAmb: Contract;
 
 
   before(async () => {
@@ -42,7 +42,7 @@ describe("Common tests", () => {
     ambBridge = await ethers.getContract("AmbBridgeTest", ownerS);
     ethBridge = await ethers.getContract("EthBridgeTest", ownerS);
     mockERC20 = await ethers.getContract("BridgeERC20Test", ownerS);
-    wAmb = await ethers.getContract("wAMB", ownerS);
+    sAmb = await ethers.getContract("sAMB", ownerS);
 
   });
 
@@ -52,10 +52,9 @@ describe("Common tests", () => {
     for (let bridge of [commonBridge, ethBridge, ambBridge]) {
       await bridge.grantRole(ADMIN_ROLE, owner);
       await bridge.grantRole(RELAY_ROLE, relay);
-      await bridge.tokensAddBatch([wAmb.address, mockERC20.address], [token1, token2]);
+      await bridge.tokensAddBatch([sAmb.address, mockERC20.address], [token1, token2]);
       await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
     }
-    await ambBridge.setAmbWrapper(wAmb.address);
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
@@ -94,33 +93,33 @@ describe("Common tests", () => {
   });
 
 
-  describe('Test wrap_withdraw in AmbBridge', async () => {
+  describe('Test wrap_withdraw', async () => {
 
     it('Test wrap part', async () => {
-      const fee = +await ambBridge.fee();
+      const fee = +await commonBridge.fee();
 
-      await ambBridge.wrap_withdraw(user, {value: fee + 50});
+      await commonBridge.wrap_withdraw(user, {value: fee + 50});
 
-      await expect(() => ambBridge.wrap_withdraw(user, {value: fee + 50}))
-        .to.changeTokenBalance(wAmb, ambBridge, 50);
+      await expect(() => commonBridge.wrap_withdraw(user, {value: fee + 50}))
+        .to.changeTokenBalance(sAmb, commonBridge, 50);
     });
 
     it('Test withdraw part', async () => {
-      const fee = +await ambBridge.fee();
+      const fee = +await commonBridge.fee();
 
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
       await nextTimeframe();
 
       // will catch previous txs (because nextTimeframe happened)
-      let tx1Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      let tx1Amb: ContractTransaction = await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
       await nextTimeframe();
 
       // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      let tx2Amb: ContractTransaction = await ambBridge.wrap_withdraw(user, {value: fee + 1});
-      await ambBridge.wrap_withdraw(user, {value: fee + 1});
+      let tx2Amb: ContractTransaction = await commonBridge.wrap_withdraw(user, {value: fee + 1});
+      await commonBridge.wrap_withdraw(user, {value: fee + 1});
 
       let receipt1Amb: ContractReceipt = await tx1Amb.wait();
       let receipt2Amb: ContractReceipt = await tx2Amb.wait();
@@ -195,38 +194,38 @@ describe("Common tests", () => {
 
   describe("Test Transfer lock/unlock/remove", () => {
     beforeEach(async () => {
-      const data0 = [[mockERC20.address, user, 10]];
-      const data1 = [[mockERC20.address, user, 20], [mockERC20.address, user, 30]];
+      const data1 = [[mockERC20.address, user, 10]];
+      const data2 = [[mockERC20.address, user, 20], [mockERC20.address, user, 30]];
 
-      await ambBridge.lockTransfersTest(data0, 0);
       await ambBridge.lockTransfersTest(data1, 1);
+      await ambBridge.lockTransfersTest(data2, 2);
     });
 
     it("locked correctly", async () => {
-      const d0 = await ambBridge.getLockedTransferTest(0);
       const d1 = await ambBridge.getLockedTransferTest(1);
+      const d2 = await ambBridge.getLockedTransferTest(2);
 
-      expect(d0.transfers[0].amount).eq(10)
-      expect(d1.transfers[0].amount).eq(20)
-      expect(d1.transfers[1].amount).eq(30)
+      expect(d1.transfers[0].amount).eq(10)
+      expect(d2.transfers[0].amount).eq(20)
+      expect(d2.transfers[1].amount).eq(30)
     });
 
     it("unlock", async () => {
       await nextTimeframe();
 
-      await expect(() => ambBridge.unlockTransfers(0))
+      await expect(() => ambBridge.unlockTransfers(1))
         .to.changeTokenBalance(mockERC20, userS, 10);
     });
 
     it("unlock before endTime passed", async () => {
-      await expect(ambBridge.unlockTransfers(0))
+      await expect(ambBridge.unlockTransfers(1))
         .to.be.revertedWith("lockTime has not yet passed")
     });
 
     it("unlock not oldest", async () => {
       await nextTimeframe();
 
-      await expect(ambBridge.unlockTransfers(1))
+      await expect(ambBridge.unlockTransfers(2))
         .to.be.revertedWith("can unlock only oldest event")
     });
 
@@ -237,34 +236,34 @@ describe("Common tests", () => {
         .to.changeTokenBalance(mockERC20, userS, 10 + 20 + 30);
     });
 
-    it("remove transfers from 0", async () => {
-      await ambBridge.pause();
-      await ambBridge.removeLockedTransfers(0);
-
-      expect((await ambBridge.getLockedTransferTest(0)).transfers).to.be.empty;
-      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
-    });
-
     it("remove transfers from 1", async () => {
       await ambBridge.pause();
       await ambBridge.removeLockedTransfers(1);
 
-      expect((await ambBridge.getLockedTransferTest(0)).transfers).to.not.be.empty;
       expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
+      expect((await ambBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+    });
+
+    it("remove transfers from 2", async () => {
+      await ambBridge.pause();
+      await ambBridge.removeLockedTransfers(2);
+
+      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
+      expect((await ambBridge.getLockedTransferTest(2)).transfers).to.be.empty;
     });
 
     it("remove unlocked", async () => {
       await nextTimeframe();
-      await ambBridge.unlockTransfers(0);
+      await ambBridge.unlockTransfers(1);
 
       await ambBridge.pause();
-      await expect(ambBridge.removeLockedTransfers(0)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
+      await expect(ambBridge.removeLockedTransfers(1)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
     });
   });
 
 
   it('Test CalcTransferReceiptsHash', async () => {
-    const receiptProof = require("./data-pow/receipt-proof-checkpow.json");
+    const receiptProof = require("./fixtures/transfer-event-proof.json");
     const transferProof = [
       receiptProof, 1,
       [["0xc4b907fc242097D47eFd47f36eaee5Da2C239aDd", "0x8FC84c829d9cB1982f2121F135624E25aac679A9", 10]]
@@ -275,13 +274,6 @@ describe("Common tests", () => {
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 
-  it('CheckSignature', async () => {
-    const hash = "0x74dfc2c4994f9393f823773a399849e0241c8f4c549f7e019960bd64b938b6ae"
-    const signature = "0x44c08b83a120ad90f645f645f3fe1bc49dd88e703fce665de1f941c0cede65d81968ac2ad0b5bb9db7cb32a23064c199c0ab5378957f99b1c361fc3ed3b209eb00";
-    const needAddress = "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0"
-    expect(ethers.utils.recoverAddress(ethers.utils.arrayify(hash), signature)).eq(needAddress);
-    await ethBridge.CheckSignatureTest(needAddress, hash, signature)
-  });
 
 });
 

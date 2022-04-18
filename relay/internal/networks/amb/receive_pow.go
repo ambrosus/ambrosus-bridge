@@ -13,13 +13,13 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	// Metric
 	defer metric.SetContractBalance(BridgeName, b.Client, b.auth.From)
 
-	tx, txErr := b.Contract.SubmitTransfer(b.auth, *proof)
+	tx, txErr := b.Contract.SubmitTransferPoW(b.auth, *proof)
 
 	if txErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message
 		// so, make low-level call method to get the full error message
-		err := b.getFailureReasonViaCall("submitTransfer", *proof)
+		err := b.getFailureReasonViaCall("submitTransferPoW", *proof)
 		if err != nil {
 			return fmt.Errorf("getFailureReasonViaCall: %w", err)
 		}

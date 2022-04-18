@@ -11,7 +11,7 @@ import (
 )
 
 // todo name
-func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*contracts.CheckPoWPoWProof, error) {
+func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*contracts.CheckPoWPoWProof, error) {
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return nil, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
@@ -30,10 +30,12 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 			return nil, fmt.Errorf("BlockByNumber: %w", err)
 		}
 
+		b.logger.Debug().Msgf("Encoding block %d...", targetBlock.NumberU64())
 		encodedBlock, err := EncodeBlock(targetBlock.Header(), i == 0)
 		if err != nil {
 			return nil, fmt.Errorf("EncodeBlock: %w", err)
 		}
+		b.logger.Debug().Msgf("Encoded block %d", targetBlock.NumberU64())
 		blocks = append(blocks, *encodedBlock)
 	}
 
@@ -43,7 +45,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.TransferEvent) (*co
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(event *contracts.TransferEvent) (*contracts.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(event *contracts.BridgeTransfer) (*contracts.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
 		return nil, fmt.Errorf("getProof: %w", err)

@@ -25,9 +25,9 @@ const BridgeName = "ambrosus"
 type Bridge struct {
 	Client      *ethclient.Client
 	WsClient    *ethclient.Client
-	Contract    *contracts.Amb
-	WsContract  *contracts.Amb
-	ContractRaw *contracts.AmbRaw
+	Contract    *contracts.Bridge
+	WsContract  *contracts.Bridge
+	ContractRaw *contracts.BridgeRaw
 	VSContract  *contracts.Vs
 	config      *config.AMBConfig
 	sideBridge  networks.BridgeReceiveAura
@@ -56,14 +56,14 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}
 
 	// Creating a new ambrosus bridge contract instance (HTTP & WS).
-	contract, err := contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), client)
+	contract, err := contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, fmt.Errorf("create contract http: %w", err)
 	}
 	// Compatibility with tests.
-	var wsContract *contracts.Amb
+	var wsContract *contracts.Bridge
 	if wsClient != nil {
-		wsContract, err = contracts.NewAmb(common.HexToAddress(cfg.ContractAddr), wsClient)
+		wsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
 		if err != nil {
 			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
@@ -97,7 +97,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		WsClient:    wsClient,
 		Contract:    contract,
 		WsContract:  wsContract,
-		ContractRaw: &contracts.AmbRaw{Contract: contract},
+		ContractRaw: &contracts.BridgeRaw{Contract: contract},
 		VSContract:  vsContract,
 		config:      cfg,
 		auth:        auth,
@@ -111,7 +111,7 @@ func (b *Bridge) GetLastEventId() (*big.Int, error) {
 }
 
 // GetEventById gets contract event by id.
-func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error) {
+func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
 	opts := &bind.FilterOpts{Context: context.Background()}
 
 	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
@@ -120,7 +120,7 @@ func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.TransferEvent, error
 	}
 
 	if logs.Next() {
-		return &logs.Event.TransferEvent, nil
+		return logs.Event, nil
 	}
 
 	return nil, networks.ErrEventNotFound
@@ -181,7 +181,7 @@ func (b *Bridge) listen() error {
 
 	// Subscribe to events
 	watchOpts := &bind.WatchOpts{Context: context.Background()}
-	eventChannel := make(chan *contracts.AmbTransfer) // <-- тут я хз как сделать общий(common) тип для канала
+	eventChannel := make(chan *contracts.BridgeTransfer)
 	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransfer: %w", err)
@@ -197,14 +197,14 @@ func (b *Bridge) listen() error {
 		case event := <-eventChannel:
 			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 
-			if err := b.sendEvent(&event.TransferEvent); err != nil {
+			if err := b.sendEvent(event); err != nil {
 				return fmt.Errorf("send event: %w", err)
 			}
 		}
 	}
 }
 
-func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
+func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
 	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
 
 	// Wait for safety blocks.
@@ -238,7 +238,7 @@ func (b *Bridge) sendEvent(event *contracts.TransferEvent) error {
 	return nil
 }
 
-func (b *Bridge) isEventRemoved(event *contracts.TransferEvent) error {
+func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
 	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
 		return fmt.Errorf("HeaderByNumber: %w", err)

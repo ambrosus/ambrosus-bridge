@@ -43,11 +43,16 @@ func (b *Bridge) getFailureReasonViaCall(funcName string, params ...interface{})
 func parseError(err error) error {
 	if dataError, ok := err.(rpc.DataError); ok {
 		errStr := dataError.ErrorData().(string)
-		decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
-		if err != nil {
-			return errors.New(errStr)
+
+		if errStr[:9] == "Reverted " {
+			decodedMsg, err := decodeRevertMessage(errStr[9:]) // remove 'Reverted ' from string
+			if err != nil {
+				return errors.New(errStr)
+			}
+			return errors.New(decodedMsg)
 		}
-		return errors.New(decodedMsg)
+
+		return fmt.Errorf("%s %s", dataError, errStr) // e.g. "VM execution error. Out of gas"
 	}
 	return err
 }

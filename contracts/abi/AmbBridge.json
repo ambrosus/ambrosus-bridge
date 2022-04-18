@@ -10,7 +10,17 @@
           },
           {
             "internalType": "address",
+            "name": "adminAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
             "name": "relayAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
             "type": "address"
           },
           {
@@ -52,11 +62,6 @@
         "internalType": "struct CommonStructs.ConstructorArgs",
         "name": "args",
         "type": "tuple"
-      },
-      {
-        "internalType": "address",
-        "name": "ambWrapper_",
-        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -357,14 +362,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithoutNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes",
@@ -813,19 +818,6 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "wrapper",
-        "type": "address"
-      }
-    ],
-    "name": "setAmbWrapper",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "epochNum",
         "type": "uint256"
@@ -884,14 +876,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithoutNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes",
@@ -1003,7 +995,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferPoW",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1153,14 +1145,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithoutNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes",
@@ -1237,7 +1229,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenAmbAddress",
+        "name": "tokenThisAddress",
         "type": "address"
       },
       {
@@ -1267,6 +1259,19 @@
     "name": "wrap_withdraw",
     "outputs": [],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapperAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]

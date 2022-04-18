@@ -8,35 +8,11 @@ import "../tokens/IwAMB.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
-    address ambWrapperAddress;
-
-    function initialize(
-        CommonStructs.ConstructorArgs memory args,
-        address ambWrapper_
-    ) public initializer {
+    function initialize(CommonStructs.ConstructorArgs memory args) public initializer {
         __CommonBridge_init(args);
-
-        ambWrapperAddress = ambWrapper_;
     }
 
-    function wrap_withdraw(address toAddress) public payable {
-        address tokenExternalAddress = tokenAddresses[ambWrapperAddress];
-        require(tokenExternalAddress != address(0), "Unknown token address");
-
-        require(msg.value > fee, "msg.value can't be lesser than fee");
-        feeRecipient.transfer(fee);
-
-        uint restOfValue = msg.value - fee;
-        IwAMB(ambWrapperAddress).wrap{value: restOfValue}();
-
-        //
-        queue.push(CommonStructs.Transfer(tokenExternalAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, outputEventId, fee);
-
-        withdraw_finish();
-    }
-
-    function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
+    function submitTransferPoW(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
         emit TransferSubmit(powProof.transfer.event_id);
 
         checkEventId(powProof.transfer.event_id);
@@ -51,7 +27,4 @@ contract AmbBridge is CommonBridge, CheckPoW {
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-    function setAmbWrapper(address wrapper) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        ambWrapperAddress = wrapper;
-    }
 }
