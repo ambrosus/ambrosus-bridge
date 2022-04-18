@@ -30,12 +30,12 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 			return nil, fmt.Errorf("BlockByNumber: %w", err)
 		}
 
-		b.logger.Debug().Msgf("Encoding block %d...", targetBlock.NumberU64())
+		b.Logger.Debug().Msgf("Encoding block %d...", targetBlock.NumberU64())
 		encodedBlock, err := EncodeBlock(targetBlock.Header(), i == 0)
 		if err != nil {
 			return nil, fmt.Errorf("EncodeBlock: %w", err)
 		}
-		b.logger.Debug().Msgf("Encoded block %d", targetBlock.NumberU64())
+		b.Logger.Debug().Msgf("Encoded block %d", targetBlock.NumberU64())
 		blocks = append(blocks, *encodedBlock)
 	}
 
