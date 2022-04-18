@@ -14,8 +14,8 @@ contract EthBridgeTest is EthBridge {
         EthBridge.initialize(args, initialValidators, validatorSetAddress_, lastProcessedBlock);
     }
 
-    function checkAuraTest(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress, address validatorSetAddress) public {
-        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
+    function checkAuraTest(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
+        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
     }
 
     function checkSignatureTest(address signer, bytes32 message, bytes memory signature) public pure {

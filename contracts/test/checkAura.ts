@@ -36,12 +36,12 @@ describe("Check Aura", () => {
 
   it("Test CheckAura (no changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-staticVs.json");
-    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
+    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B");
   });
 
   it("Test CheckAura (changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-changeVs.json");
-    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", "0x0000000000000000000000000000000000000F00");
+    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B");
   });
 
   it("Test blockHash", async () => {
