@@ -70,7 +70,7 @@ describe("Integration tests", function () {
     // withdraw
     console.log("Withdraw");
     const fee = await ethBridge.fee();
-    await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, {value: fee, ...options}));  // must emit event, todo check
+    await w(ethBridge.withdraw(ethToken.address, ambSigner.address, 5, false, {value: fee, ...options}));  // must emit event, todo check
 
     // wait for minSafetyBlocks confirmations
     console.log(`Wait for confirmations`);
@@ -102,7 +102,7 @@ describe("Integration tests", function () {
     // withdraw
     console.log("Withdraw");
     const fee = await ambBridge.fee();
-    await w(ambBridge.wrap_withdraw(ambSigner.address, {value: +fee + 5, ...options}));
+    await w(ambBridge.wrapWithdraw(ambSigner.address, {value: +fee + 5, ...options}));
 
 
     // wait for minSafetyBlocks confirmations
