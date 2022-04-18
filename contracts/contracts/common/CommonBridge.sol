@@ -8,7 +8,6 @@ import "./CommonStructs.sol";
 import "../tokens/IWrapper.sol";
 
 
-
 contract CommonBridge is AccessControl, Pausable {
     // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
@@ -69,11 +68,11 @@ contract CommonBridge is AccessControl, Pausable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
-        require(msg.value > fee, "msg.value can't be lesser than fee");
+        require(msg.value > fee, "Sent value < fee");
         feeRecipient.transfer(fee);
 
         uint restOfValue = msg.value - fee;
-        IWrapper(wrapperAddress).deposit{value: restOfValue}();
+        IWrapper(wrapperAddress).deposit{value : restOfValue}();
 
         //
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
@@ -115,7 +114,6 @@ contract CommonBridge is AccessControl, Pausable {
 
 
     // locked transfers from another network
-
     function getLockedTransfers(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
         return lockedTransfers[eventId];
     }
@@ -124,10 +122,10 @@ contract CommonBridge is AccessControl, Pausable {
     function proceedTransfers(CommonStructs.Transfer[] memory transfers) internal {
         for (uint i = 0; i < transfers.length; i++) {
 
-            if (transfers[i].tokenAddress == address(0)) {  // native token
+            if (transfers[i].tokenAddress == address(0)) {// native token
                 IWrapper(wrapperAddress).withdraw(transfers[i].amount);
                 payable(transfers[i].toAddress).transfer(transfers[i].amount);
-            } else {  // ERC20 token
+            } else {// ERC20 token
                 require(
                     IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
                     "Fail transfer coins");
@@ -157,7 +155,7 @@ contract CommonBridge is AccessControl, Pausable {
         delete lockedTransfers[eventId];
         emit TransferFinish(eventId);
 
-        oldestLockedEventId = eventId+1;
+        oldestLockedEventId = eventId + 1;
     }
 
     // optimized version of unlockTransfers that unlock all transfer that can be unlocked in one call
@@ -178,7 +176,7 @@ contract CommonBridge is AccessControl, Pausable {
     // delete transfers with passed eventId and all after it
     function removeLockedTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
         require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
-        for ( ;lockedTransfers[eventId].endTimestamp != 0; eventId++)
+        for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
     }
 
