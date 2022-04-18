@@ -5,7 +5,7 @@ import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract CheckAura is CheckReceiptsProof {
+contract CheckAura is Initializable, CheckReceiptsProof {
     // bitmask
     uint8 constant BlTypeSafetyEnd = 1;
     uint8 constant BlTypeSafety = 2;
@@ -49,7 +49,7 @@ contract CheckAura is CheckReceiptsProof {
     address[] public validatorSet;
 
 
-    function __CheckAura_init(address[] memory _initialValidators) internal {  // CONSTRUCTOR Initializable
+    function __CheckAura_init(address[] memory _initialValidators) internal initializer {
         require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
         validatorSet = _initialValidators;
     }
