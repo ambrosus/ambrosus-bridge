@@ -11,7 +11,6 @@ import (
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -26,15 +25,11 @@ type Bridge struct {
 
 // New creates a new ambrosus bridge.
 func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	commonBridge, err := nc.New(cfg.Network)
+	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
 	commonBridge.Logger = logger.NewSubLogger(BridgeName, externalLogger)
-
-	if commonBridge.Auth != nil {
-		metric.SetContractBalance(BridgeName, commonBridge.Client, commonBridge.Auth.From) // todo move to common
-	}
 
 	// Creating a new ambrosus VS contract instance.
 	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), commonBridge.Client)
@@ -43,7 +38,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}
 
 	b := &Bridge{
-		CommonBridge: *commonBridge,
+		CommonBridge: commonBridge,
 		VSContract:   vsContract,
 		Config:       cfg,
 	}

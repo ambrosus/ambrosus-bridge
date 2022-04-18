@@ -11,6 +11,8 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -27,59 +29,56 @@ type CommonBridge struct {
 	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
 	Logger     zerolog.Logger
+	Name       string
 }
 
-func New(cfg config.Network) (*CommonBridge, error) {
-	client, err := ethclient.Dial(cfg.HttpURL)
+func New(cfg config.Network, name string) (b CommonBridge, err error) {
+	b.Name = name
+
+	b.Client, err = ethclient.Dial(cfg.HttpURL)
 	if err != nil {
-		return nil, fmt.Errorf("dial http: %w", err)
+		return b, fmt.Errorf("dial http: %w", err)
 	}
 
 	// Creating a new bridge contract instance.
-	contract, err := contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
+	b.Contract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
 	if err != nil {
-		return nil, fmt.Errorf("create contract http: %w", err)
+		return b, fmt.Errorf("create contract http: %w", err)
 	}
 
 	// Create websocket instances if wsUrl provided
-	var wsClient *ethclient.Client
-	var wsContract *contracts.Bridge
 	if cfg.WsURL != "" {
-		wsClient, err = ethclient.Dial(cfg.WsURL)
+		b.WsClient, err = ethclient.Dial(cfg.WsURL)
 		if err != nil {
-			return nil, fmt.Errorf("dial ws: %w", err)
+			return b, fmt.Errorf("dial ws: %w", err)
 		}
 
-		wsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
+		b.WsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), b.WsClient)
 		if err != nil {
-			return nil, fmt.Errorf("create contract ws: %w", err)
+			return b, fmt.Errorf("create contract ws: %w", err)
 		}
 	}
 
 	// create auth if privateKey provided
-	var auth *bind.TransactOpts
 	if cfg.PrivateKey != "" {
 		pk, err := parsePK(cfg.PrivateKey)
 		if err != nil {
-			return nil, fmt.Errorf("parse private key: %w", err)
+			return b, fmt.Errorf("parse private key: %w", err)
 		}
-		chainId, err := client.ChainID(context.Background())
+		chainId, err := b.Client.ChainID(context.Background())
 		if err != nil {
-			return nil, fmt.Errorf("chain id: %w", err)
+			return b, fmt.Errorf("chain id: %w", err)
 		}
-		auth, err = bind.NewKeyedTransactorWithChainID(pk, chainId)
+		b.Auth, err = bind.NewKeyedTransactorWithChainID(pk, chainId)
 		if err != nil {
-			return nil, fmt.Errorf("new keyed transactor: %w", err)
+			return b, fmt.Errorf("new keyed transactor: %w", err)
 		}
+
+		// update metrics
+		b.SetRelayBalanceMetric()
 	}
 
-	return &CommonBridge{
-		Client:     client,
-		WsClient:   wsClient,
-		Contract:   contract,
-		WsContract: wsContract,
-		Auth:       auth,
-	}, nil
+	return b, nil
 
 }
 
@@ -172,6 +171,16 @@ func (b *CommonBridge) Listen() error {
 			}
 		}
 	}
+}
+
+func (b *CommonBridge) SetRelayBalanceMetric() {
+	balance, err := ethereum.GetBalanceGWei(b.Client, b.Auth.From)
+	if err != nil {
+		b.Logger.Error().Err(err).Msg("error when getting contract balance in GWei")
+		return
+	}
+
+	metric.RelayBalanceGWeiGauge.WithLabelValues(b.Name).Set(balance)
 }
 
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {

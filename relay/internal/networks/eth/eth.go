@@ -12,7 +12,6 @@ import (
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -28,18 +27,14 @@ type Bridge struct {
 
 // New creates a new ethereum bridge.
 func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
-	commonBridge, err := nc.New(cfg.Network)
+	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
 	commonBridge.Logger = logger.NewSubLogger(BridgeName, externalLogger)
 
-	if commonBridge.Auth != nil {
-		metric.SetContractBalance(BridgeName, commonBridge.Client, commonBridge.Auth.From) // todo move to common
-	}
-
 	b := &Bridge{
-		CommonBridge: *commonBridge,
+		CommonBridge: commonBridge,
 		Config:       cfg,
 	}
 	b.CommonBridge.Bridge = b
