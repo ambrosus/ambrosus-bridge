@@ -30,7 +30,7 @@ func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 }
 
 func (b *Bridge) getFailureReasonViaCall(funcName string, params ...interface{}) error {
-	err := b.ContractRaw.Call(&bind.CallOpts{
+	err := b.Contract.Raw().Call(&bind.CallOpts{
 		From: b.Auth.From,
 	}, nil, funcName, params...)
 

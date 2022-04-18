@@ -91,7 +91,6 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 			WsContract:  wsContract,
 			Auth:        auth,
 			Logger:      logger,
-			ContractRaw: &contracts.BridgeRaw{Contract: contract},
 		},
 		VSContract: vsContract,
 		Config:     cfg,

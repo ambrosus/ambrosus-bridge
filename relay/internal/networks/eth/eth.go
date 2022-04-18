@@ -86,7 +86,6 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 			WsContract:  wsContract,
 			Auth:        auth,
 			Logger:      logger,
-			ContractRaw: &contracts.BridgeRaw{Contract: contract},
 		},
 		Config: cfg,
 	}

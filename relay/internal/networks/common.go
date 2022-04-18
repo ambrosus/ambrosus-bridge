@@ -21,7 +21,6 @@ type CommonBridge struct {
 	WsClient    *ethclient.Client
 	Contract    *contracts.Bridge
 	WsContract  *contracts.Bridge
-	ContractRaw *contracts.BridgeRaw
 	Auth        *bind.TransactOpts
 	SideBridge  Bridge
 	Logger      zerolog.Logger
