@@ -114,6 +114,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	}
 
 	go b.UnlockOldestTransfersLoop()
+	go b.WatchValidityLockedTransfersLoop()
 
 	b.Logger.Info().Msg("Ethereum bridge runned!")
 
