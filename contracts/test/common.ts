@@ -49,10 +49,16 @@ describe("Common tests", () => {
   beforeEach(async () => {
     await deployments.fixture(["for_tests"]); // reset contracts state
 
+    const tokens = {
+      [sAmb.address]: token1,
+      [mockERC20.address]: token2,
+      [ethers.constants.AddressZero]: mockERC20.address,  // mean that mockERC20 point to native token in side network
+    }
+
     for (let bridge of [commonBridge, ethBridge, ambBridge]) {
       await bridge.grantRole(ADMIN_ROLE, owner);
       await bridge.grantRole(RELAY_ROLE, relay);
-      await bridge.tokensAddBatch([sAmb.address, mockERC20.address], [token1, token2]);
+      await bridge.tokensAddBatch(Object.keys(tokens), Object.values(tokens));
       await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
     }
 
@@ -63,21 +69,21 @@ describe("Common tests", () => {
 
   describe("Test Withdraw", async () => {
     it("token balance changed", async () => {
-      await expect(() => commonBridge.withdraw(mockERC20.address, user, 1, {value: 1000}))
+      await expect(() => commonBridge.withdraw(mockERC20.address, user, 1, false, {value: 1000}))
         .to.changeTokenBalance(mockERC20, ownerS, -1);
     });
 
     it("withdraw eventId increased", async () => {
-      await commonBridge.withdraw(mockERC20.address, user, 2, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 2, false, {value: 1000});
       await nextTimeframe();
-      let tx1Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 3, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 4, {value: 1000});
+      let tx1Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, false, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 3, false, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 4, false, {value: 1000});
       await nextTimeframe();
 
       // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      let tx2Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
-      await commonBridge.withdraw(mockERC20.address, user, 5, {value: 1000});
+      let tx2Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, false, {value: 1000});
+      await commonBridge.withdraw(mockERC20.address, user, 5, false, {value: 1000});
 
       let receipt1Amb: ContractReceipt = await tx1Amb.wait();
       let receipt2Amb: ContractReceipt = await tx2Amb.wait();
@@ -90,6 +96,17 @@ describe("Common tests", () => {
       // Checking that eventId increased
       expect(events2Amb[0].args.eventId).eq(events1Amb[0].args.eventId.add("1"));
     });
+
+    it("unwrapSide == true", async () => {
+      const tx = await commonBridge.withdraw(mockERC20.address, user, 1, true, {value: 1000})
+      // todo check address in event
+    });
+
+    it("unwrapSide == true, but wrong token", async () => {
+      await expect(commonBridge.withdraw(token1, user, 1, true, {value: 1000}))
+        .to.be.revertedWith("Token not point to native token")
+    });
+
   });
 
 
@@ -166,7 +183,7 @@ describe("Common tests", () => {
   describe("Test change methods", () => {
     it("Test changeFeeRecipient", async () => {
       await commonBridge.changeFeeRecipient(user);
-      await expect(() => commonBridge.withdraw(mockERC20.address, owner, 5, {value: 1000}))
+      await expect(() => commonBridge.withdraw(mockERC20.address, owner, 5, false, {value: 1000}))
         .to.changeEtherBalance(userS, 1000);
     });
 

@@ -82,9 +82,15 @@ contract CommonBridge is AccessControl, Pausable {
         withdraw_finish();
     }
 
-    function withdraw(address tokenThisAddress, address toAddress, uint amount) payable public {
-        address tokenSideAddress = tokenAddresses[tokenThisAddress];
-        require(tokenSideAddress != address(0), "Unknown token address");
+    function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
+        address tokenSideAddress;
+        if (unwrapSide) {
+            require(tokenAddresses[address(0)] == tokenThisAddress, "Token not point to native token");
+            // tokenSideAddress will be 0x0000000000000000000000000000000000000000 - for native token
+        } else {
+            tokenSideAddress = tokenAddresses[tokenThisAddress];
+            require(tokenSideAddress != address(0), "Unknown token address");
+        }
 
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
