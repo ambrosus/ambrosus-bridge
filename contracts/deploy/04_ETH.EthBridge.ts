@@ -38,8 +38,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: "EthBridge",
     from: owner,
     proxy: {
-      proxyContract: "TransparentUpgradeableProxy",
-      viaAdminContract: "ProxyAdmin",
+      proxyContract: "proxyTransparent",
+      viaAdminContract: "proxyAdmin",
       execute: {
         init: {
           methodName: "initialize",

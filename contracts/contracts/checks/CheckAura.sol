@@ -98,6 +98,10 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         lastProcessedBlock = blockHash;
     }
 
+    function getValidatorSet() public view returns (address[] memory) {
+        return validatorSet;
+    }
+
     function handleVS(ValidatorSetProof memory vsEvent) internal {
         if (vsEvent.deltaIndex < 0) {
             uint index = uint(int(vsEvent.deltaIndex * (- 1) - 1));
