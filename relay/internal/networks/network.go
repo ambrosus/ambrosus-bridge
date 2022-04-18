@@ -25,7 +25,7 @@ type Bridge interface {
 	// GetLastEventId used by the other side of the bridge for synchronization
 	GetLastEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
-  GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
+	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
 	// GetTransactionError returns error of the transaction
 	// "methodName" amd "params" are optional and used only
