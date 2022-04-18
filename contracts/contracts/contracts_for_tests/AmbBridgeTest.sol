@@ -9,15 +9,24 @@ contract AmbBridgeTest is AmbBridge {
         AmbBridge.initialize(args);
     }
 
-    function getLockedTransferTest(uint event_id) public view returns (CommonStructs.LockedTransfers memory) {
-        return lockedTransfers[event_id];
+    function getLockedTransferTest(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[eventId];
     }
 
-    function lockTransfersTest(CommonStructs.Transfer[] memory events, uint event_id) public {
-        lockTransfers(events, event_id);
+    function lockTransfersTest(CommonStructs.Transfer[] memory events, uint eventId) public {
+        lockTransfers(events, eventId);
     }
 
     function blockHashTest(BlockPoW memory block_) public pure returns (bytes32) {
         return blockHash(block_);
     }
+
+    function verifyEthashTest(BlockPoW memory block_) public view {
+        verifyEthash(block_);
+    }
+
+    function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
+        return calcTransferReceiptsHash(p, eventContractAddress);
+    }
+
 }

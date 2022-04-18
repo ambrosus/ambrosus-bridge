@@ -96,7 +96,7 @@ type CommonStructsTransferProof struct {
 
 // BridgeMetaData contains all meta data concerning the Bridge contract.
 var BridgeMetaData = &bind.MetaData{
-	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"queue\",\"type\":\"tuple[]\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"TransferFinish\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"TransferSubmit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"}],\"name\":\"Withdraw\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes[]\",\"name\":\"proof\",\"type\":\"bytes[]\"},{\"internalType\":\"bytes32\",\"name\":\"el\",\"type\":\"bytes32\"},{\"internalType\":\"uint256\",\"name\":\"proofStart\",\"type\":\"uint256\"}],\"name\":\"CalcReceiptsHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"p\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"eventContractAddress\",\"type\":\"address\"}],\"name\":\"CalcTransferReceiptsHash\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"pure\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0WithNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0WithoutNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"parentOrReceiptHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"number\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p4\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p5\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"nonce\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p6\",\"type\":\"bytes\"},{\"internalType\":\"uint256[]\",\"name\":\"dataSetLookup\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"witnessForLookup\",\"type\":\"uint256[]\"}],\"internalType\":\"structCheckPoW.BlockPoW[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"transfer\",\"type\":\"tuple\"}],\"internalType\":\"structCheckPoW.PoWProof\",\"name\":\"powProof\",\"type\":\"tuple\"},{\"internalType\":\"address\",\"name\":\"sideBridgeAddress\",\"type\":\"address\"}],\"name\":\"CheckPoW_\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"RELAY_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"name\":\"changeFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"feeRecipient_\",\"type\":\"address\"}],\"name\":\"changeFeeRecipient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"lockTime_\",\"type\":\"uint256\"}],\"name\":\"changeLockTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minSafetyBlocks_\",\"type\":\"uint256\"}],\"name\":\"changeMinSafetyBlocks\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timeframeSeconds_\",\"type\":\"uint256\"}],\"name\":\"changeTimeframeSeconds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inputEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epochIndex\",\"type\":\"uint256\"}],\"name\":\"isEpochDataSet\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"lockedTransfers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"endTimestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minSafetyBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"oldestLockedEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"removeLockedTransfers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epochNum\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fullSizeIn128Resultion\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"branchDepth\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"merkleNodes\",\"type\":\"uint256[]\"}],\"name\":\"setEpochData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sideBridgeAddress\",\"type\":\"address\"}],\"name\":\"setSideBridge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sideBridgeAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0WithNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0WithoutNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"parentOrReceiptHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"number\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p4\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p5\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"nonce\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p6\",\"type\":\"bytes\"},{\"internalType\":\"uint256[]\",\"name\":\"dataSetLookup\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"witnessForLookup\",\"type\":\"uint256[]\"}],\"internalType\":\"structCheckPoW.BlockPoW[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"transfer\",\"type\":\"tuple\"}],\"internalType\":\"structCheckPoW.PoWProof\",\"name\":\"powProof\",\"type\":\"tuple\"}],\"name\":\"submitTransferPoW\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"timeframeSeconds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenSideAddress\",\"type\":\"address\"}],\"name\":\"tokensAdd\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensAddBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"}],\"name\":\"tokensRemove\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensRemoveBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"}],\"name\":\"unlockTransfers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unlockTransfersBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0WithNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0WithoutNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"parentOrReceiptHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"number\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p4\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p5\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"nonce\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p6\",\"type\":\"bytes\"},{\"internalType\":\"uint256[]\",\"name\":\"dataSetLookup\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"witnessForLookup\",\"type\":\"uint256[]\"}],\"internalType\":\"structCheckPoW.BlockPoW\",\"name\":\"block_\",\"type\":\"tuple\"}],\"name\":\"verifyEthash\",\"outputs\":[],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"}],\"name\":\"wrap_withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"wrapperAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0_seal\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0_bare\",\"type\":\"bytes3\"},{\"internalType\":\"bytes32\",\"name\":\"parent_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"receipt_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes4\",\"name\":\"step\",\"type\":\"bytes4\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint64\",\"name\":\"finalized_vs\",\"type\":\"uint64\"}],\"internalType\":\"structCheckAura.BlockAura[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"address\",\"name\":\"delta_address\",\"type\":\"address\"},{\"internalType\":\"int64\",\"name\":\"delta_index\",\"type\":\"int64\"}],\"internalType\":\"structCheckAura.ValidatorSetProof[]\",\"name\":\"vs_changes\",\"type\":\"tuple[]\"},{\"internalType\":\"uint64\",\"name\":\"transfer_event_block\",\"type\":\"uint64\"}],\"internalType\":\"structCheckAura.AuraProof\",\"name\":\"auraProof\",\"type\":\"tuple\"},{\"internalType\":\"uint256\",\"name\":\"minSafetyBlocks\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"sideBridgeAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"validatorSetAddress\",\"type\":\"address\"}],\"name\":\"CheckAura_\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"GetValidatorSet\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastProcessedBlock\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0_seal\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0_bare\",\"type\":\"bytes3\"},{\"internalType\":\"bytes32\",\"name\":\"parent_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"receipt_hash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes4\",\"name\":\"step\",\"type\":\"bytes4\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint64\",\"name\":\"finalized_vs\",\"type\":\"uint64\"}],\"internalType\":\"structCheckAura.BlockAura[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"event_id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receipt_proof\",\"type\":\"bytes[]\"},{\"internalType\":\"address\",\"name\":\"delta_address\",\"type\":\"address\"},{\"internalType\":\"int64\",\"name\":\"delta_index\",\"type\":\"int64\"}],\"internalType\":\"structCheckAura.ValidatorSetProof[]\",\"name\":\"vs_changes\",\"type\":\"tuple[]\"},{\"internalType\":\"uint64\",\"name\":\"transfer_event_block\",\"type\":\"uint64\"}],\"internalType\":\"structCheckAura.AuraProof\",\"name\":\"auraProof\",\"type\":\"tuple\"}],\"name\":\"submitTransferAura\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"validatorSet\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Paused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"indexed\":false,\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"queue\",\"type\":\"tuple[]\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"}],\"name\":\"TransferFinish\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"}],\"name\":\"TransferSubmit\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"Unpaused\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"feeAmount\",\"type\":\"uint256\"}],\"name\":\"Withdraw\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"RELAY_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"fee_\",\"type\":\"uint256\"}],\"name\":\"changeFee\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"feeRecipient_\",\"type\":\"address\"}],\"name\":\"changeFeeRecipient\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"lockTime_\",\"type\":\"uint256\"}],\"name\":\"changeLockTime\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"minSafetyBlocks_\",\"type\":\"uint256\"}],\"name\":\"changeMinSafetyBlocks\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"timeframeSeconds_\",\"type\":\"uint256\"}],\"name\":\"changeTimeframeSeconds\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"fee\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"inputEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epochIndex\",\"type\":\"uint256\"}],\"name\":\"isEpochDataSet\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lockTime\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"lockedTransfers\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"endTimestamp\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minSafetyBlocks\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"oldestLockedEventId\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"pause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"paused\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"}],\"name\":\"removeLockedTransfers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"epochNum\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"fullSizeIn128Resultion\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"branchDepth\",\"type\":\"uint256\"},{\"internalType\":\"uint256[]\",\"name\":\"merkleNodes\",\"type\":\"uint256[]\"}],\"name\":\"setEpochData\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_sideBridgeAddress\",\"type\":\"address\"}],\"name\":\"setSideBridge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"sideBridgeAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0WithNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0WithoutNonce\",\"type\":\"bytes3\"},{\"internalType\":\"bytes\",\"name\":\"p1\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"parentOrReceiptHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"difficulty\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"number\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p4\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p5\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"nonce\",\"type\":\"bytes\"},{\"internalType\":\"bytes\",\"name\":\"p6\",\"type\":\"bytes\"},{\"internalType\":\"uint256[]\",\"name\":\"dataSetLookup\",\"type\":\"uint256[]\"},{\"internalType\":\"uint256[]\",\"name\":\"witnessForLookup\",\"type\":\"uint256[]\"}],\"internalType\":\"structCheckPoW.BlockPoW[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receiptProof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"transfer\",\"type\":\"tuple\"}],\"internalType\":\"structCheckPoW.PoWProof\",\"name\":\"powProof\",\"type\":\"tuple\"}],\"name\":\"submitTransferPoW\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"timeframeSeconds\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"tokenAddresses\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"tokenSideAddress\",\"type\":\"address\"}],\"name\":\"tokensAdd\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"},{\"internalType\":\"address[]\",\"name\":\"tokenSideAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensAddBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"}],\"name\":\"tokensRemove\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"tokenThisAddresses\",\"type\":\"address[]\"}],\"name\":\"tokensRemoveBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"}],\"name\":\"unlockTransfers\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unlockTransfersBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"unpause\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"tokenThisAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"}],\"name\":\"wrap_withdraw\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"wrapperAddress\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getValidatorSet\",\"outputs\":[{\"internalType\":\"address[]\",\"name\":\"\",\"type\":\"address[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastProcessedBlock\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"components\":[{\"internalType\":\"bytes3\",\"name\":\"p0Seal\",\"type\":\"bytes3\"},{\"internalType\":\"bytes3\",\"name\":\"p0Bare\",\"type\":\"bytes3\"},{\"internalType\":\"bytes32\",\"name\":\"parentHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p2\",\"type\":\"bytes\"},{\"internalType\":\"bytes32\",\"name\":\"receiptHash\",\"type\":\"bytes32\"},{\"internalType\":\"bytes\",\"name\":\"p3\",\"type\":\"bytes\"},{\"internalType\":\"bytes4\",\"name\":\"step\",\"type\":\"bytes4\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"},{\"internalType\":\"uint64\",\"name\":\"finalizedVs\",\"type\":\"uint64\"}],\"internalType\":\"structCheckAura.BlockAura[]\",\"name\":\"blocks\",\"type\":\"tuple[]\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receiptProof\",\"type\":\"bytes[]\"},{\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"tokenAddress\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"internalType\":\"structCommonStructs.Transfer[]\",\"name\":\"transfers\",\"type\":\"tuple[]\"}],\"internalType\":\"structCommonStructs.TransferProof\",\"name\":\"transfer\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"bytes[]\",\"name\":\"receiptProof\",\"type\":\"bytes[]\"},{\"internalType\":\"address\",\"name\":\"deltaAddress\",\"type\":\"address\"},{\"internalType\":\"int64\",\"name\":\"deltaIndex\",\"type\":\"int64\"}],\"internalType\":\"structCheckAura.ValidatorSetProof[]\",\"name\":\"vsChanges\",\"type\":\"tuple[]\"},{\"internalType\":\"uint64\",\"name\":\"transferEventBlock\",\"type\":\"uint64\"}],\"internalType\":\"structCheckAura.AuraProof\",\"name\":\"auraProof\",\"type\":\"tuple\"}],\"name\":\"submitTransferAura\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"validatorSet\",\"outputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
 }
 
 // BridgeABI is the input ABI used to generate the binding from.
@@ -276,68 +276,6 @@ func (_Bridge *BridgeCallerSession) ADMINROLE() ([32]byte, error) {
 	return _Bridge.Contract.ADMINROLE(&_Bridge.CallOpts)
 }
 
-// CalcReceiptsHash is a free data retrieval call binding the contract method 0xe7899536.
-//
-// Solidity: function CalcReceiptsHash(bytes[] proof, bytes32 el, uint256 proofStart) pure returns(bytes32)
-func (_Bridge *BridgeCaller) CalcReceiptsHash(opts *bind.CallOpts, proof [][]byte, el [32]byte, proofStart *big.Int) ([32]byte, error) {
-	var out []interface{}
-	err := _Bridge.contract.Call(opts, &out, "CalcReceiptsHash", proof, el, proofStart)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// CalcReceiptsHash is a free data retrieval call binding the contract method 0xe7899536.
-//
-// Solidity: function CalcReceiptsHash(bytes[] proof, bytes32 el, uint256 proofStart) pure returns(bytes32)
-func (_Bridge *BridgeSession) CalcReceiptsHash(proof [][]byte, el [32]byte, proofStart *big.Int) ([32]byte, error) {
-	return _Bridge.Contract.CalcReceiptsHash(&_Bridge.CallOpts, proof, el, proofStart)
-}
-
-// CalcReceiptsHash is a free data retrieval call binding the contract method 0xe7899536.
-//
-// Solidity: function CalcReceiptsHash(bytes[] proof, bytes32 el, uint256 proofStart) pure returns(bytes32)
-func (_Bridge *BridgeCallerSession) CalcReceiptsHash(proof [][]byte, el [32]byte, proofStart *big.Int) ([32]byte, error) {
-	return _Bridge.Contract.CalcReceiptsHash(&_Bridge.CallOpts, proof, el, proofStart)
-}
-
-// CalcTransferReceiptsHash is a free data retrieval call binding the contract method 0x90d0308f.
-//
-// Solidity: function CalcTransferReceiptsHash((bytes[],uint256,(address,address,uint256)[]) p, address eventContractAddress) pure returns(bytes32)
-func (_Bridge *BridgeCaller) CalcTransferReceiptsHash(opts *bind.CallOpts, p CommonStructsTransferProof, eventContractAddress common.Address) ([32]byte, error) {
-	var out []interface{}
-	err := _Bridge.contract.Call(opts, &out, "CalcTransferReceiptsHash", p, eventContractAddress)
-
-	if err != nil {
-		return *new([32]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([32]byte)).(*[32]byte)
-
-	return out0, err
-
-}
-
-// CalcTransferReceiptsHash is a free data retrieval call binding the contract method 0x90d0308f.
-//
-// Solidity: function CalcTransferReceiptsHash((bytes[],uint256,(address,address,uint256)[]) p, address eventContractAddress) pure returns(bytes32)
-func (_Bridge *BridgeSession) CalcTransferReceiptsHash(p CommonStructsTransferProof, eventContractAddress common.Address) ([32]byte, error) {
-	return _Bridge.Contract.CalcTransferReceiptsHash(&_Bridge.CallOpts, p, eventContractAddress)
-}
-
-// CalcTransferReceiptsHash is a free data retrieval call binding the contract method 0x90d0308f.
-//
-// Solidity: function CalcTransferReceiptsHash((bytes[],uint256,(address,address,uint256)[]) p, address eventContractAddress) pure returns(bytes32)
-func (_Bridge *BridgeCallerSession) CalcTransferReceiptsHash(p CommonStructsTransferProof, eventContractAddress common.Address) ([32]byte, error) {
-	return _Bridge.Contract.CalcTransferReceiptsHash(&_Bridge.CallOpts, p, eventContractAddress)
-}
-
 // DEFAULTADMINROLE is a free data retrieval call binding the contract method 0xa217fddf.
 //
 // Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
@@ -367,37 +305,6 @@ func (_Bridge *BridgeSession) DEFAULTADMINROLE() ([32]byte, error) {
 // Solidity: function DEFAULT_ADMIN_ROLE() view returns(bytes32)
 func (_Bridge *BridgeCallerSession) DEFAULTADMINROLE() ([32]byte, error) {
 	return _Bridge.Contract.DEFAULTADMINROLE(&_Bridge.CallOpts)
-}
-
-// GetValidatorSet is a free data retrieval call binding the contract method 0xc7456a69.
-//
-// Solidity: function GetValidatorSet() view returns(address[])
-func (_Bridge *BridgeCaller) GetValidatorSet(opts *bind.CallOpts) ([]common.Address, error) {
-	var out []interface{}
-	err := _Bridge.contract.Call(opts, &out, "GetValidatorSet")
-
-	if err != nil {
-		return *new([]common.Address), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
-
-	return out0, err
-
-}
-
-// GetValidatorSet is a free data retrieval call binding the contract method 0xc7456a69.
-//
-// Solidity: function GetValidatorSet() view returns(address[])
-func (_Bridge *BridgeSession) GetValidatorSet() ([]common.Address, error) {
-	return _Bridge.Contract.GetValidatorSet(&_Bridge.CallOpts)
-}
-
-// GetValidatorSet is a free data retrieval call binding the contract method 0xc7456a69.
-//
-// Solidity: function GetValidatorSet() view returns(address[])
-func (_Bridge *BridgeCallerSession) GetValidatorSet() ([]common.Address, error) {
-	return _Bridge.Contract.GetValidatorSet(&_Bridge.CallOpts)
 }
 
 // RELAYROLE is a free data retrieval call binding the contract method 0x04421823.
@@ -491,6 +398,37 @@ func (_Bridge *BridgeSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
 // Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
 func (_Bridge *BridgeCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
 	return _Bridge.Contract.GetRoleAdmin(&_Bridge.CallOpts, role)
+}
+
+// GetValidatorSet is a free data retrieval call binding the contract method 0xcf331250.
+//
+// Solidity: function getValidatorSet() view returns(address[])
+func (_Bridge *BridgeCaller) GetValidatorSet(opts *bind.CallOpts) ([]common.Address, error) {
+	var out []interface{}
+	err := _Bridge.contract.Call(opts, &out, "getValidatorSet")
+
+	if err != nil {
+		return *new([]common.Address), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]common.Address)).(*[]common.Address)
+
+	return out0, err
+
+}
+
+// GetValidatorSet is a free data retrieval call binding the contract method 0xcf331250.
+//
+// Solidity: function getValidatorSet() view returns(address[])
+func (_Bridge *BridgeSession) GetValidatorSet() ([]common.Address, error) {
+	return _Bridge.Contract.GetValidatorSet(&_Bridge.CallOpts)
+}
+
+// GetValidatorSet is a free data retrieval call binding the contract method 0xcf331250.
+//
+// Solidity: function getValidatorSet() view returns(address[])
+func (_Bridge *BridgeCallerSession) GetValidatorSet() ([]common.Address, error) {
+	return _Bridge.Contract.GetValidatorSet(&_Bridge.CallOpts)
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -927,35 +865,6 @@ func (_Bridge *BridgeCallerSession) ValidatorSet(arg0 *big.Int) (common.Address,
 	return _Bridge.Contract.ValidatorSet(&_Bridge.CallOpts, arg0)
 }
 
-// VerifyEthash is a free data retrieval call binding the contract method 0x8888c18a.
-//
-// Solidity: function verifyEthash((bytes3,bytes3,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes,bytes,bytes,uint256[],uint256[]) block_) view returns()
-func (_Bridge *BridgeCaller) VerifyEthash(opts *bind.CallOpts, block_ CheckPoWBlockPoW) error {
-	var out []interface{}
-	err := _Bridge.contract.Call(opts, &out, "verifyEthash", block_)
-
-	if err != nil {
-		return err
-	}
-
-	return err
-
-}
-
-// VerifyEthash is a free data retrieval call binding the contract method 0x8888c18a.
-//
-// Solidity: function verifyEthash((bytes3,bytes3,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes,bytes,bytes,uint256[],uint256[]) block_) view returns()
-func (_Bridge *BridgeSession) VerifyEthash(block_ CheckPoWBlockPoW) error {
-	return _Bridge.Contract.VerifyEthash(&_Bridge.CallOpts, block_)
-}
-
-// VerifyEthash is a free data retrieval call binding the contract method 0x8888c18a.
-//
-// Solidity: function verifyEthash((bytes3,bytes3,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes,bytes,bytes,uint256[],uint256[]) block_) view returns()
-func (_Bridge *BridgeCallerSession) VerifyEthash(block_ CheckPoWBlockPoW) error {
-	return _Bridge.Contract.VerifyEthash(&_Bridge.CallOpts, block_)
-}
-
 // WrapperAddress is a free data retrieval call binding the contract method 0x7df8b802.
 //
 // Solidity: function wrapperAddress() view returns(address)
@@ -985,48 +894,6 @@ func (_Bridge *BridgeSession) WrapperAddress() (common.Address, error) {
 // Solidity: function wrapperAddress() view returns(address)
 func (_Bridge *BridgeCallerSession) WrapperAddress() (common.Address, error) {
 	return _Bridge.Contract.WrapperAddress(&_Bridge.CallOpts)
-}
-
-// CheckAura is a paid mutator transaction binding the contract method 0x235f0059.
-//
-// Solidity: function CheckAura_(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],address,int64)[],uint64) auraProof, uint256 minSafetyBlocks, address sideBridgeAddress, address validatorSetAddress) returns()
-func (_Bridge *BridgeTransactor) CheckAura(opts *bind.TransactOpts, auraProof CheckAuraAuraProof, minSafetyBlocks *big.Int, sideBridgeAddress common.Address, validatorSetAddress common.Address) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "CheckAura_", auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress)
-}
-
-// CheckAura is a paid mutator transaction binding the contract method 0x235f0059.
-//
-// Solidity: function CheckAura_(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],address,int64)[],uint64) auraProof, uint256 minSafetyBlocks, address sideBridgeAddress, address validatorSetAddress) returns()
-func (_Bridge *BridgeSession) CheckAura(auraProof CheckAuraAuraProof, minSafetyBlocks *big.Int, sideBridgeAddress common.Address, validatorSetAddress common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.CheckAura(&_Bridge.TransactOpts, auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress)
-}
-
-// CheckAura is a paid mutator transaction binding the contract method 0x235f0059.
-//
-// Solidity: function CheckAura_(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],address,int64)[],uint64) auraProof, uint256 minSafetyBlocks, address sideBridgeAddress, address validatorSetAddress) returns()
-func (_Bridge *BridgeTransactorSession) CheckAura(auraProof CheckAuraAuraProof, minSafetyBlocks *big.Int, sideBridgeAddress common.Address, validatorSetAddress common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.CheckAura(&_Bridge.TransactOpts, auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress)
-}
-
-// CheckPoW is a paid mutator transaction binding the contract method 0xf825dfcc.
-//
-// Solidity: function CheckPoW_(((bytes3,bytes3,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes,bytes,bytes,uint256[],uint256[])[],(bytes[],uint256,(address,address,uint256)[])) powProof, address sideBridgeAddress) returns()
-func (_Bridge *BridgeTransactor) CheckPoW(opts *bind.TransactOpts, powProof CheckPoWPoWProof, sideBridgeAddress common.Address) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "CheckPoW_", powProof, sideBridgeAddress)
-}
-
-// CheckPoW is a paid mutator transaction binding the contract method 0xf825dfcc.
-//
-// Solidity: function CheckPoW_(((bytes3,bytes3,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes,bytes,bytes,uint256[],uint256[])[],(bytes[],uint256,(address,address,uint256)[])) powProof, address sideBridgeAddress) returns()
-func (_Bridge *BridgeSession) CheckPoW(powProof CheckPoWPoWProof, sideBridgeAddress common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.CheckPoW(&_Bridge.TransactOpts, powProof, sideBridgeAddress)
-}
-
-// CheckPoW is a paid mutator transaction binding the contract method 0xf825dfcc.
-//
-// Solidity: function CheckPoW_(((bytes3,bytes3,bytes,bytes32,bytes,bytes,bytes,bytes,bytes,bytes,bytes,bytes,uint256[],uint256[])[],(bytes[],uint256,(address,address,uint256)[])) powProof, address sideBridgeAddress) returns()
-func (_Bridge *BridgeTransactorSession) CheckPoW(powProof CheckPoWPoWProof, sideBridgeAddress common.Address) (*types.Transaction, error) {
-	return _Bridge.Contract.CheckPoW(&_Bridge.TransactOpts, powProof, sideBridgeAddress)
 }
 
 // ChangeFee is a paid mutator transaction binding the contract method 0x6a1db1bf.
@@ -1178,23 +1045,23 @@ func (_Bridge *BridgeTransactorSession) Pause() (*types.Transaction, error) {
 
 // RemoveLockedTransfers is a paid mutator transaction binding the contract method 0x331a891a.
 //
-// Solidity: function removeLockedTransfers(uint256 event_id) returns()
-func (_Bridge *BridgeTransactor) RemoveLockedTransfers(opts *bind.TransactOpts, event_id *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "removeLockedTransfers", event_id)
+// Solidity: function removeLockedTransfers(uint256 eventId) returns()
+func (_Bridge *BridgeTransactor) RemoveLockedTransfers(opts *bind.TransactOpts, eventId *big.Int) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "removeLockedTransfers", eventId)
 }
 
 // RemoveLockedTransfers is a paid mutator transaction binding the contract method 0x331a891a.
 //
-// Solidity: function removeLockedTransfers(uint256 event_id) returns()
-func (_Bridge *BridgeSession) RemoveLockedTransfers(event_id *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.RemoveLockedTransfers(&_Bridge.TransactOpts, event_id)
+// Solidity: function removeLockedTransfers(uint256 eventId) returns()
+func (_Bridge *BridgeSession) RemoveLockedTransfers(eventId *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.RemoveLockedTransfers(&_Bridge.TransactOpts, eventId)
 }
 
 // RemoveLockedTransfers is a paid mutator transaction binding the contract method 0x331a891a.
 //
-// Solidity: function removeLockedTransfers(uint256 event_id) returns()
-func (_Bridge *BridgeTransactorSession) RemoveLockedTransfers(event_id *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.RemoveLockedTransfers(&_Bridge.TransactOpts, event_id)
+// Solidity: function removeLockedTransfers(uint256 eventId) returns()
+func (_Bridge *BridgeTransactorSession) RemoveLockedTransfers(eventId *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.RemoveLockedTransfers(&_Bridge.TransactOpts, eventId)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
@@ -1409,23 +1276,23 @@ func (_Bridge *BridgeTransactorSession) TokensRemoveBatch(tokenThisAddresses []c
 
 // UnlockTransfers is a paid mutator transaction binding the contract method 0xf862b7eb.
 //
-// Solidity: function unlockTransfers(uint256 event_id) returns()
-func (_Bridge *BridgeTransactor) UnlockTransfers(opts *bind.TransactOpts, event_id *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "unlockTransfers", event_id)
+// Solidity: function unlockTransfers(uint256 eventId) returns()
+func (_Bridge *BridgeTransactor) UnlockTransfers(opts *bind.TransactOpts, eventId *big.Int) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "unlockTransfers", eventId)
 }
 
 // UnlockTransfers is a paid mutator transaction binding the contract method 0xf862b7eb.
 //
-// Solidity: function unlockTransfers(uint256 event_id) returns()
-func (_Bridge *BridgeSession) UnlockTransfers(event_id *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.UnlockTransfers(&_Bridge.TransactOpts, event_id)
+// Solidity: function unlockTransfers(uint256 eventId) returns()
+func (_Bridge *BridgeSession) UnlockTransfers(eventId *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.UnlockTransfers(&_Bridge.TransactOpts, eventId)
 }
 
 // UnlockTransfers is a paid mutator transaction binding the contract method 0xf862b7eb.
 //
-// Solidity: function unlockTransfers(uint256 event_id) returns()
-func (_Bridge *BridgeTransactorSession) UnlockTransfers(event_id *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.UnlockTransfers(&_Bridge.TransactOpts, event_id)
+// Solidity: function unlockTransfers(uint256 eventId) returns()
+func (_Bridge *BridgeTransactorSession) UnlockTransfers(eventId *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.UnlockTransfers(&_Bridge.TransactOpts, eventId)
 }
 
 // UnlockTransfersBatch is a paid mutator transaction binding the contract method 0x8ac1f86f.
@@ -2208,15 +2075,15 @@ type BridgeTransfer struct {
 
 // FilterTransfer is a free log retrieval operation binding the contract event 0xe15729a2f427aa4572dab35eb692c902fcbce57d41642013259c741380809ae2.
 //
-// Solidity: event Transfer(uint256 indexed event_id, (address,address,uint256)[] queue)
-func (_Bridge *BridgeFilterer) FilterTransfer(opts *bind.FilterOpts, event_id []*big.Int) (*BridgeTransferIterator, error) {
+// Solidity: event Transfer(uint256 indexed eventId, (address,address,uint256)[] queue)
+func (_Bridge *BridgeFilterer) FilterTransfer(opts *bind.FilterOpts, eventId []*big.Int) (*BridgeTransferIterator, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var eventIdRule []interface{}
+	for _, eventIdItem := range eventId {
+		eventIdRule = append(eventIdRule, eventIdItem)
 	}
 
-	logs, sub, err := _Bridge.contract.FilterLogs(opts, "Transfer", event_idRule)
+	logs, sub, err := _Bridge.contract.FilterLogs(opts, "Transfer", eventIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2225,15 +2092,15 @@ func (_Bridge *BridgeFilterer) FilterTransfer(opts *bind.FilterOpts, event_id []
 
 // WatchTransfer is a free log subscription operation binding the contract event 0xe15729a2f427aa4572dab35eb692c902fcbce57d41642013259c741380809ae2.
 //
-// Solidity: event Transfer(uint256 indexed event_id, (address,address,uint256)[] queue)
-func (_Bridge *BridgeFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *BridgeTransfer, event_id []*big.Int) (event.Subscription, error) {
+// Solidity: event Transfer(uint256 indexed eventId, (address,address,uint256)[] queue)
+func (_Bridge *BridgeFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *BridgeTransfer, eventId []*big.Int) (event.Subscription, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var eventIdRule []interface{}
+	for _, eventIdItem := range eventId {
+		eventIdRule = append(eventIdRule, eventIdItem)
 	}
 
-	logs, sub, err := _Bridge.contract.WatchLogs(opts, "Transfer", event_idRule)
+	logs, sub, err := _Bridge.contract.WatchLogs(opts, "Transfer", eventIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2267,7 +2134,7 @@ func (_Bridge *BridgeFilterer) WatchTransfer(opts *bind.WatchOpts, sink chan<- *
 
 // ParseTransfer is a log parse operation binding the contract event 0xe15729a2f427aa4572dab35eb692c902fcbce57d41642013259c741380809ae2.
 //
-// Solidity: event Transfer(uint256 indexed event_id, (address,address,uint256)[] queue)
+// Solidity: event Transfer(uint256 indexed eventId, (address,address,uint256)[] queue)
 func (_Bridge *BridgeFilterer) ParseTransfer(log types.Log) (*BridgeTransfer, error) {
 	event := new(BridgeTransfer)
 	if err := _Bridge.contract.UnpackLog(event, "Transfer", log); err != nil {
@@ -2352,15 +2219,15 @@ type BridgeTransferFinish struct {
 
 // FilterTransferFinish is a free log retrieval operation binding the contract event 0x78ff9b3176bb0d6421590f3816e75cb15a9ffa2b7a1a028f40a3f4e029eb39f2.
 //
-// Solidity: event TransferFinish(uint256 indexed event_id)
-func (_Bridge *BridgeFilterer) FilterTransferFinish(opts *bind.FilterOpts, event_id []*big.Int) (*BridgeTransferFinishIterator, error) {
+// Solidity: event TransferFinish(uint256 indexed eventId)
+func (_Bridge *BridgeFilterer) FilterTransferFinish(opts *bind.FilterOpts, eventId []*big.Int) (*BridgeTransferFinishIterator, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var eventIdRule []interface{}
+	for _, eventIdItem := range eventId {
+		eventIdRule = append(eventIdRule, eventIdItem)
 	}
 
-	logs, sub, err := _Bridge.contract.FilterLogs(opts, "TransferFinish", event_idRule)
+	logs, sub, err := _Bridge.contract.FilterLogs(opts, "TransferFinish", eventIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2369,15 +2236,15 @@ func (_Bridge *BridgeFilterer) FilterTransferFinish(opts *bind.FilterOpts, event
 
 // WatchTransferFinish is a free log subscription operation binding the contract event 0x78ff9b3176bb0d6421590f3816e75cb15a9ffa2b7a1a028f40a3f4e029eb39f2.
 //
-// Solidity: event TransferFinish(uint256 indexed event_id)
-func (_Bridge *BridgeFilterer) WatchTransferFinish(opts *bind.WatchOpts, sink chan<- *BridgeTransferFinish, event_id []*big.Int) (event.Subscription, error) {
+// Solidity: event TransferFinish(uint256 indexed eventId)
+func (_Bridge *BridgeFilterer) WatchTransferFinish(opts *bind.WatchOpts, sink chan<- *BridgeTransferFinish, eventId []*big.Int) (event.Subscription, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var eventIdRule []interface{}
+	for _, eventIdItem := range eventId {
+		eventIdRule = append(eventIdRule, eventIdItem)
 	}
 
-	logs, sub, err := _Bridge.contract.WatchLogs(opts, "TransferFinish", event_idRule)
+	logs, sub, err := _Bridge.contract.WatchLogs(opts, "TransferFinish", eventIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2411,7 +2278,7 @@ func (_Bridge *BridgeFilterer) WatchTransferFinish(opts *bind.WatchOpts, sink ch
 
 // ParseTransferFinish is a log parse operation binding the contract event 0x78ff9b3176bb0d6421590f3816e75cb15a9ffa2b7a1a028f40a3f4e029eb39f2.
 //
-// Solidity: event TransferFinish(uint256 indexed event_id)
+// Solidity: event TransferFinish(uint256 indexed eventId)
 func (_Bridge *BridgeFilterer) ParseTransferFinish(log types.Log) (*BridgeTransferFinish, error) {
 	event := new(BridgeTransferFinish)
 	if err := _Bridge.contract.UnpackLog(event, "TransferFinish", log); err != nil {
@@ -2496,15 +2363,15 @@ type BridgeTransferSubmit struct {
 
 // FilterTransferSubmit is a free log retrieval operation binding the contract event 0x196c47048e38df7a4fe6e581c8f4f2e2ba67ac0dd45b90da756e97bd61d9dd3b.
 //
-// Solidity: event TransferSubmit(uint256 indexed event_id)
-func (_Bridge *BridgeFilterer) FilterTransferSubmit(opts *bind.FilterOpts, event_id []*big.Int) (*BridgeTransferSubmitIterator, error) {
+// Solidity: event TransferSubmit(uint256 indexed eventId)
+func (_Bridge *BridgeFilterer) FilterTransferSubmit(opts *bind.FilterOpts, eventId []*big.Int) (*BridgeTransferSubmitIterator, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var eventIdRule []interface{}
+	for _, eventIdItem := range eventId {
+		eventIdRule = append(eventIdRule, eventIdItem)
 	}
 
-	logs, sub, err := _Bridge.contract.FilterLogs(opts, "TransferSubmit", event_idRule)
+	logs, sub, err := _Bridge.contract.FilterLogs(opts, "TransferSubmit", eventIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2513,15 +2380,15 @@ func (_Bridge *BridgeFilterer) FilterTransferSubmit(opts *bind.FilterOpts, event
 
 // WatchTransferSubmit is a free log subscription operation binding the contract event 0x196c47048e38df7a4fe6e581c8f4f2e2ba67ac0dd45b90da756e97bd61d9dd3b.
 //
-// Solidity: event TransferSubmit(uint256 indexed event_id)
-func (_Bridge *BridgeFilterer) WatchTransferSubmit(opts *bind.WatchOpts, sink chan<- *BridgeTransferSubmit, event_id []*big.Int) (event.Subscription, error) {
+// Solidity: event TransferSubmit(uint256 indexed eventId)
+func (_Bridge *BridgeFilterer) WatchTransferSubmit(opts *bind.WatchOpts, sink chan<- *BridgeTransferSubmit, eventId []*big.Int) (event.Subscription, error) {
 
-	var event_idRule []interface{}
-	for _, event_idItem := range event_id {
-		event_idRule = append(event_idRule, event_idItem)
+	var eventIdRule []interface{}
+	for _, eventIdItem := range eventId {
+		eventIdRule = append(eventIdRule, eventIdItem)
 	}
 
-	logs, sub, err := _Bridge.contract.WatchLogs(opts, "TransferSubmit", event_idRule)
+	logs, sub, err := _Bridge.contract.WatchLogs(opts, "TransferSubmit", eventIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -2555,7 +2422,7 @@ func (_Bridge *BridgeFilterer) WatchTransferSubmit(opts *bind.WatchOpts, sink ch
 
 // ParseTransferSubmit is a log parse operation binding the contract event 0x196c47048e38df7a4fe6e581c8f4f2e2ba67ac0dd45b90da756e97bd61d9dd3b.
 //
-// Solidity: event TransferSubmit(uint256 indexed event_id)
+// Solidity: event TransferSubmit(uint256 indexed eventId)
 func (_Bridge *BridgeFilterer) ParseTransferSubmit(log types.Log) (*BridgeTransferSubmit, error) {
 	event := new(BridgeTransferSubmit)
 	if err := _Bridge.contract.UnpackLog(event, "TransferSubmit", log); err != nil {
@@ -2776,7 +2643,7 @@ type BridgeWithdraw struct {
 
 // FilterWithdraw is a free log retrieval operation binding the contract event 0xf279e6a1f5e320cca91135676d9cb6e44ca8a08c0b88342bcdb1144f6511b568.
 //
-// Solidity: event Withdraw(address indexed from, uint256 event_id, uint256 feeAmount)
+// Solidity: event Withdraw(address indexed from, uint256 eventId, uint256 feeAmount)
 func (_Bridge *BridgeFilterer) FilterWithdraw(opts *bind.FilterOpts, from []common.Address) (*BridgeWithdrawIterator, error) {
 
 	var fromRule []interface{}
@@ -2793,7 +2660,7 @@ func (_Bridge *BridgeFilterer) FilterWithdraw(opts *bind.FilterOpts, from []comm
 
 // WatchWithdraw is a free log subscription operation binding the contract event 0xf279e6a1f5e320cca91135676d9cb6e44ca8a08c0b88342bcdb1144f6511b568.
 //
-// Solidity: event Withdraw(address indexed from, uint256 event_id, uint256 feeAmount)
+// Solidity: event Withdraw(address indexed from, uint256 eventId, uint256 feeAmount)
 func (_Bridge *BridgeFilterer) WatchWithdraw(opts *bind.WatchOpts, sink chan<- *BridgeWithdraw, from []common.Address) (event.Subscription, error) {
 
 	var fromRule []interface{}
@@ -2835,7 +2702,7 @@ func (_Bridge *BridgeFilterer) WatchWithdraw(opts *bind.WatchOpts, sink chan<- *
 
 // ParseWithdraw is a log parse operation binding the contract event 0xf279e6a1f5e320cca91135676d9cb6e44ca8a08c0b88342bcdb1144f6511b568.
 //
-// Solidity: event Withdraw(address indexed from, uint256 event_id, uint256 feeAmount)
+// Solidity: event Withdraw(address indexed from, uint256 eventId, uint256 feeAmount)
 func (_Bridge *BridgeFilterer) ParseWithdraw(log types.Log) (*BridgeWithdraw, error) {
 	event := new(BridgeWithdraw)
 	if err := _Bridge.contract.UnpackLog(event, "Withdraw", log); err != nil {

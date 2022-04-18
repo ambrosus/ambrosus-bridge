@@ -2,10 +2,8 @@ package amb
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
-	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -17,22 +15,15 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/rs/zerolog"
 )
 
 const BridgeName = "ambrosus"
 
 type Bridge struct {
-	Client      *ethclient.Client
-	WsClient    *ethclient.Client
-	Contract    *contracts.Bridge
-	WsContract  *contracts.Bridge
-	ContractRaw *contracts.BridgeRaw
-	VSContract  *contracts.Vs
-	config      *config.AMBConfig
-	sideBridge  networks.BridgeReceiveAura
-	auth        *bind.TransactOpts
-	logger      zerolog.Logger
+	networks.CommonBridge
+	VSContract *contracts.Vs
+	Config     *config.AMBConfig
+	sideBridge networks.BridgeReceiveAura
 }
 
 // New creates a new ambrosus bridge.
@@ -92,120 +83,42 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 		metric.SetContractBalance(BridgeName, client, auth.From)
 	}
 
-	return &Bridge{
-		Client:      client,
-		WsClient:    wsClient,
-		Contract:    contract,
-		WsContract:  wsContract,
-		ContractRaw: &contracts.BridgeRaw{Contract: contract},
-		VSContract:  vsContract,
-		config:      cfg,
-		auth:        auth,
-		logger:      logger,
-	}, nil
-}
-
-// GetLastEventId gets last contract event id.
-func (b *Bridge) GetLastEventId() (*big.Int, error) {
-	return b.Contract.InputEventId(nil)
-}
-
-// GetEventById gets contract event by id.
-func (b *Bridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
-	opts := &bind.FilterOpts{Context: context.Background()}
-
-	logs, err := b.Contract.FilterTransfer(opts, []*big.Int{eventId})
-	if err != nil {
-		return nil, fmt.Errorf("filter transfer: %w", err)
+	b := &Bridge{
+		CommonBridge: networks.CommonBridge{
+			Client:      client,
+			WsClient:    wsClient,
+			Contract:    contract,
+			WsContract:  wsContract,
+			Auth:        auth,
+			Logger:      logger,
+			ContractRaw: &contracts.BridgeRaw{Contract: contract},
+		},
+		VSContract: vsContract,
+		Config:     cfg,
 	}
-
-	if logs.Next() {
-		return logs.Event, nil
-	}
-
-	return nil, networks.ErrEventNotFound
+	b.CommonBridge.Bridge = b
+	return b, nil
 }
 
 // todo code below may be common for all networks?
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
+	b.CommonBridge.SideBridge = sideBridge
 
 	go b.UnlockOldestTransfersLoop()
 
-	b.logger.Info().Msg("Ambrosus bridge runned!")
+	b.Logger.Info().Msg("Ambrosus bridge runned!")
 
 	for {
-		if err := b.listen(); err != nil {
-			b.logger.Error().Err(err).Msg("Listen error")
+		if err := b.Listen(); err != nil {
+			b.Logger.Error().Err(err).Msg("Listen error")
 		}
 	}
 }
 
-func (b *Bridge) checkOldEvents() error {
-	b.logger.Info().Msg("Checking old events...")
-
-	lastEventId, err := b.sideBridge.GetLastEventId()
-	if err != nil {
-		return fmt.Errorf("GetLastEventId: %w", err)
-	}
-
-	i := big.NewInt(1)
-	for {
-		nextEventId := big.NewInt(0).Add(lastEventId, i)
-		nextEvent, err := b.GetEventById(nextEventId)
-		if err != nil {
-			if errors.Is(err, networks.ErrEventNotFound) {
-				// no more old events
-				return nil
-			}
-			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
-		}
-
-		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
-
-		if err := b.sendEvent(nextEvent); err != nil {
-			return fmt.Errorf("send event: %w", err)
-		}
-
-		i = big.NewInt(0).Add(i, big.NewInt(1))
-	}
-}
-
-func (b *Bridge) listen() error {
-	if err := b.checkOldEvents(); err != nil {
-		return fmt.Errorf("checkOldEvents: %w", err)
-	}
-
-	b.logger.Info().Msg("Listening new events...")
-
-	// Subscribe to events
-	watchOpts := &bind.WatchOpts{Context: context.Background()}
-	eventChannel := make(chan *contracts.BridgeTransfer)
-	eventSub, err := b.WsContract.WatchTransfer(watchOpts, eventChannel, nil)
-	if err != nil {
-		return fmt.Errorf("watchTransfer: %w", err)
-	}
-
-	defer eventSub.Unsubscribe()
-
-	// main loop
-	for {
-		select {
-		case err := <-eventSub.Err():
-			return fmt.Errorf("watching transfers: %w", err)
-		case event := <-eventChannel:
-			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-
-			if err := b.sendEvent(event); err != nil {
-				return fmt.Errorf("send event: %w", err)
-			}
-		}
-	}
-}
-
-func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
+func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
 
 	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
@@ -217,7 +130,7 @@ func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.isEventRemoved(event); err != nil {
@@ -229,11 +142,30 @@ func (b *Bridge) sendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
 
-	b.logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 
 	err = b.sideBridge.SubmitTransferAura(ambTransfer)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferAura: %w", err)
+	}
+	return nil
+}
+
+func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+	if params.TxErr != nil {
+		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
+		// openethereum doesn't give us a full error message
+		// so, make low-level call method to get the full error message
+		err := b.getFailureReasonViaCall(params.MethodName, txParams...)
+		if err != nil {
+			return fmt.Errorf("getFailureReasonViaCall: %w", err)
+		}
+		return params.TxErr
+	}
+
+	err := b.waitForTxMined(params.Tx)
+	if err != nil {
+		return fmt.Errorf("waitForTxMined: %w", err)
 	}
 	return nil
 }
@@ -246,89 +178,6 @@ func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
 
 	if block.Hash(true) != event.Raw.BlockHash {
 		return fmt.Errorf("block hash != event's block hash")
-	}
-	return nil
-}
-
-func (b *Bridge) GetMinSafetyBlocksNum() (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
-	if err != nil {
-		return 0, err
-	}
-	return safetyBlocks.Uint64(), nil
-}
-
-func (b *Bridge) UnlockOldestTransfersLoop() {
-	for {
-		if err := b.UnlockOldestTransfers(); err != nil {
-			b.logger.Error().Msgf("UnlockOldestTransferLoop: %s", err)
-		}
-	}
-}
-
-func (b *Bridge) UnlockOldestTransfers() error {
-	// Get oldest transfer timestamp.
-	oldestLockedEventId, err := b.Contract.OldestLockedEventId(nil)
-	if err != nil {
-		return fmt.Errorf("get oldest locked event id: %w", err)
-	}
-	lockedTransferTime, err := b.Contract.LockedTransfers(nil, oldestLockedEventId)
-	if err != nil {
-		return fmt.Errorf("get locked transfer time %v: %w", oldestLockedEventId, err)
-	}
-	if lockedTransferTime.Cmp(big.NewInt(0)) == 0 {
-		lockTime, err := b.Contract.LockTime(nil)
-		if err != nil {
-			return fmt.Errorf("get lock time: %w", err)
-		}
-
-		b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"UnlockOldestTransfers: there are no locked transfers with that id. Sleep %v seconds...",
-			lockTime.Uint64(),
-		)
-		time.Sleep(time.Duration(lockTime.Uint64()) * time.Second)
-		return nil
-	}
-
-	// Get the latest block.
-	latestBlock, err := b.Client.BlockByNumber(context.Background(), nil)
-	if err != nil {
-		return fmt.Errorf("get latest block: %w", err)
-	}
-
-	// Check if the unlocking is allowed and get the sleep time.
-	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
-	if sleepTime > 0 {
-		b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"UnlockOldestTransfers: sleep %v seconds...",
-			sleepTime,
-		)
-		time.Sleep(time.Duration(sleepTime) * time.Second)
-	}
-
-	// Unlock the oldest transfer.
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
-	err = b.unlockTransfers(oldestLockedEventId)
-	if err != nil {
-		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
-	}
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocked")
-	return nil
-}
-
-func (b *Bridge) unlockTransfers(eventId *big.Int) error {
-	tx, txErr := b.Contract.UnlockTransfers(b.auth, eventId)
-	if txErr != nil {
-		err := b.getFailureReasonViaCall("unlockTransfers", eventId)
-		if err != nil {
-			return fmt.Errorf("getFailureReasonViaCall: %w", err)
-		}
-		return txErr
-	}
-
-	err := b.waitForTxMined(tx)
-	if err != nil {
-		return fmt.Errorf("waitForTxMined: %w", err)
 	}
 	return nil
 }

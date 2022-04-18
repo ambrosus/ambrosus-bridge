@@ -67,7 +67,7 @@ describe("Common tests", () => {
         .to.changeTokenBalance(mockERC20, ownerS, -1);
     });
 
-    it("withdraw event_id increased", async () => {
+    it("withdraw eventId increased", async () => {
       await commonBridge.withdraw(mockERC20.address, user, 2, {value: 1000});
       await nextTimeframe();
       let tx1Amb: ContractTransaction = await commonBridge.withdraw(mockERC20.address, user, 1337, {value: 1000});
@@ -87,8 +87,8 @@ describe("Common tests", () => {
       let events1Amb: any = await getEvents(receipt1Amb);
       let events2Amb: any = await getEvents(receipt2Amb);
 
-      // Checking that event_id increased
-      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+      // Checking that eventId increased
+      expect(events2Amb[0].args.eventId).eq(events1Amb[0].args.eventId.add("1"));
     });
   });
 
@@ -127,8 +127,8 @@ describe("Common tests", () => {
       let events1Amb: any = await getEvents(receipt1Amb);
       let events2Amb: any = await getEvents(receipt2Amb);
 
-      // Checking that event_id increased
-      expect(events2Amb[0].args.event_id).eq(events1Amb[0].args.event_id.add("1"));
+      // Checking that eventId increased
+      expect(events2Amb[0].args.eventId).eq(events1Amb[0].args.eventId.add("1"));
     });
   });
 
@@ -257,12 +257,12 @@ describe("Common tests", () => {
       await ambBridge.unlockTransfers(1);
 
       await ambBridge.pause();
-      await expect(ambBridge.removeLockedTransfers(1)).to.be.revertedWith("event_id must be >= oldestLockedEventId");
+      await expect(ambBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
     });
   });
 
 
-  it('Test CalcTransferReceiptsHash', async () => {
+  it('Test calcTransferReceiptsHash', async () => {
     const receiptProof = require("./fixtures/transfer-event-proof.json");
     const transferProof = [
       receiptProof, 1,
@@ -270,7 +270,7 @@ describe("Common tests", () => {
     ];
     const sideBridgeAddress = "0xd34baced0bf45ad4752783ad610450d0167ef6c7";
 
-    expect(await ambBridge.CalcTransferReceiptsHash(transferProof, sideBridgeAddress))
+    expect(await ambBridge.calcTransferReceiptsHashTest(transferProof, sideBridgeAddress))
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 

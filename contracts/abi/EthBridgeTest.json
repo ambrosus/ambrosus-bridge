@@ -176,7 +176,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       },
       {
@@ -212,7 +212,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -225,7 +225,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -257,7 +257,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       },
       {
@@ -284,264 +284,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "bytes[]",
-        "name": "proof",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "el",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "proofStart",
-        "type": "uint256"
-      }
-    ],
-    "name": "CalcReceiptsHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes[]",
-            "name": "receipt_proof",
-            "type": "bytes[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "event_id",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "toAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct CommonStructs.Transfer[]",
-            "name": "transfers",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct CommonStructs.TransferProof",
-        "name": "p",
-        "type": "tuple"
-      },
-      {
-        "internalType": "address",
-        "name": "eventContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "CalcTransferReceiptsHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "internalType": "bytes3",
-                "name": "p0_seal",
-                "type": "bytes3"
-              },
-              {
-                "internalType": "bytes3",
-                "name": "p0_bare",
-                "type": "bytes3"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "parent_hash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p2",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "receipt_hash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p3",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes4",
-                "name": "step",
-                "type": "bytes4"
-              },
-              {
-                "internalType": "bytes",
-                "name": "signature",
-                "type": "bytes"
-              },
-              {
-                "internalType": "uint64",
-                "name": "finalized_vs",
-                "type": "uint64"
-              }
-            ],
-            "internalType": "struct CheckAura.BlockAura[]",
-            "name": "blocks",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes[]",
-                "name": "receipt_proof",
-                "type": "bytes[]"
-              },
-              {
-                "internalType": "uint256",
-                "name": "event_id",
-                "type": "uint256"
-              },
-              {
-                "components": [
-                  {
-                    "internalType": "address",
-                    "name": "tokenAddress",
-                    "type": "address"
-                  },
-                  {
-                    "internalType": "address",
-                    "name": "toAddress",
-                    "type": "address"
-                  },
-                  {
-                    "internalType": "uint256",
-                    "name": "amount",
-                    "type": "uint256"
-                  }
-                ],
-                "internalType": "struct CommonStructs.Transfer[]",
-                "name": "transfers",
-                "type": "tuple[]"
-              }
-            ],
-            "internalType": "struct CommonStructs.TransferProof",
-            "name": "transfer",
-            "type": "tuple"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes[]",
-                "name": "receipt_proof",
-                "type": "bytes[]"
-              },
-              {
-                "internalType": "address",
-                "name": "delta_address",
-                "type": "address"
-              },
-              {
-                "internalType": "int64",
-                "name": "delta_index",
-                "type": "int64"
-              }
-            ],
-            "internalType": "struct CheckAura.ValidatorSetProof[]",
-            "name": "vs_changes",
-            "type": "tuple[]"
-          },
-          {
-            "internalType": "uint64",
-            "name": "transfer_event_block",
-            "type": "uint64"
-          }
-        ],
-        "internalType": "struct CheckAura.AuraProof",
-        "name": "auraProof",
-        "type": "tuple"
-      },
-      {
-        "internalType": "uint256",
-        "name": "minSafetyBlocks",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address",
-        "name": "sideBridgeAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "validatorSetAddress",
-        "type": "address"
-      }
-    ],
-    "name": "CheckAuraTest",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "signer",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "message",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
-      }
-    ],
-    "name": "CheckSignatureTest",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
     "outputs": [
@@ -549,19 +291,6 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "GetValidatorSet",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -586,17 +315,17 @@
         "components": [
           {
             "internalType": "bytes3",
-            "name": "p0_seal",
+            "name": "p0Seal",
             "type": "bytes3"
           },
           {
             "internalType": "bytes3",
-            "name": "p0_bare",
+            "name": "p0Bare",
             "type": "bytes3"
           },
           {
             "internalType": "bytes32",
-            "name": "parent_hash",
+            "name": "parentHash",
             "type": "bytes32"
           },
           {
@@ -606,7 +335,7 @@
           },
           {
             "internalType": "bytes32",
-            "name": "receipt_hash",
+            "name": "receiptHash",
             "type": "bytes32"
           },
           {
@@ -626,7 +355,7 @@
           },
           {
             "internalType": "uint64",
-            "name": "finalized_vs",
+            "name": "finalizedVs",
             "type": "uint64"
           }
         ],
@@ -648,7 +377,7 @@
         "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -657,17 +386,17 @@
         "components": [
           {
             "internalType": "bytes3",
-            "name": "p0_seal",
+            "name": "p0Seal",
             "type": "bytes3"
           },
           {
             "internalType": "bytes3",
-            "name": "p0_bare",
+            "name": "p0Bare",
             "type": "bytes3"
           },
           {
             "internalType": "bytes32",
-            "name": "parent_hash",
+            "name": "parentHash",
             "type": "bytes32"
           },
           {
@@ -677,7 +406,7 @@
           },
           {
             "internalType": "bytes32",
-            "name": "receipt_hash",
+            "name": "receiptHash",
             "type": "bytes32"
           },
           {
@@ -697,7 +426,7 @@
           },
           {
             "internalType": "uint64",
-            "name": "finalized_vs",
+            "name": "finalizedVs",
             "type": "uint64"
           }
         ],
@@ -738,7 +467,7 @@
         "type": "uint256"
       }
     ],
-    "stateMutability": "view",
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -807,6 +536,177 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "bytes3",
+                "name": "p0Seal",
+                "type": "bytes3"
+              },
+              {
+                "internalType": "bytes3",
+                "name": "p0Bare",
+                "type": "bytes3"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "parentHash",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p2",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "receiptHash",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p3",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes4",
+                "name": "step",
+                "type": "bytes4"
+              },
+              {
+                "internalType": "bytes",
+                "name": "signature",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint64",
+                "name": "finalizedVs",
+                "type": "uint64"
+              }
+            ],
+            "internalType": "struct CheckAura.BlockAura[]",
+            "name": "blocks",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "bytes[]",
+                "name": "receiptProof",
+                "type": "bytes[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "eventId",
+                "type": "uint256"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "tokenAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "toAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                  }
+                ],
+                "internalType": "struct CommonStructs.Transfer[]",
+                "name": "transfers",
+                "type": "tuple[]"
+              }
+            ],
+            "internalType": "struct CommonStructs.TransferProof",
+            "name": "transfer",
+            "type": "tuple"
+          },
+          {
+            "components": [
+              {
+                "internalType": "bytes[]",
+                "name": "receiptProof",
+                "type": "bytes[]"
+              },
+              {
+                "internalType": "address",
+                "name": "deltaAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "int64",
+                "name": "deltaIndex",
+                "type": "int64"
+              }
+            ],
+            "internalType": "struct CheckAura.ValidatorSetProof[]",
+            "name": "vsChanges",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint64",
+            "name": "transferEventBlock",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct CheckAura.AuraProof",
+        "name": "auraProof",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSafetyBlocks",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address",
+        "name": "sideBridgeAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "validatorSetAddress",
+        "type": "address"
+      }
+    ],
+    "name": "checkAuraTest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "signer",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "message",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      }
+    ],
+    "name": "checkSignatureTest",
+    "outputs": [],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "fee",
     "outputs": [
@@ -833,6 +733,19 @@
         "internalType": "bytes32",
         "name": "",
         "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getValidatorSet",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -988,7 +901,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -1054,17 +967,17 @@
             "components": [
               {
                 "internalType": "bytes3",
-                "name": "p0_seal",
+                "name": "p0Seal",
                 "type": "bytes3"
               },
               {
                 "internalType": "bytes3",
-                "name": "p0_bare",
+                "name": "p0Bare",
                 "type": "bytes3"
               },
               {
                 "internalType": "bytes32",
-                "name": "parent_hash",
+                "name": "parentHash",
                 "type": "bytes32"
               },
               {
@@ -1074,7 +987,7 @@
               },
               {
                 "internalType": "bytes32",
-                "name": "receipt_hash",
+                "name": "receiptHash",
                 "type": "bytes32"
               },
               {
@@ -1094,7 +1007,7 @@
               },
               {
                 "internalType": "uint64",
-                "name": "finalized_vs",
+                "name": "finalizedVs",
                 "type": "uint64"
               }
             ],
@@ -1106,12 +1019,12 @@
             "components": [
               {
                 "internalType": "bytes[]",
-                "name": "receipt_proof",
+                "name": "receiptProof",
                 "type": "bytes[]"
               },
               {
                 "internalType": "uint256",
-                "name": "event_id",
+                "name": "eventId",
                 "type": "uint256"
               },
               {
@@ -1145,27 +1058,27 @@
             "components": [
               {
                 "internalType": "bytes[]",
-                "name": "receipt_proof",
+                "name": "receiptProof",
                 "type": "bytes[]"
               },
               {
                 "internalType": "address",
-                "name": "delta_address",
+                "name": "deltaAddress",
                 "type": "address"
               },
               {
                 "internalType": "int64",
-                "name": "delta_index",
+                "name": "deltaIndex",
                 "type": "int64"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",
-            "name": "vs_changes",
+            "name": "vsChanges",
             "type": "tuple[]"
           },
           {
             "internalType": "uint64",
-            "name": "transfer_event_block",
+            "name": "transferEventBlock",
             "type": "uint64"
           }
         ],
@@ -1296,7 +1209,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],

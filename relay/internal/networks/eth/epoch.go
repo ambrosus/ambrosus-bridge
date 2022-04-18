@@ -21,7 +21,7 @@ const (
 var ErrEpochDataFileNotFound = errors.New("error epoch data file not found")
 
 func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
-	b.logger.Debug().Msgf("Loading '%d.json' epoch data file...", epoch)
+	b.Logger.Debug().Msgf("Loading '%d.json' epoch data file...", epoch)
 
 	data, err := os.ReadFile(fmt.Sprintf(epochDataFilePath, epoch))
 	if err != nil {
@@ -38,7 +38,7 @@ func (b *Bridge) loadEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 }
 
 func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
-	b.logger.Info().Msgf("Creating '%d.json' epoch data file...", epoch)
+	b.Logger.Info().Msgf("Creating '%d.json' epoch data file...", epoch)
 
 	data, err := ethash.GenerateEpochData(epoch)
 	if err != nil {
@@ -54,13 +54,13 @@ func (b *Bridge) createEpochDataFile(epoch uint64) (*ethash.EpochData, error) {
 		return data, fmt.Errorf("write file %v: %w", epochDataFilePath, err)
 	}
 
-	b.logger.Info().Msgf("Finish creating '%d.json' epoch data file...", epoch)
+	b.Logger.Info().Msgf("Finish creating '%d.json' epoch data file...", epoch)
 
 	return data, nil
 }
 
 func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
-	b.logger.Debug().Msgf("Deleting '%d.json' epoch data file...", epoch)
+	b.Logger.Debug().Msgf("Deleting '%d.json' epoch data file...", epoch)
 	err := os.Remove(fmt.Sprintf(epochDataFilePath, epoch))
 	if errors.Is(err, os.ErrNotExist) {
 		return nil
@@ -69,7 +69,7 @@ func (b *Bridge) deleteEpochDataFile(epoch uint64) error {
 }
 
 func (b *Bridge) checkEpochDataFile(epoch uint64) error {
-	b.logger.Debug().Msgf("Checking '%d.json' epoch data file...", epoch)
+	b.Logger.Debug().Msgf("Checking '%d.json' epoch data file...", epoch)
 	_, err := os.Stat(fmt.Sprintf(epochDataFilePath, epoch))
 	if errors.Is(err, os.ErrNotExist) {
 		return ErrEpochDataFileNotFound
@@ -103,7 +103,7 @@ func (b *Bridge) getGeneratedEpochNumbers() ([]int, error) {
 }
 
 func (b *Bridge) checkEpochDataDir(epoch uint64, length uint64) error {
-	b.logger.Debug().Msg("Checking epoch data dir...")
+	b.Logger.Debug().Msg("Checking epoch data dir...")
 
 	epochs, err := b.getGeneratedEpochNumbers()
 	if err != nil {

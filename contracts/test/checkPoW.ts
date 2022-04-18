@@ -42,7 +42,7 @@ describe("Check PoW", () => {
         epoch.BranchDepth, epoch.MerkleNodes);
     expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
 
-    await ambBridge.verifyEthash(blockPoW);
+    await ambBridge.verifyEthashTest(blockPoW);
   });
 
   // epoch-128 has 512 MerkleNodes
@@ -52,7 +52,7 @@ describe("Check PoW", () => {
     await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
       epoch.BranchDepth, epoch.MerkleNodes, {gasLimit: 30000000});
 
-    await ambBridge.verifyEthash(block);
+    await ambBridge.verifyEthashTest(block);
   })
 
   it("Test setEpochData deleting old epochs", async () => {

@@ -23,12 +23,12 @@ contract EthBridge is CommonBridge, CheckAura {
     }
 
     function submitTransferAura(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
-        emit TransferSubmit(auraProof.transfer.event_id);
+        emit TransferSubmit(auraProof.transfer.eventId);
 
-        checkEventId(auraProof.transfer.event_id);
+        checkEventId(auraProof.transfer.eventId);
 
-        CheckAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
+        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
 
-        lockTransfers(auraProof.transfer.transfers, auraProof.transfer.event_id);
+        lockTransfers(auraProof.transfer.transfers, auraProof.transfer.eventId);
     }
 }
