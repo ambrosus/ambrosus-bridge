@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ethereum/go-ethereum/rpc"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -21,7 +20,7 @@ func (b *Bridge) waitForTxMined(tx *types.Transaction) error {
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		if err = ethereum.GetFailureReason(b.Client, b.Auth, tx); err != nil {
+		if err = b.GetFailureReason(tx); err != nil {
 			return fmt.Errorf("GetFailureReason: %w", parseError(err))
 		}
 	}

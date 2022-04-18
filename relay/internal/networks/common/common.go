@@ -11,7 +11,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -163,7 +162,7 @@ func (b *CommonBridge) Listen() error {
 }
 
 func (b *CommonBridge) SetRelayBalanceMetric() {
-	balance, err := ethereum.GetBalanceGWei(b.Client, b.Auth.From)
+	balance, err := b.getBalanceGWei(b.Auth.From)
 	if err != nil {
 		b.Logger.Error().Err(err).Msg("error when getting contract balance in GWei")
 		return

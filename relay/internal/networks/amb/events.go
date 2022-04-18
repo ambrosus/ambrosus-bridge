@@ -8,7 +8,6 @@ import (
 	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -181,7 +180,7 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer) ([]*c.VsInitiateCh
 }
 
 func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := ethereum.GetReceipts(b.Client, event.Log().BlockHash)
+	receipts, err := b.GetReceipts(event.Log().BlockHash)
 	if err != nil {
 		return nil, fmt.Errorf("GetReceipts: %w", err)
 	}

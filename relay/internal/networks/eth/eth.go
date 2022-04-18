@@ -10,7 +10,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -79,7 +78,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
-	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
+	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
@@ -126,7 +125,7 @@ func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		// we've got here probably due to low gas limit,
 		// and revert() that hasn't been caught at eth_estimateGas
-		err = ethereum.GetFailureReason(b.Client, b.Auth, params.Tx)
+		err = b.GetFailureReason(params.Tx)
 		if err != nil {
 			return fmt.Errorf("GetFailureReason: %w", err)
 		}

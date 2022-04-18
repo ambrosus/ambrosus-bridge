@@ -9,7 +9,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -71,7 +70,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
-	if err := ethereum.WaitForBlock(b.WsClient, event.Raw.BlockNumber+safetyBlocks); err != nil {
+	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
