@@ -68,9 +68,9 @@ func (e *Ethash) generateDag(epoch uint64) ([]byte, error) {
 	}
 
 	go func() {
-		ticker := time.NewTicker(time.Second)
+		ticker := time.NewTicker(time.Second * 10)
 		for ; progress < size/64; <-ticker.C {
-			e.logger.Info().
+			e.logger.Debug().
 				Uint64("epoch", epoch).
 				Uint64("percentage", progress*hashBytes*100/size).
 				Str("elapsed", common.PrettyDuration(time.Since(start)).String()).
