@@ -51,14 +51,6 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	b.ensureDAGsExists()
 
-	b.Logger.Info().Msg("Ethereum bridge runned!")
-
-	for {
-		if err := b.Listen(); err != nil {
-			b.Logger.Error().Msgf("listen error: %s", err.Error())
-		}
-	}
-
 	go b.UnlockOldestTransfersLoop()
 	go b.WatchValidityLockedTransfersLoop()
 
