@@ -15,7 +15,7 @@ import (
 func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 	// todo maybe timeout (context)
 	blockChannel := make(chan *types.Header)
-	blockSub, err := b.Client.SubscribeNewHead(context.Background(), blockChannel)
+	blockSub, err := b.WsClient.SubscribeNewHead(context.Background(), blockChannel)
 	if err != nil {
 		return fmt.Errorf("SubscribeNewHead: %w", err)
 	}
