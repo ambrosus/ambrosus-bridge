@@ -162,7 +162,7 @@ func (b *Bridge) ensureDAGsExists() {
 	}
 
 	// This func will generate DAG if it doesn't exist yet
-	b.ethash.UpdateCache(blockNumber / 30000)
+	b.ethash.GetEpochData(blockNumber / 30000)
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
