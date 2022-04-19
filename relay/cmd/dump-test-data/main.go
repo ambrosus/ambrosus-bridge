@@ -14,8 +14,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog/log"
@@ -130,7 +128,7 @@ func dataForReceiptProof(cfg networkConfig) error {
 	}
 
 	// Getting receipts from block.
-	receipts, err := ethereum.GetReceipts(bridge.Client, logs.BlockHash)
+	receipts, err := bridge.GetReceipts(logs.BlockHash)
 	if err != nil {
 		return err
 	}
