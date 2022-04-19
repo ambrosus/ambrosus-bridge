@@ -3,13 +3,12 @@ package eth
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	// Metric
-	defer metric.SetContractBalance(BridgeName, b.Client, b.Auth.From)
+	defer b.SetRelayBalanceMetric()
 
 	tx, txErr := b.Contract.SubmitTransferAura(b.Auth, *proof)
 	return b.GetTransactionError(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr})

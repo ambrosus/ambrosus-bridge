@@ -1,13 +1,10 @@
 package config
 
 import (
-	"crypto/ecdsa"
-	"encoding/hex"
 	"errors"
 	"os"
 	"path/filepath"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -28,7 +25,7 @@ type (
 		HttpURL      string `mapstructure:"httpUrl"`
 		WsURL        string `mapstructure:"wsUrl"`
 		ContractAddr string `mapstructure:"contractAddr"`
-		PrivateKey   *ecdsa.PrivateKey
+		PrivateKey   string
 	}
 
 	AMBConfig struct {
@@ -119,34 +116,13 @@ func unmarshal(cfg *Config) error {
 func setFromEnv(cfg *Config) error {
 	log.Debug().Msg("Set from environment configurations...")
 
-	ambPrivateKey, err := parsePK(os.Getenv("AMB_PRIVATE_KEY"))
-	if err != nil {
-		return err
+	cfg.AMB.PrivateKey = os.Getenv("AMB_PRIVATE_KEY")
+	if cfg.AMB.PrivateKey == "" {
+		return ErrPrivateKeyNotFound
 	}
-	ethPrivateKey, err := parsePK(os.Getenv("ETH_PRIVATE_KEY"))
-	if err != nil {
-		return err
+	cfg.ETH.PrivateKey = os.Getenv("ETH_PRIVATE_KEY")
+	if cfg.ETH.PrivateKey == "" {
+		return ErrPrivateKeyNotFound
 	}
-
-	cfg.AMB.PrivateKey = ambPrivateKey
-	cfg.ETH.PrivateKey = ethPrivateKey
-
 	return nil
-}
-
-func parsePK(pk string) (*ecdsa.PrivateKey, error) {
-	if pk == "" {
-		return nil, ErrPrivateKeyNotFound
-	}
-
-	b, err := hex.DecodeString(pk)
-	if err != nil {
-		return nil, err
-	}
-	p, err := crypto.ToECDSA(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return p, nil
 }

@@ -1298,6 +1298,11 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "unwrapSide",
+        "type": "bool"
       }
     ],
     "name": "withdraw",
@@ -1313,7 +1318,7 @@
         "type": "address"
       }
     ],
-    "name": "wrap_withdraw",
+    "name": "wrapWithdraw",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -1330,5 +1335,9 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]
