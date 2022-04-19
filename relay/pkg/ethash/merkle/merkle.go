@@ -107,11 +107,9 @@ func (d *DatasetTree) Finalize() {
 		return
 	}
 
-	if d.merkleBuf.Len() > 1 {
-		for d.merkleBuf.Len() != 1 {
-			dupNode := d.merkleBuf.Back().Value.(Node).Copy()
-			d.insertNode(dupNode)
-		}
+	for d.merkleBuf.Len() > 1 {
+		dupNode := d.merkleBuf.Back().Value.(Node).Copy()
+		d.insertNode(dupNode)
 	}
 
 	d.finalized = true
