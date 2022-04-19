@@ -37,7 +37,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	b := &Bridge{
 		CommonBridge: commonBridge,
 		Config:       cfg,
-		ethash:       ethash.New(cfg.EthashDir, 1, 1), // todo cfg
+		ethash:       ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs),
 	}
 	b.CommonBridge.Bridge = b
 	return b, nil

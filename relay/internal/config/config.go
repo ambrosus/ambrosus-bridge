@@ -35,8 +35,10 @@ type (
 
 	ETHConfig struct {
 		Network
-		EpochLength uint64 `mapstructure:"epochLength"`
-		EthashDir   string `mapstructure:"ethashDir"`
+		EpochLength          uint64 `mapstructure:"epochLength"`
+		EthashDir            string `mapstructure:"ethashDir"`
+		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
+		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
 	}
 
 	TelegramLogger struct {
