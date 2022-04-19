@@ -35,30 +35,30 @@ describe("Check PoW", () => {
   });
 
   it("Test Ethash PoW", async () => {
-    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
-    const epoch = require("../../relay/cmd/dump-test-data/epoch-475.json");
+    const blockPoW = require("./fixtures/BlockPoW-14257704.json");
+    const epoch = require("./fixtures/epoch-475.json");
 
     await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
         epoch.BranchDepth, epoch.MerkleNodes);
     expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
 
-    await ambBridge.verifyEthash(blockPoW);
+    await ambBridge.verifyEthashTest(blockPoW);
   });
 
   // epoch-128 has 512 MerkleNodes
   it("Test submit epoch-128", async () => {
-    const block = require("../../relay/cmd/dump-test-data/BlockPoW-3840001.json");
-    const epoch = require("../../relay/assets/testdata/epoch-128.json");
+    const block = require("./fixtures/BlockPoW-3840001.json");
+    const epoch = require("./fixtures/epoch-128.json");
     await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
       epoch.BranchDepth, epoch.MerkleNodes, {gasLimit: 30000000});
 
-    await ambBridge.verifyEthash(block);
+    await ambBridge.verifyEthashTest(block);
   })
 
   it("Test setEpochData deleting old epochs", async () => {
-    const epoch1 = require("../../relay/assets/testdata/epoch-475.json");
-    const epoch2 = require("../../relay/assets/testdata/epoch-476.json");
-    const epoch3 = require("../../relay/assets/testdata/epoch-477.json");
+    const epoch1 = require("./fixtures/epoch-475.json");
+    const epoch2 = require("./fixtures/epoch-476.json");
+    const epoch3 = require("./fixtures/epoch-477.json");
     await ambBridge.setEpochData(epoch1.Epoch, epoch1.FullSizeIn128Resolution,
         epoch1.BranchDepth, epoch1.MerkleNodes);
     await ambBridge.setEpochData(epoch2.Epoch, epoch2.FullSizeIn128Resolution,
@@ -72,7 +72,7 @@ describe("Check PoW", () => {
   });
 
   it("Test blockHash", async () => {
-    const blockPoW = require("../../relay/cmd/dump-test-data/BlockPoW-14257704.json");
+    const blockPoW = require("./fixtures/BlockPoW-14257704.json");
     const expectedBlockHash = "0xc4ca0efd5d528d67691abd9e10e9d4ca570f16235779e1f314b036caa5b455a1";
 
     const realBlockHash = await ambBridge.blockHashTest(blockPoW);

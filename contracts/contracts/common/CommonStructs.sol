@@ -9,8 +9,8 @@ library CommonStructs {
     }
 
     struct TransferProof {
-        bytes[] receipt_proof;
-        uint event_id;
+        bytes[] receiptProof;
+        uint eventId;
         Transfer[] transfers;
     }
 
@@ -20,7 +20,8 @@ library CommonStructs {
     }
 
     struct ConstructorArgs {
-        address sideBridgeAddress; address relayAddress;
+        address sideBridgeAddress; address adminAddress;
+        address relayAddress; address wrappingTokenAddress;
         address[] tokenThisAddresses; address[] tokenSideAddresses;
         uint fee; address payable feeRecipient;
         uint timeframeSeconds; uint lockTime; uint minSafetyBlocks;

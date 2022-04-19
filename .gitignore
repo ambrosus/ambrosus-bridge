@@ -127,7 +127,6 @@ pnpm-lock.yaml
 ### Solidity ###
 artifacts/
 cache/
-deployments/
 
 # Mac OS
 .DS_Store

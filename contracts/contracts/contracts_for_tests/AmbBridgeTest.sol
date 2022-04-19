@@ -5,26 +5,26 @@ import "../eth/AmbBridge.sol";
 import "../common/CommonStructs.sol";
 
 contract AmbBridgeTest is AmbBridge {
-    constructor(
-        CommonStructs.ConstructorArgs memory args,
-        address ambWrapper
-    )
-    AmbBridge(args, ambWrapper) {}
+    constructor(CommonStructs.ConstructorArgs memory args) AmbBridge(args) {}
 
-    function getLockedTransferTest(uint event_id, uint index) public view returns (address, address, uint) {
-        CommonStructs.Transfer storage t = lockedTransfers[event_id].transfers[index];
-        return (t.tokenAddress, t.toAddress, t.amount);
+    function getLockedTransferTest(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[eventId];
     }
 
-    function lockTransfersTest(CommonStructs.Transfer[] memory events, uint event_id) public {
-        lockTransfers(events, event_id);
-    }
-
-    function unlockTransfersTest(uint event_id) public {
-        unlockTransfers(event_id);
+    function lockTransfersTest(CommonStructs.Transfer[] memory events, uint eventId) public {
+        lockTransfers(events, eventId);
     }
 
     function blockHashTest(BlockPoW memory block_) public pure returns (bytes32) {
         return blockHash(block_);
     }
+
+    function verifyEthashTest(BlockPoW memory block_) public view {
+        verifyEthash(block_);
+    }
+
+    function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
+        return calcTransferReceiptsHash(p, eventContractAddress);
+    }
+
 }

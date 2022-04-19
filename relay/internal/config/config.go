@@ -1,13 +1,10 @@
 package config
 
 import (
-	"crypto/ecdsa"
-	"encoding/hex"
 	"errors"
 	"os"
 	"path/filepath"
 
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
@@ -25,21 +22,21 @@ type (
 	}
 
 	Network struct {
-		HttpURL      string `mapstructure:"http-url"`
-		WsURL        string `mapstructure:"ws-url"`
-		ContractAddr string `mapstructure:"contract-addr"`
-		PrivateKey   *ecdsa.PrivateKey
+		HttpURL      string `mapstructure:"httpUrl"`
+		WsURL        string `mapstructure:"wsUrl"`
+		ContractAddr string `mapstructure:"contractAddr"`
+		PrivateKey   string
 	}
 
 	AMBConfig struct {
 		Network
-		VSContractAddr string `mapstructure:"vs-contract-addr"`
+		VSContractAddr string `mapstructure:"vsContractAddr"`
 	}
 
 	ETHConfig struct {
 		Network
-		EpochLength uint64 `mapstructure:"epoch-length"`
-		EthashDir   string `mapstructure:"ethash-dir"`
+		EpochLength uint64 `mapstructure:"epochLength"`
+		EthashDir   string `mapstructure:"ethashDir"`
 	}
 
 	TelegramLogger struct {
@@ -85,6 +82,7 @@ func parseConfigFile() error {
 
 	dir, file := filepath.Split(configPath)
 
+	viper.SetConfigType("json")
 	viper.AddConfigPath(dir)
 	viper.SetConfigName(file)
 
@@ -105,7 +103,7 @@ func unmarshal(cfg *Config) error {
 		return err
 	}
 
-	if err := viper.UnmarshalKey("external-logger.telegram", &cfg.Telegram); err != nil {
+	if err := viper.UnmarshalKey("externalLogger.telegram", &cfg.Telegram); err != nil {
 		return err
 	}
 
@@ -119,34 +117,13 @@ func unmarshal(cfg *Config) error {
 func setFromEnv(cfg *Config) error {
 	log.Debug().Msg("Set from environment configurations...")
 
-	ambPrivateKey, err := parsePK(os.Getenv("AMB_PRIVATE_KEY"))
-	if err != nil {
-		return err
+	cfg.AMB.PrivateKey = os.Getenv("AMB_PRIVATE_KEY")
+	if cfg.AMB.PrivateKey == "" {
+		return ErrPrivateKeyNotFound
 	}
-	ethPrivateKey, err := parsePK(os.Getenv("ETH_PRIVATE_KEY"))
-	if err != nil {
-		return err
+	cfg.ETH.PrivateKey = os.Getenv("ETH_PRIVATE_KEY")
+	if cfg.ETH.PrivateKey == "" {
+		return ErrPrivateKeyNotFound
 	}
-
-	cfg.AMB.PrivateKey = ambPrivateKey
-	cfg.ETH.PrivateKey = ethPrivateKey
-
 	return nil
-}
-
-func parsePK(pk string) (*ecdsa.PrivateKey, error) {
-	if pk == "" {
-		return nil, ErrPrivateKeyNotFound
-	}
-
-	b, err := hex.DecodeString(pk)
-	if err != nil {
-		return nil, err
-	}
-	p, err := crypto.ToECDSA(b)
-	if err != nil {
-		return nil, err
-	}
-
-	return p, nil
 }

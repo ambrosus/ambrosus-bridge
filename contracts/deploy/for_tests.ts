@@ -6,19 +6,32 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name !== "hardhat") return;
   const {owner} = await hre.getNamedAccounts();
 
+
+  const {address: mockAddr} = await hre.deployments.deploy("BridgeERC20Test", {
+    contract: "BridgeERC20Test",
+    from: owner,
+    args: [
+      "Mock", "Mock", 18,
+      [ethers.constants.AddressZero], // bridgeAddresses
+    ],
+    log: true,
+  });
+
+  const {address: wrapperAddr} = await hre.deployments.deploy("sAMB", {
+    contract: "sAMB",
+    from: owner,
+    args: ["sAMB", "sAMB"],
+    log: true,
+  });
+
+
   const commonArgs = {
     sideBridgeAddress: ethers.constants.AddressZero,
+    adminAddress: ethers.constants.AddressZero,
     relayAddress: ethers.constants.AddressZero,
-    tokenThisAddresses: [
-      "0x0000000000000000000000000000000000000001",
-      "0x0000000000000000000000000000000000000003",
-      "0x0000000000000000000000000000000000000005",
-    ],
-    tokenSideAddresses: [
-      "0x0000000000000000000000000000000000000002",
-      "0x0000000000000000000000000000000000000004",
-      "0x0000000000000000000000000000000000000006",
-    ],
+    wrappingTokenAddress: wrapperAddr,
+    tokenThisAddresses: [],
+    tokenSideAddresses: [],
     fee: 1000,
     feeRecipient: ethers.constants.AddressZero,
     timeframeSeconds: 14400,
@@ -34,7 +47,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   await hre.deployments.deploy("AmbBridgeTest", {
     from: owner,
-    args: [commonArgs, ethers.constants.AddressZero],
+    args: [commonArgs],
     log: true,
   });
 
@@ -42,9 +55,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: "EthBridgeTest",
     from: owner,
     args: [commonArgs,
-      [ // initial validators
-        "0x0000000000000000000000000000000000000001",
-        "0x0000000000000000000000000000000000000002",
+      [
+        "0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79",
+        "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
+        "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
       ],
       ethers.constants.AddressZero, // validatorSetAddress_
       ethers.constants.HashZero, // lastProcessedBlock
@@ -52,21 +66,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  await hre.deployments.deploy("MockERC20", {
-    contract: "MockERC20",
-    from: owner,
-    args: [
-      [ethers.constants.AddressZero], // bridgeAddresses
-    ],
-    log: true,
-  });
-
-  await hre.deployments.deploy("wAMB", {
-    contract: "wAMB",
-    from: owner,
-    args: ["wAMB", "wAmb"],
-    log: true,
-  });
 };
 
 export default func;

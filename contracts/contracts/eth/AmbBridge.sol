@@ -2,66 +2,26 @@
 pragma solidity 0.8.6;
 
 import "../common/CommonBridge.sol";
-import "../common/checks/CheckPoW.sol";
 import "../common/CommonStructs.sol";
-import "../IwAMB.sol";
+import "../checks/CheckPoW.sol";
 
 
 contract AmbBridge is CommonBridge, CheckPoW {
-    address ambWrapperAddress;
+    constructor(CommonStructs.ConstructorArgs memory args) CommonBridge(args) {}
 
-    constructor(
-        CommonStructs.ConstructorArgs memory args,
-        address ambWrapper_
-    )
-    CommonBridge(args)
-    {
+    function submitTransferPoW(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
+        emit TransferSubmit(powProof.transfer.eventId);
 
-        // relay uses this event to know from what moment to synchronize the validator set;
-        // side bridge contract must be deployed with validator set actual at the time this event was emitted.
-        emit Transfer(0, queue);
+        checkEventId(powProof.transfer.eventId);
 
+        checkPoW_(powProof, sideBridgeAddress);
 
-        emitTestEvent(address(this), msg.sender, 10, true);
-
-        ambWrapperAddress = ambWrapper_;
+        lockTransfers(powProof.transfer.transfers, powProof.transfer.eventId);
     }
 
-    function wrap_withdraw(address toAddress) public payable {
-        require(msg.value > fee, "msg.value can't be lesser than fee");
-        uint restOfValue = msg.value - fee;
-
-        feeRecipient.transfer(fee);
-        IwAMB(ambWrapperAddress).wrap{value: restOfValue}();
-
-        //
-        queue.push(CommonStructs.Transfer(ambWrapperAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, outputEventId, fee);
-
-        uint nowTimeframe = block.timestamp / timeframeSeconds;
-        if (nowTimeframe != lastTimeframe) {
-            emit Transfer(outputEventId++, queue);
-            delete queue;
-
-            lastTimeframe = nowTimeframe;
-        }
-    }
-
-    function submitTransfer(PoWProof memory powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
-        emit TransferSubmit(powProof.transfer.event_id);
-
-        checkEventId(powProof.transfer.event_id);
-
-        CheckPoW_(powProof, sideBridgeAddress);
-
-        lockTransfers(powProof.transfer.transfers, powProof.transfer.event_id);
-    }
-
-    function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {
+    function setSideBridge(address _sideBridgeAddress) public onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(sideBridgeAddress == address(0), "sideBridgeAddress already set");
         sideBridgeAddress = _sideBridgeAddress;
     }
 
-    function setAmbWrapper(address wrapper) public onlyRole(ADMIN_ROLE) {
-        ambWrapperAddress = wrapper;
-    }
 }

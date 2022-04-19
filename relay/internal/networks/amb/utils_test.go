@@ -1,6 +1,7 @@
 package amb
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -37,4 +38,51 @@ func Test_decodeRevertMessage(t *testing.T) {
 			assert.Equalf(t, tt.want, decodedMsg, "decodeRevertMessage(%v)", tt.args.errStr)
 		})
 	}
+}
+
+func Test_parseError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want error
+	}{
+		{
+			"Reverted error",
+			args{NewTestError("The execution failed due to an exception.", "Reverted 0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002750726f7669646564206164647265737320697320616c726561647920612076616c696461746f7200000000000000000000000000000000000000000000000000")},
+			fmt.Errorf("Provided address is already a validator"),
+		},
+		{
+			"VM error",
+			args{NewTestError("VM execution error.", "Out of gas")},
+			fmt.Errorf("VM execution error. Out of gas"),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want.Error(), parseError(tt.args.err).Error(), "parseError(%v)", tt.args.err)
+		})
+	}
+}
+
+type testError struct {
+	message string
+	data    string
+}
+
+func NewTestError(message string, data string) *testError {
+	return &testError{
+		message: message,
+		data:    data,
+	}
+}
+
+func (e *testError) Error() string {
+	return e.message
+}
+
+func (e *testError) ErrorData() interface{} {
+	return e.data
 }

@@ -45,7 +45,7 @@ type Header struct {
 	SealFields []hexutil.Bytes `json:"sealFields"`
 }
 
-func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
+func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
 	body := &request{
 		Jsonrpc: "2.0",
 		Id:      1,
@@ -54,24 +54,24 @@ func (b *Bridge) HeaderByNumber(number *big.Int) (header *Header, err error) {
 	}
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json encode request: %w", err)
 	}
-	resp, err := http.Post(b.config.HttpURL, "application/json", payloadBuf)
+	resp, err := http.Post(b.Config.HttpURL, "application/json", payloadBuf)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("http post: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respData := new(response)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("json decode response: %w", err)
 	}
 
 	// Check if result is empty
 	if respData.Result.Number == nil {
 		return nil, fmt.Errorf("there is no header with number %d", number.Int64())
 	}
-	return &respData.Result, err
+	return &respData.Result, nil
 }
 
 func (h *Header) Rlp(withSeal bool) ([]byte, error) {

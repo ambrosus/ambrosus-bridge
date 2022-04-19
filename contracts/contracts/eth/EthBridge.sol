@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "hardhat/console.sol";
 import "../common/CommonBridge.sol";
-import "../common/checks/CheckAura.sol";
 import "../common/CommonStructs.sol";
+import "../checks/CheckAura.sol";
 
 
 contract EthBridge is CommonBridge, CheckAura {
@@ -19,19 +18,17 @@ contract EthBridge is CommonBridge, CheckAura {
     CommonBridge(args)
     CheckAura(initialValidators)
     {
-        emitTestEvent(address(this), msg.sender, 10, true);
-
         validatorSetAddress = validatorSetAddress_;
         lastProcessedBlock = lastProcessedBlock_;
     }
 
-    function submitTransfer(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
-        emit TransferSubmit(auraProof.transfer.event_id);
+    function submitTransferAura(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
+        emit TransferSubmit(auraProof.transfer.eventId);
 
-        checkEventId(auraProof.transfer.event_id);
+        checkEventId(auraProof.transfer.eventId);
 
-        CheckAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
+        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
 
-        lockTransfers(auraProof.transfer.transfers, auraProof.transfer.event_id);
+        lockTransfers(auraProof.transfer.transfers, auraProof.transfer.eventId);
     }
 }

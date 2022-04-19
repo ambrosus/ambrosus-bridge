@@ -10,7 +10,17 @@
           },
           {
             "internalType": "address",
+            "name": "adminAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
             "name": "relayAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
             "type": "address"
           },
           {
@@ -151,38 +161,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "a",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "b",
-        "type": "address"
-      },
-      {
-        "indexed": false,
-        "internalType": "string",
-        "name": "c",
-        "type": "string"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "d",
-        "type": "uint256"
-      }
-    ],
-    "name": "Test",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       },
       {
@@ -218,7 +197,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -231,7 +210,7 @@
       {
         "indexed": true,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -263,7 +242,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       },
       {
@@ -286,229 +265,6 @@
         "type": "bytes32"
       }
     ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes[]",
-        "name": "proof",
-        "type": "bytes[]"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "el",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "uint256",
-        "name": "proofStart",
-        "type": "uint256"
-      }
-    ],
-    "name": "CalcReceiptsHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "bytes[]",
-            "name": "receipt_proof",
-            "type": "bytes[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "event_id",
-            "type": "uint256"
-          },
-          {
-            "components": [
-              {
-                "internalType": "address",
-                "name": "tokenAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "address",
-                "name": "toAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "uint256",
-                "name": "amount",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct CommonStructs.Transfer[]",
-            "name": "transfers",
-            "type": "tuple[]"
-          }
-        ],
-        "internalType": "struct CommonStructs.TransferProof",
-        "name": "p",
-        "type": "tuple"
-      },
-      {
-        "internalType": "address",
-        "name": "eventContractAddress",
-        "type": "address"
-      }
-    ],
-    "name": "CalcTransferReceiptsHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          {
-            "components": [
-              {
-                "internalType": "bytes",
-                "name": "p0WithNonce",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p0WithoutNonce",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p1",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "parentOrReceiptHash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p2",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "difficulty",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p3",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "number",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p4",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p5",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "nonce",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p6",
-                "type": "bytes"
-              },
-              {
-                "internalType": "uint256[]",
-                "name": "dataSetLookup",
-                "type": "uint256[]"
-              },
-              {
-                "internalType": "uint256[]",
-                "name": "witnessForLookup",
-                "type": "uint256[]"
-              }
-            ],
-            "internalType": "struct CheckPoW.BlockPoW[]",
-            "name": "blocks",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes[]",
-                "name": "receipt_proof",
-                "type": "bytes[]"
-              },
-              {
-                "internalType": "uint256",
-                "name": "event_id",
-                "type": "uint256"
-              },
-              {
-                "components": [
-                  {
-                    "internalType": "address",
-                    "name": "tokenAddress",
-                    "type": "address"
-                  },
-                  {
-                    "internalType": "address",
-                    "name": "toAddress",
-                    "type": "address"
-                  },
-                  {
-                    "internalType": "uint256",
-                    "name": "amount",
-                    "type": "uint256"
-                  }
-                ],
-                "internalType": "struct CommonStructs.Transfer[]",
-                "name": "transfers",
-                "type": "tuple[]"
-              }
-            ],
-            "internalType": "struct CommonStructs.TransferProof",
-            "name": "transfer",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct CheckPoW.PoWProof",
-        "name": "powProof",
-        "type": "tuple"
-      },
-      {
-        "internalType": "address",
-        "name": "sideBridgeAddress",
-        "type": "address"
-      }
-    ],
-    "name": "CheckPoW_",
-    "outputs": [],
     "stateMutability": "view",
     "type": "function"
   },
@@ -543,14 +299,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithoutNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes",
@@ -632,6 +388,64 @@
   {
     "inputs": [
       {
+        "components": [
+          {
+            "internalType": "bytes[]",
+            "name": "receiptProof",
+            "type": "bytes[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "eventId",
+            "type": "uint256"
+          },
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "toAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct CommonStructs.Transfer[]",
+            "name": "transfers",
+            "type": "tuple[]"
+          }
+        ],
+        "internalType": "struct CommonStructs.TransferProof",
+        "name": "p",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "eventContractAddress",
+        "type": "address"
+      }
+    ],
+    "name": "calcTransferReceiptsHashTest",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "fee_",
         "type": "uint256"
@@ -695,34 +509,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "tokenAmbAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "toAddress",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bool",
-        "name": "transferEvent",
-        "type": "bool"
-      }
-    ],
-    "name": "emitTestEvent",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "fee",
     "outputs": [
@@ -739,31 +525,93 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "event_id",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "index",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
     "name": "getLockedTransferTest",
     "outputs": [
       {
-        "internalType": "address",
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "toAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct CommonStructs.Transfer[]",
+            "name": "transfers",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.LockedTransfers",
         "name": "",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      },
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
+        "name": "eventId",
         "type": "uint256"
+      }
+    ],
+    "name": "getLockedTransfers",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "toAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct CommonStructs.Transfer[]",
+            "name": "transfers",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.LockedTransfers",
+        "name": "",
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -901,7 +749,7 @@
       },
       {
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -944,6 +792,19 @@
   },
   {
     "inputs": [],
+    "name": "oldestLockedEventId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "pause",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -966,7 +827,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -1072,14 +933,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0WithoutNonce",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes",
@@ -1150,12 +1011,12 @@
             "components": [
               {
                 "internalType": "bytes[]",
-                "name": "receipt_proof",
+                "name": "receiptProof",
                 "type": "bytes[]"
               },
               {
                 "internalType": "uint256",
-                "name": "event_id",
+                "name": "eventId",
                 "type": "uint256"
               },
               {
@@ -1191,7 +1052,7 @@
         "type": "tuple"
       }
     ],
-    "name": "submitTransfer",
+    "name": "submitTransferPoW",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1313,7 +1174,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "event_id",
+        "name": "eventId",
         "type": "uint256"
       }
     ],
@@ -1323,14 +1184,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "event_id",
-        "type": "uint256"
-      }
-    ],
-    "name": "unlockTransfersTest",
+    "inputs": [],
+    "name": "unlockTransfersBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1347,14 +1202,14 @@
       {
         "components": [
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
-            "internalType": "bytes",
+            "internalType": "bytes3",
             "name": "p0WithoutNonce",
-            "type": "bytes"
+            "type": "bytes3"
           },
           {
             "internalType": "bytes",
@@ -1422,7 +1277,7 @@
         "type": "tuple"
       }
     ],
-    "name": "verifyEthash",
+    "name": "verifyEthashTest",
     "outputs": [],
     "stateMutability": "view",
     "type": "function"
@@ -1431,7 +1286,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "tokenAmbAddress",
+        "name": "tokenThisAddress",
         "type": "address"
       },
       {
@@ -1443,11 +1298,46 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "unwrapSide",
+        "type": "bool"
       }
     ],
     "name": "withdraw",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "toAddress",
+        "type": "address"
+      }
+    ],
+    "name": "wrapWithdraw",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "wrapperAddress",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

@@ -1,6 +1,7 @@
 package eth
 
 import (
+	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -9,18 +10,17 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
-	"github.com/rs/zerolog/log"
 )
 
 func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
 	encodedBlock, err := splitBlock(header, isEventBlock)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("split block: %w", err)
 	}
 
 	encodedBlock.DataSetLookup, encodedBlock.WitnessForLookup, err = b.getLookupData(header)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("get lookup data: %w", err)
 	}
 
 	return encodedBlock, nil
@@ -37,12 +37,12 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 
 	rlpWithNonce, err := headerRlp(header, true)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp header with nonce: %w", err)
 	}
 
 	rlpWithoutNonce, err := headerRlp(header, false)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("rlp header without nonce: %w", err)
 	}
 
 	// rlpHeader length about 508 bytes => rlp prefix always 3 bytes length
@@ -66,12 +66,12 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 
 	split, err := helpers.BytesSplit(rlpHeader, splitEls)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("split rlp header: %w", err)
 	}
 
 	return &contracts.CheckPoWBlockPoW{
-		P0WithNonce:    p0WithNonce,
-		P0WithoutNonce: p0WithoutNonce,
+		P0WithNonce:    helpers.BytesToBytes3(p0WithNonce),
+		P0WithoutNonce: helpers.BytesToBytes3(p0WithoutNonce),
 
 		P1:                  split[0],
 		ParentOrReceiptHash: helpers.BytesToBytes32(splitEls[0]),
@@ -90,8 +90,7 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 func (b *Bridge) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
 	blockHeaderWithoutNonce, err := headerRlp(header, false)
 	if err != nil {
-		log.Error().Err(err).Msg("block header not encode")
-		return nil, nil, err
+		return nil, nil, fmt.Errorf("rlp header: %w", err)
 	}
 	hashWithoutNonce := helpers.BytesToBytes32(crypto.Keccak256(blockHeaderWithoutNonce))
 	return b.ethash.GetBlockLookups(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)

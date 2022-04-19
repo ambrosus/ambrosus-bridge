@@ -13,6 +13,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	parentHashPrefix = []byte{0xA0}
+	stepPrefix       = []byte{0x84}
+	signaturePrefix  = []byte{0xB8, 0x41}
+)
+
 func TestHeader(t *testing.T) {
 	ambBridge, err := New(&config.AMBConfig{
 		Network: config.Network{HttpURL: "https://network.ambrosus.io"},
@@ -62,10 +68,10 @@ func TestEncoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	rlpCommon := helpers.BytesConcat(block.P1, block.ParentHash[:], block.P2, block.ReceiptHash[:], block.P3)
+	rlpCommon := helpers.BytesConcat(parentHashPrefix, block.ParentHash[:], block.P2, block.ReceiptHash[:], block.P3)
 
 	// without seal
-	rlpWithoutSeal := helpers.BytesConcat(block.P0Bare, rlpCommon)
+	rlpWithoutSeal := helpers.BytesConcat(block.P0Bare[:], rlpCommon)
 	hashWithoutSeal := common.BytesToHash(mytrie.Hash(rlpWithoutSeal))
 
 	if hashWithoutSeal != h.Hash(false) {
@@ -73,7 +79,7 @@ func TestEncoding(t *testing.T) {
 	}
 
 	// with seal
-	rlpWithSeal := helpers.BytesConcat(block.P0Seal, rlpCommon, block.S1, block.Step, block.S2, block.Signature)
+	rlpWithSeal := helpers.BytesConcat(block.P0Seal[:], rlpCommon, stepPrefix, block.Step[:], signaturePrefix, block.Signature)
 	hashWithSeal := common.BytesToHash(mytrie.Hash(rlpWithSeal))
 
 	if hashWithSeal != h.Hash(true) {

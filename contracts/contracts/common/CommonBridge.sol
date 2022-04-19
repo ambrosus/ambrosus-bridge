@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./CommonStructs.sol";
-import "hardhat/console.sol";
+import "../tokens/IWrapper.sol";
 
 
 contract CommonBridge is AccessControl, Pausable {
@@ -16,12 +16,15 @@ contract CommonBridge is AccessControl, Pausable {
 
     // queue to be pushed in another network
     CommonStructs.Transfer[] queue;
+
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
+    uint public oldestLockedEventId = 1;  // head index of lockedTransfers 'queue' mapping
 
 
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
+    address public wrapperAddress;
 
     uint public fee;
     address payable feeRecipient;
@@ -31,24 +34,26 @@ contract CommonBridge is AccessControl, Pausable {
     uint public timeframeSeconds;
     uint public lockTime;
 
-    uint public inputEventId;
-    uint outputEventId;
+    uint public inputEventId; // last processed event from side network
+    uint outputEventId = 1;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, uint event_id, uint feeAmount);
-    event Transfer(uint indexed event_id, CommonStructs.Transfer[] queue);
-    event TransferFinish(uint indexed event_id);
-    event TransferSubmit(uint indexed event_id);
+    event Withdraw(address indexed from, uint eventId, uint feeAmount);
+    event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
+    event TransferSubmit(uint indexed eventId);
+    event TransferFinish(uint indexed eventId);
 
 
     constructor(CommonStructs.ConstructorArgs memory args)
     {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
+        _setupRole(ADMIN_ROLE, args.adminAddress);
 
         // initialise tokenAddresses with start values
         _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);
+        wrapperAddress = args.wrappingTokenAddress;
 
         sideBridgeAddress = args.sideBridgeAddress;
         fee = args.fee;
@@ -59,33 +64,45 @@ contract CommonBridge is AccessControl, Pausable {
     }
 
 
-    // todo remove
-    event Test(uint indexed a, address indexed b, string c, uint d);
-    function emitTestEvent(address tokenAmbAddress, address toAddress, uint amount, bool transferEvent) public {
-        emit Test(1, address(this), "asd", 123);
+    function wrapWithdraw(address toAddress) public payable {
+        address tokenSideAddress = tokenAddresses[wrapperAddress];
+        require(tokenSideAddress != address(0), "Unknown token address");
 
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        require(msg.value > fee, "Sent value < fee");
+        feeRecipient.transfer(fee);
+
+        uint restOfValue = msg.value - fee;
+        IWrapper(wrapperAddress).deposit{value : restOfValue}();
+
+        //
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
         emit Withdraw(msg.sender, outputEventId, fee);
 
-        if (transferEvent) {
-            emit Transfer(outputEventId++, queue);
-            delete queue;
-        }
-
-        emit Test(2, address(msg.sender), "dfg", 456);
+        withdraw_finish();
     }
 
+    function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
+        address tokenSideAddress;
+        if (unwrapSide) {
+            require(tokenAddresses[address(0)] == tokenThisAddress, "Token not point to native token");
+            // tokenSideAddress will be 0x0000000000000000000000000000000000000000 - for native token
+        } else {
+            tokenSideAddress = tokenAddresses[tokenThisAddress];
+            require(tokenSideAddress != address(0), "Unknown token address");
+        }
 
-
-
-    function withdraw(address tokenAmbAddress, address toAddress, uint amount) payable public {
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
-        require(IERC20(tokenAmbAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
-        queue.push(CommonStructs.Transfer(tokenAmbAddress, toAddress, amount));
+        require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
+
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, fee);
 
+        withdraw_finish();
+    }
+
+    function withdraw_finish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
             emit Transfer(outputEventId++, queue);
@@ -96,29 +113,71 @@ contract CommonBridge is AccessControl, Pausable {
     }
 
 
+    // locked transfers from another network
+    function getLockedTransfers(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[eventId];
+    }
 
 
+    function proceedTransfers(CommonStructs.Transfer[] memory transfers) internal {
+        for (uint i = 0; i < transfers.length; i++) {
 
+            if (transfers[i].tokenAddress == address(0)) {// native token
+                IWrapper(wrapperAddress).withdraw(transfers[i].amount);
+                payable(transfers[i].toAddress).transfer(transfers[i].amount);
+            } else {// ERC20 token
+                require(
+                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
+                    "Fail transfer coins");
+            }
 
-    function lockTransfers(CommonStructs.Transfer[] memory events, uint event_id) internal {
-        lockedTransfers[event_id].endTimestamp = block.timestamp + lockTime;
-        for (uint i = 0; i < events.length; i++) {
-            lockedTransfers[event_id].transfers.push(events[i]);
         }
     }
 
-    function unlockTransfers(uint event_id) public onlyRole(RELAY_ROLE) whenNotPaused {
-        CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[event_id];
+
+    // submitted transfers save here for `lockTime` period
+    function lockTransfers(CommonStructs.Transfer[] memory events, uint eventId) internal {
+        lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
+        for (uint i = 0; i < events.length; i++)
+            lockedTransfers[eventId].transfers.push(events[i]);
+    }
+
+    // after `lockTime` period, transfers can  be unlocked
+    function unlockTransfers(uint eventId) public whenNotPaused {
+        require(eventId == oldestLockedEventId, "can unlock only oldest event");
+
+        CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[eventId];
+        require(transfersLocked.endTimestamp > 0, "no locked transfers with this id");
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
+        proceedTransfers(transfersLocked.transfers);
 
-        for (uint i = 0; i < transfers.length; i++) {
-            require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
+        delete lockedTransfers[eventId];
+        emit TransferFinish(eventId);
+
+        oldestLockedEventId = eventId + 1;
+    }
+
+    // optimized version of unlockTransfers that unlock all transfer that can be unlocked in one call
+    function unlockTransfersBatch() public whenNotPaused {
+        uint eventId = oldestLockedEventId;
+        for (;; eventId++) {
+            CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[eventId];
+            if (transfersLocked.endTimestamp == 0 || transfersLocked.endTimestamp > block.timestamp) break;
+
+            proceedTransfers(transfersLocked.transfers);
+
+            delete lockedTransfers[eventId];
+            emit TransferFinish(eventId);
         }
-        emit TransferFinish(event_id);
+        oldestLockedEventId = eventId;
+    }
 
-        delete lockedTransfers[event_id];
+    // delete transfers with passed eventId and all after it
+    function removeLockedTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
+        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
+        for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
+            delete lockedTransfers[eventId];
     }
 
 
@@ -182,13 +241,12 @@ contract CommonBridge is AccessControl, Pausable {
         _unpause();
     }
 
-    function removeLockedTransfers(uint event_id) public onlyRole(ADMIN_ROLE) whenPaused {
-        delete lockedTransfers[event_id];
-    }
-
     // internal
 
-    function checkEventId(uint event_id) internal {
-        require(event_id == ++inputEventId, "EventId out of order");
+    function checkEventId(uint eventId) internal {
+        require(eventId == ++inputEventId, "EventId out of order");
     }
+
+    receive() external payable {}  // need to receive native token from wrapper contract
+
 }
