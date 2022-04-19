@@ -105,7 +105,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*c.CheckAuraBlockAura, e
 		}
 
 		// block in which VS will be finalized
-		if err := b.saveBlock(event.Raw.BlockNumber+1, blocks); err != nil {
+		if err := b.saveBlock(event.Raw.BlockNumber+2, blocks); err != nil {
 			return nil, err
 		}
 
