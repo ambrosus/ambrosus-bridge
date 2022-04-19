@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x32fac62b1196E03Ed3644a40DbFbe5728e31599A",
-      "side": "0xf9427deDdAa899d388db70c0Fb4dA84A06976C85"
+      "amb": "0xbE9dF3849853D47C1a4cAba6C14c163E295F6093",
+      "side": "0x37A715513f6DdEb9db9235f82dd823f5923791C4"
     },
     "bsc": {
       "amb": "",
