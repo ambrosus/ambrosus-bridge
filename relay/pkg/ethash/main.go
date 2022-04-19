@@ -1,6 +1,7 @@
 package ethash
 
 import (
+	"errors"
 	"fmt"
 	"math/big"
 	"os"
@@ -101,7 +102,10 @@ func (e *Ethash) UpdateCache(currentEpoch uint64) {
 
 		go func() {
 			for i := uint64(0); i < e.genNextEpochs; i++ {
-				_, _ = e.getDag(currentEpoch + i + 1)
+				if _, err := os.Stat(e.pathToDag(currentEpoch + i + 1)); errors.Is(err, os.ErrNotExist) {
+					_, _ = e.getDag(currentEpoch + i + 1)
+					delete(e.dags, currentEpoch+i+1) // we need to keep in memory only the current epoch's DAG
+				}
 			}
 		}()
 	}
