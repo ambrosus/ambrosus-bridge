@@ -79,6 +79,4 @@ func testEncodeBlock(t *testing.T, block *types.Block) {
 
 	assert.Equal(t, expectedRlpWithNonce, rlpWithNonce)
 	assert.Equal(t, expectedRlpWithoutNonce, rlpWithoutNonce)
-
-	// todo check ethash?
 }

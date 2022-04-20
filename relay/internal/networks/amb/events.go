@@ -13,7 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// todo name
 func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
 	// populated by functions below
 	blocksMap := make(map[uint64]*c.CheckAuraBlockAura)
