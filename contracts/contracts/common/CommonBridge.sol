@@ -39,7 +39,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, uint eventId, uint feeAmount);
+    event Withdraw(address indexed from, address tokenFrom, address tokentTo, uint eventId, uint feeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
@@ -76,7 +76,7 @@ contract CommonBridge is AccessControl, Pausable {
 
         //
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, outputEventId, fee);
+        emit Withdraw(msg.sender, wrapperAddress, tokenSideAddress, outputEventId, fee);
 
         withdraw_finish();
     }
@@ -97,7 +97,7 @@ contract CommonBridge is AccessControl, Pausable {
         require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId, fee);
+        emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
 
         withdraw_finish();
     }

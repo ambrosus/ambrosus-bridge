@@ -241,6 +241,18 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "tokenFrom",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "tokentTo",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "eventId",
         "type": "uint256"

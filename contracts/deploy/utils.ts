@@ -47,7 +47,7 @@ function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): {
       tokensPair[token.addresses[thisNet]] = token.addresses[sideNet];
 
     if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
-      tokensPair[ethers.constants.AddressZero] = token.addresses[sideNet];
+      tokensPair[ethers.constants.AddressZero] = token.addresses[thisNet];
 
   }
 
