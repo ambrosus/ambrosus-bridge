@@ -110,8 +110,13 @@ contract CheckAura is CheckReceiptsProof {
         }
         else {
             uint index = uint(int((vsEvent.deltaIndex)));
-            validatorSet.push(validatorSet[index]);
-            validatorSet[index] = vsEvent.deltaAddress;
+
+            // logic if validatorSet contract will be updated
+            // validatorSet.push(validatorSet[index]);
+            // validatorSet[index] = vsEvent.deltaAddress;
+
+            // old (current) validatorSet contract logic
+            validatorSet.push(vsEvent.deltaAddress);
         }
     }
 
