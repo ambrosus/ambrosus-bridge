@@ -83,7 +83,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	ambTransfer, err := b.getBlocksAndEvents(event, safetyBlocks)
+	powProof, err := b.getBlocksAndEvents(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
@@ -95,7 +95,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	}
 
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
-	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
+	err = b.sideBridge.SubmitTransferPoW(powProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
 	}
