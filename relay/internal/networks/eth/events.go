@@ -29,7 +29,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 			return nil, fmt.Errorf("BlockByNumber: %w", err)
 		}
 
-		b.Logger.Debug().Msgf("Encoding block %d...", targetBlock.NumberU64())
+		b.Logger.Debug().Msgf("Encoding block %d... (%d/%d)", targetBlock.NumberU64(), i, safetyBlocks)
 		encodedBlock, err := b.EncodeBlock(targetBlock.Header(), i == 0)
 		if err != nil {
 			return nil, fmt.Errorf("EncodeBlock: %w", err)
