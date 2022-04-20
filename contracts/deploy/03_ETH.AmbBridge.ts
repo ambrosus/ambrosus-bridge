@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const path = configPath(hre.network);
   let configFile = readConfig(path);
 
-  const {owner} = await hre.getNamedAccounts();
+  const {owner, proxyAdmin} = await hre.getNamedAccounts();
   // todo get admin and relay from getNamedAccounts
   const admin = owner;
   const relay = owner;
@@ -29,7 +29,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: owner,
     proxy: {
       proxyContract: "proxyTransparent",
-      viaAdminContract: "proxyAdmin",
       execute: {
         init: {
           methodName: "initialize",
@@ -57,6 +56,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   writeConfig(path, configFile);
 
   if (deployResult.newlyDeployed) {
+    await hre.deployments.execute("AmbBridge", {from: owner, log: true}, 'changeAdmin', proxyAdmin);
+
     console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
     return;
   }

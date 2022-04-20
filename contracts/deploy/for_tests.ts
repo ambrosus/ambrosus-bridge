@@ -4,8 +4,7 @@ import {ethers} from "hardhat";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name !== "hardhat") return;
-  const {owner} = await hre.getNamedAccounts();
-
+  const {owner, proxyAdmin} = await hre.getNamedAccounts();
 
   const {address: mockAddr} = await hre.deployments.deploy("BridgeERC20Test", {
     contract: "BridgeERC20Test",
@@ -49,7 +48,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     from: owner,
     proxy: {
       proxyContract: "proxyTransparent",
-      viaAdminContract: "proxyAdmin",
+      // viaAdminContract: "proxyAdmin",
       execute: {
         init: {
           methodName: "initialize_",
@@ -59,6 +58,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     },
     log: true,
   });
+  await hre.deployments.execute("AmbBridgeTest", {from: owner, log: true}, 'changeAdmin', proxyAdmin);
 
   await hre.deployments.deploy("EthBridgeTest", {
     contract: "EthBridgeTest",

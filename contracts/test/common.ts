@@ -19,9 +19,11 @@ describe("Common tests", () => {
   let ownerS: Signer;
   let relayS: Signer;
   let userS: Signer;
+  let proxyAdminS: Signer;
   let owner: string;
   let relay: string;
   let user: string;
+  let proxyAdmin: string;
 
 
   let commonBridge: Contract;
@@ -33,10 +35,11 @@ describe("Common tests", () => {
 
   before(async () => {
     await deployments.fixture(["for_tests"]);
-    ({owner, relay, user} = await getNamedAccounts());
+    ({owner, relay, user, proxyAdmin} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
     userS = await ethers.getSigner(user);
+    proxyAdminS = await ethers.getSigner(proxyAdmin);
 
     commonBridge = await ethers.getContract("CommonBridgeTest", ownerS);
     ambBridge = await ethers.getContract("AmbBridgeTest", ownerS);
@@ -66,6 +69,12 @@ describe("Common tests", () => {
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
   });
 
+  describe("Test Proxy", async () => {
+    it("ChangeAdmin check",async () => {
+      await ambBridge.connect(proxyAdminS).changeAdmin(user);
+      expect(await ambBridge.connect(userS).callStatic.admin()).eq(user);
+    })
+  });
 
   describe("Test Withdraw", async () => {
     it("token balance changed", async () => {
@@ -299,8 +308,6 @@ describe("Common tests", () => {
     expect(await ambBridge.calcTransferReceiptsHashTest(transferProof, sideBridgeAddress))
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
-
-
 });
 
 
