@@ -5,20 +5,19 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
+func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
 	encodedBlock, err := splitBlock(header, isEventBlock)
 	if err != nil {
 		return nil, fmt.Errorf("split block: %w", err)
 	}
 
-	encodedBlock.DataSetLookup, encodedBlock.WitnessForLookup, err = getLookupData(header)
+	encodedBlock.DataSetLookup, encodedBlock.WitnessForLookup, err = b.getLookupData(header)
 	if err != nil {
 		return nil, fmt.Errorf("get lookup data: %w", err)
 	}
@@ -94,19 +93,13 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 
 }
 
-func getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
+func (b *Bridge) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
 	blockHeaderWithoutNonce, err := headerRlp(header, false)
 	if err != nil {
 		return nil, nil, fmt.Errorf("rlp header: %w", err)
 	}
 	hashWithoutNonce := helpers.BytesToBytes32(crypto.Keccak256(blockHeaderWithoutNonce))
-
-	blockMetaData := ethash.NewBlockMetaData(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)
-
-	dataSetLookUp := blockMetaData.DAGElementArray()
-	witnessForLookup := blockMetaData.DAGProofArray()
-
-	return dataSetLookUp, witnessForLookup, nil
+	return b.ethash.GetBlockLookups(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)
 }
 
 func headerRlp(header *types.Header, withNonce bool) ([]byte, error) {

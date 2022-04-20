@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -22,6 +23,7 @@ type Bridge struct {
 	nc.CommonBridge
 	Config     *config.ETHConfig
 	sideBridge networks.BridgeReceiveEthash
+	ethash     *ethash.Ethash
 }
 
 // New creates a new ethereum bridge.
@@ -35,6 +37,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	b := &Bridge{
 		CommonBridge: commonBridge,
 		Config:       cfg,
+		ethash:       ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs),
 	}
 	b.CommonBridge.Bridge = b
 	return b, nil
@@ -46,16 +49,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
-	// Getting last ethereum block number.
-	blockNumber, err := b.Client.BlockNumber(context.Background())
-	if err != nil {
-		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
-	}
-
-	// Checking epoch data dir.
-	if err = b.checkEpochDataDir(blockNumber/30000, b.Config.EpochLength); err != nil {
-		b.Logger.Error().Msgf("error checking epoch data dir: %s", err.Error())
-	}
+	b.ensureDAGsExists()
 
 	go b.UnlockOldestTransfersLoop()
 	go b.WatchValidityLockedTransfersLoop()
@@ -144,7 +138,7 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	}
 
 	b.Logger.Info().Str("event_id", eventId.String()).Msg("Submit epoch data...")
-	epochData, err := b.loadEpochDataFile(epoch)
+	epochData, err := b.ethash.GetEpochData(epoch)
 	if err != nil {
 		return fmt.Errorf("loadEpochDataFile: %w", err)
 	}
@@ -155,6 +149,20 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	}
 	return nil
 	// todo delete old epochs, generate new (if need)
+}
+
+func (b *Bridge) ensureDAGsExists() {
+	b.Logger.Info().Msgf("Checking if DAG file exists...")
+
+	// Getting last ethereum block number.
+	blockNumber, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
+		return
+	}
+
+	// This func will generate DAG if it doesn't exist yet
+	go b.ethash.GenDagForEpoch(blockNumber / 30000)
 }
 
 func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {

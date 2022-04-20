@@ -166,7 +166,7 @@ func encodePoWBlock() error {
 		return err
 	}
 
-	bd, err := eth.EncodeBlock(block.Header(), true)
+	bd, err := bridge.EncodeBlock(block.Header(), true)
 	if err != nil {
 		return err
 	}
@@ -229,7 +229,8 @@ func generateEpochData() error {
 		return err
 	}
 
-	ed, err := ethash.GenerateEpochData(uint64(number))
+	ethash_ := ethash.New("", 0, 0)
+	ed, err := ethash_.GetEpochData(uint64(number))
 	if err != nil {
 		return err
 	}
