@@ -28,6 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployResult = await hre.deployments.deploy("AmbBridge", {
     from: owner,
     proxy: {
+      owner: proxyAdmin,
       proxyContract: "proxyTransparent",
       execute: {
         init: {
@@ -49,15 +50,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       }
     },
     log: true,
-    skipIfAlreadyDeployed: true
   });
 
   configFile.bridges.eth.amb = deployResult.address;
   writeConfig(path, configFile);
 
   if (deployResult.newlyDeployed) {
-    await hre.deployments.execute("AmbBridge", {from: owner, log: true}, 'changeAdmin', proxyAdmin);
-
     console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
     return;
   }
@@ -78,7 +76,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, "AmbBridge");
-
 };
 
 export default func;

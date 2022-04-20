@@ -38,6 +38,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     contract: "EthBridge",
     from: owner,
     proxy: {
+      owner: proxyAdmin,
       proxyContract: "proxyTransparent",
       execute: {
         init: {
@@ -63,8 +64,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         }
       }
     },
-    log: true,
-    skipIfAlreadyDeployed: true
+    log: true
   });
 
 
@@ -72,15 +72,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   writeConfig(path, configFile);
 
   if (deployResult.newlyDeployed) {
-    await hre.deployments.execute("EthBridge", {from: owner, log: true}, 'changeAdmin', proxyAdmin);
-
     console.log('Call this cmd second time to update tokens')
     return;
   }
 
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, "EthBridge");
-
 };
 
 
