@@ -81,7 +81,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	ambTransfer, err := b.getBlocksAndEvents(event)
+	ambTransfer, err := b.getBlocksAndEvents(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
