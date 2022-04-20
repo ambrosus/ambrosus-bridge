@@ -24,6 +24,7 @@ import (
 	"io"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/rlp"
 )
@@ -341,10 +342,8 @@ func (st *ModifiedStackTrie) hash() {
 	if st.NodeType == hashedNode {
 		return
 	}
-	// The 'Hasher' is taken from a pool, but we don't actually
-	// claim an instance until all Children are done with their hashing,
-	// and we actually need one
-	h := NewHasher()
+
+	buf := new(bytes.Buffer)
 
 	switch st.NodeType {
 	case emptyNode:
@@ -362,7 +361,7 @@ func (st *ModifiedStackTrie) hash() {
 			}
 		}
 		nodes[16] = nil
-		if err := rlp.Encode(&h.tmp, nodes); err != nil {
+		if err := rlp.Encode(buf, nodes); err != nil {
 			panic(err)
 		}
 
@@ -370,7 +369,7 @@ func (st *ModifiedStackTrie) hash() {
 		st.Children[0].hash()
 		n := extNodeStruct{hexToCompact(st.Key), st.Children[0].Val}
 
-		if err := rlp.Encode(&h.tmp, n); err != nil {
+		if err := rlp.Encode(buf, n); err != nil {
 			panic(err)
 		}
 
@@ -380,7 +379,7 @@ func (st *ModifiedStackTrie) hash() {
 		sz := hexToCompactInPlace(st.Key)
 		n := [][]byte{st.Key[:sz], st.Val}
 
-		if err := rlp.Encode(&h.tmp, n); err != nil {
+		if err := rlp.Encode(buf, n); err != nil {
 			panic(err)
 		}
 
@@ -392,13 +391,13 @@ func (st *ModifiedStackTrie) hash() {
 	st.NodeType = hashedNode
 
 	// new
-	st.UnhashedVal = common.CopyBytes(h.tmp)
+	st.UnhashedVal = buf.Bytes()
 
-	if len(h.tmp) > 32 {
-		st.Val = h.HashTmp()
+	if buf.Len() > 32 {
+		st.Val = crypto.Keccak256(buf.Bytes())
 		return
 	}
-	st.Val = common.CopyBytes(h.tmp)
+	st.Val = buf.Bytes()
 
 }
 
@@ -409,8 +408,7 @@ func (st *ModifiedStackTrie) Hash() (h common.Hash) {
 		// If the node's RLP isn't 32 bytes long, the node will not
 		// be hashed, and instead contain the  rlp-encoding of the
 		// node. For the top level node, we need to force the hashing.
-		h := NewHasher()
-		return common.BytesToHash(h.Hash(st.Val))
+		return common.BytesToHash(crypto.Keccak256(st.Val))
 	}
 	return common.BytesToHash(st.Val)
 }
