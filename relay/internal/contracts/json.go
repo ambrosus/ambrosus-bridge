@@ -130,9 +130,9 @@ func (t *CheckPoWBlockPoW) MarshalJSON() ([]byte, error) {
 
 	tm := PoWBlockPoW{
 		t.P0WithNonce[:], t.P0WithoutNonce[:],
-		t.P1, t.ParentOrReceiptHash[:], t.P2, t.Difficulty[:], t.P3, t.Number[:], t.P4,
-		t.P5, t.Nonce[:],
-		t.P6,
+		t.P1, t.ParentOrReceiptHash[:], t.P2,
+		t.Difficulty, t.P3, t.Number, t.P4,
+		t.P5, t.Nonce, t.P6,
 		dslookup, wflookup,
 	}
 	return json.Marshal(&tm)

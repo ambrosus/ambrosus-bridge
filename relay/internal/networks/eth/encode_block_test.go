@@ -45,7 +45,7 @@ func testEncodeBlock(t *testing.T, block *types.Block) {
 	rlpWithoutNonce := helpers.BytesConcat(
 		b.P0WithoutNonce[:],
 		b.P1, b.ParentOrReceiptHash[:],
-		b.P2, b.Difficulty[:],
+		b.P2, b.Difficulty,
 		b.P3, b.Number,
 		b.P4,
 		// here was nonce
@@ -54,7 +54,7 @@ func testEncodeBlock(t *testing.T, block *types.Block) {
 	rlpWithNonce := helpers.BytesConcat(
 		b.P0WithNonce[:],
 		b.P1, b.ParentOrReceiptHash[:],
-		b.P2, b.Difficulty[:],
+		b.P2, b.Difficulty,
 		b.P3, b.Number,
 		b.P4, b.P5,
 		b.Nonce, b.P6,

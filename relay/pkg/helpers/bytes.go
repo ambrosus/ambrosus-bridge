@@ -27,16 +27,16 @@ func BytesSplit(input []byte, seps [][]byte) ([][]byte, error) {
 }
 
 func BytesToBytes32(bytes []byte) (bytes32 [32]byte) {
-	copy(bytes32[:], bytes[:])
+	copy(bytes32[:], bytes)
 	return
 }
 
 func BytesToBytes3(bytes []byte) (bytes32 [3]byte) {
-	copy(bytes32[:], bytes[:])
+	copy(bytes32[:], bytes)
 	return
 }
 func BytesToBytes4(bytes []byte) (bytes32 [4]byte) {
-	copy(bytes32[:], bytes[:])
+	copy(bytes32[:], bytes)
 	return
 }
 

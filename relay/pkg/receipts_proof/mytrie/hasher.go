@@ -35,9 +35,8 @@ func (b *sliceBuffer) Reset() {
 // Hasher is a type used for the trie Hash operation. A Hasher has some
 // internal preallocated temp space
 type Hasher struct {
-	sha      crypto.KeccakState
-	tmp      sliceBuffer
-	parallel bool // Whether to use paralallel threads when hashing
+	sha crypto.KeccakState
+	tmp sliceBuffer
 }
 
 func NewHasher() *Hasher {
