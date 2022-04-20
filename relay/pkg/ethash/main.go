@@ -55,6 +55,10 @@ type EpochData struct {
 	MerkleNodes             []*big.Int
 }
 
+func (e *Ethash) GenDagForEpoch(epoch uint64) {
+	e.getDag(epoch)
+}
+
 func (e *Ethash) GetEpochData(epoch uint64) (*EpochData, error) {
 	defer e.UpdateCache(epoch)
 
