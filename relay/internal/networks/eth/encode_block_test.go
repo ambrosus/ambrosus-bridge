@@ -7,10 +7,9 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof/mytrie"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/stretchr/testify/assert"
 )
@@ -71,8 +70,8 @@ func testEncodeBlock(t *testing.T, block *types.Block) {
 		t.Fatal(err)
 	}
 
-	hash := common.BytesToHash(mytrie.Hash(rlpWithNonce))
-	hashTest := common.BytesToHash(mytrie.Hash(expectedRlpWithNonce))
+	hash := common.BytesToHash(crypto.Keccak256(rlpWithNonce))
+	hashTest := common.BytesToHash(crypto.Keccak256(expectedRlpWithNonce))
 
 	assert.Equal(t, block.Hash(), hashTest) // =>  expectedRlpWithNonce ok
 	assert.Equal(t, block.Hash(), hash)     // =>  rlpWithNonce ok

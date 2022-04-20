@@ -7,7 +7,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof/mytrie"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
@@ -72,7 +72,7 @@ func TestEncoding(t *testing.T) {
 
 	// without seal
 	rlpWithoutSeal := helpers.BytesConcat(block.P0Bare[:], rlpCommon)
-	hashWithoutSeal := common.BytesToHash(mytrie.Hash(rlpWithoutSeal))
+	hashWithoutSeal := common.BytesToHash(crypto.Keccak256(rlpWithoutSeal))
 
 	if hashWithoutSeal != h.Hash(false) {
 		t.Fatalf("wrong bare hash")
@@ -80,7 +80,7 @@ func TestEncoding(t *testing.T) {
 
 	// with seal
 	rlpWithSeal := helpers.BytesConcat(block.P0Seal[:], rlpCommon, stepPrefix, block.Step[:], signaturePrefix, block.Signature)
-	hashWithSeal := common.BytesToHash(mytrie.Hash(rlpWithSeal))
+	hashWithSeal := common.BytesToHash(crypto.Keccak256(rlpWithSeal))
 
 	if hashWithSeal != h.Hash(true) {
 		t.Fatalf("wrong seal hash")

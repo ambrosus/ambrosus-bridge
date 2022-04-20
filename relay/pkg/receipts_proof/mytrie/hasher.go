@@ -60,11 +60,3 @@ func (h *Hasher) Hash(v []byte) []byte {
 	h.sha.Read(buf)
 	return buf
 }
-
-func Hash(v []byte) []byte {
-	sha := sha3.NewLegacyKeccak256().(crypto.KeccakState)
-	buf := make([]byte, 32)
-	sha.Write(v)
-	sha.Read(buf)
-	return buf
-}
