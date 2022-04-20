@@ -3,12 +3,10 @@ package amb
 import (
 	"context"
 	"fmt"
-	"math"
 	"math/big"
 	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -107,7 +105,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*c.CheckAuraBlockAura, e
 		}
 
 		// block in which VS will be finalized
-		if err := b.saveBlock(event.Raw.BlockNumber+1, blocks); err != nil {
+		if err := b.saveBlock(event.Raw.BlockNumber+2, blocks); err != nil {
 			return nil, err
 		}
 
@@ -181,7 +179,7 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer) ([]*c.VsInitiateCh
 }
 
 func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := ethereum.GetReceipts(b.Client, event.Log().BlockHash)
+	receipts, err := b.GetReceipts(event.Log().BlockHash)
 	if err != nil {
 		return nil, fmt.Errorf("GetReceipts: %w", err)
 	}
@@ -222,7 +220,7 @@ func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	d := len(curr) - len(prev)
-	if math.Abs(float64(d)) != 1 {
+	if d != 1 && d != -1 {
 		return common.Address{}, 0, fmt.Errorf("delta has more (or less) than 1 change")
 	}
 
@@ -240,7 +238,11 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 		}
 	}
 
-	return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
+	// add at the end
+	i := len(curr) - 1
+	return curr[i], int64(i), nil
+
+	//return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }
 
 // used for 'ordered' map

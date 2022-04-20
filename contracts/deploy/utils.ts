@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {ethers} from "ethers";
 
 
 interface Token {
@@ -9,6 +10,7 @@ interface Token {
   denomination: number;
   addresses: { [net: string]: string }
   primaryNet: string;
+  nativeAnalog: string | null;
 }
 
 interface Config {
@@ -39,10 +41,16 @@ export function getTokenPairs(thisNet: string, sideNet: string, network: any): {
 function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
   const tokensPair: { [k: string]: string } = {};
 
-  for (const tokenThis of Object.values(configFile.tokens)) {
-    if (!tokenThis.addresses[thisNet] || !tokenThis.addresses[sideNet]) continue;
-    tokensPair[tokenThis.addresses[thisNet]] = tokenThis.addresses[sideNet];
+  for (const token of Object.values(configFile.tokens)) {
+
+    if (token.addresses[thisNet] && token.addresses[sideNet])
+      tokensPair[token.addresses[thisNet]] = token.addresses[sideNet];
+
+    if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
+      tokensPair[ethers.constants.AddressZero] = token.addresses[thisNet];
+
   }
+
   return tokensPair;
 }
 

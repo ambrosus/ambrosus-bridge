@@ -7,6 +7,8 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
+// common
+
 func (t *CommonStructsTransfer) MarshalJSON() ([]byte, error) {
 	type Transfer struct {
 		TokenAddress common.Address `json:"tokenAddress"`
@@ -17,12 +19,10 @@ func (t *CommonStructsTransfer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tm)
 }
 
-// todo maybe create `type ReceiptProof []hexutil.Bytes`
-
 func (t *CommonStructsTransferProof) MarshalJSON() ([]byte, error) {
 	type TransferProof struct {
-		ReceiptProof []hexutil.Bytes         `json:"receipt_proof"`
-		EventId      *hexutil.Big            `json:"event_id"`
+		ReceiptProof []hexutil.Bytes         `json:"receiptProof"`
+		EventId      *hexutil.Big            `json:"eventId"`
 		Transfers    []CommonStructsTransfer `json:"transfers"`
 	}
 	rp := make([]hexutil.Bytes, len(t.ReceiptProof))
@@ -33,22 +33,35 @@ func (t *CommonStructsTransferProof) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tm)
 }
 
+// AURA
+
+func (t *CheckAuraAuraProof) MarshalJSON() ([]byte, error) {
+	type CheckAuraAuraProof struct {
+		Blocks             []CheckAuraBlockAura         `json:"blocks"`
+		Transfer           CommonStructsTransferProof   `json:"transfer"`
+		VsChanges          []CheckAuraValidatorSetProof `json:"vsChanges"`
+		TransferEventBlock uint64                       `json:"transferEventBlock"`
+	}
+	tm := CheckAuraAuraProof{t.Blocks, t.Transfer, t.VsChanges, t.TransferEventBlock}
+	return json.Marshal(&tm)
+}
+
 func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 	type AuraBlockAura struct {
-		P0Seal hexutil.Bytes `json:"p0_seal"`
-		P0Bare hexutil.Bytes `json:"p0_bare"`
+		P0Seal hexutil.Bytes `json:"p0Seal"`
+		P0Bare hexutil.Bytes `json:"p0Bare"`
 
 		// common (for bare and seal headers) part
-		ParentHash  hexutil.Bytes `json:"parent_hash"`
+		ParentHash  hexutil.Bytes `json:"parentHash"`
 		P2          hexutil.Bytes `json:"p2"`
-		ReceiptHash hexutil.Bytes `json:"receipt_hash"`
+		ReceiptHash hexutil.Bytes `json:"receiptHash"`
 		P3          hexutil.Bytes `json:"p3"`
 
 		// seal part
 		Step      hexutil.Bytes `json:"step"`
 		Signature hexutil.Bytes `json:"signature"`
 
-		FinalizedVs uint64 `json:"finalized_vs"`
+		FinalizedVs uint64 `json:"finalizedVs"`
 	}
 	tm := AuraBlockAura{
 		t.P0Seal[:], t.P0Bare[:],
@@ -61,9 +74,9 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 
 func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
 	type ValidatorSetProof struct {
-		ReceiptProof []hexutil.Bytes `json:"receipt_proof"`
-		DeltaAddress common.Address  `json:"delta_address"`
-		DeltaIndex   int64           `json:"delta_index"`
+		ReceiptProof []hexutil.Bytes `json:"receiptProof"`
+		DeltaAddress common.Address  `json:"deltaAddress"`
+		DeltaIndex   int64           `json:"deltaIndex"`
 	}
 	rp := make([]hexutil.Bytes, len(t.ReceiptProof))
 	for i, v := range t.ReceiptProof {
@@ -71,6 +84,18 @@ func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
 	}
 	tm := ValidatorSetProof{rp, t.DeltaAddress, t.DeltaIndex}
 	return json.Marshal(&tm)
+}
+
+// POW
+
+func (t *CheckPoWPoWProof) MarshalJSON() ([]byte, error) {
+	type CheckPoWPoWProof struct {
+		Blocks   []CheckPoWBlockPoW         `json:"blocks"`
+		Transfer CommonStructsTransferProof `json:"transfer"`
+	}
+	tm := CheckPoWPoWProof{t.Blocks, t.Transfer}
+	return json.Marshal(&tm)
+
 }
 
 func (t *CheckPoWBlockPoW) MarshalJSON() ([]byte, error) {

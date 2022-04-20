@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethereum"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 )
 
@@ -30,8 +29,8 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*c
 			return nil, fmt.Errorf("BlockByNumber: %w", err)
 		}
 
-		b.Logger.Debug().Msgf("Encoding block %d...", targetBlock.NumberU64())
-		encodedBlock, err := EncodeBlock(targetBlock.Header(), i == 0)
+		b.Logger.Debug().Msgf("Encoding block %d... (%d/%d)", targetBlock.NumberU64(), i, safetyBlocks)
+		encodedBlock, err := b.EncodeBlock(targetBlock.Header(), i == 0)
 		if err != nil {
 			return nil, fmt.Errorf("EncodeBlock: %w", err)
 		}
@@ -59,7 +58,7 @@ func (b *Bridge) encodeTransferEvent(event *contracts.BridgeTransfer) (*contract
 }
 
 func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := ethereum.GetReceipts(b.Client, event.Log().BlockHash)
+	receipts, err := b.GetReceipts(event.Log().BlockHash)
 	if err != nil {
 		return nil, fmt.Errorf("GetReceipts: %w", err)
 	}

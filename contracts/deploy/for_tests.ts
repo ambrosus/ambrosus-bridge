@@ -30,16 +30,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     adminAddress: ethers.constants.AddressZero,
     relayAddress: ethers.constants.AddressZero,
     wrappingTokenAddress: wrapperAddr,
-    tokenThisAddresses: [
-      wrapperAddr,
-      mockAddr,
-      "0x0000000000000000000000000000000000000001",
-    ],
-    tokenSideAddresses: [
-      mockAddr,
-      wrapperAddr,
-      "0x0000000000000000000000000000000000000002",
-    ],
+    tokenThisAddresses: [],
+    tokenSideAddresses: [],
     fee: 1000,
     feeRecipient: ethers.constants.AddressZero,
     timeframeSeconds: 14400,

@@ -41,7 +41,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, uint eventId, uint feeAmount);
+    event Withdraw(address indexed from, address tokenFrom, address tokentTo, uint eventId, uint feeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
@@ -67,26 +67,32 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
 
-    function wrap_withdraw(address toAddress) public payable {
+    function wrapWithdraw(address toAddress) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
-        require(msg.value > fee, "msg.value can't be lesser than fee");
+        require(msg.value > fee, "Sent value < fee");
         feeRecipient.transfer(fee);
 
         uint restOfValue = msg.value - fee;
-        IWrapper(wrapperAddress).deposit{value: restOfValue}();
+        IWrapper(wrapperAddress).deposit{value : restOfValue}();
 
         //
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, outputEventId, fee);
+        emit Withdraw(msg.sender, wrapperAddress, tokenSideAddress, outputEventId, fee);
 
         withdraw_finish();
     }
 
-    function withdraw(address tokenThisAddress, address toAddress, uint amount) payable public {
-        address tokenSideAddress = tokenAddresses[tokenThisAddress];
-        require(tokenSideAddress != address(0), "Unknown token address");
+    function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
+        address tokenSideAddress;
+        if (unwrapSide) {
+            require(tokenAddresses[address(0)] == tokenThisAddress, "Token not point to native token");
+            // tokenSideAddress will be 0x0000000000000000000000000000000000000000 - for native token
+        } else {
+            tokenSideAddress = tokenAddresses[tokenThisAddress];
+            require(tokenSideAddress != address(0), "Unknown token address");
+        }
 
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
@@ -94,7 +100,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId, fee);
+        emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
 
         withdraw_finish();
     }
@@ -111,6 +117,26 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
 
     // locked transfers from another network
+    function getLockedTransfers(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[eventId];
+    }
+
+
+    function proceedTransfers(CommonStructs.Transfer[] memory transfers) internal {
+        for (uint i = 0; i < transfers.length; i++) {
+
+            if (transfers[i].tokenAddress == address(0)) {// native token
+                IWrapper(wrapperAddress).withdraw(transfers[i].amount);
+                payable(transfers[i].toAddress).transfer(transfers[i].amount);
+            } else {// ERC20 token
+                require(
+                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
+                    "Fail transfer coins");
+            }
+
+        }
+    }
+
 
     // submitted transfers save here for `lockTime` period
     function lockTransfers(CommonStructs.Transfer[] memory events, uint eventId) internal {
@@ -127,14 +153,12 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(transfersLocked.endTimestamp > 0, "no locked transfers with this id");
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
-        for (uint i = 0; i < transfers.length; i++)
-            require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
+        proceedTransfers(transfersLocked.transfers);
 
         delete lockedTransfers[eventId];
         emit TransferFinish(eventId);
 
-        oldestLockedEventId = eventId+1;
+        oldestLockedEventId = eventId + 1;
     }
 
     // optimized version of unlockTransfers that unlock all transfer that can be unlocked in one call
@@ -144,9 +168,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[eventId];
             if (transfersLocked.endTimestamp == 0 || transfersLocked.endTimestamp > block.timestamp) break;
 
-            CommonStructs.Transfer[] memory transfers = transfersLocked.transfers;
-            for (uint i = 0; i < transfers.length; i++)
-                require(IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount), "Fail transfer coins");
+            proceedTransfers(transfersLocked.transfers);
 
             delete lockedTransfers[eventId];
             emit TransferFinish(eventId);
@@ -157,7 +179,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     // delete transfers with passed eventId and all after it
     function removeLockedTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
         require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
-        for ( ;lockedTransfers[eventId].endTimestamp != 0; eventId++)
+        for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
     }
 
@@ -227,4 +249,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     function checkEventId(uint eventId) internal {
         require(eventId == ++inputEventId, "EventId out of order");
     }
+
+    receive() external payable {}  // need to receive native token from wrapper contract
+
 }

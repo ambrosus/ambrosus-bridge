@@ -25,6 +25,10 @@ contract AmbBridgeTest is AmbBridge {
         verifyEthash(block_);
     }
 
+    function checkPoWTest(PoWProof memory powProof, address sideBridgeAddress) public {
+        checkPoW_(powProof, sideBridgeAddress);
+    }
+
     function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
         return calcTransferReceiptsHash(p, eventContractAddress);
     }

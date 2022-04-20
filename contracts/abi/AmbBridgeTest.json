@@ -241,6 +241,18 @@
       },
       {
         "indexed": false,
+        "internalType": "address",
+        "name": "tokenFrom",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "tokentTo",
+        "type": "address"
+      },
+      {
+        "indexed": false,
         "internalType": "uint256",
         "name": "eventId",
         "type": "uint256"
@@ -509,6 +521,142 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "bytes3",
+                "name": "p0WithNonce",
+                "type": "bytes3"
+              },
+              {
+                "internalType": "bytes3",
+                "name": "p0WithoutNonce",
+                "type": "bytes3"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p1",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "parentOrReceiptHash",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p2",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "difficulty",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p3",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "number",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p4",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p5",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "nonce",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p6",
+                "type": "bytes"
+              },
+              {
+                "internalType": "uint256[]",
+                "name": "dataSetLookup",
+                "type": "uint256[]"
+              },
+              {
+                "internalType": "uint256[]",
+                "name": "witnessForLookup",
+                "type": "uint256[]"
+              }
+            ],
+            "internalType": "struct CheckPoW.BlockPoW[]",
+            "name": "blocks",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "bytes[]",
+                "name": "receiptProof",
+                "type": "bytes[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "eventId",
+                "type": "uint256"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "tokenAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "toAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                  }
+                ],
+                "internalType": "struct CommonStructs.Transfer[]",
+                "name": "transfers",
+                "type": "tuple[]"
+              }
+            ],
+            "internalType": "struct CommonStructs.TransferProof",
+            "name": "transfer",
+            "type": "tuple"
+          }
+        ],
+        "internalType": "struct CheckPoW.PoWProof",
+        "name": "powProof",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "sideBridgeAddress",
+        "type": "address"
+      }
+    ],
+    "name": "checkPoWTest",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "fee",
     "outputs": [
@@ -530,6 +678,54 @@
       }
     ],
     "name": "getLockedTransferTest",
+    "outputs": [
+      {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "address",
+                "name": "tokenAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "address",
+                "name": "toAddress",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "amount",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct CommonStructs.Transfer[]",
+            "name": "transfers",
+            "type": "tuple[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "endTimestamp",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.LockedTransfers",
+        "name": "",
+        "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getLockedTransfers",
     "outputs": [
       {
         "components": [
@@ -1250,6 +1446,11 @@
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "unwrapSide",
+        "type": "bool"
       }
     ],
     "name": "withdraw",
@@ -1265,7 +1466,7 @@
         "type": "address"
       }
     ],
-    "name": "wrap_withdraw",
+    "name": "wrapWithdraw",
     "outputs": [],
     "stateMutability": "payable",
     "type": "function"
@@ -1282,5 +1483,9 @@
     ],
     "stateMutability": "view",
     "type": "function"
+  },
+  {
+    "stateMutability": "payable",
+    "type": "receive"
   }
 ]

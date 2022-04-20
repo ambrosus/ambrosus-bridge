@@ -34,12 +34,21 @@ describe("Check PoW", () => {
     await deployments.fixture(["for_tests"]); // reset contracts state
   });
 
+
+  it("Test CheckPoW", async () => {
+    const powProof = require("./fixtures/powProof.json");
+    const epoch = require("./fixtures/epoch-406.json");
+
+    await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution, epoch.BranchDepth, epoch.MerkleNodes);
+    await ambBridge.checkPoWTest(powProof, "0xf9427deDdAa899d388db70c0Fb4dA84A06976C85", {gasLimit: 40000000});
+  });
+
+
   it("Test Ethash PoW", async () => {
     const blockPoW = require("./fixtures/BlockPoW-14257704.json");
     const epoch = require("./fixtures/epoch-475.json");
 
-    await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution,
-        epoch.BranchDepth, epoch.MerkleNodes);
+    await ambBridge.setEpochData(epoch.Epoch, epoch.FullSizeIn128Resolution, epoch.BranchDepth, epoch.MerkleNodes);
     expect(await ambBridge.isEpochDataSet(epoch.Epoch)).to.be.true;
 
     await ambBridge.verifyEthashTest(blockPoW);
