@@ -31,7 +31,7 @@
       "primaryNet": "eth",
       "addresses": {
         "amb": "0xEb58F86DaDde6B65dB2ce2091C89E4fE9f49aAf4",
-        "eth": "",
+        "eth": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
         "bsc": ""
       },
       "nativeAnalog": "ETH"
