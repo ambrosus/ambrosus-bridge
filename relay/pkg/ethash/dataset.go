@@ -13,9 +13,7 @@ import (
 )
 
 const (
-	datasetInitBytes   = 1 << 30 // Bytes in dataset at genesis
-	datasetGrowthBytes = 1 << 23 // Dataset growth per epoch
-	datasetParents     = 256     // Number of parents of each dataset element
+	datasetParents = 256 // Number of parents of each dataset element
 )
 
 func (e *Ethash) getDag(epoch uint64) ([]byte, error) {

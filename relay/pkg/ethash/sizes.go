@@ -2,6 +2,14 @@ package ethash
 
 import "math/big"
 
+const (
+	cacheInitBytes   = 1 << 24 // Bytes in cache at genesis
+	cacheGrowthBytes = 1 << 17 // Cache growth per epoch
+
+	datasetInitBytes   = 1 << 30 // Bytes in dataset at genesis
+	datasetGrowthBytes = 1 << 23 // Dataset growth per epoch
+)
+
 // cacheSize returns the size of the ethash verification cache that belongs to a certain
 // block number.
 func cacheSize(epoch uint64) uint64 {
