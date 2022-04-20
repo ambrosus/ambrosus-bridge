@@ -5,7 +5,9 @@ import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof/mytrie"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -22,13 +24,13 @@ func CheckProof(proof [][]byte, proofElements [][]byte) common.Hash {
 	}
 	els = append(els, proof[wrapProofsCount-1])
 
-	el := mytrie.Hash(helpers.BytesConcat(els...))
+	el := crypto.Keccak256(helpers.BytesConcat(els...))
 
 	// compute trie root
 	for i := wrapProofsCount; i < len(proof); i += 2 {
 		el = helpers.BytesConcat(proof[i], el, proof[i+1])
 		if len(el) > 32 {
-			el = mytrie.Hash(el)
+			el = crypto.Keccak256(el)
 		}
 	}
 
@@ -111,7 +113,7 @@ func (p *trieProof) makeTrieProof() ([][]byte, error) {
 			return nil, fmt.Errorf("split result length (%v) != 2", len(r))
 		}
 		result = append(result, r[0], r[1])
-		whatSearch = mytrie.Hash(unhashedVal)
+		whatSearch = crypto.Keccak256(unhashedVal)
 	}
 	return result, nil
 }

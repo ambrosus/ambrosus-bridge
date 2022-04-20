@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"net/http"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof/mytrie"
+	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -93,7 +93,7 @@ func (h *Header) Hash(seal bool) common.Hash {
 	if err != nil {
 		return common.Hash{}
 	}
-	return common.BytesToHash(mytrie.Hash(rlp_))
+	return common.BytesToHash(crypto.Keccak256(rlp_))
 }
 
 func (h *Header) Step() (r []byte) {

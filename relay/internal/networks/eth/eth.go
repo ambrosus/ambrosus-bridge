@@ -83,7 +83,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	ambTransfer, err := b.getBlocksAndEvents(event)
+	powProof, err := b.getBlocksAndEvents(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
@@ -95,7 +95,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	}
 
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
-	err = b.sideBridge.SubmitTransferPoW(ambTransfer)
+	err = b.sideBridge.SubmitTransferPoW(powProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
 	}
@@ -148,7 +148,6 @@ func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 		return fmt.Errorf("SubmitEpochData: %w", err)
 	}
 	return nil
-	// todo delete old epochs, generate new (if need)
 }
 
 func (b *Bridge) ensureDAGsExists() {
@@ -160,8 +159,6 @@ func (b *Bridge) ensureDAGsExists() {
 		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
 		return
 	}
-
-	// This func will generate DAG if it doesn't exist yet
 	go b.ethash.GenDagForEpoch(blockNumber / 30000)
 }
 

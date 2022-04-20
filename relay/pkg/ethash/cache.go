@@ -11,9 +11,7 @@ import (
 )
 
 const (
-	cacheRounds      = 3       // Number of rounds in cache production
-	cacheGrowthBytes = 1 << 17 // Cache growth per epoch
-	cacheInitBytes   = 1 << 24 // Bytes in cache at genesis
+	cacheRounds = 3 // Number of rounds in cache production
 )
 
 func (e *Ethash) getCache(epoch uint64) ([]byte, error) {
