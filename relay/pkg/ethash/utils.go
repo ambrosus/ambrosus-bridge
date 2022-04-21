@@ -163,15 +163,17 @@ func NewKmutex() *Kmutex {
 }
 func (m *Kmutex) Lock(i uint64) {
 	m.mapMutex.Lock()
-	defer m.mapMutex.Unlock()
 	if _, ok := m.mapOfMutex[i]; !ok {
 		m.mapOfMutex[i] = &sync.Mutex{}
 	}
+	m.mapMutex.Unlock()
 	m.mapOfMutex[i].Lock()
 }
 func (m *Kmutex) Unlock(i uint64) {
 	m.mapMutex.Lock()
 	defer m.mapMutex.Unlock()
-	m.mapOfMutex[i].Unlock()
-	delete(m.mapOfMutex, i)
+	if _, ok := m.mapOfMutex[i]; ok {
+		m.mapOfMutex[i].Unlock()
+		delete(m.mapOfMutex, i)
+	}
 }
