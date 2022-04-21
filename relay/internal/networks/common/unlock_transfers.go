@@ -14,6 +14,7 @@ func (b *CommonBridge) UnlockOldestTransfersLoop() {
 		if err := b.UnlockOldestTransfers(); err != nil {
 			b.Logger.Error().Msgf("UnlockOldestTransfersLoop: %s", err)
 		}
+		time.Sleep(time.Minute)
 	}
 }
 
