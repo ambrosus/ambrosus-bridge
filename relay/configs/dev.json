@@ -10,10 +10,9 @@
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contractAddr": "0x0A719de1aaEd3A4b41525fBaEf78B6E31f1BAA66",
-            "epochLength": 1,
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 1
+            "ethashGenNextEpochs": 0
         }
     },
     "externalLogger": {
