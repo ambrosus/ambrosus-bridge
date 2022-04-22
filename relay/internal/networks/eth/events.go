@@ -9,12 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 )
 
-// todo name
-func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer) (*contracts.CheckPoWPoWProof, error) {
-	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
-	if err != nil {
-		return nil, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
-	}
+func (b *Bridge) getBlocksAndEvents(transferEvent *contracts.BridgeTransfer, safetyBlocks uint64) (*contracts.CheckPoWPoWProof, error) {
 	blocks := make([]contracts.CheckPoWBlockPoW, 0, safetyBlocks+1)
 
 	transfer, err := b.encodeTransferEvent(transferEvent)

@@ -13,8 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-// todo name
-func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer) (*c.CheckAuraAuraProof, error) {
+func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
 	// populated by functions below
 	blocksMap := make(map[uint64]*c.CheckAuraBlockAura)
 
@@ -25,7 +24,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer) (*c.CheckAu
 	}
 
 	// encode vsChangeProofs and save event blocks to blocksMap
-	vsChangeEvents, err := b.fetchVSChangeEvents(transferEvent)
+	vsChangeEvents, err := b.fetchVSChangeEvents(transferEvent, safetyBlocks)
 	if err != nil {
 		return nil, fmt.Errorf("fetchVSChangeEvents: %w", err)
 	}
@@ -35,11 +34,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer) (*c.CheckAu
 	}
 
 	// save safety blocks to blocksMap
-	minSafetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
-	if err != nil {
-		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
-	}
-	err = b.addSafetyBlocks(blocksMap, minSafetyBlocks)
+	err = b.addSafetyBlocks(blocksMap, safetyBlocks)
 	if err != nil {
 		return nil, fmt.Errorf("encodeSafetyBlocks: %w", err)
 	}
@@ -52,7 +47,7 @@ func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer) (*c.CheckAu
 	for i, blockNum := range indexToBlockNum {
 		if blockNum == transferEvent.Raw.BlockNumber {
 			transferEventIndex = uint64(i) // set transferEventIndex to index in blocks array
-		} else if blockNum > transferEvent.Raw.BlockNumber+minSafetyBlocks {
+		} else if blockNum > transferEvent.Raw.BlockNumber+safetyBlocks {
 			blocks = blocks[:i] // in some cases we can fetch more blocks that we need
 			break
 		}
@@ -119,7 +114,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*c.CheckAuraBlockAura, e
 
 // add safety blocks after each event block
 func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*c.CheckAuraBlockAura, minSafetyBlocks uint64) error {
-	for blockNum, _ := range blocksMap {
+	// we should iterate over keys because on writing new values to map
+	// we'll iterate also over those new values, but we don't need that
+	blockNums := sortedKeys(blocksMap)
+	for _, blockNum := range blockNums {
 		for i := uint64(0); i <= minSafetyBlocks; i++ {
 			if err := b.saveBlock(blockNum+i, blocksMap); err != nil {
 				return err
@@ -147,12 +145,7 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *c.VsInitia
 	}, nil
 }
 
-func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer) ([]*c.VsInitiateChange, error) {
-	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
-	if err != nil {
-		return nil, fmt.Errorf("getMinSafetyBlocksNum: %w", err)
-	}
-
+func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
 	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)

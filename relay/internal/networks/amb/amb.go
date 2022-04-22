@@ -81,14 +81,14 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	ambTransfer, err := b.getBlocksAndEvents(event)
+	auraProof, err := b.getBlocksAndEvents(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("getBlocksAndEvents: %w", err)
 	}
 
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 
-	err = b.sideBridge.SubmitTransferAura(ambTransfer)
+	err = b.sideBridge.SubmitTransferAura(auraProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferAura: %w", err)
 	}

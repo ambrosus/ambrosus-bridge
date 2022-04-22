@@ -3,17 +3,16 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x1AbD78c5Ecef3D4d3C7428Bb3b94A17BCeAC4575",
+            "contractAddr": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
             "vsContractAddr": ""
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x56829D90745def48cc2572d2922CC5972D4b7cb9",
-            "epochLength": 1,
-            "ethashDir": "",
+            "contractAddr": "0xda8816F19a252AF8A68062Eebe266A278C399a93",
+            "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 1
+            "ethashGenNextEpochs": 0
         }
     },
     "externalLogger": {
@@ -24,8 +23,8 @@
         }
     },
     "prometheus": {
-        "enable": false,
-        "ip": "localhost",
+        "enable": true,
+        "ip": "",
         "port": "9090"
     }
 }

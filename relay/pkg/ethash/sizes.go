@@ -2,6 +2,14 @@ package ethash
 
 import "math/big"
 
+const (
+	cacheInitBytes   = 1 << 24 // Bytes in cache at genesis
+	cacheGrowthBytes = 1 << 17 // Cache growth per epoch
+
+	datasetInitBytes   = 1 << 30 // Bytes in dataset at genesis
+	datasetGrowthBytes = 1 << 23 // Dataset growth per epoch
+)
+
 // cacheSize returns the size of the ethash verification cache that belongs to a certain
 // block number.
 func cacheSize(epoch uint64) uint64 {
@@ -11,7 +19,7 @@ func cacheSize(epoch uint64) uint64 {
 	}
 
 	// No known cache size, calculate manually (sanity branch only)
-	size := cacheInitBytes + cacheGrowthBytes*uint64(epoch) - hashBytes
+	size := cacheInitBytes + cacheGrowthBytes*epoch - hashBytes
 	for !new(big.Int).SetUint64(size / hashBytes).ProbablyPrime(1) { // Always accurate for n < 2^64
 		size -= 2 * hashBytes
 	}
@@ -27,7 +35,7 @@ func datasetSize(epoch uint64) uint64 {
 		return datasetSizes[epoch]
 	}
 
-	size := datasetInitBytes + datasetGrowthBytes*uint64(epoch) - mixBytes
+	size := datasetInitBytes + datasetGrowthBytes*epoch - mixBytes
 	for !new(big.Int).SetUint64(size / mixBytes).ProbablyPrime(1) { // Always accurate for n < 2^64
 		size -= 2 * mixBytes
 	}

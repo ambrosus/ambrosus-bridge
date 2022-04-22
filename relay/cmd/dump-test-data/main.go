@@ -258,7 +258,7 @@ func writeToJSONFile(data interface{}, path string) error {
 }
 
 func bigIntArrayToStringArray(intArray []*big.Int) []string {
-	var array []string
+	array := make([]string, 0, len(intArray))
 
 	for _, n := range intArray {
 		array = append(array, n.String())
