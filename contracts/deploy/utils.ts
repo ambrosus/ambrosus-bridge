@@ -20,17 +20,15 @@ interface Config {
 
 
 export function networkName(network: any): string {
-  for (const networkName of ['amb', 'eth'])
-    if (network.tags[networkName])
-      return networkName;
-  throw "Network missing networkName tag";
+  const r = ['amb', 'eth'].find(t => network.tags[t]);
+  if (!r) throw "Network missing networkName tag";
+  return r
 }
 
 export function networkType(network: any): string {
-  for (const networkType of ['testnet', 'mainnet', 'integr'])
-    if (network.tags[networkType])
-      return networkType;
-  throw "Network missing networkType tag";
+  const r = ['devnet', 'testnet', 'mainnet', 'integr'].find(t => network.tags[t]);
+  if (!r) throw "Network missing networkType tag";
+  return r
 }
 
 
