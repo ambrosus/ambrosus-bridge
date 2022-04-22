@@ -19,50 +19,50 @@ module.exports = {
       companionNetworks: {amb: 'hardhat'},
     },
 
-    eth_dev: {
+    "dev/eth": {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'amb_dev'},
     },
-    eth_test: {
+    "test/eth": {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
       tags: ["eth", "testnet"],
       companionNetworks: {amb: 'amb_test'},
     },
-    eth_main: {
+    "main/eth": {
       url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
       tags: ["eth", "mainnet"],
       companionNetworks: {amb: 'amb_main'},
     },
-    eth_integr: {
+    "integr/eth": {
       url: "http://127.0.0.1:8502",
       accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc"],
       tags: ["eth", "integr"],
       companionNetworks: {amb: 'amb_integr'},
     },
 
-    amb_dev: {
+    "dev/amb": {
       url: "https://network.ambrosus-dev.io",
       accounts: PK,
-      tags: ["amb", "devtnet"],
+      tags: ["amb", "devnet"],
       hardfork: "byzantium",
     },
-    amb_test: {
+    "test/amb": {
       url: "https://network.ambrosus-test.io",
       accounts: PK,
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
     },
-    amb_main: {
+    "main/amb": {
       url: "https://network.ambrosus.io",
       accounts: PK,
       tags: ["amb", "mainnet"],
       hardfork: "byzantium",
     },
-    amb_integr: {
+    "integr/amb": {
       url: "http://127.0.0.1:8545",
       accounts: ["0x80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446"],
       tags: ["amb", "integr"],

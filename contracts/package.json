@@ -12,8 +12,8 @@
     "coverage": "hardhat coverage",
     "lint": "eslint .",
     "console": "hardhat console",
-    "verify": "hardhat etherscan-verify --network eth_test",
-    "sourcify": "hardhat sourcify --network eth_test",
+    "verify": "hardhat etherscan-verify --network 'test/eth'",
+    "sourcify": "hardhat sourcify --network 'test/eth'",
     "integr_deploy": "./deploy.sh eth integr",
     "integr_test": "hardhat test scripts/integration_tests.ts"
   },
@@ -39,7 +39,7 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
     "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "@openzeppelin/contracts": "^4.1.0",
+    "@openzeppelin/cozntracts": "^4.1.0",
     "@openzeppelin/contracts-upgradeable": "^4.1.0",
     "@types/dotenv": "^8.2.0",
     "dotenv": "^9.0.2",
