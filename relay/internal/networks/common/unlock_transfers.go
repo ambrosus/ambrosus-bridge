@@ -11,6 +11,8 @@ import (
 
 func (b *CommonBridge) UnlockOldestTransfersLoop() {
 	for {
+		b.EnsureContractUnpaused()
+
 		if err := b.UnlockOldestTransfers(); err != nil {
 			b.Logger.Error().Msgf("UnlockOldestTransfersLoop: %s", err)
 		}

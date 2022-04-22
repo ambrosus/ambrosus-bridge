@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -37,6 +39,46 @@ func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 	}
 
 	return nil
+}
+
+func (b *CommonBridge) EnsureContractUnpaused() {
+	for {
+		err := b.WaitForUnpauseContract()
+		if err != nil {
+			return
+		}
+
+		b.Logger.Error().Err(err).Msg("WaitForUnpauseContract error")
+		time.Sleep(10 * time.Second)
+	}
+}
+
+func (b *CommonBridge) WaitForUnpauseContract() error {
+	paused, err := b.Contract.Paused(nil)
+	if err != nil {
+		return fmt.Errorf("Paused: %w", err)
+	}
+	if !paused {
+		return nil
+	}
+
+	eventCh := make(chan *contracts.BridgeUnpaused)
+	eventSub, err := b.WsContract.WatchUnpaused(nil, eventCh)
+	if err != nil {
+		return fmt.Errorf("WatchUnpaused: %w", err)
+	}
+
+	defer eventSub.Unsubscribe()
+
+	for {
+		select {
+		case err := <-eventSub.Err():
+			return fmt.Errorf("watching unpaused event: %w", err)
+		case _ = <-eventCh:
+			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
+			return nil
+		}
+	}
 }
 
 func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
