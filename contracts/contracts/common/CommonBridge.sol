@@ -39,7 +39,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, address tokenFrom, address tokentTo, uint eventId, uint feeAmount);
+    event Withdraw(address indexed from, address tokenFrom, address tokenTo, uint eventId, uint feeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);

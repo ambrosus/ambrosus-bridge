@@ -11,6 +11,8 @@ import (
 
 func (b *CommonBridge) UnlockOldestTransfersLoop() {
 	for {
+		b.EnsureContractUnpaused()
+
 		if err := b.UnlockOldestTransfers(); err != nil {
 			b.Logger.Error().Msgf("UnlockOldestTransfersLoop: %s", err)
 		}
@@ -69,7 +71,7 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 }
 
 func (b *CommonBridge) unlockTransfers(eventId *big.Int) error {
-	tx, txErr := b.Contract.UnlockTransfers(b.Auth, eventId)
+	tx, txErr := b.Contract.UnlockTransfersBatch(b.Auth)
 	return b.GetTransactionError(
 		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
 		eventId,
