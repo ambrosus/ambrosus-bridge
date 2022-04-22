@@ -69,7 +69,7 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 }
 
 func (b *CommonBridge) unlockTransfers(eventId *big.Int) error {
-	tx, txErr := b.Contract.UnlockTransfers(b.Auth, eventId)
+	tx, txErr := b.Contract.UnlockTransfersBatch(b.Auth)
 	return b.GetTransactionError(
 		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
 		eventId,
