@@ -23,25 +23,25 @@ module.exports = {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
       tags: ["eth", "devnet"],
-      companionNetworks: {amb: 'amb_dev'},
+      companionNetworks: {amb: 'dev/amb'},
     },
     "test/eth": {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
       tags: ["eth", "testnet"],
-      companionNetworks: {amb: 'amb_test'},
+      companionNetworks: {amb: 'test/amb'},
     },
     "main/eth": {
       url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
       tags: ["eth", "mainnet"],
-      companionNetworks: {amb: 'amb_main'},
+      companionNetworks: {amb: 'main/amb'},
     },
     "integr/eth": {
       url: "http://127.0.0.1:8502",
       accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc"],
       tags: ["eth", "integr"],
-      companionNetworks: {amb: 'amb_integr'},
+      companionNetworks: {amb: 'integr/amb'},
     },
 
     "dev/amb": {

@@ -7,8 +7,8 @@ set -e
 SIDE=${1:-eth}
 TYPE=${2:-dev}
 
-AMB_NET="'$TYPE/amb'"
-SIDE_NET="'$TYPE/$SIDE'"
+AMB_NET="$TYPE/amb"
+SIDE_NET="$TYPE/$SIDE"
 
 echo "Deploying on $AMB_NET and $SIDE_NET"
 
