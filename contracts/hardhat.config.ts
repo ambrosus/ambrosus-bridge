@@ -49,14 +49,12 @@ module.exports = {
       accounts: PK,
       tags: ["amb", "devtnet"],
       hardfork: "byzantium",
-      gasPrice: 500_000_000_000
     },
     amb_test: {
       url: "https://network.ambrosus-test.io",
       accounts: PK,
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
-      gasPrice: 500_000_000_000
     },
     amb_main: {
       url: "https://network.ambrosus.io",
