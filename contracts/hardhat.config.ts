@@ -19,6 +19,12 @@ module.exports = {
       companionNetworks: {amb: 'hardhat'},
     },
 
+    eth_dev: {
+      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
+      accounts: PK,
+      tags: ["eth", "devnet"],
+      companionNetworks: {amb: 'amb_dev'},
+    },
     eth_test: {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       accounts: PK,
@@ -38,8 +44,15 @@ module.exports = {
       companionNetworks: {amb: 'amb_integr'},
     },
 
-    amb_test: {
+    amb_dev: {
       url: "https://network.ambrosus-dev.io",
+      accounts: PK,
+      tags: ["amb", "devtnet"],
+      hardfork: "byzantium",
+      gasPrice: 500_000_000_000
+    },
+    amb_test: {
+      url: "https://network.ambrosus-test.io",
       accounts: PK,
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
