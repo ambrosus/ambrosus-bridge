@@ -44,7 +44,7 @@ func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 func (b *CommonBridge) EnsureContractUnpaused() {
 	for {
 		err := b.WaitForUnpauseContract()
-		if err != nil {
+		if err == nil {
 			return
 		}
 
