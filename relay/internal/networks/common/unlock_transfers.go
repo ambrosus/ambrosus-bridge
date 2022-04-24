@@ -62,7 +62,7 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 
 	// Unlock the oldest transfer.
 	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
-	err = b.unlockTransfers(oldestLockedEventId)
+	err = b.unlockTransfers()
 	if err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
@@ -70,10 +70,9 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 	return nil
 }
 
-func (b *CommonBridge) unlockTransfers(eventId *big.Int) error {
+func (b *CommonBridge) unlockTransfers() error {
 	tx, txErr := b.Contract.UnlockTransfersBatch(b.Auth)
 	return b.GetTransactionError(
-		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
-		eventId,
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfersBatch"},
 	)
 }
