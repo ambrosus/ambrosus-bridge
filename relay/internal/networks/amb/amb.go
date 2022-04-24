@@ -108,6 +108,12 @@ func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, 
 		}
 		return params.TxErr
 	}
+	return nil
+}
+func (b *Bridge) GetTransactionErrorAndWaitMined(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+	if err := b.GetTransactionError(params, txParams...); err != nil {
+		return err
+	}
 
 	err := b.waitForTxMined(params.Tx)
 	if err != nil {

@@ -31,6 +31,7 @@ type Bridge interface {
 	// "methodName" amd "params" are optional and used only
 	// for getting the error in parity/openethereum
 	GetTransactionError(params GetTransactionErrorParams, txParams ...interface{}) error
+	GetTransactionErrorAndWaitMined(params GetTransactionErrorParams, txParams ...interface{}) error
 	SendEvent(event *contracts.BridgeTransfer) error
 }
 

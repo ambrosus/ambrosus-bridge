@@ -12,7 +12,7 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	defer b.SetRelayBalanceMetric()
 
 	tx, txErr := b.Contract.SubmitTransferPoW(b.Auth, *proof)
-	return b.GetTransactionError(
+	return b.GetTransactionErrorAndWaitMined(
 		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "submitTransferPoW"},
 		*proof,
 	)
@@ -23,7 +23,7 @@ func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
 
 	tx, txErr := b.Contract.SetEpochData(b.Auth,
 		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
-	return b.GetTransactionError(
+	return b.GetTransactionErrorAndWaitMined(
 		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "setEpochData"},
 		epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes,
 	)
