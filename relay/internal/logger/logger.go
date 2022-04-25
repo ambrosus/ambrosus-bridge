@@ -29,5 +29,9 @@ func (h LoggerHook) Run(event *zerolog.Event, level zerolog.Level, message strin
 }
 
 func NewSubLogger(bridge string, extLogger external_logger.ExternalLogger) zerolog.Logger {
-	return log.Hook(LoggerHook{extLogger: extLogger}).With().Str("bridge", bridge).Logger()
+	logger := log.With().Str("bridge", bridge).Logger()
+	if extLogger != nil {
+		logger = logger.Hook(LoggerHook{extLogger})
+	}
+	return logger
 }

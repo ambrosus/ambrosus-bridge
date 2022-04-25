@@ -25,10 +25,7 @@ func main() {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
 
-	var (
-		telegramAmbLogger external_logger.ExternalLogger = external_logger.Logger{}
-		telegramEthLogger external_logger.ExternalLogger = external_logger.Logger{}
-	)
+	var telegramAmbLogger, telegramEthLogger external_logger.ExternalLogger
 
 	if cfg.Telegram.Enable {
 		// Creating telegram loggers as an external logger.
