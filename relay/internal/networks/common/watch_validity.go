@@ -11,16 +11,14 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) WatchValidityLockedTransfersLoop(sideBridge networks.Bridge) {
-	// todo rename to watchdog?
-	return
+func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
 	b.SideBridge = sideBridge
 
 	for {
 		b.EnsureContractUnpaused()
 
 		if err := b.WatchValidityLockedTransfers(); err != nil {
-			b.Logger.Error().Msgf("WatchValidityLockedTransfersLoop: %s", err)
+			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
 		}
 	}
 }

@@ -53,8 +53,8 @@ func main() {
 		go ethBridge.Run(ambBridge)
 	}
 	if cfg.IsWatchdog {
-		go ambBridge.WatchValidityLockedTransfersLoop(ethBridge)
-		go ethBridge.WatchValidityLockedTransfersLoop(ambBridge)
+		go ambBridge.ValidityWatchdog(ethBridge)
+		go ethBridge.ValidityWatchdog(ambBridge)
 	}
 
 	if cfg.Prometheus.Enable {
