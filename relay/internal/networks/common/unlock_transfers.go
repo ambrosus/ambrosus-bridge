@@ -62,7 +62,7 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 
 	// Unlock the oldest transfer.
 	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
-	err = b.unlockTransfers(oldestLockedEventId)
+	err = b.unlockTransfers()
 	if err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
@@ -70,10 +70,23 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 	return nil
 }
 
-func (b *CommonBridge) unlockTransfers(eventId *big.Int) error {
-	tx, txErr := b.Contract.UnlockTransfersBatch(b.Auth)
-	return b.GetTransactionError(
-		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
-		eventId,
+func (b *CommonBridge) unlockTransfers() error {
+	// Make tx without sending it for getting the gas limit.
+	authNoSend := *b.Auth
+	authNoSend.NoSend = true
+	tx, txErr := b.Contract.UnlockTransfersBatch(&authNoSend)
+	if txErr = b.GetTransactionError(
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfersBatch"},
+	); txErr != nil {
+		return fmt.Errorf("NoSend: %w", txErr)
+	}
+
+	// Send the tx with the gas limit 20% more than the estimated gas limit.
+	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
+	authCustomGas := *b.Auth
+	authCustomGas.GasLimit = customGas
+	tx, txErr = b.Contract.UnlockTransfersBatch(&authCustomGas)
+	return b.ProcessTx(
+		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfersBatch"},
 	)
 }
