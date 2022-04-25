@@ -53,13 +53,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	b.Logger.Info().Msg("Ethereum bridge runned!")
 
-	for {
-		b.EnsureContractUnpaused()
-
-		if err := b.Listen(); err != nil {
-			b.Logger.Error().Err(err).Msg("Listen error")
-		}
-	}
+	b.ListenTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
