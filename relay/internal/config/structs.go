@@ -39,7 +39,7 @@ type (
 	TelegramLogger struct {
 		Enable bool   `mapstructure:"enable"`
 		Token  string `mapstructure:"token"`
-		ChatId int    `mapstructure:"chat-id"`
+		ChatId int    `mapstructure:"chatId"`
 	}
 
 	Prometheus struct {
