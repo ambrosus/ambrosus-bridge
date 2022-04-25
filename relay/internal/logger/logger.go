@@ -7,11 +7,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type LoggerHook struct {
+type Hook struct {
 	extLogger external_logger.ExternalLogger
 }
 
-func (h LoggerHook) Run(event *zerolog.Event, level zerolog.Level, message string) {
+func (h Hook) Run(event *zerolog.Event, level zerolog.Level, message string) {
 	var logFunc func(string) error
 
 	switch level {
@@ -31,7 +31,7 @@ func (h LoggerHook) Run(event *zerolog.Event, level zerolog.Level, message strin
 func NewSubLogger(bridge string, extLogger external_logger.ExternalLogger) zerolog.Logger {
 	logger := log.With().Str("bridge", bridge).Logger()
 	if extLogger != nil {
-		logger = logger.Hook(LoggerHook{extLogger})
+		logger = logger.Hook(Hook{extLogger})
 	}
 	return logger
 }
