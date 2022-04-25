@@ -1,24 +1,16 @@
 package main
 
 import (
-	"os"
-
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
-
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/rs/zerolog/pkgerrors"
 )
 
 func main() {
-	// Initialize logger.
-	initLogger()
-
 	// Initialize bridge config.
 	cfg, err := config.Init()
 	if err != nil {
@@ -55,15 +47,5 @@ func main() {
 		}
 	} else {
 		select {}
-	}
-}
-
-func initLogger() {
-	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
-
-	if os.Getenv("DEBUG") != "" {
-		zerolog.SetGlobalLevel(zerolog.DebugLevel)
-	} else {
-		zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	}
 }
