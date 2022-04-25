@@ -26,6 +26,8 @@ type (
 		Networks   Networks        `mapstructure:"network"`
 		ExtLoggers ExternalLoggers `mapstructure:"externalLogger"`
 		Prometheus Prometheus      `mapstructure:"prometheus"`
+		IsRelay    bool            `mapstructure:"isRelay"`
+		IsWatchdog bool            `mapstructure:"isWatchdog"`
 	}
 
 	Networks struct {
