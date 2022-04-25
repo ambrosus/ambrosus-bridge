@@ -16,6 +16,8 @@ func (b *CommonBridge) WatchValidityLockedTransfersLoop() {
 	// todo rename to watchdog?
 	return
 	for {
+		b.EnsureContractUnpaused()
+
 		if err := b.WatchValidityLockedTransfers(); err != nil {
 			b.Logger.Error().Msgf("WatchValidityLockedTransfersLoop: %s", err)
 		}

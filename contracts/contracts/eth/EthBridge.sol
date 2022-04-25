@@ -27,7 +27,7 @@ contract EthBridge is CommonBridge, CheckAura {
 
         checkEventId(auraProof.transfer.eventId);
 
-        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
+//        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress, validatorSetAddress);
 
         lockTransfers(auraProof.transfer.transfers, auraProof.transfer.eventId);
     }

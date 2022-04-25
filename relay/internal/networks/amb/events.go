@@ -114,7 +114,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*c.CheckAuraBlockAura, e
 
 // add safety blocks after each event block
 func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*c.CheckAuraBlockAura, minSafetyBlocks uint64) error {
-	for blockNum := range blocksMap {
+	// we should iterate over keys because on writing new values to map
+	// we'll iterate also over those new values, but we don't need that
+	blockNums := sortedKeys(blocksMap)
+	for _, blockNum := range blockNums {
 		for i := uint64(0); i <= minSafetyBlocks; i++ {
 			if err := b.saveBlock(blockNum+i, blocksMap); err != nil {
 				return err

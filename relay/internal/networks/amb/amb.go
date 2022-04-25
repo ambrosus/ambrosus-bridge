@@ -55,6 +55,8 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.Logger.Info().Msg("Ambrosus bridge runned!")
 
 	for {
+		b.EnsureContractUnpaused()
+
 		if err := b.Listen(); err != nil {
 			b.Logger.Error().Err(err).Msg("Listen error")
 		}

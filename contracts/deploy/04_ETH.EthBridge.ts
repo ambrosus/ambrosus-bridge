@@ -47,9 +47,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         tokenSideAddresses: Object.values(tokenPairs),
         fee: 10,    // todo
         feeRecipient: owner,   // todo
-        timeframeSeconds: isMainNet ? 14400 : 1,
-        lockTime: isMainNet ? 1000 : 1,
-        minSafetyBlocks: 10,
+        timeframeSeconds: isMainNet ? 14400 : 60,
+        lockTime: isMainNet ? 1000 : 60,
+        minSafetyBlocks: isMainNet ? 10 : 2,
       },
       initialValidators,
       vsAddress,
