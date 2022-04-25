@@ -163,8 +163,8 @@ func (b *CommonBridge) Listen() error {
 	}
 }
 
-func (b *CommonBridge) ProcessTx(params networks.GetTransactionErrorParams) error {
-	if err := b.Bridge.GetTransactionError(params); err != nil {
+func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
+	if err := b.Bridge.GetTxErr(params); err != nil {
 		return err
 	}
 

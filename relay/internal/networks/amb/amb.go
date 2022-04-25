@@ -99,7 +99,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
-func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams) error {
+func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 	if params.TxErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
 		// openethereum doesn't give us a full error message at eth_estimateGas, so

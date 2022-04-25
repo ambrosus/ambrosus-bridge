@@ -74,19 +74,15 @@ func (b *CommonBridge) unlockTransfers() error {
 	// Make tx without sending it for getting the gas limit.
 	authNoSend := *b.Auth
 	authNoSend.NoSend = true
-	tx, txErr := b.Contract.UnlockTransfersBatch(&authNoSend)
-	if txErr = b.GetTransactionError(
-		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfersBatch"},
-	); txErr != nil {
-		return fmt.Errorf("NoSend: %w", txErr)
+	tx, err := b.Contract.UnlockTransfersBatch(&authNoSend)
+	if err = b.GetTxErr(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"}); err != nil {
+		return fmt.Errorf("NoSend: %w", err)
 	}
 
 	// Send the tx with the gas limit 20% more than the estimated gas limit.
 	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
 	authCustomGas := *b.Auth
 	authCustomGas.GasLimit = customGas
-	tx, txErr = b.Contract.UnlockTransfersBatch(&authCustomGas)
-	return b.ProcessTx(
-		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfersBatch"},
-	)
+	tx, err = b.Contract.UnlockTransfersBatch(&authCustomGas)
+	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"})
 }

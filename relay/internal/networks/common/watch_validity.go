@@ -80,7 +80,7 @@ side network transfer event: %s \n
 Pausing contract...`, event.EventId, thisTransfers, sideTransfers)
 
 	tx, txErr := b.Contract.Pause(b.Auth)
-	if err := b.ProcessTx(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+	if err := b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 

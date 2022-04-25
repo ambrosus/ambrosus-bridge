@@ -102,7 +102,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
-func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams) error {
+func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 	if params.TxErr != nil {
 		if params.TxErr.Error() == "execution reverted" {
 			dataErr := params.TxErr.(rpc.DataError)
