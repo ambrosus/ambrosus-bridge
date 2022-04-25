@@ -2,9 +2,6 @@ package common
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"encoding/hex"
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -12,11 +9,9 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 )
@@ -181,22 +176,4 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 	}
 
 	return nil
-}
-
-func (b *CommonBridge) SetRelayBalanceMetric() {
-	balance, err := b.getBalanceGWei(b.Auth.From)
-	if err != nil {
-		b.Logger.Error().Err(err).Msg("error when getting contract balance in GWei")
-		return
-	}
-
-	metric.RelayBalanceGWeiGauge.WithLabelValues(b.Name).Set(balance)
-}
-
-func parsePK(pk string) (*ecdsa.PrivateKey, error) {
-	b, err := hex.DecodeString(pk)
-	if err != nil {
-		return nil, err
-	}
-	return crypto.ToECDSA(b)
 }
