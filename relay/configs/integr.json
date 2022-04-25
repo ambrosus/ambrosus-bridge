@@ -1,17 +1,20 @@
 {
+    "isRelay": true,
+    "isWatchdog": true,
     "network": {
         "amb": {
             "httpUrl": "http://127.0.0.1:8545",
             "wsUrl": "ws://127.0.0.1:8546",
             "contractAddr": "will be set by deploy script",
+            "privateKey": "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00"
         },
         "eth": {
             "httpUrl": "http://127.0.0.1:8502",
             "wsUrl": "ws://127.0.0.1:3434",
             "contractAddr": "will be set by deploy script",
-            "epochLength": 3,
-            "ethashDir": "",
+            "privateKey": "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5",
+            "ethashDir": "/tmp/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 1
         }
