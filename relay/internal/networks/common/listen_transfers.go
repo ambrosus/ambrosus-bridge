@@ -13,13 +13,13 @@ func (b *CommonBridge) ListenTransfersLoop() {
 	for {
 		b.EnsureContractUnpaused()
 
-		if err := b.Listen(); err != nil {
-			b.Logger.Error().Err(err).Msg("Listen error")
+		if err := b.watchTransfers(); err != nil {
+			b.Logger.Error().Err(err).Msg("watchTransfers error")
 		}
 	}
 }
 
-func (b *CommonBridge) CheckOldEvents() error {
+func (b *CommonBridge) checkOldTransfers() error {
 	b.Logger.Info().Msg("Checking old events...")
 
 	lastEventId, err := b.SideBridge.GetLastEventId()
@@ -43,9 +43,9 @@ func (b *CommonBridge) CheckOldEvents() error {
 	}
 }
 
-func (b *CommonBridge) Listen() error {
-	if err := b.CheckOldEvents(); err != nil {
-		return fmt.Errorf("CheckOldEvents: %w", err)
+func (b *CommonBridge) watchTransfers() error {
+	if err := b.checkOldTransfers(); err != nil {
+		return fmt.Errorf("checkOldTransfers: %w", err)
 	}
 	b.Logger.Info().Msg("Listening new events...")
 

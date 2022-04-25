@@ -47,17 +47,17 @@ func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 
 func (b *CommonBridge) EnsureContractUnpaused() {
 	for {
-		err := b.WaitForUnpauseContract()
+		err := b.waitForUnpauseContract()
 		if err == nil {
 			return
 		}
 
-		b.Logger.Error().Err(err).Msg("WaitForUnpauseContract error")
+		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
 		time.Sleep(10 * time.Second)
 	}
 }
 
-func (b *CommonBridge) WaitForUnpauseContract() error {
+func (b *CommonBridge) waitForUnpauseContract() error {
 	paused, err := b.Contract.Paused(nil)
 	if err != nil {
 		return fmt.Errorf("Paused: %w", err)
@@ -71,14 +71,13 @@ func (b *CommonBridge) WaitForUnpauseContract() error {
 	if err != nil {
 		return fmt.Errorf("WatchUnpaused: %w", err)
 	}
-
 	defer eventSub.Unsubscribe()
 
 	for {
 		select {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching unpaused event: %w", err)
-		case _ = <-eventCh:
+		case <-eventCh:
 			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
 			return nil
 		}
@@ -107,7 +106,6 @@ func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, err
 			}
 
 			receipts[i] = receipt
-
 			return nil
 		})
 	}

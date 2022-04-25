@@ -51,7 +51,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
-	go b.UnlockOldestTransfersLoop()
+	go b.UnlockTransfersLoop()
 
 	b.Logger.Info().Msg("Ambrosus bridge runned!")
 
