@@ -1,9 +1,10 @@
 package config
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -11,129 +12,32 @@ import (
 
 const defaultConfigPath string = "configs/main"
 
-var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
+func LoadConfig() (*Config, error) {
+	log.Debug().Msg("Loading config...")
 
-type (
-	Config struct {
-		IsRelay    bool
-		IsWatchdog bool
-		AMB        AMBConfig
-		ETH        ETHConfig
-		Telegram   TelegramLogger
-		Prometheus Prometheus
-	}
-
-	Network struct {
-		HttpURL      string `mapstructure:"httpUrl"`
-		WsURL        string `mapstructure:"wsUrl"`
-		ContractAddr string `mapstructure:"contractAddr"`
-		PrivateKey   string
-	}
-
-	AMBConfig struct {
-		Network
-		VSContractAddr string `mapstructure:"vsContractAddr"`
-	}
-
-	ETHConfig struct {
-		Network
-		EthashDir            string `mapstructure:"ethashDir"`
-		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
-		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
-	}
-
-	TelegramLogger struct {
-		Enable bool   `mapstructure:"enable"`
-		Token  string `mapstructure:"token"`
-		ChatId int    `mapstructure:"chat-id"`
-	}
-
-	Prometheus struct {
-		Enable bool   `mapstructure:"enable"`
-		Ip     string `mapstructure:"ip"`
-		Port   int    `mapstructure:"port"`
-	}
-)
-
-func Init() (*Config, error) {
-	log.Debug().Msg("Initialize config...")
-
-	if err := parseConfigFile(); err != nil {
-		return nil, err
-	}
-
-	var cfg Config
-	if err := unmarshal(&cfg); err != nil {
-		return nil, err
-	}
-
-	if err := setFromEnv(&cfg); err != nil {
-		return nil, err
-	}
-
-	return &cfg, nil
-}
-
-func parseConfigFile() error {
 	configPath := os.Getenv("CONFIG_PATH")
-
 	if configPath == "" {
+		log.Info().Msgf("`CONFIG_PATH` env var not set, using default config path: %v", defaultConfigPath)
 		configPath = defaultConfigPath
 	}
-
-	log.Debug().Msgf("Parsing config file: %s", configPath)
-
 	dir, file := filepath.Split(configPath)
 
-	viper.SetConfigType("json")
 	viper.AddConfigPath(dir)
 	viper.SetConfigName(file)
+	viper.SetConfigType("json")
 
-	return viper.ReadInConfig()
+	// ex: use `NETWORK_AMB_PRIVATEKEY` env var to override `network.amb.privateKey` key
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-}
-
-func unmarshal(cfg *Config) error {
-	log.Debug().Msg("Unmarshal config keys...")
-
-	if err := viper.UnmarshalKey("isRelay", &cfg.IsRelay); err != nil {
-		return err
-	}
-	if err := viper.UnmarshalKey("isWatchdog", &cfg.IsWatchdog); err != nil {
-		return err
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("read cfg: %w", err)
 	}
 
-	if err := viper.UnmarshalKey("network.amb", &cfg.AMB); err != nil {
-		return err
-	}
-	if err := viper.UnmarshalKey("network.amb", &cfg.AMB.Network); err != nil {
-		return err
-	}
-	if err := viper.UnmarshalKey("network.eth", &cfg.ETH); err != nil {
-		return err
+	cfg := new(Config)
+	if err := viper.Unmarshal(cfg); err != nil {
+		return nil, fmt.Errorf("unmarshal cfg: %w", err)
 	}
 
-	if err := viper.UnmarshalKey("externalLogger.telegram", &cfg.Telegram); err != nil {
-		return err
-	}
-
-	if err := viper.UnmarshalKey("prometheus", &cfg.Prometheus); err != nil {
-		return err
-	}
-
-	return viper.UnmarshalKey("network.eth", &cfg.ETH.Network)
-}
-
-func setFromEnv(cfg *Config) error {
-	log.Debug().Msg("Set from environment configurations...")
-
-	cfg.AMB.PrivateKey = os.Getenv("AMB_PRIVATE_KEY")
-	if cfg.AMB.PrivateKey == "" {
-		return ErrPrivateKeyNotFound
-	}
-	cfg.ETH.PrivateKey = os.Getenv("ETH_PRIVATE_KEY")
-	if cfg.ETH.PrivateKey == "" {
-		return ErrPrivateKeyNotFound
-	}
-	return nil
+	return cfg, nil
 }

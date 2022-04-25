@@ -6,39 +6,38 @@ participant Relay
 participant EthBridgeContract
 
 
-Frontend ->: get tokens list from github (?)
-Frontend -> EthBridgeContract: check each token availability
-Frontend -> AmbBridgeContract: check each token availability
-note over Frontend: display availabe tokens
-
 ...
 ...
 
 
-Frontend -> AmbBridgeContract : withdraw(tokenAmbAddress,\n toAddress, amount) + fee
+Frontend -> AmbBridgeContract : withdraw
 note right: same timeframe
 AmbBridgeContract -> AmbBridgeContract: add withdraw to queue
+AmbBridgeContract ->: Event `Withdraw`
+-> Frontend: 1.1
+
 ...
 
-Frontend -> AmbBridgeContract : withdraw(tokenAmbAddress,\n toAddress, amount) + fee
+Frontend -> AmbBridgeContract : withdraw
 note right: new timeframe
 
-AmbBridgeContract -> Relay : Withdraw(event_id, queue)
-
+AmbBridgeContract ->: Event `Transfer`
+-> Frontend: 2.1
 
 Relay -> Relay : Wait next 10 blocks (safety blocks)
-
+-> Frontend: 2.2
 ...
 
-Relay -> EthBridgeContract : SubmitTransfer(Block[] memory blocks, \n Withdraw[] memory events, \n bytes[] memory proof)
+Relay -> EthBridgeContract : submitTransfers
 EthBridgeContract -> EthBridgeContract: lock transfers on N seconds
-
+EthBridgeContract ->: Event `TransferSubmit`
+-> Frontend: 3.1
 ...
 
-Relay -> EthBridgeContract: unlock transfers
+Relay -> EthBridgeContract: unlockTransfers
 EthBridgeContract ->: call erc20 contracts\n to transfer tokens
-
-
+EthBridgeContract ->: Event `TransferFinish`
+-> Frontend: 3.2
 
 
 @enduml

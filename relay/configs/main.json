@@ -6,14 +6,13 @@
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
             "contractAddr": "",
-            "vsContractAddr": ""
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contractAddr": "",
-            "epochLength": 3,
-            "ethashDir": "",
+            "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 1
         }
