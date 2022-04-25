@@ -38,7 +38,7 @@ describe("BridgeERC20", () => {
       await mockERC20.connect(bridgeS).increaseAllowance(bridge, 1000);
     });
 
-    it("should mint if sender is bridge (transfer)", async () => {
+    it("should throw error if sender has insufficient bridgeBalance amount", async () => {
       await expect(mockERC20.transfer(bridge, 100000))
           .to.be.revertedWith("amount is bigger than balance");
     });
