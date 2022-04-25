@@ -3,6 +3,7 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -82,8 +83,7 @@ func (b *CommonBridge) WatchValidityLockedTransfers() error {
 
 func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
 	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
-	if err != nil {
-		// todo if event not found it may be наебка too
+	if err != nil && !errors.Is(err, networks.ErrEventNotFound) {
 		return fmt.Errorf("GetEventById: %w", err)
 	}
 
@@ -91,28 +91,31 @@ func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lock
 	if err != nil {
 		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 	}
-	sideTransfers, err := json.MarshalIndent(sideEvent.Queue, "", "  ")
-	if err != nil {
-		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
+	sideTransfers := []byte("")
+	if sideEvent != nil {
+		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
+		if err != nil {
+			return fmt.Errorf("thisLockedTransfer marshal: %w", err)
+		}
 	}
 
 	if bytes.Equal(thisTransfers, sideTransfers) {
-		b.Logger.Debug().Str("event_id", sideEvent.EventId.String()).Msg("Locked transfers are equal")
+		b.Logger.Debug().Str("event_id", lockedEventId.String()).Msg("Locked transfers are equal")
 		return nil
 	}
 
-	b.Logger.Warn().Str("event_id", sideEvent.EventId.String()).Msgf(`
+	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msgf(`
 checkValidityLockedTransfers: Transfers mismatch in event %d\n
 this network locked transfers: %s \n
 side network transfer event: %s \n
-Pausing contract...`, sideEvent.EventId, thisTransfers, sideTransfers)
+Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
 	tx, txErr := b.Contract.Pause(b.Auth)
 	if err := b.GetTransactionError(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 
-	b.Logger.Warn().Str("event_id", sideEvent.EventId.String()).Msg("checkValidityLockedTransfers: Contract has been paused")
+	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msg("checkValidityLockedTransfers: Contract has been paused")
 	return nil
 
 }
