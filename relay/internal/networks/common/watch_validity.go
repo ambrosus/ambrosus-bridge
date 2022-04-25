@@ -11,7 +11,6 @@ import (
 )
 
 func (b *CommonBridge) WatchValidityLockedTransfersLoop() {
-	// todo don't pause if contract already paused
 	// todo watcher should be run as a separate instance
 	// todo rename to watchdog?
 	return
