@@ -18,33 +18,6 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
-	// todo maybe timeout (context)
-	blockChannel := make(chan *types.Header)
-	blockSub, err := b.WsClient.SubscribeNewHead(context.Background(), blockChannel)
-	if err != nil {
-		return fmt.Errorf("SubscribeNewHead: %w", err)
-	}
-	defer blockSub.Unsubscribe()
-
-	currentBlockNum, err := b.Client.BlockNumber(context.Background())
-	if err != nil {
-		return fmt.Errorf("get last block num: %w", err)
-	}
-
-	for currentBlockNum < targetBlockNum {
-		select {
-		case err := <-blockSub.Err():
-			return fmt.Errorf("listening new blocks: %w", err)
-
-		case block := <-blockChannel:
-			currentBlockNum = block.Number.Uint64()
-		}
-	}
-
-	return nil
-}
-
 func (b *CommonBridge) EnsureContractUnpaused() {
 	for {
 		err := b.waitForUnpauseContract()
@@ -82,6 +55,33 @@ func (b *CommonBridge) waitForUnpauseContract() error {
 			return nil
 		}
 	}
+}
+
+func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
+	// todo maybe timeout (context)
+	blockChannel := make(chan *types.Header)
+	blockSub, err := b.WsClient.SubscribeNewHead(context.Background(), blockChannel)
+	if err != nil {
+		return fmt.Errorf("SubscribeNewHead: %w", err)
+	}
+	defer blockSub.Unsubscribe()
+
+	currentBlockNum, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		return fmt.Errorf("get last block num: %w", err)
+	}
+
+	for currentBlockNum < targetBlockNum {
+		select {
+		case err := <-blockSub.Err():
+			return fmt.Errorf("listening new blocks: %w", err)
+
+		case block := <-blockChannel:
+			currentBlockNum = block.Number.Uint64()
+		}
+	}
+
+	return nil
 }
 
 func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
