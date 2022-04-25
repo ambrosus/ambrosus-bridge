@@ -35,6 +35,7 @@ func decodeErrorData(errData interface{}) error {
 			return errors.New(decodedMsg)
 		}
 
+		return errors.New(errStr)
 	}
 	return fmt.Errorf("")
 }

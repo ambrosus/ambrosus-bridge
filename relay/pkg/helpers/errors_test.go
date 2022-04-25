@@ -52,7 +52,7 @@ func Test_parseError(t *testing.T) {
 		{
 			"Reverted error",
 			args{NewTestError("The execution failed due to an exception.", "Reverted 0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002750726f7669646564206164647265737320697320616c726561647920612076616c696461746f7200000000000000000000000000000000000000000000000000")},
-			fmt.Errorf("Provided address is already a validator"),
+			fmt.Errorf("The execution failed due to an exception. Provided address is already a validator"),
 		},
 		{
 			"VM error",
