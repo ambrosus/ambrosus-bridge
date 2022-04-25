@@ -17,7 +17,7 @@ contract sAMB is IWrapper, ERC20 {
         _burn(msg.sender, amount);
         payable(msg.sender).transfer(amount);
 
-        emit Withdrawal(msg.sender, msg.value);
+        emit Withdrawal(msg.sender, amount);
     }
 
 }
