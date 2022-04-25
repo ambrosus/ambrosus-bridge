@@ -7,5 +7,5 @@ interface IWrapper {
 
     function deposit() external payable;
 
-    function withdraw(uint amount) external payable;
+    function withdraw(uint amount) external;
 }
