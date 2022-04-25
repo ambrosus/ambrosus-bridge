@@ -1,4 +1,4 @@
-package amb
+package helpers
 
 import (
 	"fmt"
@@ -62,7 +62,7 @@ func Test_parseError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want.Error(), parseError(tt.args.err).Error(), "parseError(%v)", tt.args.err)
+			assert.Equalf(t, tt.want.Error(), ParseError(tt.args.err).Error(), "parseError(%v)", tt.args.err)
 		})
 	}
 }
