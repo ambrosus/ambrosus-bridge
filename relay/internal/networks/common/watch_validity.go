@@ -90,8 +90,10 @@ func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lock
 	if err != nil {
 		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 	}
-	sideTransfers := []byte("")
-	if sideEvent != nil {
+	sideTransfers := []byte{}
+	if sideEvent == nil {
+		sideTransfers = []byte("event not found")
+	} else {
 		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
 		if err != nil {
 			return fmt.Errorf("thisLockedTransfer marshal: %w", err)
