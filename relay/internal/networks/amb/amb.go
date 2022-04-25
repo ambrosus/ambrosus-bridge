@@ -110,7 +110,7 @@ func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, 
 	}
 	return nil
 }
-func (b *Bridge) GetTransactionErrorAndWaitMined(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+func (b *Bridge) ProcessTx(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
 	if err := b.GetTransactionError(params, txParams...); err != nil {
 		return err
 	}

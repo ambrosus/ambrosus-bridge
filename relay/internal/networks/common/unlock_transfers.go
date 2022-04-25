@@ -86,7 +86,7 @@ func (b *CommonBridge) unlockTransfers() error {
 	authCustomGas := *b.Auth
 	authCustomGas.GasLimit = customGas
 	tx, txErr = b.Contract.UnlockTransfersBatch(&authCustomGas)
-	return b.GetTransactionErrorAndWaitMined(
+	return b.ProcessTx(
 		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfersBatch"},
 	)
 }
