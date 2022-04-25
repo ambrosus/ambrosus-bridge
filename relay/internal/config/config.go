@@ -13,46 +13,6 @@ const defaultConfigPath string = "configs/main"
 
 var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
 
-type (
-	Config struct {
-		AMB        AMBConfig
-		ETH        ETHConfig
-		Telegram   TelegramLogger
-		Prometheus Prometheus
-	}
-
-	Network struct {
-		HttpURL      string `mapstructure:"httpUrl"`
-		WsURL        string `mapstructure:"wsUrl"`
-		ContractAddr string `mapstructure:"contractAddr"`
-		PrivateKey   string
-	}
-
-	AMBConfig struct {
-		Network
-		VSContractAddr string `mapstructure:"vsContractAddr"`
-	}
-
-	ETHConfig struct {
-		Network
-		EthashDir            string `mapstructure:"ethashDir"`
-		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
-		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
-	}
-
-	TelegramLogger struct {
-		Enable bool   `mapstructure:"enable"`
-		Token  string `mapstructure:"token"`
-		ChatId int    `mapstructure:"chat-id"`
-	}
-
-	Prometheus struct {
-		Enable bool   `mapstructure:"enable"`
-		Ip     string `mapstructure:"ip"`
-		Port   int    `mapstructure:"port"`
-	}
-)
-
 func Init() (*Config, error) {
 	log.Debug().Msg("Initialize config...")
 
