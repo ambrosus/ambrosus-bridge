@@ -40,14 +40,8 @@ func (b *CommonBridge) CheckOldLockedTransfers() error {
 			return nil
 		}
 
-		nextSideEvent, err := b.SideBridge.GetEventById(oldestLockedEventId)
-		if err != nil {
-			// todo if event not found it may be наебка too
-			return fmt.Errorf("GetEventById: %w", err)
-		}
-
 		b.Logger.Info().Str("event_id", nextLockedEventId.String()).Msg("Found old TransferSubmit event")
-		if err := b.checkValidityLockedTransfers(nextSideEvent, &nextLockedTransfer); err != nil {
+		if err := b.checkValidityLockedTransfers(nextLockedEventId, &nextLockedTransfer); err != nil {
 			return fmt.Errorf("checkValidityLockedTransfers: %w", err)
 		}
 	}
@@ -74,23 +68,24 @@ func (b *CommonBridge) WatchValidityLockedTransfers() error {
 		case event := <-eventCh:
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
 
-			sideEvent, err := b.SideBridge.GetEventById(event.EventId)
-			if err != nil {
-				// todo if event not found it may be наебка too
-				return fmt.Errorf("GetEventById: %w", err)
-			}
 			lockedTransfer, err := b.Contract.GetLockedTransfers(nil, event.EventId)
 			if err != nil {
 				return fmt.Errorf("GetLockedTransfers: %w", err)
 			}
-			if err := b.checkValidityLockedTransfers(sideEvent, &lockedTransfer); err != nil {
+			if err := b.checkValidityLockedTransfers(event.EventId, &lockedTransfer); err != nil {
 				b.Logger.Error().Msgf("checkValidityLockedTransfers: %s", err)
 			}
 		}
 	}
 }
 
-func (b *CommonBridge) checkValidityLockedTransfers(sideEvent *contracts.BridgeTransfer, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
+func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
+	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
+	if err != nil {
+		// todo if event not found it may be наебка too
+		return fmt.Errorf("GetEventById: %w", err)
+	}
+
 	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
 	if err != nil {
 		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
