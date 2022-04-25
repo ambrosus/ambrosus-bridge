@@ -16,9 +16,11 @@ var (
 )
 
 type GetTransactionErrorParams struct {
-	Tx         *types.Transaction
-	TxErr      error
+	Tx    *types.Transaction
+	TxErr error
+	// MethodName amd TxParams are optional and used only for getting the error in parity/openethereum
 	MethodName string
+	TxParams   []interface{}
 }
 
 type Bridge interface {
@@ -28,12 +30,7 @@ type Bridge interface {
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
 	// GetTransactionError returns error of the transaction
-	// "methodName" amd "params" are optional and used only
-	// for getting the error in parity/openethereum
-	GetTransactionError(params GetTransactionErrorParams, txParams ...interface{}) error
-
-	// ProcessTx calls GetTransactionError and wait for the transaction to be mined
-	ProcessTx(params GetTransactionErrorParams, txParams ...interface{}) error
+	GetTransactionError(params GetTransactionErrorParams) error
 
 	SendEvent(event *contracts.BridgeTransfer) error
 }

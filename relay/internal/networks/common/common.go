@@ -11,9 +11,11 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
@@ -159,6 +161,26 @@ func (b *CommonBridge) Listen() error {
 			}
 		}
 	}
+}
+
+func (b *CommonBridge) ProcessTx(params networks.GetTransactionErrorParams) error {
+	if err := b.Bridge.GetTransactionError(params); err != nil {
+		return err
+	}
+
+	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
+	if err != nil {
+		return fmt.Errorf("wait mined: %w", err)
+	}
+
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		err = b.GetFailureReason(params.Tx)
+		if err != nil {
+			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))
+		}
+	}
+
+	return nil
 }
 
 func (b *CommonBridge) SetRelayBalanceMetric() {
