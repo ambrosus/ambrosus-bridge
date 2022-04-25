@@ -5,7 +5,7 @@ source .env.relay
 
 cd ../relay
 go build ./cmd/bridge
-export CONFIG_PATH DEBUG AMB_PRIVATE_KEY ETH_PRIVATE_KEY
+export CONFIG_PATH=configs/integr
 ./bridge
 
 #cd ../contracts
