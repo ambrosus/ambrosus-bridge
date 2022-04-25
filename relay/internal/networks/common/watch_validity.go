@@ -11,10 +11,11 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) WatchValidityLockedTransfersLoop() {
-	// todo watcher should be run as a separate instance
+func (b *CommonBridge) WatchValidityLockedTransfersLoop(sideBridge networks.Bridge) {
 	// todo rename to watchdog?
 	return
+	b.SideBridge = sideBridge
+
 	for {
 		b.EnsureContractUnpaused()
 

@@ -48,8 +48,14 @@ func main() {
 		log.Fatal().Err(err).Msg("ethereum bridge not created")
 	}
 
-	go ambBridge.Run(ethBridge)
-	go ethBridge.Run(ambBridge)
+	if cfg.IsRelay {
+		go ambBridge.Run(ethBridge)
+		go ethBridge.Run(ambBridge)
+	}
+	if cfg.IsWatchdog {
+		go ambBridge.WatchValidityLockedTransfersLoop(ethBridge)
+		go ethBridge.WatchValidityLockedTransfersLoop(ambBridge)
+	}
 
 	if cfg.Prometheus.Enable {
 		// Prometheus endpoint

@@ -15,6 +15,8 @@ var ErrPrivateKeyNotFound = errors.New("private key not found in environment")
 
 type (
 	Config struct {
+		IsRelay    bool
+		IsWatchdog bool
 		AMB        AMBConfig
 		ETH        ETHConfig
 		Telegram   TelegramLogger
@@ -93,6 +95,13 @@ func parseConfigFile() error {
 
 func unmarshal(cfg *Config) error {
 	log.Debug().Msg("Unmarshal config keys...")
+
+	if err := viper.UnmarshalKey("isRelay", &cfg.IsRelay); err != nil {
+		return err
+	}
+	if err := viper.UnmarshalKey("isWatchdog", &cfg.IsWatchdog); err != nil {
+		return err
+	}
 
 	if err := viper.UnmarshalKey("network.amb", &cfg.AMB); err != nil {
 		return err

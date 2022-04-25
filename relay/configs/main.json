@@ -1,4 +1,6 @@
 {
+    "isRelay": true,
+    "isWatchdog": true,
     "network": {
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
