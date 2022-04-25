@@ -1,20 +1,32 @@
 @startuml
 
 
-class EthBridge {
 
+class Bsc_AmbBridge {
+    +SubmitTransferClique(CliqueProof proof)
 }
-class AmbBridge {
-
-}
-
-
-class CheckPoW {
-    +CheckPoW_(BlockPoW[] blocks, Transfer[] events, bytes[] proof)
+class Bsc_BscBridge {
+    +SubmitTransferAura(AuraProof proof)
 }
 
-class CheckPoA {
-    +CheckPoA_(BlockPoA[] blocks, Transfer[] events, bytes[] proof)
+class Eth_AmbBridge {
+    +SubmitTransferPoW(PoWProof proof)
+}
+class Eth_EthBridge {
+    +SubmitTransferAura(AuraProof proof)
+}
+
+
+abstract class CheckPoW {
+    -CheckPoW(PoWProof proof)
+}
+
+abstract class CheckAura {
+    -CheckAura(AuraProof proof)
+}
+
+abstract class CheckClique {
+    -CheckClique(CliqueProof proof)
 }
 
 
@@ -26,7 +38,15 @@ entity BlockPoW {
     +bytes p3;
 }
 
-entity BlockPoA {
+entity BlockClique {
+    +bytes p1;
+    +bytes32 prevHashOrReceiptRoot;
+    +bytes p2;
+    +bytes difficulty;
+    +bytes p3;
+}
+
+entity BlockAura {
     +bytes p0_seal;
     +bytes p0_bare;
 
@@ -43,7 +63,7 @@ entity BlockPoA {
 
 
 
-class CommonBridge {
+abstract class CommonBridge {
     +mapping(address=>address) tokenAddresses
     +address sideBridgeAddress
     +uint fee
@@ -55,7 +75,8 @@ class CommonBridge {
     -uint outputEventId
     -Transfer[] withdraw_queue
     --
-    +withdraw(tokenAddress, toAddress, amount)
+    +withdraw(tokenAddress, toAddress, amount, unwrap)
+    +wrapWithdraw(toAddress)
     --admin--
     +tokenAddresses update methods ()
     +setFee()
@@ -66,22 +87,31 @@ class CommonBridge {
 
 
 entity Transfer {
-    +contractAddress
+    +tokenAddress
     +toAddress
     +amount
 }
 
 
-AmbBridge --> CheckPoW
-EthBridge --> CheckPoA
+Eth_AmbBridge --> CheckPoW
+Eth_EthBridge --> CheckAura
+
+Bsc_BscBridge --> CheckAura
+Bsc_AmbBridge --> CheckClique
 
 CheckPoW --> BlockPoW
-CheckPoA --> BlockPoA
-CheckPoW --> Transfer
-CheckPoA --> Transfer
+CheckClique --> BlockClique
+CheckAura --> BlockAura
 
-AmbBridge --> CommonBridge
-EthBridge --> CommonBridge
+CheckPoW --> Transfer
+CheckClique --> Transfer
+CheckAura --> Transfer
+
+Eth_AmbBridge --> CommonBridge
+Eth_EthBridge --> CommonBridge
+Bsc_AmbBridge --> CommonBridge
+Bsc_BscBridge --> CommonBridge
+
 CommonBridge --> Transfer
 
 
