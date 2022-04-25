@@ -4,11 +4,11 @@ import (
 	"os"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger/telegram"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
