@@ -20,7 +20,7 @@ func main() {
 	initLogger()
 
 	// Initialize bridge config.
-	cfg, err := config.Init()
+	cfg, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
@@ -30,20 +30,20 @@ func main() {
 		telegramEthLogger external_logger.ExternalLogger = external_logger.Logger{}
 	)
 
-	if cfg.Telegram.Enable {
+	if tg := cfg.ExtLoggers.Telegram; tg.Enable {
 		// Creating telegram loggers as an external logger.
-		telegramAmbLogger = telegram.NewExternalLogger(cfg.Telegram.Token, cfg.Telegram.ChatId, "<b>[AMB]</b>", nil)
-		telegramEthLogger = telegram.NewExternalLogger(cfg.Telegram.Token, cfg.Telegram.ChatId, "<b>[ETH]</b>", nil)
+		telegramAmbLogger = telegram.NewExternalLogger(tg.Token, tg.ChatId, "<b>[AMB]</b>", nil)
+		telegramEthLogger = telegram.NewExternalLogger(tg.Token, tg.ChatId, "<b>[ETH]</b>", nil)
 	}
 
 	// Creating a new ambrosus bridge.
-	ambBridge, err := amb.New(&cfg.AMB, telegramAmbLogger)
+	ambBridge, err := amb.New(&cfg.Networks.AMB, telegramAmbLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ambrosus bridge not created")
 	}
 
 	// Creating a new ethereum bridge.
-	ethBridge, err := eth.New(&cfg.ETH, telegramEthLogger)
+	ethBridge, err := eth.New(&cfg.Networks.ETH, telegramEthLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ethereum bridge not created")
 	}
