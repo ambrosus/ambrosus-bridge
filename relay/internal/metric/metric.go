@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	RelayBalanceGWeiGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "bridge_relay_balance_gwei",
-		Help: "Balance of a relay in the bridge",
+	RelayBalance = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "relay_balance",
+		Help: "Balance of a relay in the bridge (in gwei)",
 	}, []string{"bridge_name"})
 )
 

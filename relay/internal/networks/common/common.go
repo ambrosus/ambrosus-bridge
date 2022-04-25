@@ -168,7 +168,7 @@ func (b *CommonBridge) SetRelayBalanceMetric() {
 		return
 	}
 
-	metric.RelayBalanceGWeiGauge.WithLabelValues(b.Name).Set(balance)
+	metric.RelayBalance.WithLabelValues(b.Name).Set(balance)
 }
 
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {
