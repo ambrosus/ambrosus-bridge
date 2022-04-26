@@ -33,6 +33,9 @@ type Bridge interface {
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
 
+	// WithdrawCount return count of `Withdraw` events emitted after given event
+	WithdrawCount(afterEventId *big.Int) (int, error)
+
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error
 
