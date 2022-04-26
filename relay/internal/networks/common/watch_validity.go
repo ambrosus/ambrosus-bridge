@@ -3,26 +3,56 @@ package common
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) WatchValidityLockedTransfersLoop() {
-	// todo don't pause if contract already paused
-	// todo check old locked transfers and not only oldest
-	// todo watcher should be run as a separate instance
-	// todo rename to watchdog?
-	return
+func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
+	b.SideBridge = sideBridge
+
 	for {
-		if err := b.WatchValidityLockedTransfers(); err != nil {
-			b.Logger.Error().Msgf("WatchValidityLockedTransfersLoop: %s", err)
+		b.EnsureContractUnpaused()
+
+		if err := b.watchLockedTransfers(); err != nil {
+			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
 		}
 	}
 }
 
-func (b *CommonBridge) WatchValidityLockedTransfers() error {
+func (b *CommonBridge) checkOldLockedTransfers() error {
+	b.Logger.Info().Msg("Checking old transfer submit events...")
+
+	oldestLockedEventId, err := b.Contract.OldestLockedEventId(nil)
+	if err != nil {
+		return fmt.Errorf("get oldest locked event id: %w", err)
+	}
+
+	for i := int64(0); ; i++ {
+		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
+		nextLockedTransfer, err := b.Contract.GetLockedTransfers(nil, nextLockedEventId)
+		if err != nil {
+			return fmt.Errorf("GetLockedTransfers: %w", err)
+		}
+		if nextLockedTransfer.EndTimestamp.Cmp(big.NewInt(0)) == 0 {
+			return nil
+		}
+
+		b.Logger.Info().Str("event_id", nextLockedEventId.String()).Msg("Found old TransferSubmit event")
+		if err := b.checkValidity(nextLockedEventId, &nextLockedTransfer); err != nil {
+			return fmt.Errorf("checkValidity: %w", err)
+		}
+	}
+}
+
+func (b *CommonBridge) watchLockedTransfers() error {
+	if err := b.checkOldLockedTransfers(); err != nil {
+		return fmt.Errorf("checkOldLockedTransfers: %w", err)
+	}
+
 	eventCh := make(chan *contracts.BridgeTransferSubmit)
 	eventSub, err := b.WsContract.WatchTransferSubmit(nil, eventCh, nil)
 	if err != nil {
@@ -39,50 +69,52 @@ func (b *CommonBridge) WatchValidityLockedTransfers() error {
 		case event := <-eventCh:
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
 
-			if err := b.checkValidityLockedTransfers(event); err != nil {
-				b.Logger.Error().Msgf("checkValidityLockedTransfers: %s", err)
+			lockedTransfer, err := b.Contract.GetLockedTransfers(nil, event.EventId)
+			if err != nil {
+				return fmt.Errorf("GetLockedTransfers: %w", err)
+			}
+			if err := b.checkValidity(event.EventId, &lockedTransfer); err != nil {
+				b.Logger.Error().Msgf("checkValidity: %s", err)
 			}
 		}
 	}
 }
 
-func (b *CommonBridge) checkValidityLockedTransfers(event *contracts.BridgeTransferSubmit) error {
-	sideEvent, err := b.SideBridge.GetEventById(event.EventId)
-	if err != nil {
-		// todo if event not found it may be наебка too
+func (b *CommonBridge) checkValidity(lockedEventId *big.Int, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
+	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
+	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("GetEventById: %w", err)
-	}
-	lockedTransfer, err := b.Contract.GetLockedTransfers(nil, event.EventId)
-	if err != nil {
-		return fmt.Errorf("GetLockedTransfers: %w", err)
 	}
 
 	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
 	if err != nil {
 		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 	}
-	sideTransfers, err := json.MarshalIndent(sideEvent.Queue, "", "  ")
-	if err != nil {
-		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
+	sideTransfers := []byte("event not found")
+	if sideEvent != nil {
+		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
+		if err != nil {
+			return fmt.Errorf("thisLockedTransfer marshal: %w", err)
+		}
 	}
 
 	if bytes.Equal(thisTransfers, sideTransfers) {
-		b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Locked transfers are equal")
+		b.Logger.Debug().Str("event_id", lockedEventId.String()).Msg("Locked transfers are equal")
 		return nil
 	}
 
-	b.Logger.Warn().Str("event_id", event.EventId.String()).Msgf(`
-checkValidityLockedTransfers: Transfers mismatch in event %d\n
+	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msgf(`
+checkValidity: Transfers mismatch in event %d\n
 this network locked transfers: %s \n
 side network transfer event: %s \n
-Pausing contract...`, event.EventId, thisTransfers, sideTransfers)
+Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
 	tx, txErr := b.Contract.Pause(b.Auth)
-	if err := b.GetTransactionError(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+	if err := b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 
-	b.Logger.Warn().Str("event_id", event.EventId.String()).Msg("checkValidityLockedTransfers: Contract has been paused")
+	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msg("checkValidity: Contract has been paused")
 	return nil
 
 }

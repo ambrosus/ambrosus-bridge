@@ -7,18 +7,18 @@ import (
 	"net/http"
 )
 
-type externalLogger struct {
+type tgLogger struct {
 	Token      string
 	ChatId     int
 	HttpClient *http.Client
 	Prefix     string
 }
 
-func NewExternalLogger(token string, chatId int, prefix string, httpClient *http.Client) *externalLogger {
+func NewLogger(token string, chatId int, prefix string, httpClient *http.Client) *tgLogger {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
-	return &externalLogger{
+	return &tgLogger{
 		Token:      token,
 		ChatId:     chatId,
 		HttpClient: httpClient,
@@ -37,15 +37,15 @@ type response struct {
 	ErrorDescription string `json:"description"` // if Ok is false
 }
 
-func (t *externalLogger) LogError(msg string) error {
+func (t *tgLogger) LogError(msg string) error {
 	return t.log("We got an unexpected error:", msg)
 }
 
-func (t *externalLogger) LogWarning(msg string) error {
+func (t *tgLogger) LogWarning(msg string) error {
 	return t.log("Warning!", msg)
 }
 
-func (t *externalLogger) log(title, msg string) error {
+func (t *tgLogger) log(title, msg string) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Token)
 	body := &request{
 		ChatId:    t.ChatId,

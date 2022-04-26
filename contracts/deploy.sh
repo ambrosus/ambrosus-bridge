@@ -5,10 +5,10 @@ set -e
 # second arg is network type, for example: integr or test or main
 
 SIDE=${1:-eth}
-TYPE=${2:-test}
+TYPE=${2:-dev}
 
-AMB_NET="amb_$TYPE"
-SIDE_NET="${SIDE}_$TYPE"
+AMB_NET="$TYPE/amb"
+SIDE_NET="$TYPE/$SIDE"
 
 echo "Deploying on $AMB_NET and $SIDE_NET"
 

@@ -9,16 +9,18 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) UnlockOldestTransfersLoop() {
+func (b *CommonBridge) UnlockTransfersLoop() {
 	for {
-		if err := b.UnlockOldestTransfers(); err != nil {
-			b.Logger.Error().Msgf("UnlockOldestTransfersLoop: %s", err)
+		b.EnsureContractUnpaused()
+
+		if err := b.unlockOldTransfers(); err != nil {
+			b.Logger.Error().Msgf("UnlockTransfersLoop: %s", err)
 		}
 		time.Sleep(time.Minute)
 	}
 }
 
-func (b *CommonBridge) UnlockOldestTransfers() error {
+func (b *CommonBridge) unlockOldTransfers() error {
 	// Get oldest transfer timestamp.
 	oldestLockedEventId, err := b.Contract.OldestLockedEventId(nil)
 	if err != nil {
@@ -35,7 +37,7 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 		}
 
 		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"UnlockOldestTransfers: there are no locked transfers with that id. Sleep %v seconds...",
+			"unlockOldTransfers: there are no locked transfers with that id. Sleep %v seconds...",
 			lockTime.Uint64(),
 		)
 		time.Sleep(time.Duration(lockTime.Uint64()) * time.Second)
@@ -52,26 +54,35 @@ func (b *CommonBridge) UnlockOldestTransfers() error {
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
 		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"UnlockOldestTransfers: sleep %v seconds...",
+			"unlockOldTransfers: sleep %v seconds...",
 			sleepTime,
 		)
 		time.Sleep(time.Duration(sleepTime) * time.Second)
 	}
 
 	// Unlock the oldest transfer.
-	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocking...")
-	err = b.unlockTransfers(oldestLockedEventId)
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocking...")
+	err = b.unlockTransfers()
 	if err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
-	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("UnlockOldestTransfers: unlocked")
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocked")
 	return nil
 }
 
-func (b *CommonBridge) unlockTransfers(eventId *big.Int) error {
-	tx, txErr := b.Contract.UnlockTransfersBatch(b.Auth)
-	return b.GetTransactionError(
-		networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "unlockTransfers"},
-		eventId,
-	)
+func (b *CommonBridge) unlockTransfers() error {
+	// Make tx without sending it for getting the gas limit.
+	authNoSend := *b.Auth
+	authNoSend.NoSend = true
+	tx, err := b.Contract.UnlockTransfersBatch(&authNoSend)
+	if err = b.GetTxErr(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"}); err != nil {
+		return fmt.Errorf("NoSend: %w", err)
+	}
+
+	// Send the tx with the gas limit 20% more than the estimated gas limit.
+	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
+	authCustomGas := *b.Auth
+	authCustomGas.GasLimit = customGas
+	tx, err = b.Contract.UnlockTransfersBatch(&authCustomGas)
+	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"})
 }

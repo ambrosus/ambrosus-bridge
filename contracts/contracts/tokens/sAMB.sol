@@ -13,11 +13,11 @@ contract sAMB is IWrapper, ERC20 {
         emit Deposit(msg.sender, msg.value);
     }
 
-    function withdraw(uint amount) public override payable {
+    function withdraw(uint amount) public override {
         _burn(msg.sender, amount);
         payable(msg.sender).transfer(amount);
 
-        emit Withdrawal(msg.sender, msg.value);
+        emit Withdrawal(msg.sender, amount);
     }
 
 }
