@@ -50,7 +50,11 @@ func (b *CommonBridge) waitForUnpauseContract() error {
 		select {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching unpaused event: %w", err)
-		case <-eventCh:
+		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
+
 			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
 			return nil
 		}

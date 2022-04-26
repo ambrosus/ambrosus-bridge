@@ -67,6 +67,10 @@ func (b *CommonBridge) watchLockedTransfers() error {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching submit transfers: %w", err)
 		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
+
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
 
 			lockedTransfer, err := b.Contract.GetLockedTransfers(nil, event.EventId)
