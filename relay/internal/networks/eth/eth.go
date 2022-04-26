@@ -12,8 +12,6 @@ import (
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -51,18 +49,11 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	b.ensureDAGsExists()
 
-	go b.UnlockOldestTransfersLoop()
-	go b.WatchValidityLockedTransfersLoop()
+	go b.UnlockTransfersLoop()
 
 	b.Logger.Info().Msg("Ethereum bridge runned!")
 
-	for {
-		b.EnsureContractUnpaused()
-
-		if err := b.Listen(); err != nil {
-			b.Logger.Error().Err(err).Msg("Listen error")
-		}
-	}
+	b.ListenTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
@@ -104,27 +95,13 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
-func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 	if params.TxErr != nil {
 		if params.TxErr.Error() == "execution reverted" {
 			dataErr := params.TxErr.(rpc.DataError)
 			return fmt.Errorf("contract runtime error: %s", dataErr.ErrorData())
 		}
 		return params.TxErr
-	}
-
-	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
-	if err != nil {
-		return fmt.Errorf("wait mined: %w", err)
-	}
-
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		// we've got here probably due to low gas limit,
-		// and revert() that hasn't been caught at eth_estimateGas
-		err = b.GetFailureReason(params.Tx)
-		if err != nil {
-			return fmt.Errorf("GetFailureReason: %w", err)
-		}
 	}
 	return nil
 }

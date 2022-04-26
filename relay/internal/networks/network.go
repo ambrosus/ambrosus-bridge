@@ -15,10 +15,12 @@ var (
 	ErrEventNotFound = errors.New("error event not found")
 )
 
-type GetTransactionErrorParams struct {
-	Tx         *types.Transaction
-	TxErr      error
+type GetTxErrParams struct {
+	Tx    *types.Transaction
+	TxErr error
+	// MethodName amd TxParams are optional and used only for getting the error in parity/openethereum
 	MethodName string
+	TxParams   []interface{}
 }
 
 type Bridge interface {
@@ -27,11 +29,10 @@ type Bridge interface {
 	GetMinSafetyBlocksNum() (uint64, error)
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
-	// GetTransactionError returns error of the transaction
-	// "methodName" amd "params" are optional and used only
-	// for getting the error in parity/openethereum
-	GetTransactionError(params GetTransactionErrorParams, txParams ...interface{}) error
 	SendEvent(event *contracts.BridgeTransfer) error
+
+	// GetTxErr returns error of the transaction
+	GetTxErr(params GetTxErrParams) error
 }
 
 type BridgeReceiveAura interface {

@@ -1,17 +1,18 @@
 {
+    "isRelay": true,
+    "isWatchdog": true,
     "network": {
         "amb": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
             "contractAddr": "0x55252974F0277023C6ad296D33c4FDB4ABF971f3",
-            "vsContractAddr": ""
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contractAddr": "0x03ade7E46703FEC7Ecf611B1f3021AC04C326444",
-            "epochLength": 1,
-            "ethashDir": "",
+            "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 1
         }

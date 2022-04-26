@@ -2,17 +2,60 @@ package common
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	"golang.org/x/sync/errgroup"
 )
+
+func (b *CommonBridge) EnsureContractUnpaused() {
+	for {
+		err := b.waitForUnpauseContract()
+		if err == nil {
+			return
+		}
+
+		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
+		time.Sleep(10 * time.Second)
+	}
+}
+
+func (b *CommonBridge) waitForUnpauseContract() error {
+	paused, err := b.Contract.Paused(nil)
+	if err != nil {
+		return fmt.Errorf("Paused: %w", err)
+	}
+	if !paused {
+		return nil
+	}
+
+	eventCh := make(chan *contracts.BridgeUnpaused)
+	eventSub, err := b.WsContract.WatchUnpaused(nil, eventCh)
+	if err != nil {
+		return fmt.Errorf("WatchUnpaused: %w", err)
+	}
+	defer eventSub.Unsubscribe()
+
+	for {
+		select {
+		case err := <-eventSub.Err():
+			return fmt.Errorf("watching unpaused event: %w", err)
+		case <-eventCh:
+			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
+			return nil
+		}
+	}
+}
 
 func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 	// todo maybe timeout (context)
@@ -41,46 +84,6 @@ func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 	return nil
 }
 
-func (b *CommonBridge) EnsureContractUnpaused() {
-	for {
-		err := b.WaitForUnpauseContract()
-		if err == nil {
-			return
-		}
-
-		b.Logger.Error().Err(err).Msg("WaitForUnpauseContract error")
-		time.Sleep(10 * time.Second)
-	}
-}
-
-func (b *CommonBridge) WaitForUnpauseContract() error {
-	paused, err := b.Contract.Paused(nil)
-	if err != nil {
-		return fmt.Errorf("Paused: %w", err)
-	}
-	if !paused {
-		return nil
-	}
-
-	eventCh := make(chan *contracts.BridgeUnpaused)
-	eventSub, err := b.WsContract.WatchUnpaused(nil, eventCh)
-	if err != nil {
-		return fmt.Errorf("WatchUnpaused: %w", err)
-	}
-
-	defer eventSub.Unsubscribe()
-
-	for {
-		select {
-		case err := <-eventSub.Err():
-			return fmt.Errorf("watching unpaused event: %w", err)
-		case _ = <-eventCh:
-			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
-			return nil
-		}
-	}
-}
-
 func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
 	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
 	if err != nil {
@@ -103,7 +106,6 @@ func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, err
 			}
 
 			receipts[i] = receipt
-
 			return nil
 		})
 	}
@@ -124,6 +126,16 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	return err
 }
 
+func (b *CommonBridge) SetRelayBalanceMetric() {
+	balance, err := b.getBalanceGWei(b.Auth.From)
+	if err != nil {
+		b.Logger.Error().Err(err).Msg("error when getting contract balance in GWei")
+		return
+	}
+
+	metric.RelayBalance.WithLabelValues(b.Name).Set(balance)
+}
+
 func (b *CommonBridge) getBalanceGWei(address common.Address) (float64, error) {
 	balance, err := b.Client.BalanceAt(context.Background(), address, nil)
 	if err != nil {
@@ -132,4 +144,12 @@ func (b *CommonBridge) getBalanceGWei(address common.Address) (float64, error) {
 	balanceGWei := new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(params.GWei))
 	balanceFloat64, _ := balanceGWei.Float64()
 	return balanceFloat64, nil
+}
+
+func parsePK(pk string) (*ecdsa.PrivateKey, error) {
+	b, err := hex.DecodeString(pk)
+	if err != nil {
+		return nil, err
+	}
+	return crypto.ToECDSA(b)
 }

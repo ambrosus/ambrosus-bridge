@@ -10,6 +10,8 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -49,18 +51,11 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
-	go b.UnlockOldestTransfersLoop()
-	go b.WatchValidityLockedTransfersLoop()
+	go b.UnlockTransfersLoop()
 
 	b.Logger.Info().Msg("Ambrosus bridge runned!")
 
-	for {
-		b.EnsureContractUnpaused()
-
-		if err := b.Listen(); err != nil {
-			b.Logger.Error().Err(err).Msg("Listen error")
-		}
-	}
+	b.ListenTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
@@ -97,21 +92,16 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
-func (b *Bridge) GetTransactionError(params networks.GetTransactionErrorParams, txParams ...interface{}) error {
+func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 	if params.TxErr != nil {
 		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
-		// openethereum doesn't give us a full error message
-		// so, make low-level call method to get the full error message
-		err := b.getFailureReasonViaCall(params.MethodName, txParams...)
+		// openethereum doesn't give us a full error message at eth_estimateGas, so
+		// do eth_call method to get the full error message
+		err := b.Contract.Raw().Call(&bind.CallOpts{From: b.Auth.From}, nil, params.MethodName, params.TxParams...)
 		if err != nil {
-			return fmt.Errorf("getFailureReasonViaCall: %w", err)
+			return fmt.Errorf("getFailureReasonViaCall: %w", helpers.ParseError(err))
 		}
 		return params.TxErr
-	}
-
-	err := b.waitForTxMined(params.Tx)
-	if err != nil {
-		return fmt.Errorf("waitForTxMined: %w", err)
 	}
 	return nil
 }

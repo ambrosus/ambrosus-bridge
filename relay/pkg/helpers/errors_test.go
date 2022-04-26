@@ -1,4 +1,4 @@
-package amb
+package helpers
 
 import (
 	"fmt"
@@ -52,7 +52,7 @@ func Test_parseError(t *testing.T) {
 		{
 			"Reverted error",
 			args{NewTestError("The execution failed due to an exception.", "Reverted 0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002750726f7669646564206164647265737320697320616c726561647920612076616c696461746f7200000000000000000000000000000000000000000000000000")},
-			fmt.Errorf("Provided address is already a validator"),
+			fmt.Errorf("The execution failed due to an exception. Provided address is already a validator"),
 		},
 		{
 			"VM error",
@@ -62,7 +62,7 @@ func Test_parseError(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want.Error(), parseError(tt.args.err).Error(), "parseError(%v)", tt.args.err)
+			assert.Equalf(t, tt.want.Error(), ParseError(tt.args.err).Error(), "parseError(%v)", tt.args.err)
 		})
 	}
 }
