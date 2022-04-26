@@ -76,9 +76,9 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	powProof, err := b.getBlocksAndEvents(event, safetyBlocks)
+	powProof, err := b.encodePoWProof(event, safetyBlocks)
 	if err != nil {
-		return fmt.Errorf("getBlocksAndEvents: %w", err)
+		return fmt.Errorf("encodePoWProof: %w", err)
 	}
 
 	for _, blockNum := range []uint64{event.Raw.BlockNumber, event.Raw.BlockNumber + safetyBlocks} {

@@ -78,9 +78,9 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	auraProof, err := b.getBlocksAndEvents(event, safetyBlocks)
+	auraProof, err := b.encodeAuraProof(event, safetyBlocks)
 	if err != nil {
-		return fmt.Errorf("getBlocksAndEvents: %w", err)
+		return fmt.Errorf("encodeAuraProof: %w", err)
 	}
 
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
