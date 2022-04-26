@@ -87,3 +87,41 @@ func TestEncoding(t *testing.T) {
 	}
 
 }
+
+func TestGasPrice(t *testing.T) {
+	ambBridge, err := New(&config.AMBConfig{
+		Network: config.Network{
+			HttpURL:      "https://network.ambrosus-dev.io",
+			ContractAddr: "0x4D6c49Dd98A25AD7bDAA64aA9ad7e0E9221bC2Ce",
+			PrivateKey:   "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5",
+		},
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ethBridge, err := New(&config.AMBConfig{
+		Network: config.Network{
+			HttpURL:      "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+			ContractAddr: "0xF634554393053F77F3C5093B52E3064A49aaB851",
+			PrivateKey:   "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5",
+		},
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ambBridge.SideBridge = ethBridge
+	ethBridge.SideBridge = ambBridge
+
+	r, err := ethBridge.CommonBridge.GasPerWithdraw(big.NewInt(2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("amb->eth", r)
+
+	r, err = ambBridge.CommonBridge.GasPerWithdraw(big.NewInt(2))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Log("eth->amb", r)
+
+}
