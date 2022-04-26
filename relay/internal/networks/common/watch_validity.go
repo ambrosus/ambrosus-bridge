@@ -37,7 +37,7 @@ func (b *CommonBridge) checkOldLockedTransfers() error {
 		if err != nil {
 			return fmt.Errorf("GetLockedTransfers: %w", err)
 		}
-		if nextLockedTransfer.EndTimestamp.Cmp(big.NewInt(0)) == 0 {
+		if nextLockedTransfer.EndTimestamp.Uint64() == 0 {
 			return nil
 		}
 
@@ -67,6 +67,10 @@ func (b *CommonBridge) watchLockedTransfers() error {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching submit transfers: %w", err)
 		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
+
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
 
 			lockedTransfer, err := b.Contract.GetLockedTransfers(nil, event.EventId)

@@ -63,8 +63,10 @@ func (b *CommonBridge) watchTransfers() error {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching transfers: %w", err)
 		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-
 			if err := b.SendEvent(event); err != nil {
 				return fmt.Errorf("send event: %w", err)
 			}

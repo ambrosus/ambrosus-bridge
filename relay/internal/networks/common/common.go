@@ -89,8 +89,10 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
-	if logs.Next() {
-		return logs.Event, nil
+	for logs.Next() {
+		if !logs.Event.Raw.Removed {
+			return logs.Event, nil
+		}
 	}
 	return nil, networks.ErrEventNotFound
 }
