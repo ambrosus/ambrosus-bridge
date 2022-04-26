@@ -113,8 +113,7 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		return fmt.Errorf("wait mined: %w", err)
 	}
 
-	b.SetUsedGasMetric(receipt.GasUsed)                // TODO: maybe defer
-	b.SetGasPriceMetric(params.Tx.GasPrice().Uint64()) // TODO: maybe defer
+	b.SetUsedGasMetric(receipt.GasUsed) // TODO: maybe defer
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		err = b.GetFailureReason(params.Tx)

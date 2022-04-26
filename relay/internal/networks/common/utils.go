@@ -126,10 +126,6 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	return err
 }
 
-func (b *CommonBridge) SetGasPriceMetric(gasPrice uint64) {
-	metric.GasPrice.WithLabelValues(b.Name).Set(float64(gasPrice))
-}
-
 func (b *CommonBridge) SetUsedGasMetric(usedGas uint64) {
 	metric.UsedGas.WithLabelValues(b.Name).Observe(float64(usedGas))
 }
