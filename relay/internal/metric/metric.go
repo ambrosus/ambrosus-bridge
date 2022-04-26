@@ -10,10 +10,17 @@ import (
 )
 
 var (
-	RelayBalanceGWeiGauge = promauto.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "bridge_relay_balance_gwei",
-		Help: "Balance of a relay in the bridge",
+	RelayBalance = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "relay_balance",
+		Help: "Balance of a relay in the bridge (in gwei)",
 	}, []string{"bridge_name"})
+
+	// todo use
+
+	UsedGas = promauto.NewSummaryVec(prometheus.SummaryOpts{
+		Name: "used_gas",
+		Help: "Used gas of a transaction (in gwei)",
+	}, []string{"network_name"})
 )
 
 func ServeEndpoint(ip string, port int) error {
