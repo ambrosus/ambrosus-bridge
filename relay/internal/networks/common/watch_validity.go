@@ -37,7 +37,7 @@ func (b *CommonBridge) checkOldLockedTransfers() error {
 		if err != nil {
 			return fmt.Errorf("GetLockedTransfers: %w", err)
 		}
-		if nextLockedTransfer.EndTimestamp.Cmp(big.NewInt(0)) == 0 {
+		if nextLockedTransfer.EndTimestamp.Uint64() == 0 {
 			return nil
 		}
 

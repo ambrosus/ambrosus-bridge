@@ -42,24 +42,17 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 }
 
 func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
-	b.Logger.Debug().Msg("Running ethereum bridge...")
-
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
-	b.ensureDAGsExists()
+	b.Logger.Debug().Msg("Running ethereum bridge...")
 
+	go b.ensureDAGsExists()
 	go b.UnlockTransfersLoop()
-
-	b.Logger.Info().Msg("Ethereum bridge runned!")
-
 	b.ListenTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
-
-	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
@@ -68,8 +61,6 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
-
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
 	if err := b.IsEventRemoved(event); err != nil {
@@ -87,7 +78,6 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		}
 	}
 
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
 	err = b.sideBridge.SubmitTransferPoW(powProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
@@ -108,11 +98,9 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 
 func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	epoch := blockNumber / 30000
-	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
-	if err != nil {
+	if isEpochSet, err := b.sideBridge.IsEpochSet(epoch); err != nil {
 		return fmt.Errorf("IsEpochSet: %w", err)
-	}
-	if isEpochSet {
+	} else if isEpochSet {
 		return nil
 	}
 
@@ -138,5 +126,5 @@ func (b *Bridge) ensureDAGsExists() {
 		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
 		return
 	}
-	go b.ethash.GenDagForEpoch(blockNumber / 30000)
+	b.ethash.GenDagForEpoch(blockNumber / 30000)
 }

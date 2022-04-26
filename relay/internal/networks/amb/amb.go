@@ -50,17 +50,13 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
+	b.Logger.Debug().Msg("Running ambrosus bridge...")
+
 	go b.UnlockTransfersLoop()
-
-	b.Logger.Info().Msg("Ambrosus bridge runned!")
-
 	b.ListenTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
-
-	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
@@ -70,9 +66,6 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
-
-	// Check if the event has been removed.
 	if err := b.IsEventRemoved(event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
@@ -81,8 +74,6 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	if err != nil {
 		return fmt.Errorf("encodeAuraProof: %w", err)
 	}
-
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 
 	err = b.sideBridge.SubmitTransferAura(auraProof)
 	if err != nil {
