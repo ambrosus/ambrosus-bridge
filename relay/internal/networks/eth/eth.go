@@ -72,7 +72,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
-	if err := b.isEventRemoved(event); err != nil {
+	if err := b.IsEventRemoved(event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
@@ -139,16 +139,4 @@ func (b *Bridge) ensureDAGsExists() {
 		return
 	}
 	go b.ethash.GenDagForEpoch(blockNumber / 30000)
-}
-
-func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
-	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
-	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
-	}
-
-	if block.Hash() != event.Raw.BlockHash {
-		return fmt.Errorf("block hash != event's block hash")
-	}
-	return nil
 }

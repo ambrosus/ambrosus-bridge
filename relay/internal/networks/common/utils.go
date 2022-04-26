@@ -117,6 +117,17 @@ func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, err
 	return receipts, errGroup.Wait()
 }
 
+func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {
+	newEvent, err := b.GetEventById(event.EventId)
+	if err != nil {
+		return err
+	}
+	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
+		return fmt.Errorf("looks like the event has been removed")
+	}
+	return nil
+}
+
 func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	_, err := b.Client.CallContract(context.Background(), ethereum.CallMsg{
 		From:     b.Auth.From,

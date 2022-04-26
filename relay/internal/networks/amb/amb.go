@@ -2,7 +2,6 @@ package amb
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -74,7 +73,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	// Check if the event has been removed.
-	if err := b.isEventRemoved(event); err != nil {
+	if err := b.IsEventRemoved(event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
@@ -102,18 +101,6 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 			return fmt.Errorf("getFailureReasonViaCall: %w", helpers.ParseError(err))
 		}
 		return params.TxErr
-	}
-	return nil
-}
-
-func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
-	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
-	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
-	}
-
-	if block.Hash(true) != event.Raw.BlockHash {
-		return fmt.Errorf("block hash != event's block hash")
 	}
 	return nil
 }
