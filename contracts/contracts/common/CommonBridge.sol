@@ -79,7 +79,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         //
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, wrapperAddress, tokenSideAddress, outputEventId, fee);
+        emit Withdraw(msg.sender, address(0), tokenSideAddress, outputEventId, fee);
 
         withdraw_finish();
     }

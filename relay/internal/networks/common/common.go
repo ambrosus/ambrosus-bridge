@@ -89,8 +89,10 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
-	if logs.Next() {
-		return logs.Event, nil
+	for logs.Next() {
+		if !logs.Event.Raw.Removed {
+			return logs.Event, nil
+		}
 	}
 	return nil, networks.ErrEventNotFound
 }
@@ -120,6 +122,8 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
 	}
+
+	b.SetUsedGasMetric(receipt.GasUsed) // TODO: maybe defer
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")

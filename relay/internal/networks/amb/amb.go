@@ -2,7 +2,6 @@ package amb
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -51,17 +50,13 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
+	b.Logger.Debug().Msg("Running ambrosus bridge...")
+
 	go b.UnlockTransfersLoop()
-
-	b.Logger.Info().Msg("Ambrosus bridge runned!")
-
 	b.ListenTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
-
-	// Wait for safety blocks.
 	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
@@ -71,19 +66,14 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("WaitForBlock: %w", err)
 	}
 
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
-
-	// Check if the event has been removed.
-	if err := b.isEventRemoved(event); err != nil {
+	if err := b.IsEventRemoved(event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	auraProof, err := b.getBlocksAndEvents(event, safetyBlocks)
+	auraProof, err := b.encodeAuraProof(event, safetyBlocks)
 	if err != nil {
-		return fmt.Errorf("getBlocksAndEvents: %w", err)
+		return fmt.Errorf("encodeAuraProof: %w", err)
 	}
-
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 
 	err = b.sideBridge.SubmitTransferAura(auraProof)
 	if err != nil {
@@ -102,18 +92,6 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 			return fmt.Errorf("getFailureReasonViaCall: %w", helpers.ParseError(err))
 		}
 		return params.TxErr
-	}
-	return nil
-}
-
-func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
-	block, err := b.HeaderByNumber(big.NewInt(int64(event.Raw.BlockNumber)))
-	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
-	}
-
-	if block.Hash(true) != event.Raw.BlockHash {
-		return fmt.Errorf("block hash != event's block hash")
 	}
 	return nil
 }
