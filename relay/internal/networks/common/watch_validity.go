@@ -17,13 +17,13 @@ func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
 	for {
 		b.EnsureContractUnpaused()
 
-		if err := b.WatchValidityLockedTransfers(); err != nil {
+		if err := b.watchLockedTransfers(); err != nil {
 			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
 		}
 	}
 }
 
-func (b *CommonBridge) CheckOldLockedTransfers() error {
+func (b *CommonBridge) checkOldLockedTransfers() error {
 	b.Logger.Info().Msg("Checking old transfer submit events...")
 
 	oldestLockedEventId, err := b.Contract.OldestLockedEventId(nil)
@@ -42,15 +42,15 @@ func (b *CommonBridge) CheckOldLockedTransfers() error {
 		}
 
 		b.Logger.Info().Str("event_id", nextLockedEventId.String()).Msg("Found old TransferSubmit event")
-		if err := b.checkValidityLockedTransfers(nextLockedEventId, &nextLockedTransfer); err != nil {
-			return fmt.Errorf("checkValidityLockedTransfers: %w", err)
+		if err := b.checkValidity(nextLockedEventId, &nextLockedTransfer); err != nil {
+			return fmt.Errorf("checkValidity: %w", err)
 		}
 	}
 }
 
-func (b *CommonBridge) WatchValidityLockedTransfers() error {
-	if err := b.CheckOldLockedTransfers(); err != nil {
-		return fmt.Errorf("CheckOldLockedTransfers: %w", err)
+func (b *CommonBridge) watchLockedTransfers() error {
+	if err := b.checkOldLockedTransfers(); err != nil {
+		return fmt.Errorf("checkOldLockedTransfers: %w", err)
 	}
 
 	eventCh := make(chan *contracts.BridgeTransferSubmit)
@@ -73,14 +73,14 @@ func (b *CommonBridge) WatchValidityLockedTransfers() error {
 			if err != nil {
 				return fmt.Errorf("GetLockedTransfers: %w", err)
 			}
-			if err := b.checkValidityLockedTransfers(event.EventId, &lockedTransfer); err != nil {
-				b.Logger.Error().Msgf("checkValidityLockedTransfers: %s", err)
+			if err := b.checkValidity(event.EventId, &lockedTransfer); err != nil {
+				b.Logger.Error().Msgf("checkValidity: %s", err)
 			}
 		}
 	}
 }
 
-func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
+func (b *CommonBridge) checkValidity(lockedEventId *big.Int, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
 	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
 	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("GetEventById: %w", err)
@@ -90,10 +90,8 @@ func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lock
 	if err != nil {
 		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 	}
-	sideTransfers := []byte{}
-	if sideEvent == nil {
-		sideTransfers = []byte("event not found")
-	} else {
+	sideTransfers := []byte("event not found")
+	if sideEvent != nil {
 		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
 		if err != nil {
 			return fmt.Errorf("thisLockedTransfer marshal: %w", err)
@@ -106,17 +104,17 @@ func (b *CommonBridge) checkValidityLockedTransfers(lockedEventId *big.Int, lock
 	}
 
 	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msgf(`
-checkValidityLockedTransfers: Transfers mismatch in event %d\n
+checkValidity: Transfers mismatch in event %d\n
 this network locked transfers: %s \n
 side network transfer event: %s \n
 Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
 	tx, txErr := b.Contract.Pause(b.Auth)
-	if err := b.ProcessTx(networks.GetTransactionErrorParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+	if err := b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 
-	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msg("checkValidityLockedTransfers: Contract has been paused")
+	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msg("checkValidity: Contract has been paused")
 	return nil
 
 }

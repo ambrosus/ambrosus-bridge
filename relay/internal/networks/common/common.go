@@ -2,19 +2,16 @@ package common
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"encoding/hex"
-	"errors"
 	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 )
@@ -92,11 +89,9 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
-
 	if logs.Next() {
 		return logs.Event, nil
 	}
-
 	return nil, networks.ErrEventNotFound
 }
 
@@ -108,73 +103,22 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 	return safetyBlocks.Uint64(), nil
 }
 
-func (b *CommonBridge) CheckOldEvents() error {
-	b.Logger.Info().Msg("Checking old events...")
-
-	lastEventId, err := b.SideBridge.GetLastEventId()
-	if err != nil {
-		return fmt.Errorf("GetLastEventId: %w", err)
+func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
+	if err := b.Bridge.GetTxErr(params); err != nil {
+		return err
 	}
 
-	for i := int64(1); ; i++ {
-		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
-		nextEvent, err := b.GetEventById(nextEventId)
-		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
-			return nil
-		} else if err != nil {
-			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
-		}
+	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
+	if err != nil {
+		return fmt.Errorf("wait mined: %w", err)
+	}
 
-		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
-		if err := b.SendEvent(nextEvent); err != nil {
-			return fmt.Errorf("send event: %w", err)
+	if receipt.Status != types.ReceiptStatusSuccessful {
+		err = b.GetFailureReason(params.Tx)
+		if err != nil {
+			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))
 		}
 	}
-}
 
-func (b *CommonBridge) Listen() error {
-	if err := b.CheckOldEvents(); err != nil {
-		return fmt.Errorf("CheckOldEvents: %w", err)
-	}
-	b.Logger.Info().Msg("Listening new events...")
-
-	// Subscribe to events
-	eventCh := make(chan *contracts.BridgeTransfer)
-	eventSub, err := b.WsContract.WatchTransfer(nil, eventCh, nil)
-	if err != nil {
-		return fmt.Errorf("watchTransfer: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
-	// main loop
-	for {
-		select {
-		case err := <-eventSub.Err():
-			return fmt.Errorf("watching transfers: %w", err)
-		case event := <-eventCh:
-			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-
-			if err := b.SendEvent(event); err != nil {
-				return fmt.Errorf("send event: %w", err)
-			}
-		}
-	}
-}
-
-func (b *CommonBridge) SetRelayBalanceMetric() {
-	balance, err := b.getBalanceGWei(b.Auth.From)
-	if err != nil {
-		b.Logger.Error().Err(err).Msg("error when getting contract balance in GWei")
-		return
-	}
-
-	metric.RelayBalanceGWeiGauge.WithLabelValues(b.Name).Set(balance)
-}
-
-func parsePK(pk string) (*ecdsa.PrivateKey, error) {
-	b, err := hex.DecodeString(pk)
-	if err != nil {
-		return nil, err
-	}
-	return crypto.ToECDSA(b)
+	return nil
 }
