@@ -3,15 +3,16 @@ pragma solidity 0.8.6;
 
 import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-
-contract CheckAura is CheckReceiptsProof {
+contract CheckAura is Initializable, CheckReceiptsProof {
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
     bytes1 constant STEP_PREFIX = 0x84;
     bytes2 constant SIGNATURE_PREFIX = 0xB841;
 
-    bytes32 public lastProcessedBlock;
     address[] public validatorSet;
+    address validatorSetAddress;
+    bytes32 public lastProcessedBlock;
 
 
     struct BlockAura {
@@ -45,13 +46,20 @@ contract CheckAura is CheckReceiptsProof {
 
 
 
-    constructor(address[] memory _initialValidators) {
-        require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
-        validatorSet = _initialValidators;
+    function __CheckAura_init(
+        address[] memory initialValidators_,
+        address validatorSetAddress_,
+        bytes32 lastProcessedBlock_
+    ) internal initializer {
+        require(initialValidators_.length > 0, "Length of _initialValidators must be bigger than 0");
+
+        validatorSet = initialValidators_;
+        validatorSetAddress = validatorSetAddress_;
+        lastProcessedBlock = lastProcessedBlock_;
+
     }
 
-    function checkAura_(AuraProof memory auraProof, uint minSafetyBlocks,
-        address sideBridgeAddress, address validatorSetAddress) internal {
+    function checkAura_(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         uint safetyChainLength;
         bytes32 blockHash;

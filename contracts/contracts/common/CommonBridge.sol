@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CommonStructs.sol";
 import "../tokens/IWrapper.sol";
 
 
-contract CommonBridge is AccessControl, Pausable {
+
+contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
@@ -19,7 +21,7 @@ contract CommonBridge is AccessControl, Pausable {
 
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
-    uint public oldestLockedEventId = 1;  // head index of lockedTransfers 'queue' mapping
+    uint public oldestLockedEventId;  // head index of lockedTransfers 'queue' mapping
 
 
     // this network to side network token addresses mapping
@@ -35,7 +37,7 @@ contract CommonBridge is AccessControl, Pausable {
     uint public lockTime;
 
     uint public inputEventId; // last processed event from side network
-    uint outputEventId = 1;  // last created event in this network. start from 1 coz 0 consider already processed
+    uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint lastTimeframe;
 
@@ -44,9 +46,7 @@ contract CommonBridge is AccessControl, Pausable {
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
 
-
-    constructor(CommonStructs.ConstructorArgs memory args)
-    {
+    function __CommonBridge_init(CommonStructs.ConstructorArgs memory args) internal initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
         _setupRole(ADMIN_ROLE, args.adminAddress);
@@ -61,6 +61,9 @@ contract CommonBridge is AccessControl, Pausable {
         minSafetyBlocks = args.minSafetyBlocks;
         timeframeSeconds = args.timeframeSeconds;
         lockTime = args.lockTime;
+
+        oldestLockedEventId = 1;
+        outputEventId = 1;
     }
 
 

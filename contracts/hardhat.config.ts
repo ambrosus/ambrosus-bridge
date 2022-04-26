@@ -9,9 +9,13 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 // todo add other roles
-const PK = [process.env.PRIVATEKEY || "00000000"];
+const PK = [process.env.PRIVATEKEY || "00000000", process.env.SECONDPRIVATEKEY || "00000000"];
 
 module.exports = {
+  mocha: {
+    timeout: 40000
+  },
+
   networks: {
     hardhat: {
       blockGasLimit: 40000000, // amb value
@@ -71,10 +75,11 @@ module.exports = {
   },
   namedAccounts: {
     owner: 0,
-    admin: 1,
-    relay: 2,
-    bridge: 3,
-    user: 4,
+    proxyAdmin: 1,
+    admin: 2,
+    relay: 3,
+    bridge: 4,
+    user: 5,
   },
   etherscan: {
     apiKey: "DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",

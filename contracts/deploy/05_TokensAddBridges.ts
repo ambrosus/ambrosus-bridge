@@ -22,13 +22,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const notSetBridges = await Promise.all(bridgesInThisNetwork.filter(async (br) => {
       return !await hre.deployments.read(
-        token.symbol, {from: owner},
-        "hasRole", BRIDGE_ROLE, br)
+          token.symbol, {from: owner},
+          "hasRole", BRIDGE_ROLE, br)
     }))
 
     if (notSetBridges.length > 0)
       await hre.deployments.execute(token.symbol, {from: owner, log: true},
-        "setBridgeAddressesRole", notSetBridges)
+          "setBridgeAddressesRole", notSetBridges)
   }
 
 };

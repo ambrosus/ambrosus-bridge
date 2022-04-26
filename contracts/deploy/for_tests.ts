@@ -4,8 +4,7 @@ import {ethers} from "hardhat";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name !== "hardhat") return;
-  const {owner} = await hre.getNamedAccounts();
-
+  const {owner, proxyAdmin} = await hre.getNamedAccounts();
 
   const {address: mockAddr} = await hre.deployments.deploy("BridgeERC20Test", {
     contract: "BridgeERC20Test",
@@ -39,7 +38,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     minSafetyBlocks: 10,
   };
 
-  await hre.deployments.deploy("CommonBridge", {
+  await hre.deployments.deploy("CommonBridgeTest", {
     from: owner,
     args: [commonArgs],
     log: true,
@@ -47,9 +46,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   await hre.deployments.deploy("AmbBridgeTest", {
     from: owner,
-    args: [commonArgs],
+    proxy: {
+      proxyContract: "proxyTransparent",
+      // viaAdminContract: "proxyAdmin",
+      execute: {
+        init: {
+          methodName: "initialize_",
+          args: [commonArgs]
+        }
+      }
+    },
     log: true,
   });
+  await hre.deployments.execute("AmbBridgeTest", {from: owner, log: true}, 'changeAdmin', proxyAdmin);
 
   await hre.deployments.deploy("EthBridgeTest", {
     contract: "EthBridgeTest",
@@ -60,7 +69,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
         "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
       ],
-      ethers.constants.AddressZero, // validatorSetAddress_
+      "0x0000000000000000000000000000000000000F00", // validatorSetAddress_
       ethers.constants.HashZero, // lastProcessedBlock
     ],
     log: true,

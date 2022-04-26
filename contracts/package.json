@@ -46,8 +46,8 @@
     "ethereum-waffle": "^3.2.0",
     "ethers": "^5.5.1",
     "hardhat": "^2.3.3",
-    "hardhat-deploy": "^0.8.11",
-    "hardhat-deploy-ethers": "0.3.0-beta.10",
+    "hardhat-deploy": "^0.11.4",
+    "hardhat-deploy-ethers": "0.3.0-beta.13",
     "openzeppelin-solidity": "^4.2.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.2.4"

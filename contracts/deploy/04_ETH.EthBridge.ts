@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const path = configPath(hre.network);
   let configFile = readConfig(path);
 
-  const {owner} = await hre.getNamedAccounts();
+  const {owner, proxyAdmin} = await hre.getNamedAccounts();
   // todo get admin and relay from getNamedAccounts
   const admin = owner;
   const relay = owner;
@@ -37,26 +37,34 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployResult = await hre.deployments.deploy("EthBridge", {
     contract: "EthBridge",
     from: owner,
-    args: [
-      {
-        sideBridgeAddress: sideBridgeAddress,
-        adminAddress: admin,
-        relayAddress: relay,
-        wrappingTokenAddress: configFile.tokens.WETH?.addresses.eth || ethers.constants.AddressZero,
-        tokenThisAddresses: Object.keys(tokenPairs),
-        tokenSideAddresses: Object.values(tokenPairs),
-        fee: 10,    // todo
-        feeRecipient: owner,   // todo
-        timeframeSeconds: isMainNet ? 14400 : 60,
-        lockTime: isMainNet ? 1000 : 60,
-        minSafetyBlocks: isMainNet ? 10 : 2,
-      },
-      initialValidators,
-      vsAddress,
-      lastProcessedBlock,
-    ],
-    log: true,
-    skipIfAlreadyDeployed: true
+    proxy: {
+      owner: proxyAdmin,
+      proxyContract: "proxyTransparent",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [
+              {
+              sideBridgeAddress: sideBridgeAddress,
+              adminAddress: admin,
+              relayAddress: relay,
+              wrappingTokenAddress: configFile.tokens.WETH?.addresses.eth || ethers.constants.AddressZero,
+              tokenThisAddresses: Object.keys(tokenPairs),
+              tokenSideAddresses: Object.values(tokenPairs),
+              fee: 10,    // todo
+              feeRecipient: owner,   // todo
+              timeframeSeconds: isMainNet ? 60*60*4 : 60,
+              lockTime: isMainNet ? 60*10 : 60,
+              minSafetyBlocks: isMainNet ? 10 : 2,
+            },
+            initialValidators,
+            vsAddress,
+            lastProcessedBlock,
+          ]
+        }
+      }
+    },
+    log: true
   });
 
 
@@ -70,7 +78,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, "EthBridge");
-
 };
 
 
