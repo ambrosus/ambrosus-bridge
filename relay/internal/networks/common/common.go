@@ -104,21 +104,31 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 }
 
 func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
+	b.Logger.Debug().Str("method", params.MethodName).Msg("Check error...")
 	if err := b.Bridge.GetTxErr(params); err != nil {
 		return err
 	}
+	b.Logger.Debug().Str("method", params.MethodName).Str("tx_hash", params.Tx.Hash().Hex()).Msg("There was no errors while estimating!")
 
+	b.Logger.Debug().
+		Str("method", params.MethodName).
+		Str("tx_hash", params.Tx.Hash().Hex()).
+		Interface("full_tx", params.Tx).
+		Interface("tx_params", params.TxParams).
+		Msgf("Wait the tx to be mined...")
 	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
 	}
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
+		b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")
 		err = b.GetFailureReason(params.Tx)
 		if err != nil {
 			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))
 		}
 	}
+	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
 
 	return nil
 }

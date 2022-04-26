@@ -18,7 +18,7 @@ var (
 type GetTxErrParams struct {
 	Tx    *types.Transaction
 	TxErr error
-	// MethodName amd TxParams are optional and used only for getting the error in parity/openethereum
+	// MethodName amd TxParams used for getting the error in parity/openethereum and for logging
 	MethodName string
 	TxParams   []interface{}
 }
