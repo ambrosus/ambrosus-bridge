@@ -110,14 +110,17 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		return err
 	}
 
+	b.IncTxCountMetric(params.MethodName)
+
 	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
 	}
 
-	b.SetUsedGasMetric(receipt.GasUsed) // TODO: maybe defer
+	b.SetUsedGasMetric(params.MethodName, receipt.GasUsed, params.Tx.GasPrice())
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
+		b.IncFailedTxCountMetric(params.MethodName)
 		err = b.GetFailureReason(params.Tx)
 		if err != nil {
 			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))

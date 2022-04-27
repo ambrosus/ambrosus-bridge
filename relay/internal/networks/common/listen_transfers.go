@@ -37,8 +37,8 @@ func (b *CommonBridge) checkOldTransfers() error {
 		}
 
 		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
-		if err := b.SendEvent(nextEvent); err != nil {
-			return fmt.Errorf("send event: %w", err)
+		if err := b.processEvent(nextEvent); err != nil {
+			return err
 		}
 	}
 }
@@ -67,9 +67,18 @@ func (b *CommonBridge) watchTransfers() error {
 				continue
 			}
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-			if err := b.SendEvent(event); err != nil {
-				return fmt.Errorf("send event: %w", err)
+			if err := b.processEvent(event); err != nil {
+				return err
 			}
 		}
 	}
+}
+
+func (b *CommonBridge) processEvent(event *contracts.BridgeTransfer) error {
+	if err := b.SendEvent(event); err != nil {
+		return fmt.Errorf("send event: %w", err)
+	}
+
+	b.AddWithdrawalsCountMetric(len(event.Queue))
+	return nil
 }
