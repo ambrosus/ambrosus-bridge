@@ -11,11 +11,7 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 	defer b.SetRelayBalanceMetric()
 
 	tx, txErr := b.Contract.SubmitTransferAura(b.Auth, *proof)
-	txErr = b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr})
-	if txErr == nil {
-		b.AddWithdrawalsCountMetric(len(proof.Transfer.Transfers))
-	}
-	return txErr
+	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr})
 }
 
 func (b *Bridge) GetValidatorSet() ([]common.Address, error) {

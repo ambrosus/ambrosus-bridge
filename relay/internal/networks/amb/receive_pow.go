@@ -12,11 +12,7 @@ func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
 	defer b.SetRelayBalanceMetric()
 
 	tx, txErr := b.Contract.SubmitTransferPoW(b.Auth, *proof)
-	txErr = b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "submitTransferPoW", TxParams: []interface{}{*proof}})
-	if txErr == nil {
-		b.AddWithdrawalsCountMetric(len(proof.Transfer.Transfers))
-	}
-	return txErr
+	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "submitTransferPoW", TxParams: []interface{}{*proof}})
 }
 
 func (b *Bridge) SubmitEpochData(epochData *ethash.EpochData) error {
