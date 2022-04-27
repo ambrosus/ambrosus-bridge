@@ -3,15 +3,17 @@ import "hardhat-deploy";
 import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
-
-
 import * as dotenv from "dotenv";
+import {HardhatUserConfig} from "hardhat/types";
 
 dotenv.config();
 // todo add other roles
-const PK = [process.env.PRIVATEKEY || "00000000", process.env.SECONDPRIVATEKEY || "00000000"];
+const PK = [
+  process.env.PRIVATEKEY || "00000000",
+  process.env.SECONDPRIVATEKEY || "00000000"
+];
 
-module.exports = {
+const config: HardhatUserConfig = {
 
   networks: {
     hardhat: {
@@ -70,6 +72,7 @@ module.exports = {
       hardfork: "byzantium",
     },
   },
+
   namedAccounts: {
     owner: 0,
     proxyAdmin: 1,
@@ -78,9 +81,13 @@ module.exports = {
     bridge: 4,
     user: 5,
   },
-  etherscan: {
-    apiKey: "DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+
+  verify: {
+    etherscan: {
+      apiKey: "DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+    },
   },
+
   solidity: {
     compilers: [
       {
@@ -106,16 +113,19 @@ module.exports = {
       },
     ],
   },
+
   abiExporter: {
     runOnCompile: true,
     clear: true,
     flat: true,
     only: [
-      "AmbBridge",
-      "EthBridge",
+      "AmbBridge$",
+      "EthBridge$",
       "ValidatorSet$",
       "sAMB",
       "IWrapper",
     ]
   }
 };
+
+export default config;
