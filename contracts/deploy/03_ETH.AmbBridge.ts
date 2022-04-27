@@ -33,19 +33,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       execute: {
         init: {
           methodName: "initialize",
-          args: [{
-            sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-            adminAddress: admin,
-            relayAddress: relay,
-            wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-            tokenThisAddresses: Object.keys(tokenPairs),
-            tokenSideAddresses: Object.values(tokenPairs),
-            fee: 1000,  // todo
-            feeRecipient: owner,   // todo
-            timeframeSeconds: isMainNet ? 60*60*4 : 60,
-            lockTime: isMainNet ? 60*10 : 60,
-            minSafetyBlocks: 10,
-          }]
+          args: [
+            {
+              sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+              adminAddress: admin,
+              relayAddress: relay,
+              wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
+              tokenThisAddresses: Object.keys(tokenPairs),
+              tokenSideAddresses: Object.values(tokenPairs),
+              fee: 1000,  // todo
+              feeRecipient: owner,   // todo
+              timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+              lockTime: isMainNet ? 60 * 10 : 60,
+              minSafetyBlocks: 10,
+            },
+            isMainNet ? 13_000_000_000 : 0  // minimum difficulty
+          ]
         }
       }
     },

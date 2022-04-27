@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "./CheckPoW_Ethash.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract CheckPoW is CheckReceiptsProof, Ethash  {
+
+contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
     struct BlockPoW {
         bytes3 p0WithNonce;
         bytes3 p0WithoutNonce;
@@ -30,6 +31,14 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
         CommonStructs.TransferProof transfer;
     }
 
+    uint256 minimumDifficulty;
+
+    function __CheckPoW_init(
+        uint256 minimumDifficulty_
+    ) internal initializer {
+        minimumDifficulty = minimumDifficulty_;
+    }
+
     function checkPoW_(PoWProof memory powProof, address sideBridgeAddress) internal view
     {
         bytes32 hash = calcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
@@ -43,11 +52,13 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
 
 
     function verifyEthash(BlockPoW memory block_) internal view {
+        uint difficulty = bytesToUint(block_.difficulty);
+        require(difficulty >= minimumDifficulty, "difficulty too low");
         verifyPoW(
             bytesToUint(block_.number),
             blockHashWithoutNonce(block_),
             bytesToUint(block_.nonce),
-            bytesToUint(block_.difficulty),
+            difficulty,
             block_.dataSetLookup,
             block_.witnessForLookup
         );

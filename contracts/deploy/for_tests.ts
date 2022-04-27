@@ -52,7 +52,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       execute: {
         init: {
           methodName: "initialize_",
-          args: [commonArgs]
+          args: [
+            commonArgs,
+            0 // minimum difficulty
+          ]
         }
       }
     },

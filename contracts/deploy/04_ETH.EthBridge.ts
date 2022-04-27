@@ -1,6 +1,6 @@
 import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import vsAbi from "../abi/ModifiedValidatorSet.json";
+import vsAbi from "../abi/ValidatorSet.json";
 import {ethers} from "ethers";
 import {
   addNewTokensToBridge,

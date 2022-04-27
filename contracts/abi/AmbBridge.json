@@ -1,73 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "sideBridgeAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "adminAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "relayAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "wrappingTokenAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address[]",
-            "name": "tokenThisAddresses",
-            "type": "address[]"
-          },
-          {
-            "internalType": "address[]",
-            "name": "tokenSideAddresses",
-            "type": "address[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "fee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address payable",
-            "name": "feeRecipient",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "timeframeSeconds",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "lockTime",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "minSafetyBlocks",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct CommonStructs.ConstructorArgs",
-        "name": "args",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -491,6 +423,81 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "sideBridgeAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "adminAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "relayAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokenThisAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokenSideAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "feeRecipient",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeframeSeconds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lockTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSafetyBlocks",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.ConstructorArgs",
+        "name": "args",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minimumDifficulty",
+        "type": "uint256"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
