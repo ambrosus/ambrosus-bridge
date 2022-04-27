@@ -14,6 +14,9 @@ func (b *CommonBridge) IncFailedTxCountMetric(methodName string) {
 	metric.FailedTxCount.WithLabelValues(b.Name, methodName).Inc()
 }
 
+func (b *CommonBridge) IncTransfersCountMetric() {
+	metric.TransfersCount.WithLabelValues(b.Name).Inc()
+}
 func (b *CommonBridge) AddWithdrawalsCountMetric(count int) {
 	metric.WithdrawalsCount.WithLabelValues(b.Name).Add(float64(count))
 }

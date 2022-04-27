@@ -29,9 +29,13 @@ var (
 		Help: "Sent transactions count that have been failed",
 	}, []string{"bridge_name", "method_name"})
 
+	TransfersCount = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "transfers_count",
+		Help: "Transfers count",
+	}, []string{"bridge_name"})
 	WithdrawalsCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "withdrawals_count",
-		Help: "Withdrawals users' count",
+		Help: "Withdrawals count",
 	}, []string{"bridge_name"})
 )
 
