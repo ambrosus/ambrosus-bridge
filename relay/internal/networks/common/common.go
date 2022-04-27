@@ -106,13 +106,11 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 }
 
 func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
-	b.Logger.Debug().Str("method", params.MethodName).Msg("Check error...")
 	if err := b.Bridge.GetTxErr(params); err != nil {
 		return err
 	}
-	b.Logger.Debug().Str("method", params.MethodName).Str("tx_hash", params.Tx.Hash().Hex()).Msg("There was no errors while estimating!")
 
-	b.Logger.Debug().
+	b.Logger.Info().
 		Str("method", params.MethodName).
 		Str("tx_hash", params.Tx.Hash().Hex()).
 		Interface("full_tx", params.Tx).
