@@ -36,7 +36,7 @@ describe("Check PoW", () => {
 
 
   it("Test CheckPoW", async function () {
-    this.timeout(60 * 1000); // lol too long test
+    this.timeout(2 * 60 * 1000); // lol too long test
 
     const powProof = require("./fixtures/powProof.json");
     const epoch = require("./fixtures/epoch-406.json");

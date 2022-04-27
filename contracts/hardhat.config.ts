@@ -12,9 +12,6 @@ dotenv.config();
 const PK = [process.env.PRIVATEKEY || "00000000", process.env.SECONDPRIVATEKEY || "00000000"];
 
 module.exports = {
-  mocha: {
-    timeout: 40000
-  },
 
   networks: {
     hardhat: {
