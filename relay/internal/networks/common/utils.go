@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -143,20 +142,6 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	}, nil)
 
 	return err
-}
-
-func (b *CommonBridge) SetUsedGasMetric(usedGas uint64) {
-	metric.UsedGas.WithLabelValues(b.Name).Observe(float64(usedGas))
-}
-
-func (b *CommonBridge) SetRelayBalanceMetric() {
-	balance, err := b.getBalanceGWei(b.Auth.From)
-	if err != nil {
-		b.Logger.Error().Err(err).Msg("get balance error")
-		return
-	}
-
-	metric.RelayBalance.WithLabelValues(b.Name).Set(balance)
 }
 
 func (b *CommonBridge) getBalanceGWei(address common.Address) (float64, error) {
