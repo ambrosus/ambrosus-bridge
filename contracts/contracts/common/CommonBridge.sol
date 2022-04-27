@@ -81,7 +81,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
         emit Withdraw(msg.sender, address(0), tokenSideAddress, outputEventId, fee);
 
-        withdraw_finish();
+        withdrawFinish();
     }
 
     function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
@@ -102,10 +102,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
 
-        withdraw_finish();
+        withdrawFinish();
     }
 
-    function withdraw_finish() internal {
+    function withdrawFinish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
             emit Transfer(outputEventId++, queue);
