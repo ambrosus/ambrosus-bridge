@@ -6,15 +6,15 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 )
 
-func (b *CommonBridge) SetUsedGasMetric(usedGas uint64, gasPrice *big.Int) {
-	metric.UsedGas.WithLabelValues(b.Name).Observe(float64(usedGas))
+func (b *CommonBridge) SetUsedGasMetric(methodName string, usedGas uint64, gasPrice *big.Int) {
+	metric.UsedGas.WithLabelValues(b.Name, methodName).Observe(float64(usedGas))
 
 	gasCost := new(big.Int).Mul(big.NewInt(int64(usedGas)), gasPrice)
-	metric.GasCost.WithLabelValues(b.Name).Observe(weiToGwei(gasCost))
+	metric.GasCost.WithLabelValues(b.Name, methodName).Observe(weiToGwei(gasCost))
 }
 
 func (b *CommonBridge) IncTxCountMetric(methodName string) {
-	metric.TxCount.WithLabelValues(b.Name).Inc()
+	metric.TxCount.WithLabelValues(b.Name, methodName).Inc()
 }
 
 func (b *CommonBridge) IncFailedTxCountMetric(methodName string) {
