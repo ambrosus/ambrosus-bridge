@@ -1,9 +1,11 @@
 package common
 
 import (
+	"context"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 func (b *CommonBridge) SetUsedGasMetric(methodName string, usedGas uint64, gasPrice *big.Int) {
@@ -27,11 +29,16 @@ func (b *CommonBridge) AddWithdrawalsCountMetric(count int) {
 }
 
 func (b *CommonBridge) SetRelayBalanceMetric() {
-	balance, err := b.getBalanceGWei(b.Auth.From)
+	balance, err := b.Client.BalanceAt(context.Background(), b.Auth.From, nil)
 	if err != nil {
 		b.Logger.Error().Err(err).Msg("get balance error")
 		return
 	}
+	metric.RelayBalance.WithLabelValues(b.Name).Set(weiToGwei(balance))
+}
 
-	metric.RelayBalance.WithLabelValues(b.Name).Set(balance)
+func weiToGwei(wei *big.Int) float64 {
+	gWei := new(big.Float).Quo(new(big.Float).SetInt(wei), big.NewFloat(params.GWei))
+	gWeiF, _ := gWei.Float64()
+	return gWeiF
 }

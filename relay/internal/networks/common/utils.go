@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -13,7 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -144,24 +142,10 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	return err
 }
 
-func (b *CommonBridge) getBalanceGWei(address common.Address) (float64, error) {
-	balance, err := b.Client.BalanceAt(context.Background(), address, nil)
-	if err != nil {
-		return 0, err
-	}
-	return weiToGwei(balance), nil
-}
-
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {
 	b, err := hex.DecodeString(pk)
 	if err != nil {
 		return nil, err
 	}
 	return crypto.ToECDSA(b)
-}
-
-func weiToGwei(wei *big.Int) float64 {
-	gWei := new(big.Float).Quo(new(big.Float).SetInt(wei), big.NewFloat(params.GWei))
-	gWeiF, _ := gWei.Float64()
-	return gWeiF
 }
