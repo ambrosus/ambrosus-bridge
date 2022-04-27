@@ -181,6 +181,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
+        inputEventId = eventId-1; // pretend like we don't receive that event
     }
 
 
