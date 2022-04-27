@@ -14,6 +14,10 @@ func (b *CommonBridge) IncFailedTxCountMetric() {
 	metric.FailedTxCount.WithLabelValues(b.Name).Inc()
 }
 
+func (b *CommonBridge) AddWithdrawalsCountMetric(count int) {
+	metric.WithdrawalsCount.WithLabelValues(b.Name).Add(float64(count))
+}
+
 func (b *CommonBridge) SetRelayBalanceMetric() {
 	balance, err := b.getBalanceGWei(b.Auth.From)
 	if err != nil {
