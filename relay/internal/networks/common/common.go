@@ -120,6 +120,7 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 	b.SetUsedGasMetric(receipt.GasUsed) // TODO: maybe defer
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
+		b.IncFailedTxCountMetric() // TODO: maybe defer
 		err = b.GetFailureReason(params.Tx)
 		if err != nil {
 			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))

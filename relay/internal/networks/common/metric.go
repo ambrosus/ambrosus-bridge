@@ -10,6 +10,10 @@ func (b *CommonBridge) IncTxCountMetric() {
 	metric.TxCount.WithLabelValues(b.Name).Inc()
 }
 
+func (b *CommonBridge) IncFailedTxCountMetric() {
+	metric.FailedTxCount.WithLabelValues(b.Name).Inc()
+}
+
 func (b *CommonBridge) SetRelayBalanceMetric() {
 	balance, err := b.getBalanceGWei(b.Auth.From)
 	if err != nil {

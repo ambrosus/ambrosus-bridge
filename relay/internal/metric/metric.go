@@ -24,6 +24,10 @@ var (
 		Name: "tx_count",
 		Help: "Sent transactions count",
 	}, []string{"bridge_name"})
+	FailedTxCount = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "failed_tx_count",
+		Help: "Sent transactions count that have been failed",
+	}, []string{"bridge_name"})
 )
 
 func ServeEndpoint(ip string, port int) error {
