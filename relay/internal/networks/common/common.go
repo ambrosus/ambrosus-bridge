@@ -110,6 +110,8 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		return err
 	}
 
+	b.IncTxCountMetric() // TODO: maybe defer
+
 	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)

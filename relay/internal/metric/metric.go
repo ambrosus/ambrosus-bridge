@@ -15,12 +15,15 @@ var (
 		Help: "Balance of a relay in the bridge (in gwei)",
 	}, []string{"bridge_name"})
 
-	// todo use
-
 	UsedGas = promauto.NewSummaryVec(prometheus.SummaryOpts{
 		Name: "used_gas",
 		Help: "Used gas of a transaction (in gwei)",
 	}, []string{"network_name"})
+
+	TxCount = promauto.NewCounterVec(prometheus.CounterOpts{
+		Name: "tx_count",
+		Help: "Sent transactions count",
+	}, []string{"bridge_name"})
 )
 
 func ServeEndpoint(ip string, port int) error {
