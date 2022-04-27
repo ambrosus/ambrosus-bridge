@@ -49,10 +49,10 @@ func New(dir string, keepPrevEpochs, genNextEpochs uint64) *Ethash {
 }
 
 type EpochData struct {
-	Epoch                   *big.Int
-	FullSizeIn128Resolution *big.Int
-	BranchDepth             *big.Int
-	MerkleNodes             []*big.Int
+	Epoch                   *big.Int   `json:"epoch"`
+	FullSizeIn128Resolution *big.Int   `json:"full_size_in_128_resolution"`
+	BranchDepth             *big.Int   `json:"branch_depth"`
+	MerkleNodes             []*big.Int `json:"merkle_nodes"`
 }
 
 func (e *Ethash) GenDagForEpoch(epoch uint64) {

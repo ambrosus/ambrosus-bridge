@@ -112,6 +112,12 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 
 	b.IncTxCountMetric(params.MethodName)
 
+	b.Logger.Info().
+		Str("method", params.MethodName).
+		Str("tx_hash", params.Tx.Hash().Hex()).
+		Interface("full_tx", params.Tx).
+		Interface("tx_params", params.TxParams).
+		Msgf("Wait the tx to be mined...")
 	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
@@ -123,9 +129,11 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		b.IncFailedTxCountMetric(params.MethodName)
 		err = b.GetFailureReason(params.Tx)
 		if err != nil {
-			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))
+			return fmt.Errorf("tx %s failed: %w", params.Tx.Hash().Hex(), helpers.ParseError(err))
 		}
+		b.Logger.Debug().Err(err).Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")
 	}
+	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
 
 	return nil
 }
