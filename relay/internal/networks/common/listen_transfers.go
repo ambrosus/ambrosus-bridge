@@ -79,7 +79,6 @@ func (b *CommonBridge) processEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	b.IncTransfersCountMetric()
 	b.AddWithdrawalsCountMetric(len(event.Queue))
 	return nil
 }
