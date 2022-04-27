@@ -1,9 +1,16 @@
 package common
 
-import "github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
+import (
+	"math/big"
 
-func (b *CommonBridge) SetUsedGasMetric(usedGas uint64) {
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
+)
+
+func (b *CommonBridge) SetUsedGasMetric(usedGas uint64, gasPrice *big.Int) {
 	metric.UsedGas.WithLabelValues(b.Name).Observe(float64(usedGas))
+
+	gasCost := new(big.Int).Mul(big.NewInt(int64(usedGas)), gasPrice)
+	metric.GasCost.WithLabelValues(b.Name).Observe(weiToGwei(gasCost))
 }
 
 func (b *CommonBridge) IncTxCountMetric(methodName string) {

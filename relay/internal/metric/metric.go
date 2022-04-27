@@ -17,7 +17,11 @@ var (
 
 	UsedGas = promauto.NewSummaryVec(prometheus.SummaryOpts{
 		Name: "used_gas",
-		Help: "Used gas of a transaction (in gwei)",
+		Help: "Used gas of a transaction",
+	}, []string{"network_name"})
+	GasCost = promauto.NewSummaryVec(prometheus.SummaryOpts{
+		Name: "gas_cost",
+		Help: "Paid for gas of a transaction (in gwei)",
 	}, []string{"network_name"})
 
 	TxCount = promauto.NewCounterVec(prometheus.CounterOpts{

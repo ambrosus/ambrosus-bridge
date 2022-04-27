@@ -149,9 +149,7 @@ func (b *CommonBridge) getBalanceGWei(address common.Address) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	balanceGWei := new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(params.GWei))
-	balanceFloat64, _ := balanceGWei.Float64()
-	return balanceFloat64, nil
+	return weiToGwei(balance), nil
 }
 
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {
@@ -160,4 +158,10 @@ func parsePK(pk string) (*ecdsa.PrivateKey, error) {
 		return nil, err
 	}
 	return crypto.ToECDSA(b)
+}
+
+func weiToGwei(wei *big.Int) float64 {
+	gWei := new(big.Float).Quo(new(big.Float).SetInt(wei), big.NewFloat(params.GWei))
+	gWeiF, _ := gWei.Float64()
+	return gWeiF
 }
