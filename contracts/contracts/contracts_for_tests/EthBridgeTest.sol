@@ -2,7 +2,6 @@
 pragma solidity 0.8.6;
 
 import "../eth/EthBridge.sol";
-import "../common/CommonStructs.sol";
 
 contract EthBridgeTest is EthBridge {
     constructor(
