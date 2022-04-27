@@ -23,11 +23,11 @@ var (
 	TxCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "tx_count",
 		Help: "Sent transactions count",
-	}, []string{"bridge_name"})
+	}, []string{"bridge_name", "method_name"})
 	FailedTxCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "failed_tx_count",
 		Help: "Sent transactions count that have been failed",
-	}, []string{"bridge_name"})
+	}, []string{"bridge_name", "method_name"})
 
 	WithdrawalsCount = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "withdrawals_count",

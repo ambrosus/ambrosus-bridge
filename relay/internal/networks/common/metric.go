@@ -6,12 +6,12 @@ func (b *CommonBridge) SetUsedGasMetric(usedGas uint64) {
 	metric.UsedGas.WithLabelValues(b.Name).Observe(float64(usedGas))
 }
 
-func (b *CommonBridge) IncTxCountMetric() {
+func (b *CommonBridge) IncTxCountMetric(methodName string) {
 	metric.TxCount.WithLabelValues(b.Name).Inc()
 }
 
-func (b *CommonBridge) IncFailedTxCountMetric() {
-	metric.FailedTxCount.WithLabelValues(b.Name).Inc()
+func (b *CommonBridge) IncFailedTxCountMetric(methodName string) {
+	metric.FailedTxCount.WithLabelValues(b.Name, methodName).Inc()
 }
 
 func (b *CommonBridge) AddWithdrawalsCountMetric(count int) {
