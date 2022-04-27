@@ -5,8 +5,8 @@ import "../eth/AmbBridge.sol";
 import "../common/CommonStructs.sol";
 
 contract AmbBridgeTest is AmbBridge {
-    function initialize_(CommonStructs.ConstructorArgs memory args) public initializer {
-        AmbBridge.initialize(args);
+    function initialize_(CommonStructs.ConstructorArgs memory args, uint minimumDifficulty) public initializer {
+        AmbBridge.initialize(args, minimumDifficulty);
     }
 
     function getLockedTransferTest(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
