@@ -124,11 +124,11 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 	b.SetUsedGasMetric(receipt.GasUsed) // TODO: maybe defer
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")
 		err = b.GetFailureReason(params.Tx)
 		if err != nil {
-			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))
+			return fmt.Errorf("tx %s failed: %w", params.Tx.Hash().Hex(), helpers.ParseError(err))
 		}
+		b.Logger.Debug().Err(err).Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")
 	}
 	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
 
