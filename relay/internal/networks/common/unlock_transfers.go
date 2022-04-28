@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -30,7 +29,7 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	if err != nil {
 		return fmt.Errorf("get locked transfer time %v: %w", oldestLockedEventId, err)
 	}
-	if lockedTransferTime.Cmp(big.NewInt(0)) == 0 {
+	if lockedTransferTime.Uint64() == 0 {
 		lockTime, err := b.Contract.LockTime(nil)
 		if err != nil {
 			return fmt.Errorf("get lock time: %w", err)
