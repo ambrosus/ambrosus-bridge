@@ -49,7 +49,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	go b.ensureDAGsExists()
 	go b.UnlockTransfersLoop()
-	b.ListenTransfersLoop()
+	b.SubmitTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {

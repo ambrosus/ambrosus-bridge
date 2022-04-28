@@ -53,7 +53,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 	b.Logger.Debug().Msg("Running ambrosus bridge...")
 
 	go b.UnlockTransfersLoop()
-	b.ListenTransfersLoop()
+	b.SubmitTransfersLoop()
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {

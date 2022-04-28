@@ -9,7 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) ListenTransfersLoop() {
+func (b *CommonBridge) SubmitTransfersLoop() {
 	for {
 		// since we submit transfers to SideBridge, ensure that it is unpaused
 		b.SideBridge.EnsureContractUnpaused()
