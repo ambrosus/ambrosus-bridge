@@ -81,7 +81,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
                     // apply vs changes
                     for (uint k = 0; k < vsProof.changes.length; j++)
-                        handleVS(vsProof.changes[i]);
+                        applyVsChange(vsProof.changes[i]);
 
                     // check proof
                     receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
@@ -115,7 +115,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         return validatorSet;
     }
 
-    function handleVS(ValidatorSetChange memory vsEvent) internal {
+    function applyVsChange(ValidatorSetChange memory vsEvent) internal {
         if (vsEvent.deltaIndex < 0) {
             uint index = uint(int(vsEvent.deltaIndex * (- 1) - 1));
             validatorSet[index] = validatorSet[validatorSet.length - 1];
