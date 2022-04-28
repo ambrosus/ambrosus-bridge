@@ -126,9 +126,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 			return err
 		}
 
-		blockPlus2 := blocks[event.Raw.BlockNumber+2]
-		blockPlus2.finalizedVsEvents = append(blockPlus2.finalizedVsEvents, vsChange)
-		blockPlus2.lastEvent = event
+		// finalizing over one block
+		blockWhenFinalize := blocks[event.Raw.BlockNumber+2]
+		blockWhenFinalize.finalizedVsEvents = append(blockWhenFinalize.finalizedVsEvents, vsChange)
+		blockWhenFinalize.lastEvent = event
 	}
 	return nil
 }
