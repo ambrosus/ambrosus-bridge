@@ -11,7 +11,8 @@ import (
 
 func (b *CommonBridge) ListenTransfersLoop() {
 	for {
-		b.EnsureContractUnpaused()
+		// since we submit transfers to SideBridge, ensure that it is unpaused
+		b.SideBridge.EnsureContractUnpaused()
 
 		if err := b.watchTransfers(); err != nil {
 			b.Logger.Error().Err(err).Msg("watchTransfers error")

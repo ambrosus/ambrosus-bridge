@@ -33,6 +33,8 @@ type Bridge interface {
 
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error
+
+	EnsureContractUnpaused()
 }
 
 type BridgeReceiveAura interface {
