@@ -78,6 +78,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		}
 	}
 
+	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
 	err = b.sideBridge.SubmitTransferPoW(powProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)

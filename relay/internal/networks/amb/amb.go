@@ -75,6 +75,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("encodeAuraProof: %w", err)
 	}
 
+	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 	err = b.sideBridge.SubmitTransferAura(auraProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferAura: %w", err)
