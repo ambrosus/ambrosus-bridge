@@ -153,7 +153,7 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
 
 	opts := &bind.FilterOpts{
-		Start:   start.Uint64(),
+		Start:   start,
 		End:     &end,
 		Context: context.Background(),
 	}
@@ -197,18 +197,24 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckAura
 	return nil
 }
 
-func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
-	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+func (b *Bridge) getLastProcessedBlockNum() (uint64, error) {
+	lastEventId, err := b.sideBridge.GetLastEventId()
 	if err != nil {
-		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
+		return 0, fmt.Errorf("GetLastEventId: %w", err)
+	}
+	lastEvent, err := b.SideBridge.GetEventById(lastEventId)
+	if err != nil {
+		return 0, fmt.Errorf("GetEventById: %w", err)
 	}
 
-	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	pastMinSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(&bind.CallOpts{
+		BlockNumber: big.NewInt(int64(lastEvent.Raw.BlockNumber))},
+	)
 	if err != nil {
-		return nil, fmt.Errorf("get block by hash: %w", err)
+		return 0, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
-	return block.Number(), nil
+	return pastMinSafetyBlocks + lastEvent.Raw.BlockNumber, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
@@ -235,7 +241,7 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	i := len(curr) - 1
 	return curr[i], int64(i), nil
 
-	//return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
+	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }
 
 // used for 'ordered' map

@@ -57,7 +57,7 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
+	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum(nil)
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
