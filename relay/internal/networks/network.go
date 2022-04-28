@@ -48,3 +48,8 @@ type BridgeReceiveEthash interface {
 	SubmitEpochData(*ethash.EpochData) error
 	IsEpochSet(epoch uint64) (bool, error)
 }
+
+type BridgeReceiveClique interface {
+	Bridge
+	SubmitTransferClique(*contracts.CheckPoWPoWProof) error
+}
