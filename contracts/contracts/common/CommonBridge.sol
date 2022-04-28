@@ -71,7 +71,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
-        require(msg.value > fee, "Sent value < fee");
+        require(msg.value > fee, "Sent value <= fee");
         feeRecipient.transfer(fee);
 
         uint restOfValue = msg.value - fee;
@@ -94,6 +94,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             require(tokenSideAddress != address(0), "Unknown token address");
         }
 
+        require(amount > 0, "Cannot withdraw 0");
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
 
