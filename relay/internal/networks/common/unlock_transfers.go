@@ -35,7 +35,7 @@ func (b *CommonBridge) unlockOldTransfers() error {
 			return fmt.Errorf("get lock time: %w", err)
 		}
 
-		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"unlockOldTransfers: there are no locked transfers with that id. Sleep %v seconds...",
 			lockTime.Uint64(),
 		)
@@ -52,7 +52,7 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	// Check if the unlocking is allowed and get the sleep time.
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
-		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"unlockOldTransfers: sleep %v seconds...",
 			sleepTime,
 		)
