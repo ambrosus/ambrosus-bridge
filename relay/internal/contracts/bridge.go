@@ -49,11 +49,16 @@ type CheckAuraBlockAura struct {
 	FinalizedVs uint64
 }
 
+// CheckAuraValidatorSetChange is an auto generated low-level Go binding around an user-defined struct.
+type CheckAuraValidatorSetChange struct {
+	DeltaAddress common.Address
+	DeltaIndex   int64
+}
+
 // CheckAuraValidatorSetProof is an auto generated low-level Go binding around an user-defined struct.
 type CheckAuraValidatorSetProof struct {
 	ReceiptProof [][]byte
-	DeltaAddress common.Address
-	DeltaIndex   int64
+	Changes      []CheckAuraValidatorSetChange
 }
 
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
