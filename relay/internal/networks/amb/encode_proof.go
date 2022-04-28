@@ -149,26 +149,6 @@ func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*blockExt, minSafetyBlocks
 	return nil
 }
 
-func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *c.VsInitiateChange) (c.CheckAuraValidatorSetProof, error) {
-	address, index, err := deltaVS(prevSet, event.NewSet)
-	if err != nil {
-		return c.CheckAuraValidatorSetProof{}, fmt.Errorf("deltaVS: %w", err)
-	}
-
-	proof, err := b.getProof(event)
-	if err != nil {
-		return c.CheckAuraValidatorSetProof{}, fmt.Errorf("getProof: %w", err)
-	}
-
-	return c.CheckAuraValidatorSetProof{
-		ReceiptProof: proof,
-		Changes: []c.CheckAuraValidatorSetChange{{
-			DeltaAddress: address,
-			DeltaIndex:   index,
-		}},
-	}, nil
-}
-
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
 	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
