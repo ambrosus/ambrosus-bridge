@@ -3,7 +3,6 @@ package common
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -30,13 +29,13 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	if err != nil {
 		return fmt.Errorf("get locked transfer time %v: %w", oldestLockedEventId, err)
 	}
-	if lockedTransferTime.Cmp(big.NewInt(0)) == 0 {
+	if lockedTransferTime.Uint64() == 0 {
 		lockTime, err := b.Contract.LockTime(nil)
 		if err != nil {
 			return fmt.Errorf("get lock time: %w", err)
 		}
 
-		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"unlockOldTransfers: there are no locked transfers with that id. Sleep %v seconds...",
 			lockTime.Uint64(),
 		)
@@ -53,7 +52,7 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	// Check if the unlocking is allowed and get the sleep time.
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
-		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"unlockOldTransfers: sleep %v seconds...",
 			sleepTime,
 		)
