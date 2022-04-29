@@ -18,9 +18,11 @@ const relayAddress = new ethers.Wallet("34d8e83fca265e9ab5bcc1094fa64e98692375bf
 const vsContractAddress = config_r.network.amb.vsContractAddr;
 
 const validators = [
+  "0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79",
   "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
   "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
 ];
+const changeVsTimes = 2; // how many times the "deleting validators" loop will be executed
 
 const options = {gasLimit: 8_000_000};  // amb & eth gas estimator broken
 
@@ -92,11 +94,27 @@ describe("Integration tests", function () {
 
     // validator set changes
     console.log("Validator set changes");
-    const currentSet = await vs.getValidators();
-    for (const v of validators)
-      (!currentSet.includes(v)) ?
-        await w(vs.addValidator(v, options)) :
-        await w(vs.removeValidator(v, options))
+
+    for (let t = 0; t < changeVsTimes; t++){
+      await waitConfirmations(2, ambSigner.provider);
+      let currentSet: string[] = await vs.getValidators();
+      currentSet = [...currentSet];   // clone 'currentSet' cuz it's not extensible
+
+      for (let i = 0; i  < validators.length; i ++) {
+        const v = validators[i];
+
+        if (currentSet.includes(v)) {
+          if (1 / currentSet.length < 0.5) {
+            await vs.removeValidator(v, options);
+            currentSet.splice(currentSet.indexOf(v), 1);
+          }
+
+        } else {
+          await vs.addValidator(v, options);
+          currentSet.push(v);
+        }
+      }
+    }
 
 
     // withdraw
