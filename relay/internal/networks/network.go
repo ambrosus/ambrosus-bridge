@@ -29,7 +29,7 @@ type Bridge interface {
 	GetMinSafetyBlocksNum() (uint64, error)
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
-	SendEvent(event *contracts.BridgeTransfer) error
+	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
 
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error

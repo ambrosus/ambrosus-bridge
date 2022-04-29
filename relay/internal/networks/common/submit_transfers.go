@@ -76,7 +76,21 @@ func (b *CommonBridge) watchTransfers() error {
 }
 
 func (b *CommonBridge) processEvent(event *contracts.BridgeTransfer) error {
-	if err := b.SendEvent(event); err != nil {
+	safetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum()
+	if err != nil {
+		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
+	}
+
+	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
+		return fmt.Errorf("WaitForBlock: %w", err)
+	}
+
+	// Check if the event has been removed.
+	if err := b.IsEventRemoved(event); err != nil {
+		return fmt.Errorf("isEventRemoved: %w", err)
+	}
+
+	if err := b.SendEvent(event, safetyBlocks); err != nil {
 		return fmt.Errorf("send event: %w", err)
 	}
 
