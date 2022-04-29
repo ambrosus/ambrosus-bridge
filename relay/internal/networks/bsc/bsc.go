@@ -13,7 +13,6 @@ import (
 )
 
 const BridgeName = "binance"
-const forkProtectionBlocks = 10 // fork protection
 
 type Bridge struct {
 	nc.CommonBridge
@@ -44,18 +43,10 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveClique) {
 	b.Logger.Debug().Msg("Running binance bridge...")
 
 	go b.UnlockTransfersLoop()
-	b.ListenTransfersLoop()
+	b.SubmitTransfersLoop()
 }
 
-func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	if err := b.WaitForBlock(event.Raw.BlockNumber + forkProtectionBlocks); err != nil {
-		return fmt.Errorf("WaitForBlock: %w", err)
-	}
-
-	if err := b.IsEventRemoved(event); err != nil {
-		return fmt.Errorf("isEventRemoved: %w", err)
-	}
-
+func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
 	cliqueProof, err := b.encodeCliqueProof(event)
 	if err != nil {
 		return fmt.Errorf("encodeCliqueProof: %w", err)
