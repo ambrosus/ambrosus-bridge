@@ -11,7 +11,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
     address[] public validatorSet;
     address validatorSetAddress;
-    bytes32 public lastProcessedBlock;
 
 
     struct BlockAura {
@@ -47,14 +46,12 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
     function __CheckAura_init(
         address[] memory initialValidators_,
-        address validatorSetAddress_,
-        bytes32 lastProcessedBlock_
+        address validatorSetAddress_
     ) internal initializer {
         require(initialValidators_.length > 0, "Length of _initialValidators must be bigger than 0");
 
         validatorSet = initialValidators_;
         validatorSetAddress = validatorSetAddress_;
-        lastProcessedBlock = lastProcessedBlock_;
 
     }
 
@@ -102,7 +99,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
         }
 
-        lastProcessedBlock = blockHash;
     }
 
     function getValidatorSet() public view returns (address[] memory) {

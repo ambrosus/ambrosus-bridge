@@ -7,10 +7,9 @@ contract EthBridgeTest is EthBridge {
     constructor(
         CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
-        address validatorSetAddress_,
-        bytes32 lastProcessedBlock
+        address validatorSetAddress_
     ) {
-        EthBridge.initialize(args, initialValidators, validatorSetAddress_, lastProcessedBlock);
+        EthBridge.initialize(args, initialValidators, validatorSetAddress_);
     }
 
     function checkAuraTest(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
