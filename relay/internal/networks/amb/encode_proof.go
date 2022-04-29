@@ -146,7 +146,7 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *c.VsInitia
 }
 
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
-	start, err := b.getLastProcessedBlockNum()
+	start, err := b.getLastProcessedBlockNum(event.EventId)
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
@@ -197,24 +197,21 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckAura
 	return nil
 }
 
-func (b *Bridge) getLastProcessedBlockNum() (uint64, error) {
-	lastEventId, err := b.sideBridge.GetLastEventId()
-	if err != nil {
-		return 0, fmt.Errorf("GetLastEventId: %w", err)
-	}
-	lastEvent, err := b.SideBridge.GetEventById(lastEventId)
+func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
+	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
+	prevEvent, err := b.SideBridge.GetEventById(prevEventId)
 	if err != nil {
 		return 0, fmt.Errorf("GetEventById: %w", err)
 	}
 
 	pastMinSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(&bind.CallOpts{
-		BlockNumber: big.NewInt(int64(lastEvent.Raw.BlockNumber))},
-	)
+		BlockNumber: big.NewInt(int64(prevEvent.Raw.BlockNumber)),
+	})
 	if err != nil {
 		return 0, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
-	return pastMinSafetyBlocks + lastEvent.Raw.BlockNumber, nil
+	return prevEvent.Raw.BlockNumber + pastMinSafetyBlocks, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
