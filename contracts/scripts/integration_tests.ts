@@ -22,7 +22,6 @@ const validators = [
   "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
   "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
 ];
-const changeVsTimes = 2; // how many times the "deleting validators" loop will be executed
 
 const options = {gasLimit: 8_000_000};  // amb & eth gas estimator broken
 
@@ -95,26 +94,22 @@ describe("Integration tests", function () {
     // validator set changes
     console.log("Validator set changes");
 
-    for (let t = 0; t < changeVsTimes; t++){
-      await waitConfirmations(2, ambSigner.provider);
-      let currentSet: string[] = await vs.getValidators();
-      currentSet = [...currentSet];   // clone 'currentSet' cuz it's not extensible
+    // return all validators to set if they were removed
+    const currentSet = await vs.getValidators();
+    await ws(...
+      validators
+        .filter(v => !currentSet.includes(v))
+        .map(v => vs.addValidator(v, options))
+    )
 
-      for (let i = 0; i  < validators.length; i ++) {
-        const v = validators[i];
+    // in one block
+    await ws(
+      vs.removeValidator(validators[1]),
+      vs.addValidator(validators[1]))
 
-        if (currentSet.includes(v)) {
-          if (1 / currentSet.length < 0.5) {
-            await vs.removeValidator(v, options);
-            currentSet.splice(currentSet.indexOf(v), 1);
-          }
-
-        } else {
-          await vs.addValidator(v, options);
-          currentSet.push(v);
-        }
-      }
-    }
+    // one at time
+    await w(vs.removeValidator(validators[2]))
+    await w(vs.addValidator(validators[2]))
 
 
     // withdraw
@@ -180,3 +175,7 @@ async function w(call: Promise<any>): Promise<any> {
   return tx;
 }
 
+// wait for transactions to be mined
+async function ws(...calls: Promise<any>[]): Promise<any> {
+  return Promise.all(calls.map(c => w(c)));
+}
