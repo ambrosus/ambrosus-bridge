@@ -39,7 +39,7 @@ contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
         minimumDifficulty = minimumDifficulty_;
     }
 
-    function checkPoW_(PoWProof memory powProof, address sideBridgeAddress) internal view
+    function checkPoW_(PoWProof calldata powProof, address sideBridgeAddress) internal view
     {
         bytes32 hash = calcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
         for (uint i = 0; i < powProof.blocks.length; i++) {
@@ -51,7 +51,7 @@ contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
     }
 
 
-    function verifyEthash(BlockPoW memory block_) internal view {
+    function verifyEthash(BlockPoW calldata block_) internal view {
         uint difficulty = bytesToUint(block_.difficulty);
         require(difficulty >= minimumDifficulty, "difficulty too low");
         verifyPoW(
@@ -64,7 +64,7 @@ contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
         );
     }
 
-    function blockHash(BlockPoW memory block_) internal pure returns (bytes32) {
+    function blockHash(BlockPoW calldata block_) internal pure returns (bytes32) {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
                 abi.encodePacked(
@@ -85,17 +85,21 @@ contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
             ));
     }
 
-    function blockHashWithoutNonce(BlockPoW memory block_) internal pure returns (bytes32) {
+    function blockHashWithoutNonce(BlockPoW calldata block_) internal pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
-            block_.p0WithoutNonce,
-            block_.p1,
-            block_.parentOrReceiptHash,
-            block_.p2,
-            block_.difficulty,
-            block_.p3,
-            block_.number,
-            block_.p4,
-            block_.p6
+            abi.encodePacked(
+                block_.p0WithoutNonce,
+                block_.p1,
+                block_.parentOrReceiptHash,
+                block_.p2
+            ),
+            abi.encodePacked(
+                block_.difficulty,
+                block_.p3,
+                block_.number,
+                block_.p4,
+                block_.p6
+            )
         );
 
         return keccak256(rlpHeaderHashWithoutNonce);
