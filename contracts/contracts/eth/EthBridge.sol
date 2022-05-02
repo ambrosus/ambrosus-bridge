@@ -16,7 +16,7 @@ contract EthBridge is CommonBridge, CheckAura {
         __CheckAura_init(initialValidators, validatorSetAddress);
     }
 
-    function submitTransferAura(AuraProof memory auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
+    function submitTransferAura(AuraProof calldata auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
         emit TransferSubmit(auraProof.transfer.eventId);
         checkEventId(auraProof.transfer.eventId);
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
