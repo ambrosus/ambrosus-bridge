@@ -16,15 +16,15 @@ contract AmbBridgeTest is AmbBridge {
         lockTransfers(events, eventId);
     }
 
-    function blockHashTest(BlockPoW memory block_) public pure returns (bytes32) {
+    function blockHashTest(BlockPoW calldata block_) public pure returns (bytes32) {
         return blockHash(block_);
     }
 
-    function verifyEthashTest(BlockPoW memory block_) public view {
+    function verifyEthashTest(BlockPoW calldata block_) public view {
         verifyEthash(block_);
     }
 
-    function checkPoWTest(PoWProof memory powProof, address sideBridgeAddress) public {
+    function checkPoWTest(PoWProof calldata powProof, address sideBridgeAddress) public {
         checkPoW_(powProof, sideBridgeAddress);
     }
 

@@ -49,24 +49,10 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
 
 	go b.ensureDAGsExists()
 	go b.UnlockTransfersLoop()
-	b.ListenTransfersLoop()
+	b.SubmitTransfersLoop()
 }
 
-func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
-	if err != nil {
-		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
-	}
-
-	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
-		return fmt.Errorf("WaitForBlock: %w", err)
-	}
-
-	// Check if the event has been removed.
-	if err := b.IsEventRemoved(event); err != nil {
-		return fmt.Errorf("isEventRemoved: %w", err)
-	}
-
+func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
 	powProof, err := b.encodePoWProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodePoWProof: %w", err)

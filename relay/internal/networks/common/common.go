@@ -97,8 +97,8 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	return nil, networks.ErrEventNotFound
 }
 
-func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
+func (b *CommonBridge) GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error) {
+	safetyBlocks, err := b.Contract.MinSafetyBlocks(opts)
 	if err != nil {
 		return 0, err
 	}
