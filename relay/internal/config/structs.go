@@ -35,9 +35,9 @@ type (
 	}
 
 	Networks struct {
-		AMB AMBConfig `mapstructure:"amb"`
-		ETH ETHConfig `mapstructure:"eth"`
-		BSC BSCConfig `mapstructure:"bsc"`
+		AMB *AMBConfig `mapstructure:"amb"`
+		ETH *ETHConfig `mapstructure:"eth"`
+		BSC *BSCConfig `mapstructure:"bsc"`
 	}
 
 	ExternalLoggers struct {

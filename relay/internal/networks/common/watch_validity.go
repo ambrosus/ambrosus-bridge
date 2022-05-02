@@ -11,9 +11,8 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
-	b.SideBridge = sideBridge
-
+func (b *CommonBridge) ValidityWatchdog() {
+	b.Logger.Info().Msg("Starting validity watchdog")
 	for {
 		b.EnsureContractUnpaused()
 

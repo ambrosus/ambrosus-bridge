@@ -36,10 +36,12 @@ func New(cfg *config.BSCConfig, externalLogger external_logger.ExternalLogger) (
 	return b, nil
 }
 
-func (b *Bridge) Run(sideBridge networks.BridgeReceivePoSA) {
+func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceivePoSA) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
+}
 
+func (b *Bridge) Run() {
 	b.Logger.Debug().Msg("Running binance bridge...")
 
 	go b.UnlockTransfersLoop()
