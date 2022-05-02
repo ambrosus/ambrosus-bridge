@@ -12,7 +12,7 @@ contract EthBridgeTest is EthBridge {
         EthBridge.initialize(args, initialValidators, validatorSetAddress_);
     }
 
-    function checkAuraTest(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
+    function checkAuraTest(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
     }
 
@@ -20,11 +20,11 @@ contract EthBridgeTest is EthBridge {
         checkSignature(signer, message, signature);
     }
 
-    function blockHashTest(BlockAura memory block_) public pure returns (bytes32, bytes32) {
+    function blockHashTest(BlockAura calldata block_) public pure returns (bytes32, bytes32) {
         return calcBlockHash(block_);
     }
 
-    function blockHashTestPaid(BlockAura memory block_) public returns (bytes32, bytes32) {
+    function blockHashTestPaid(BlockAura calldata block_) public returns (bytes32, bytes32) {
         return calcBlockHash(block_);
     }
 
