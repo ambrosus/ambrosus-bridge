@@ -199,19 +199,24 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckAura
 
 func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
 	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
-	prevEvent, err := b.SideBridge.GetEventById(prevEventId)
+	prevEventSide, err := b.SideBridge.GetEventById(prevEventId)
 	if err != nil {
-		return 0, fmt.Errorf("GetEventById: %w", err)
+		return 0, fmt.Errorf("side GetEventById: %w", err)
 	}
 
-	pastMinSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(&bind.CallOpts{
-		BlockNumber: big.NewInt(int64(prevEvent.Raw.BlockNumber)),
+	pastSideMinSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(&bind.CallOpts{
+		BlockNumber: big.NewInt(int64(prevEventSide.Raw.BlockNumber)),
 	})
 	if err != nil {
-		return 0, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
+		return 0, fmt.Errorf("get block by hash: %w", err)
 	}
 
-	return prevEvent.Raw.BlockNumber + pastMinSafetyBlocks, nil
+	prevEventThis, err := b.GetEventById(prevEventId)
+	if err != nil {
+		return 0, fmt.Errorf("this GetEventById: %w", err)
+	}
+
+	return prevEventThis.Raw.BlockNumber + pastSideMinSafetyBlocks, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
