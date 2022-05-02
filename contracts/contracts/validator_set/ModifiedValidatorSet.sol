@@ -21,13 +21,12 @@ contract ValidatorSetBase {
     function finalizeChange() public;
 }
 
-
 /**
 @title Implementation of Parities ValidatorSet contract with:
 - simple add/remove methods
 - only owner (set explicitly in constructor and transferable) can perform mutating functions
 */
-contract ValidatorSet is ValidatorSetBase, ConstructorOwnable {
+contract ModifiedValidatorSet is ValidatorSetBase, ConstructorOwnable {
     address private superUser; // the SUPER_USER address as defined by EIP96. During normal operation should be 2**160 - 2
     address[] public validators;
     address[] public pendingValidators;
@@ -65,7 +64,12 @@ contract ValidatorSet is ValidatorSetBase, ConstructorOwnable {
     }
 
     function addValidator(address _validator) public onlyOwner notInArray(_validator, pendingValidators, "Provided address is already a validator") {
-        pendingValidators.push(_validator);
+        // Should shuffle Validator Set for security. So one person / collusive group
+        // can not assemble a chain of their nodes in succession at the end of the set
+        uint index = block.number % pendingValidators.length;
+        pendingValidators.push(pendingValidators[index]);
+        pendingValidators[index] = _validator;
+
         emitChangeEvent();
     }
 
@@ -77,11 +81,13 @@ contract ValidatorSet is ValidatorSetBase, ConstructorOwnable {
                 pendingValidators.length--;
             }
         }
+
         emitChangeEvent();
     }
 
     function finalizeChange() public {
         require(msg.sender == superUser, "Must be called by super user");
+
         validators = pendingValidators;
     }
 

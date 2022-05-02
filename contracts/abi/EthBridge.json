@@ -1,88 +1,5 @@
 [
   {
-    "inputs": [
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "sideBridgeAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "adminAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "relayAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "wrappingTokenAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address[]",
-            "name": "tokenThisAddresses",
-            "type": "address[]"
-          },
-          {
-            "internalType": "address[]",
-            "name": "tokenSideAddresses",
-            "type": "address[]"
-          },
-          {
-            "internalType": "uint256",
-            "name": "fee",
-            "type": "uint256"
-          },
-          {
-            "internalType": "address payable",
-            "name": "feeRecipient",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "timeframeSeconds",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "lockTime",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "minSafetyBlocks",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct CommonStructs.ConstructorArgs",
-        "name": "args",
-        "type": "tuple"
-      },
-      {
-        "internalType": "address[]",
-        "name": "initialValidators",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address",
-        "name": "validatorSetAddress_",
-        "type": "address"
-      },
-      {
-        "internalType": "bytes32",
-        "name": "lastProcessedBlock_",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
-  },
-  {
     "anonymous": false,
     "inputs": [
       {
@@ -522,6 +439,86 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "sideBridgeAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "adminAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "relayAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "wrappingTokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokenThisAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address[]",
+            "name": "tokenSideAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fee",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address payable",
+            "name": "feeRecipient",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "timeframeSeconds",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lockTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "minSafetyBlocks",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.ConstructorArgs",
+        "name": "args",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address[]",
+        "name": "initialValidators",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "validatorSetAddress",
+        "type": "address"
+      }
+    ],
+    "name": "initialize",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "inputEventId",
     "outputs": [
@@ -529,19 +526,6 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lastProcessedBlock",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
       }
     ],
     "stateMutability": "view",

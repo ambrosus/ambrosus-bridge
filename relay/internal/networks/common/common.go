@@ -89,14 +89,16 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
-	if logs.Next() {
-		return logs.Event, nil
+	for logs.Next() {
+		if !logs.Event.Raw.Removed {
+			return logs.Event, nil
+		}
 	}
 	return nil, networks.ErrEventNotFound
 }
 
-func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
+func (b *CommonBridge) GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error) {
+	safetyBlocks, err := b.Contract.MinSafetyBlocks(opts)
 	if err != nil {
 		return 0, err
 	}
@@ -108,17 +110,30 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		return err
 	}
 
+	b.IncTxCountMetric(params.MethodName)
+
+	b.Logger.Info().
+		Str("method", params.MethodName).
+		Str("tx_hash", params.Tx.Hash().Hex()).
+		Interface("full_tx", params.Tx).
+		Interface("tx_params", params.TxParams).
+		Msgf("Wait the tx to be mined...")
 	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
 	}
 
+	b.SetUsedGasMetric(params.MethodName, receipt.GasUsed, params.Tx.GasPrice())
+
 	if receipt.Status != types.ReceiptStatusSuccessful {
+		b.IncFailedTxCountMetric(params.MethodName)
 		err = b.GetFailureReason(params.Tx)
 		if err != nil {
-			return fmt.Errorf("GetFailureReason: %w", helpers.ParseError(err))
+			return fmt.Errorf("tx %s failed: %w", params.Tx.Hash().Hex(), helpers.ParseError(err))
 		}
+		b.Logger.Debug().Err(err).Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")
 	}
+	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
 
 	return nil
 }

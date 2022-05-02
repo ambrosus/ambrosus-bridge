@@ -52,7 +52,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       execute: {
         init: {
           methodName: "initialize_",
-          args: [commonArgs]
+          args: [
+            commonArgs,
+            0 // minimum difficulty
+          ]
         }
       }
     },
@@ -70,7 +73,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
       ],
       "0x0000000000000000000000000000000000000F00", // validatorSetAddress_
-      ethers.constants.HashZero, // lastProcessedBlock
     ],
     log: true,
   });

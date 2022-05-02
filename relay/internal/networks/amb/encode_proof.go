@@ -13,7 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func (b *Bridge) getBlocksAndEvents(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
+func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
 	// populated by functions below
 	blocksMap := make(map[uint64]*c.CheckAuraBlockAura)
 
@@ -146,14 +146,14 @@ func (b *Bridge) encodeVSChangeEvent(prevSet []common.Address, event *c.VsInitia
 }
 
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
-	start, err := b.getLastProcessedBlockNum()
+	start, err := b.getLastProcessedBlockNum(event.EventId)
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
 
 	opts := &bind.FilterOpts{
-		Start:   start.Uint64(),
+		Start:   start,
 		End:     &end,
 		Context: context.Background(),
 	}
@@ -197,18 +197,21 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckAura
 	return nil
 }
 
-func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
-	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
+	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
+	prevEvent, err := b.SideBridge.GetEventById(prevEventId)
 	if err != nil {
-		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
+		return 0, fmt.Errorf("GetEventById: %w", err)
 	}
 
-	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	pastMinSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(&bind.CallOpts{
+		BlockNumber: big.NewInt(int64(prevEvent.Raw.BlockNumber)),
+	})
 	if err != nil {
-		return nil, fmt.Errorf("get block by hash: %w", err)
+		return 0, fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
-	return block.Number(), nil
+	return prevEvent.Raw.BlockNumber + pastMinSafetyBlocks, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
@@ -235,7 +238,7 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	i := len(curr) - 1
 	return curr[i], int64(i), nil
 
-	//return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
+	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }
 
 // used for 'ordered' map

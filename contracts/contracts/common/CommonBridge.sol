@@ -71,7 +71,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
-        require(msg.value > fee, "Sent value < fee");
+        require(msg.value > fee, "Sent value <= fee");
         feeRecipient.transfer(fee);
 
         uint restOfValue = msg.value - fee;
@@ -79,9 +79,9 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         //
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, wrapperAddress, tokenSideAddress, outputEventId, fee);
+        emit Withdraw(msg.sender, address(0), tokenSideAddress, outputEventId, fee);
 
-        withdraw_finish();
+        withdrawFinish();
     }
 
     function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
@@ -94,6 +94,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             require(tokenSideAddress != address(0), "Unknown token address");
         }
 
+        require(amount > 0, "Cannot withdraw 0");
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
 
@@ -102,10 +103,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
 
-        withdraw_finish();
+        withdrawFinish();
     }
 
-    function withdraw_finish() internal {
+    function withdrawFinish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
             emit Transfer(outputEventId++, queue);
@@ -181,6 +182,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
+        inputEventId = eventId-1; // pretend like we don't receive that event
     }
 
 

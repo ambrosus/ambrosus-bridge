@@ -9,9 +9,10 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) ListenTransfersLoop() {
+func (b *CommonBridge) SubmitTransfersLoop() {
 	for {
-		b.EnsureContractUnpaused()
+		// since we submit transfers to SideBridge, ensure that it is unpaused
+		b.SideBridge.EnsureContractUnpaused()
 
 		if err := b.watchTransfers(); err != nil {
 			b.Logger.Error().Err(err).Msg("watchTransfers error")
@@ -37,8 +38,8 @@ func (b *CommonBridge) checkOldTransfers() error {
 		}
 
 		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
-		if err := b.SendEvent(nextEvent); err != nil {
-			return fmt.Errorf("send event: %w", err)
+		if err := b.processEvent(nextEvent); err != nil {
+			return err
 		}
 	}
 }
@@ -63,11 +64,36 @@ func (b *CommonBridge) watchTransfers() error {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching transfers: %w", err)
 		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-
-			if err := b.SendEvent(event); err != nil {
-				return fmt.Errorf("send event: %w", err)
+			if err := b.processEvent(event); err != nil {
+				return err
 			}
 		}
 	}
+}
+
+func (b *CommonBridge) processEvent(event *contracts.BridgeTransfer) error {
+	safetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
+	if err != nil {
+		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
+	}
+
+	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
+		return fmt.Errorf("WaitForBlock: %w", err)
+	}
+
+	// Check if the event has been removed.
+	if err := b.IsEventRemoved(event); err != nil {
+		return fmt.Errorf("isEventRemoved: %w", err)
+	}
+
+	if err := b.SendEvent(event, safetyBlocks); err != nil {
+		return fmt.Errorf("send event: %w", err)
+	}
+
+	b.AddWithdrawalsCountMetric(len(event.Queue))
+	return nil
 }

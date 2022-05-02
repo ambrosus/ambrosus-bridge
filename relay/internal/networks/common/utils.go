@@ -5,16 +5,13 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -50,7 +47,11 @@ func (b *CommonBridge) waitForUnpauseContract() error {
 		select {
 		case err := <-eventSub.Err():
 			return fmt.Errorf("watching unpaused event: %w", err)
-		case <-eventCh:
+		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
+
 			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
 			return nil
 		}
@@ -58,6 +59,8 @@ func (b *CommonBridge) waitForUnpauseContract() error {
 }
 
 func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
+	b.Logger.Debug().Uint64("blockNum", targetBlockNum).Msg("Waiting for block...")
+
 	// todo maybe timeout (context)
 	blockChannel := make(chan *types.Header)
 	blockSub, err := b.WsClient.SubscribeNewHead(context.Background(), blockChannel)
@@ -113,6 +116,19 @@ func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, err
 	return receipts, errGroup.Wait()
 }
 
+func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {
+	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
+
+	newEvent, err := b.GetEventById(event.EventId)
+	if err != nil {
+		return err
+	}
+	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
+		return fmt.Errorf("looks like the event has been removed")
+	}
+	return nil
+}
+
 func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	_, err := b.Client.CallContract(context.Background(), ethereum.CallMsg{
 		From:     b.Auth.From,
@@ -124,26 +140,6 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	}, nil)
 
 	return err
-}
-
-func (b *CommonBridge) SetRelayBalanceMetric() {
-	balance, err := b.getBalanceGWei(b.Auth.From)
-	if err != nil {
-		b.Logger.Error().Err(err).Msg("error when getting contract balance in GWei")
-		return
-	}
-
-	metric.RelayBalanceGWeiGauge.WithLabelValues(b.Name).Set(balance)
-}
-
-func (b *CommonBridge) getBalanceGWei(address common.Address) (float64, error) {
-	balance, err := b.Client.BalanceAt(context.Background(), address, nil)
-	if err != nil {
-		return 0, err
-	}
-	balanceGWei := new(big.Float).Quo(new(big.Float).SetInt(balance), big.NewFloat(params.GWei))
-	balanceFloat64, _ := balanceGWei.Float64()
-	return balanceFloat64, nil
 }
 
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {

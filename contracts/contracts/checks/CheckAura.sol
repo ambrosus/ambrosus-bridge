@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
@@ -12,7 +11,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
     address[] public validatorSet;
     address validatorSetAddress;
-    bytes32 public lastProcessedBlock;
 
 
     struct BlockAura {
@@ -48,18 +46,16 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
     function __CheckAura_init(
         address[] memory initialValidators_,
-        address validatorSetAddress_,
-        bytes32 lastProcessedBlock_
+        address validatorSetAddress_
     ) internal initializer {
         require(initialValidators_.length > 0, "Length of _initialValidators must be bigger than 0");
 
         validatorSet = initialValidators_;
         validatorSetAddress = validatorSetAddress_;
-        lastProcessedBlock = lastProcessedBlock_;
 
     }
 
-    function checkAura_(AuraProof memory auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
+    function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         uint safetyChainLength;
         bytes32 blockHash;
@@ -70,7 +66,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
-            BlockAura memory block_ = auraProof.blocks[i];
+            BlockAura calldata block_ = auraProof.blocks[i];
 
             if (block_.finalizedVs != 0) {// 0 means no events should be finalized; so indexes are shifted by 1
                 for (uint j = lastFinalizedVs; j < block_.finalizedVs; j++) {
@@ -103,7 +99,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
         }
 
-        lastProcessedBlock = blockHash;
     }
 
     function getValidatorSet() public view returns (address[] memory) {
@@ -128,7 +123,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         }
     }
 
-    function checkBlock(BlockAura memory block_) internal view returns (bytes32) {
+    function checkBlock(BlockAura calldata block_) internal view returns (bytes32) {
         (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
 
         address validator = validatorSet[bytesToUint(block_.step) % validatorSet.length];
@@ -137,7 +132,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         return sealHash;
     }
 
-    function calcBlockHash(BlockAura memory block_) internal pure returns (bytes32, bytes32) {
+    function calcBlockHash(BlockAura calldata block_) internal pure returns (bytes32, bytes32) {
         bytes memory commonRlp = abi.encodePacked(PARENT_HASH_PREFIX, block_.parentHash, block_.p2, block_.receiptHash, block_.p3);
         return (
         // hash without seal (bare), for signature check
