@@ -16,12 +16,12 @@ const BridgeName = "binance"
 
 type Bridge struct {
 	nc.CommonBridge
-	Config     *config.ETHConfig
+	Config     *config.BSCConfig
 	sideBridge networks.BridgeReceivePoSA
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+func New(cfg *config.BSCConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)

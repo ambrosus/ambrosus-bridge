@@ -13,6 +13,10 @@ type (
 		VSContractAddr string `mapstructure:"vsContractAddr"`
 	}
 
+	BSCConfig struct {
+		Network `mapstructure:",squash"`
+	}
+
 	ETHConfig struct {
 		Network              `mapstructure:",squash"`
 		EthashDir            string `mapstructure:"ethashDir"`
@@ -33,6 +37,7 @@ type (
 	Networks struct {
 		AMB AMBConfig `mapstructure:"amb"`
 		ETH ETHConfig `mapstructure:"eth"`
+		BSC BSCConfig `mapstructure:"bsc"`
 	}
 
 	ExternalLoggers struct {
