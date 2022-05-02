@@ -49,12 +49,14 @@ describe("Integration tests", function () {
     console.log("Setup relay")
     // set relay role
     const relayRole = await ethBridge.RELAY_ROLE();
-    await w(ethBridge.grantRole(relayRole, relayAddress, options));
-    await w(ambBridge.grantRole(relayRole, relayAddress, options));
+    await ws(
+      ethBridge.grantRole(relayRole, relayAddress, options),
+      ambBridge.grantRole(relayRole, relayAddress, options),
 
-    // send money to relay
-    await w(ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1"), ...options}));
-    await w(ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...options}));
+      // send money to relay
+      ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1"), ...options}),
+      ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...options})
+    );
 
   });
 
@@ -65,8 +67,9 @@ describe("Integration tests", function () {
 
     // mint tokens
     console.log("Mint tokens");
-    await w(ethToken.mint(ethSigner.address, 10, options));
-    await w(ethToken.increaseAllowance(ethBridge.address, 10, options));
+    await ws(
+      ethToken.mint(ethSigner.address, 10, options),
+      ethToken.increaseAllowance(ethBridge.address, 10, options));
 
     // withdraw
     console.log("Withdraw");
