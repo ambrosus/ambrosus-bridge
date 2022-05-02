@@ -199,24 +199,18 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckAura
 
 func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
 	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
-	prevEventSide, err := b.SideBridge.GetEventById(prevEventId)
+	prevEvent, err := b.GetEventById(prevEventId)
 	if err != nil {
 		return 0, fmt.Errorf("side GetEventById: %w", err)
 	}
 
-	pastSideMinSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(&bind.CallOpts{
-		BlockNumber: big.NewInt(int64(prevEventSide.Raw.BlockNumber)),
-	})
+	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
+	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
 	if err != nil {
 		return 0, fmt.Errorf("get block by hash: %w", err)
 	}
 
-	prevEventThis, err := b.GetEventById(prevEventId)
-	if err != nil {
-		return 0, fmt.Errorf("this GetEventById: %w", err)
-	}
-
-	return prevEventThis.Raw.BlockNumber + pastSideMinSafetyBlocks, nil
+	return prevEvent.Raw.BlockNumber + minSafetyBlocks, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
