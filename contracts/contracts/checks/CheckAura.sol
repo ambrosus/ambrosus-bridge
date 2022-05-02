@@ -80,8 +80,8 @@ contract CheckAura is Initializable, CheckReceiptsProof {
                     ValidatorSetProof memory vsProof = auraProof.vsChanges[j];
 
                     // apply vs changes
-                    for (uint k = 0; k < vsProof.changes.length; j++)
-                        applyVsChange(vsProof.changes[i]);
+                    for (uint k = 0; k < vsProof.changes.length; k++)
+                        applyVsChange(vsProof.changes[k]);
 
                     // check proof
                     receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
@@ -92,7 +92,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
                     safetyChainLength = 2;
                 }
 
-                lastFinalizedVs = block_.finalizedVs - 1;
+                lastFinalizedVs = block_.finalizedVs;
             }
 
             blockHash = checkBlock(block_);
