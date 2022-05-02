@@ -17,7 +17,7 @@ const BridgeName = "binance"
 type Bridge struct {
 	nc.CommonBridge
 	Config     *config.ETHConfig
-	sideBridge networks.BridgeReceiveClique
+	sideBridge networks.BridgeReceivePoSA
 }
 
 // New creates a new ethereum bridge.
@@ -36,7 +36,7 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	return b, nil
 }
 
-func (b *Bridge) Run(sideBridge networks.BridgeReceiveClique) {
+func (b *Bridge) Run(sideBridge networks.BridgeReceivePoSA) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
 
@@ -47,13 +47,13 @@ func (b *Bridge) Run(sideBridge networks.BridgeReceiveClique) {
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
-	cliqueProof, err := b.encodeCliqueProof(event)
+	posaProof, err := b.encodePoSAProof(event)
 	if err != nil {
-		return fmt.Errorf("encodeCliqueProof: %w", err)
+		return fmt.Errorf("encodePoSAProof: %w", err)
 	}
 
-	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer Clique...")
-	err = b.sideBridge.SubmitTransferClique(cliqueProof)
+	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer PoSA...")
+	err = b.sideBridge.SubmitTransferPoSA(posaProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
 	}

@@ -5,6 +5,6 @@ import (
 )
 
 // todo
-func (b *Bridge) encodeCliqueProof(transferEvent *contracts.BridgeTransfer) (*contracts.CheckPoWPoWProof, error) {
-	return &contracts.CheckPoWPoWProof{}, nil
+func (b *Bridge) encodePoSAProof(transferEvent *contracts.BridgeTransfer) (*contracts.CheckPoSAPoSAProof, error) {
+	return &contracts.CheckPoSAPoSAProof{}, nil
 }

@@ -51,7 +51,7 @@ type BridgeReceiveEthash interface {
 	IsEpochSet(epoch uint64) (bool, error)
 }
 
-type BridgeReceiveClique interface {
+type BridgeReceivePoSA interface {
 	Bridge
-	SubmitTransferClique(*contracts.CheckPoWPoWProof) error
+	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }

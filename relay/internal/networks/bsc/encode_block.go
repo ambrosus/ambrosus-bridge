@@ -6,6 +6,6 @@ import (
 )
 
 // todo
-func (b *Bridge) EncodeBlock(header *types.Header) (*contracts.CheckPoWBlockPoW, error) {
-	return &contracts.CheckPoWBlockPoW{}, nil
+func (b *Bridge) EncodeBlock(header *types.Header) (*contracts.CheckPoSABlockPoSA, error) {
+	return &contracts.CheckPoSABlockPoSA{}, nil
 }
