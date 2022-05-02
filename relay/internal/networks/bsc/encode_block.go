@@ -1,4 +1,4 @@
-package eth
+package bsc
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
