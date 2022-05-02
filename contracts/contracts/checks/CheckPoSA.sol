@@ -86,7 +86,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
     }
 
 
-    function calcBlockHash(BlockPoSA memory block_) internal pure returns (bytes32, bytes32) {
+    function calcBlockHash(BlockPoSA calldata block_) internal pure returns (bytes32, bytes32) {
         bytes memory commonRlp = abi.encodePacked(block_.parentHash, block_.p1, block_.receiptHash, block_.p2, block_.number, block_.p3);
         return (
         // hash without seal (bare), for signature check
