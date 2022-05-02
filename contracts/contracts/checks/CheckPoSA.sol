@@ -55,7 +55,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     }
 
-    function CheckPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) external {
+    function CheckPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
         bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
         require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
 
