@@ -138,7 +138,7 @@ func (t *CheckPoWBlockPoW) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tm)
 }
 
-// POW
+// PoSA
 
 func (t *CheckPoSAPoSAProof) MarshalJSON() ([]byte, error) {
 	type PoSAPoSAProof struct {
