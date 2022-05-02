@@ -64,8 +64,6 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         oldestLockedEventId = 1;
         outputEventId = 1;
-
-        emit Transfer(0, queue); // need for getting last processed block
     }
 
 
