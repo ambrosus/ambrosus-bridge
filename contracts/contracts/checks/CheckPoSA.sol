@@ -60,7 +60,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         currentHeight = _currentHeight;
     }
 
-    function CheckPoSA_(PoSAProof memory posaProof, address sideBridgeAddress) external {
+    function CheckPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) external {
         bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
         require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
 
@@ -69,7 +69,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
             }
         }
 
-    function CheckBlock(BlockPoSA memory block_) private {
+    function CheckBlock(BlockPoSA calldata block_) private {
         require(verifySignature(getUnsignedHeaderHash(block_), getSignature(block_.extraData)), "invalid signature");
 
         uint blockNumber = bytesToUint(block_.number);
@@ -85,35 +85,17 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         }
     }
 
-    // todo remove?
-    function getSignedHeaderHash(BlockPoSA memory block_) private pure returns(bytes32) {
+    function getUnsignedHeaderHash(BlockPoSA calldata block_) private pure returns(bytes32) {
         return keccak256(abi.encodePacked(
-                block_.p0Signed,
-
-                block_.parentHash,
-                block_.p1,
-                block_.receiptHash,
-
-                block_.p2,
-                block_.number,
-                block_.p3,
-
-                block_.p4Signed,
-                block_.extraData,
-
-                block_.p5
-            ));
-    }
-
-    function getUnsignedHeaderHash(BlockPoSA memory block_) private pure returns(bytes32) {
-        return keccak256(abi.encodePacked(
+            abi.encodePacked(
                 block_.p0Unsigned,
 
                 block_.parentHash,
                 block_.p1,
                 block_.receiptHash,
-
-                block_.p2,
+                block_.p2
+            ),
+            abi.encodePacked(
                 block_.number,
                 block_.p3,
 
@@ -121,18 +103,20 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
                 getExtraDataUnsigned(block_.extraData),
 
                 block_.p5
-            ));
+            ))
+        );
     }
 
-    function getSignature(bytes memory extraData) private pure returns (bytes memory) {
-        return sliceBytes(extraData, extraData.length - EXTRA_SEAL_LENGTH, EXTRA_SEAL_LENGTH);
+    function getSignature(bytes calldata extraData) private pure returns (bytes memory) {
+        uint start = extraData.length - EXTRA_SEAL_LENGTH;
+        return extraData[start:start + EXTRA_SEAL_LENGTH];
     }
 
-    function getExtraDataUnsigned(bytes memory extraData) private pure returns(bytes memory) {
-        return sliceBytes(extraData, 0, EXTRA_VANITY_LENGTH);
+    function getExtraDataUnsigned(bytes calldata extraData) private pure returns(bytes memory) {
+        return extraData[0:EXTRA_VANITY_LENGTH];
     }
 
-    function getValidatorSet(bytes memory extraData) private pure returns (address[] memory) {
+    function getValidatorSet(bytes calldata extraData) private pure returns (address[] memory) {
         uint256 currentPosition = EXTRA_VANITY_LENGTH;
         uint256 endPosition = extraData.length - EXTRA_SEAL_LENGTH;
         uint256 numValidators = (endPosition - currentPosition) / ADDRESS_LENGTH;
@@ -140,7 +124,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         address[] memory validators = new address[](numValidators);
 
         for (uint256 i = 0; i < numValidators; i++) {
-            validators[i] = bytesToAddress(sliceBytes(extraData, currentPosition, ADDRESS_LENGTH), 0);
+            validators[i] = bytesToAddress(extraData[currentPosition:currentPosition + ADDRESS_LENGTH], 0);
 
             currentPosition += ADDRESS_LENGTH;
         }
