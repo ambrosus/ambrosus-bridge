@@ -10,9 +10,6 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
     mapping(uint => mapping(address => bool)) private allValidators;
     uint currentValidatorSet;
 
-    uint256 private currentHeight;
-    bytes32 private genesisBlockHash;
-
     uint256 private constant ADDRESS_LENGTH = 20;
     uint256 private constant EXTRA_VANITY_LENGTH = 32;
     uint256 private constant EXTRA_SEAL_LENGTH = 65;
@@ -56,8 +53,6 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
             allValidators[currentValidatorSet][_initialValidators[i]] = true;
         }
 
-        genesisBlockHash = _genesisBlockHash;
-        currentHeight = _currentHeight;
     }
 
     function CheckPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) external {
@@ -65,17 +60,21 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
-                CheckBlock(posaProof.blocks[i]);
-            }
+            CheckBlock(posaProof.blocks[i]);
+            // todo check parentHash
         }
+    }
 
     function CheckBlock(BlockPoSA calldata block_) private {
-        require(verifySignature(getUnsignedHeaderHash(block_), getSignature(block_.extraData)), "invalid signature");
+        (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
+
+        require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
 
         uint blockNumber = bytesToUint(block_.number);
 
 
         if (blockNumber % EPOCH_LENGTH == 0) {
+            // todo verifySignature will fail if we do this now
             currentValidatorSet++;
 
             address[] memory newValidators = getValidatorSet(block_.extraData);
@@ -83,27 +82,17 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
                 allValidators[currentValidatorSet][newValidators[i]] = true;
             }
         }
+        // todo finalize ValidatorSet
     }
 
-    function getUnsignedHeaderHash(BlockPoSA calldata block_) private pure returns(bytes32) {
-        return keccak256(abi.encodePacked(
-            abi.encodePacked(
-                block_.p0Unsigned,
 
-                block_.parentHash,
-                block_.p1,
-                block_.receiptHash,
-                block_.p2
-            ),
-            abi.encodePacked(
-                block_.number,
-                block_.p3,
-
-                block_.p4Unsigned,
-                getExtraDataUnsigned(block_.extraData),
-
-                block_.p5
-            ))
+    function calcBlockHash(BlockPoSA memory block_) internal pure returns (bytes32, bytes32) {
+        bytes memory commonRlp = abi.encodePacked(block_.parentHash, block_.p1, block_.receiptHash, block_.p2, block_.number, block_.p3);
+        return (
+        // hash without seal (bare), for signature check
+        keccak256(abi.encodePacked(block_.p0Unsigned, commonRlp, block_.p4Unsigned, getExtraDataUnsigned(block_.extraData), block_.p5)),
+        // hash with seal, for prev_hash check
+        keccak256(abi.encodePacked(block_.p0Signed, commonRlp, block_.p4Signed, block_.extraData, block_.p5))
         );
     }
 
@@ -124,7 +113,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         address[] memory validators = new address[](numValidators);
 
         for (uint256 i = 0; i < numValidators; i++) {
-            validators[i] = bytesToAddress(extraData[currentPosition:currentPosition + ADDRESS_LENGTH], 0);
+            validators[i] = bytesToAddress(extraData[currentPosition:currentPosition + ADDRESS_LENGTH]);
 
             currentPosition += ADDRESS_LENGTH;
         }
@@ -134,7 +123,6 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
         address signer = getSigner(hash, signature);
-
         return allValidators[currentValidatorSet][signer];
     }
 
@@ -142,14 +130,11 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 
-    function bytesToAddress(bytes memory _bytes, uint256 _start) private pure returns (address) {
-        require(_bytes.length >= _start + 20, "toAddress_outOfBounds");
+    function bytesToAddress(bytes memory _bytes) private pure returns (address) {
         address tempAddress;
-
         assembly {
-            tempAddress := div(mload(add(add(_bytes, 0x20), _start)), 0x1000000000000000000000000)
+            tempAddress := div(mload(add(_bytes, 0x20)), 0x1000000000000000000000000)
         }
-
         return tempAddress;
     }
 
