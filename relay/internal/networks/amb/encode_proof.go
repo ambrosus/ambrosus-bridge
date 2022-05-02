@@ -58,21 +58,23 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 			break // in some cases we can fetch more blocks that we need
 		}
 
-		// fill up 'vsChanges'
-		proof, err := b.getProof(blocksMap[blockNum].lastEvent)
-		if err != nil {
-			return nil, fmt.Errorf("getProof: %w", err)
-		}
-		vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
-			ReceiptProof: proof,
-			Changes:      blocksMap[blockNum].finalizedVsEvents,
-		})
-
 		// fill up 'blocks'
 		blocks = append(blocks, *blocksMap[blockNum].block)
 
-		// in this block contract should finalize all events in vsChanges array up to `FinalizedVs` index
-		blocks[i].FinalizedVs = uint64(len(vsChanges)) - 1
+		// fill up 'vsChanges'
+		if blocksMap[blockNum].lastEvent != nil {
+			proof, err := b.getProof(blocksMap[blockNum].lastEvent)
+			if err != nil {
+				return nil, fmt.Errorf("getProof: %w", err)
+			}
+			vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
+				ReceiptProof: proof,
+				Changes:      blocksMap[blockNum].finalizedVsEvents,
+			})
+
+			// in this block contract should finalize all events in vsChanges array up to `FinalizedVs` index
+			blocks[i].FinalizedVs = uint64(len(vsChanges)) - 1
+		}
 	}
 
 	return &c.CheckAuraAuraProof{
