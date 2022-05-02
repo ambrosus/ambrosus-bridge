@@ -792,14 +792,21 @@
                 "type": "bytes[]"
               },
               {
-                "internalType": "address",
-                "name": "deltaAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "int64",
-                "name": "deltaIndex",
-                "type": "int64"
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "deltaAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "int64",
+                    "name": "deltaIndex",
+                    "type": "int64"
+                  }
+                ],
+                "internalType": "struct CheckAura.ValidatorSetChange[]",
+                "name": "changes",
+                "type": "tuple[]"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",
