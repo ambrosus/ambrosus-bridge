@@ -1,23 +1,19 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
-import {
-  addNewTokensToBridge,
-  networkType, options,
-  readConfig, setSideBridgeAddress,
-} from "./utils";
+import {addNewTokensToBridge, networkType, options, readConfig, setSideBridgeAddress} from "./utils";
 
+const BRIDGE_NAME = "ETH_AmbBridge";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["amb"]) return;
   const isMainNet = networkType(hre.network) === 'mainnet'
 
   let configFile = readConfig(hre.network);
-
   const tokenPairs = configFile.getTokenPairs("amb", "eth")
 
-  const deployResult = await hre.deployments.deploy("ETH_AmbBridge", {
-    contract: "ETH_AmbBridge",
+  const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
+    contract: BRIDGE_NAME,
     ...await options(hre, tokenPairs,
       {
         sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
@@ -43,10 +39,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   // set sideBridgeAddress
-  await setSideBridgeAddress("ETH_AmbBridge", configFile.bridges.eth.side, hre)
+  await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.eth.side, hre)
 
   // add new tokens
-  await addNewTokensToBridge(tokenPairs, hre, "ETH_AmbBridge");
+  await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
 export default func;

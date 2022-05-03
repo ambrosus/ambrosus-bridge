@@ -1,27 +1,22 @@
-import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "ethers";
-import {
-  addNewTokensToBridge, getAmbValidators,
-  networkType, options,
-  readConfig,
-} from "./utils";
+import {addNewTokensToBridge, getAmbValidators, networkType, options, readConfig} from "./utils";
 
+const BRIDGE_NAME = "BSC_BscBridge";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["bsc"]) return;
   const isMainNet = networkType(hre.network) === 'mainnet'
 
   let configFile = readConfig(hre.network);
-
   const tokenPairs = configFile.getTokenPairs("bsc", "amb")
 
   const ambNet = hre.companionNetworks['amb']
   const {address: sideBridgeAddress} = await ambNet.deployments.get('BSC_AmbBridge');
 
-
-  const deployResult = await hre.deployments.deploy("BSC_BscBridge", {
-    contract: "BSC_BscBridge",
+  const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
+    contract: BRIDGE_NAME,
     ...await options(hre, tokenPairs,
       {
         sideBridgeAddress: sideBridgeAddress,
@@ -45,7 +40,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // add new tokens
-  await addNewTokensToBridge(tokenPairs, hre, "BSC_BscBridge");
+  await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
 
