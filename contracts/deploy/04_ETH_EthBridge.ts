@@ -1,15 +1,12 @@
 import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import vsAbi from "../abi/ValidatorSet.json";
 import {ethers} from "ethers";
 import {
-  addNewTokensToBridge,
+  addNewTokensToBridge, getAmbValidators,
   networkType, options,
   readConfig,
-  urlFromHHProvider,
 } from "./utils";
 
-const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -22,8 +19,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const ambNet = hre.companionNetworks['amb']
   const {address: sideBridgeAddress} = await ambNet.deployments.get('ETH_AmbBridge');
-  const initialValidators = await getValidators(ambNet.provider);
-
 
   const deployResult = await hre.deployments.deploy("ETH_EthBridge", {
     contract: "ETH_EthBridge",
@@ -35,10 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: isMainNet ? 10 : 2,
       },
-      [
-        initialValidators,
-        vsAddress,
-      ]
+      await getAmbValidators(ambNet.provider)
     )
   });
 
@@ -55,14 +47,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await addNewTokensToBridge(tokenPairs, hre, "ETH_EthBridge");
 };
 
-
-async function getValidators(ambProvider: EthereumProvider): Promise<string[]> {
-  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
-
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
-  const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
-  return await vsContract.connect(provider).getValidators({blockTag: block.number});
-}
 
 
 export default func;

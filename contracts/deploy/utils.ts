@@ -1,8 +1,9 @@
 import path from "path";
 import fs from "fs";
-import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
+import vsAbi from "../abi/ValidatorSet.json";
 
 
 interface Token {
@@ -158,9 +159,19 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
 }
 
 
+
+export async function getAmbValidators(ambProvider: EthereumProvider): Promise<[string[], string]> {
+  const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
+
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
+  const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
+  const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
+  return [validators, vsAddress];
+}
+
 // :(((
 export function urlFromHHProvider(provider: any): string {
   while (provider && !provider.url) provider = provider._wrapped;
   return provider.url
 }
-
