@@ -18,7 +18,6 @@ const BridgeName = "binance"
 
 type Bridge struct {
 	nc.CommonBridge
-	Config     *config.BSCConfig
 	sideBridge networks.BridgeReceivePoSA
 	chainId    *big.Int // cache chainId, cos it used many times in encode_block
 }
@@ -33,7 +32,6 @@ func New(cfg *config.BSCConfig, externalLogger external_logger.ExternalLogger) (
 
 	b := &Bridge{
 		CommonBridge: commonBridge,
-		Config:       cfg,
 	}
 
 	b.chainId, err = b.Client.ChainID(context.Background())

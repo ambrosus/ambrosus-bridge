@@ -19,8 +19,8 @@ const BridgeName = "ambrosus"
 type Bridge struct {
 	nc.CommonBridge
 	VSContract *contracts.Vs
-	Config     *config.AMBConfig
 	sideBridge networks.BridgeReceiveAura
+	httpUrl    string // httpUrl used in HeaderByNumber
 }
 
 // New creates a new ambrosus bridge.
@@ -40,7 +40,7 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	b := &Bridge{
 		CommonBridge: commonBridge,
 		VSContract:   vsContract,
-		Config:       cfg,
+		httpUrl:      cfg.HttpURL,
 	}
 	b.CommonBridge.Bridge = b
 	return b, nil
