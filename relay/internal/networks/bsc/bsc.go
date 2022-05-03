@@ -1,7 +1,9 @@
 package bsc
 
 import (
+	"context"
 	"fmt"
+	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -18,6 +20,7 @@ type Bridge struct {
 	nc.CommonBridge
 	Config     *config.BSCConfig
 	sideBridge networks.BridgeReceivePoSA
+	chainId    *big.Int // cache chainId, cos it used many times in encode_block
 }
 
 // New creates a new ethereum bridge.
@@ -32,6 +35,12 @@ func New(cfg *config.BSCConfig, externalLogger external_logger.ExternalLogger) (
 		CommonBridge: commonBridge,
 		Config:       cfg,
 	}
+
+	b.chainId, err = b.Client.ChainID(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("chain id: %w", err)
+	}
+
 	b.CommonBridge.Bridge = b
 	return b, nil
 }

@@ -1,7 +1,6 @@
 package bsc
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -56,12 +55,8 @@ func (b *Bridge) EncodeBlock(header *types.Header) (*contracts.CheckPoSABlockPoS
 }
 
 func (b *Bridge) encodeUnsignedHeader(header *types.Header) ([]byte, error) {
-	chainId, err := b.Client.ChainID(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("chain id: %w", err)
-	}
 	return rlp.EncodeToBytes([]interface{}{
-		chainId,
+		b.chainId,
 		header.ParentHash, header.UncleHash, header.Coinbase,
 		header.Root, header.TxHash, header.ReceiptHash,
 		header.Bloom, header.Difficulty, header.Number,
