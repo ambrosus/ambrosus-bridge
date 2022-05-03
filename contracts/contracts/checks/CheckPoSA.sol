@@ -15,6 +15,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     mapping(uint => mapping(address => bool)) private allValidators;
     uint currentValidatorSet;
+    uint currentValidatorSetSize;
 
     bytes1 chainId;
 
@@ -53,40 +54,46 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
         chainId = _chainId;
         currentValidatorSet = _initialEpoch;
+        currentValidatorSetSize = _initialValidators.length;
+
         for (uint i = 0; i < _initialValidators.length; i++) {
             allValidators[currentValidatorSet][_initialValidators[i]] = true;
         }
-
     }
 
-    function CheckPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
+    function checkPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
+        bytes32 bareHash;
+        bytes32 sealHash;
+        uint finalizeVsBlock;
+        uint nextVsSize;
+
         bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
         require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
-            CheckBlock(posaProof.blocks[i]);
-            // todo check parentHash
-        }
-    }
+            BlockPoSA calldata block_ = posaProof.blocks[i];
+            (bareHash, sealHash) = calcBlockHash(block_);
 
-    function CheckBlock(BlockPoSA calldata block_) private {
-        (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
-
-        require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
-
-        uint blockNumber = bytesToUint(block_.number);
+            require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
 
 
-        if (blockNumber % EPOCH_LENGTH == 0) {
-            // todo verifySignature will fail if we do this now
-            currentValidatorSet++;
+            uint blockNumber = bytesToUint(block_.number);
 
-            address[] memory newValidators = getValidatorSet(block_.extraData);
-            for (uint i = 0; i < newValidators.length; i++) {
-                allValidators[currentValidatorSet][newValidators[i]] = true;
+            if (blockNumber % EPOCH_LENGTH == 0) {
+                require(blockNumber / EPOCH_LENGTH == currentValidatorSet + 1, "invalid epoch");
+
+                nextVsSize = newValidatorSet(block_.extraData);
+                finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
+            }
+            else if (blockNumber == finalizeVsBlock) {
+                currentValidatorSet++;
+                currentValidatorSetSize = nextVsSize;
+            }
+
+            if (i + 1 != posaProof.blocks.length) {
+                require(sealHash == posaProof.blocks[i + 1].parentHash, "wrong parent hash");
             }
         }
-        // todo finalize ValidatorSet
     }
 
 
@@ -102,27 +109,25 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     function getSignature(bytes calldata extraData) private pure returns (bytes memory) {
         uint start = extraData.length - EXTRA_SEAL_LENGTH;
-        return extraData[start:start + EXTRA_SEAL_LENGTH];
+        return extraData[start : start + EXTRA_SEAL_LENGTH];
     }
 
-    function getExtraDataUnsigned(bytes calldata extraData) private pure returns(bytes memory) {
-        return extraData[0:EXTRA_VANITY_LENGTH];
+    function getExtraDataUnsigned(bytes calldata extraData) private pure returns (bytes memory) {
+        return extraData[0 : extraData.length - EXTRA_SEAL_LENGTH];
     }
 
-    function getValidatorSet(bytes calldata extraData) private pure returns (address[] memory) {
-        uint256 currentPosition = EXTRA_VANITY_LENGTH;
-        uint256 endPosition = extraData.length - EXTRA_SEAL_LENGTH;
-        uint256 numValidators = (endPosition - currentPosition) / ADDRESS_LENGTH;
+    function newValidatorSet(bytes calldata extraData) private returns(uint) {
+        uint nextValidatorSet = currentValidatorSet + 1;
+        uint endPos = extraData.length - EXTRA_SEAL_LENGTH;
 
-        address[] memory validators = new address[](numValidators);
-
-        for (uint256 i = 0; i < numValidators; i++) {
-            validators[i] = bytesToAddress(extraData[currentPosition:currentPosition + ADDRESS_LENGTH]);
-
-            currentPosition += ADDRESS_LENGTH;
+        uint nextValidatorSetSize;
+        for (uint pos = EXTRA_VANITY_LENGTH; pos < endPos; pos += ADDRESS_LENGTH) {
+            address validator = address(bytes20(extraData[pos : pos + ADDRESS_LENGTH]));
+            allValidators[nextValidatorSet][validator] = true;
+            nextValidatorSetSize++;
         }
 
-        return validators;
+        return nextValidatorSetSize;
     }
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
@@ -134,15 +139,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 
-    function bytesToAddress(bytes memory _bytes) private pure returns (address) {
-        address tempAddress;
-        assembly {
-            tempAddress := div(mload(add(_bytes, 0x20)), 0x1000000000000000000000000)
-        }
-        return tempAddress;
-    }
-
-    function getSigner(bytes32 messageHash, bytes memory signature) internal pure returns(address) {
+    function getSigner(bytes32 messageHash, bytes memory signature) internal pure returns (address) {
         bytes32 r;
         bytes32 s;
         uint8 v;

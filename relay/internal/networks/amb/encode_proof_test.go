@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
 )
@@ -101,7 +99,7 @@ func set(addresses ...string) []common.Address {
 
 func Test_sortedKeys(t *testing.T) {
 	type args struct {
-		m map[uint64]*contracts.CheckAuraBlockAura
+		m map[uint64]*blockExt
 	}
 	tests := []struct {
 		name string
@@ -110,7 +108,7 @@ func Test_sortedKeys(t *testing.T) {
 	}{
 		{
 			name: "Check order",
-			args: args{map[uint64]*contracts.CheckAuraBlockAura{
+			args: args{map[uint64]*blockExt{
 				1002: {},
 				1000: {},
 				1001: {},
