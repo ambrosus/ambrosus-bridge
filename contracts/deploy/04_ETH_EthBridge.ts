@@ -30,12 +30,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tokenPairs = getTokenPairs("eth", "amb", hre.network)
 
   const ambNet = hre.companionNetworks['amb']
-  const {address: sideBridgeAddress} = await ambNet.deployments.get('AmbBridge');
+  const {address: sideBridgeAddress} = await ambNet.deployments.get('ETH_AmbBridge');
   const initialValidators = await getValidators(ambNet.provider);
 
 
-  const deployResult = await hre.deployments.deploy("EthBridge", {
-    contract: "EthBridge",
+  const deployResult = await hre.deployments.deploy("ETH_EthBridge", {
+    contract: "ETH_EthBridge",
     from: owner,
     proxy: {
       owner: proxyAdmin,
@@ -76,7 +76,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // add new tokens
-  await addNewTokensToBridge(tokenPairs, hre, "EthBridge");
+  await addNewTokensToBridge(tokenPairs, hre, "ETH_EthBridge");
 };
 
 
@@ -84,12 +84,10 @@ async function getValidators(ambProvider: EthereumProvider): Promise<string[]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
 
   const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
-  const block = await provider.getBlock('latest');
-  const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
-
-  return validators;
+  const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
+  return await vsContract.connect(provider).getValidators({blockTag: block.number});
 }
 
 
 export default func;
-func.tags = ["bridges"];
+func.tags = ["bridges_eth"];

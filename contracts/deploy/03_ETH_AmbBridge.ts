@@ -25,7 +25,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const tokenPairs = getTokenPairs("amb", "eth", hre.network)
 
-  const deployResult = await hre.deployments.deploy("AmbBridge", {
+  const deployResult = await hre.deployments.deploy("ETH_AmbBridge", {
+    contract: "ETH_AmbBridge",
     from: owner,
     proxy: {
       owner: proxyAdmin,
@@ -67,19 +68,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // set sideBridgeAddress
   const ethBridge = configFile.bridges.eth.side;
   if (!ethBridge) {
-    console.log("[Setting sideBridgeAddress] Deploy EthBridge first")
+    console.log("[Setting sideBridgeAddress] Deploy ETH_EthBridge first")
     return
   }
 
-  const curAddr = await hre.deployments.read("AmbBridge", {from: owner}, 'sideBridgeAddress');
+  const curAddr = await hre.deployments.read("ETH_AmbBridge", {from: owner}, 'sideBridgeAddress');
   if (curAddr != ethBridge) {
     console.log("[Setting sideBridgeAddress] old", curAddr, "new", ethBridge)
-    await hre.deployments.execute("AmbBridge", {from: owner, log: true}, 'setSideBridge', ethBridge);
+    await hre.deployments.execute("ETH_AmbBridge", {from: owner, log: true}, 'setSideBridge', ethBridge);
   }
 
   // add new tokens
-  await addNewTokensToBridge(tokenPairs, hre, "AmbBridge");
+  await addNewTokensToBridge(tokenPairs, hre, "ETH_AmbBridge");
 };
 
 export default func;
-func.tags = ["bridges"];
+func.tags = ["bridges_eth"];

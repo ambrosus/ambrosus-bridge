@@ -5,7 +5,7 @@ import "../common/CommonBridge.sol";
 import "../checks/CheckAura.sol";
 
 
-contract EthBridge is CommonBridge, CheckAura {
+contract ETH_EthBridge is CommonBridge, CheckAura {
 
     function initialize(
         CommonStructs.ConstructorArgs memory args,
