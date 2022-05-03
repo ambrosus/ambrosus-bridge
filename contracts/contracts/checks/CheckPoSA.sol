@@ -134,12 +134,8 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 
-    function bytesToAddress(bytes memory _bytes) private pure returns (address) {
-        address tempAddress;
-        assembly {
-            tempAddress := div(mload(add(_bytes, 0x20)), 0x1000000000000000000000000)
-        }
-        return tempAddress;
+    function bytesToAddress(bytes calldata _bytes) private pure returns (address) {
+        return address(bytes20(_bytes));
     }
 
     function getSigner(bytes32 messageHash, bytes memory signature) internal pure returns(address) {
