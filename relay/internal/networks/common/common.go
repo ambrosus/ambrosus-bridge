@@ -80,12 +80,12 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 
 }
 
-// GetLastEventId gets last contract event id.
-func (b *CommonBridge) GetLastEventId() (*big.Int, error) {
+// GetLastReceivedEventId get last event id submitted in this contract.
+func (b *CommonBridge) GetLastReceivedEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
 }
 
-// GetEventById gets contract event by id.
+// GetEventById get `Transfer` event (emitted by this contract) by id.
 func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
 	logs, err := b.Contract.FilterTransfer(nil, []*big.Int{eventId})
 	if err != nil {

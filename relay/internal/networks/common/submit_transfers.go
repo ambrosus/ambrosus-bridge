@@ -26,9 +26,9 @@ func (b *CommonBridge) SubmitTransfersLoop() {
 func (b *CommonBridge) checkOldTransfers() error {
 	b.Logger.Info().Msg("Checking old events...")
 
-	lastEventId, err := b.SideBridge.GetLastEventId()
+	lastEventId, err := b.SideBridge.GetLastReceivedEventId()
 	if err != nil {
-		return fmt.Errorf("GetLastEventId: %w", err)
+		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
 
 	for i := int64(1); ; i++ {

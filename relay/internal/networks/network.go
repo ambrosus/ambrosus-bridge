@@ -25,8 +25,8 @@ type GetTxErrParams struct {
 }
 
 type Bridge interface {
-	// GetLastEventId used by the other side of the bridge for synchronization
-	GetLastEventId() (*big.Int, error)
+	// GetLastReceivedEventId used by the other side of the bridge for synchronization
+	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error)
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
