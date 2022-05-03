@@ -167,8 +167,12 @@
         "0xf842a055252fa6eee4741b4e24a74a70e9c11fd2c2281df8d6ea13126ff845f7825c89a0be8cef078bcac6ee7729376ca9282209595b18f7bef1f4e308ad2af34e5ad3ebb880",
         "0x"
       ],
-      "deltaAddress": "0x90b2ce3741188bcfce25822113e93983ecacfca0",
-      "deltaIndex": -2
+      "changes": [
+        {
+          "deltaAddress": "0x90b2ce3741188bcfce25822113e93983ecacfca0",
+          "deltaIndex": -2
+        }
+      ]
     },
     {
       "receiptProof": [
@@ -176,8 +180,12 @@
         "0xf842a055252fa6eee4741b4e24a74a70e9c11fd2c2281df8d6ea13126ff845f7825c89a03126f2209990c7e4444b2642a0fd8ff518a0788fd148ce4875e99e7025506372b860",
         "0x"
       ],
-      "deltaAddress": "0xaccdb7a2268bc4af0a1898e725138888ba1ca6fc",
-      "deltaIndex": -2
+      "changes": [
+        {
+          "deltaAddress": "0xaccdb7a2268bc4af0a1898e725138888ba1ca6fc",
+          "deltaIndex": -2
+        }
+      ]
     }
   ],
   "transferEventBlock": 2

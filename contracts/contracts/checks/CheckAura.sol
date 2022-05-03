@@ -29,10 +29,13 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     }
 
 
-    struct ValidatorSetProof {
-        bytes[] receiptProof;
+    struct ValidatorSetChange {
         address deltaAddress;
         int64 deltaIndex; // < 0 ? remove : add
+    }
+    struct ValidatorSetProof {
+        bytes[] receiptProof;
+        ValidatorSetChange[] changes;
     }
 
     struct AuraProof {
@@ -68,22 +71,25 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura calldata block_ = auraProof.blocks[i];
 
-            if (block_.finalizedVs != 0) {// 0 means no events should be finalized; so indexes are shifted by 1
+            if (block_.finalizedVs != 0) {// 0 means no events should be finalized, so indexes are shifted by 1
                 for (uint j = lastFinalizedVs; j < block_.finalizedVs; j++) {
-                    ValidatorSetProof memory vsChange = auraProof.vsChanges[j];
+                    // vs changes in that block
+                    ValidatorSetProof memory vsProof = auraProof.vsChanges[j];
 
-                    handleVS(vsChange);
-                    if (vsChange.receiptProof.length != 0) {
-                        receiptHash = calcValidatorSetReceiptHash(vsChange.receiptProof, validatorSetAddress, validatorSet);
+                    // apply vs changes
+                    for (uint k = 0; k < vsProof.changes.length; k++)
+                        applyVsChange(vsProof.changes[k]);
 
-                        // event finalize always happened on block one after the block with event
-                        // so event_block is finalized_block - 2
-                        require(auraProof.blocks[i - 2].receiptHash == receiptHash, "Wrong VS receipt hash");
-                        safetyChainLength = 2;
-                    }
+                    // check proof
+                    receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
+
+                    // event finalize always happened on block one after the block with event
+                    // so event_block is finalized_block - 2
+                    require(auraProof.blocks[i - 2].receiptHash == receiptHash, "Wrong VS receipt hash");
+                    safetyChainLength = 2;
                 }
 
-                lastFinalizedVs = block_.finalizedVs - 1;
+                lastFinalizedVs = block_.finalizedVs;
             }
 
             blockHash = checkBlock(block_);
@@ -105,7 +111,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         return validatorSet;
     }
 
-    function handleVS(ValidatorSetProof memory vsEvent) internal {
+    function applyVsChange(ValidatorSetChange memory vsEvent) internal {
         if (vsEvent.deltaIndex < 0) {
             uint index = uint(int(vsEvent.deltaIndex * (- 1) - 1));
             validatorSet[index] = validatorSet[validatorSet.length - 1];

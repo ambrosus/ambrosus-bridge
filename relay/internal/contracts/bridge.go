@@ -49,11 +49,16 @@ type CheckAuraBlockAura struct {
 	FinalizedVs uint64
 }
 
+// CheckAuraValidatorSetChange is an auto generated low-level Go binding around an user-defined struct.
+type CheckAuraValidatorSetChange struct {
+	DeltaAddress common.Address
+	DeltaIndex   int64
+}
+
 // CheckAuraValidatorSetProof is an auto generated low-level Go binding around an user-defined struct.
 type CheckAuraValidatorSetProof struct {
 	ReceiptProof [][]byte
-	DeltaAddress common.Address
-	DeltaIndex   int64
+	Changes      []CheckAuraValidatorSetChange
 }
 
 // CheckPoWBlockPoW is an auto generated low-level Go binding around an user-defined struct.
@@ -1190,23 +1195,23 @@ func (_Bridge *BridgeTransactorSession) SetSideBridge(_sideBridgeAddress common.
 	return _Bridge.Contract.SetSideBridge(&_Bridge.TransactOpts, _sideBridgeAddress)
 }
 
-// SubmitTransferAura is a paid mutator transaction binding the contract method 0x8ee11275.
+// SubmitTransferAura is a paid mutator transaction binding the contract method 0x119b980d.
 //
-// Solidity: function submitTransferAura(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],address,int64)[],uint64) auraProof) returns()
+// Solidity: function submitTransferAura(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],(address,int64)[])[],uint64) auraProof) returns()
 func (_Bridge *BridgeTransactor) SubmitTransferAura(opts *bind.TransactOpts, auraProof CheckAuraAuraProof) (*types.Transaction, error) {
 	return _Bridge.contract.Transact(opts, "submitTransferAura", auraProof)
 }
 
-// SubmitTransferAura is a paid mutator transaction binding the contract method 0x8ee11275.
+// SubmitTransferAura is a paid mutator transaction binding the contract method 0x119b980d.
 //
-// Solidity: function submitTransferAura(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],address,int64)[],uint64) auraProof) returns()
+// Solidity: function submitTransferAura(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],(address,int64)[])[],uint64) auraProof) returns()
 func (_Bridge *BridgeSession) SubmitTransferAura(auraProof CheckAuraAuraProof) (*types.Transaction, error) {
 	return _Bridge.Contract.SubmitTransferAura(&_Bridge.TransactOpts, auraProof)
 }
 
-// SubmitTransferAura is a paid mutator transaction binding the contract method 0x8ee11275.
+// SubmitTransferAura is a paid mutator transaction binding the contract method 0x119b980d.
 //
-// Solidity: function submitTransferAura(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],address,int64)[],uint64) auraProof) returns()
+// Solidity: function submitTransferAura(((bytes3,bytes3,bytes32,bytes,bytes32,bytes,bytes4,bytes,uint64)[],(bytes[],uint256,(address,address,uint256)[]),(bytes[],(address,int64)[])[],uint64) auraProof) returns()
 func (_Bridge *BridgeTransactorSession) SubmitTransferAura(auraProof CheckAuraAuraProof) (*types.Transaction, error) {
 	return _Bridge.Contract.SubmitTransferAura(&_Bridge.TransactOpts, auraProof)
 }
