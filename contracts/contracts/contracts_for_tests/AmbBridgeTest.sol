@@ -8,14 +8,6 @@ contract AmbBridgeTest is AmbBridge {
         AmbBridge.initialize(args, minimumDifficulty);
     }
 
-    function getLockedTransferTest(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
-        return lockedTransfers[eventId];
-    }
-
-    function lockTransfersTest(CommonStructs.Transfer[] memory events, uint eventId) public {
-        lockTransfers(events, eventId);
-    }
-
     function blockHashTest(BlockPoW calldata block_) public pure returns (bytes32) {
         return blockHash(block_);
     }
@@ -26,10 +18,6 @@ contract AmbBridgeTest is AmbBridge {
 
     function checkPoWTest(PoWProof calldata powProof, address sideBridgeAddress) public {
         checkPoW_(powProof, sideBridgeAddress);
-    }
-
-    function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
-        return calcTransferReceiptsHash(p, eventContractAddress);
     }
 
 }
