@@ -71,7 +71,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
-            BlockPoSA block_ = posaProof.blocks[i];
+            BlockPoSA calldata block_ = posaProof.blocks[i];
             (bareHash, sealHash) = calcBlockHash(block_);
 
             require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
