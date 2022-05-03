@@ -21,8 +21,8 @@ func main() {
 
 	if tg := cfg.ExtLoggers.Telegram; tg.Enable {
 		// Creating telegram loggers as an external logger.
-		tgAmbLogger = telegram.NewLogger(tg.Token, tg.ChatId, "<b>[AMB]</b>", nil)
-		tgEthLogger = telegram.NewLogger(tg.Token, tg.ChatId, "<b>[ETH]</b>", nil)
+		tgAmbLogger = zerolog.NewLogger(telegram.NewLogger(tg.Token, tg.ChatId, nil))
+		tgEthLogger = zerolog.NewLogger(telegram.NewLogger(tg.Token, tg.ChatId, nil))
 	}
 
 	// Creating a new ambrosus bridge.

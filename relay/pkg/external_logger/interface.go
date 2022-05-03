@@ -1,6 +1,6 @@
 package external_logger
 
 type ExternalLogger interface {
-	LogError(msg string) error
-	LogWarning(msg string) error
+	LogError(prefix, msg string) error
+	LogWarning(prefix, msg string) error
 }
