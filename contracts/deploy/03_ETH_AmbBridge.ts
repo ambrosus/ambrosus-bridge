@@ -3,11 +3,8 @@ import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
 import {
   addNewTokensToBridge,
-  configPath,
-  getTokenPairs,
   networkType, options,
   readConfig, setSideBridgeAddress,
-  writeConfig
 } from "./utils";
 
 
@@ -15,10 +12,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["amb"]) return;
   const isMainNet = networkType(hre.network) === 'mainnet'
 
-  const path = configPath(hre.network);
-  let configFile = readConfig(path);
+  let configFile = readConfig(hre.network);
 
-  const tokenPairs = getTokenPairs("amb", "eth", hre.network)
+  const tokenPairs = configFile.getTokenPairs("amb", "eth")
 
   const deployResult = await hre.deployments.deploy("ETH_AmbBridge", {
     contract: "ETH_AmbBridge",
@@ -38,7 +34,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   configFile.bridges.eth.amb = deployResult.address;
-  writeConfig(path, configFile);
+  configFile.save()
 
   if (deployResult.newlyDeployed) {
     console.log('Call this cmd second time to set sideBridgeAddress or update tokens')

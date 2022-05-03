@@ -17,7 +17,27 @@ interface Token {
 interface Config {
   tokens: { [symb: string]: Token };
   bridges: { [net: string]: { amb: string, side: string } };
+
+  save(): void;
+  getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }
+  bridgesInNet(net: string): string[]
 }
+
+
+
+
+
+export function readConfig(network: any): Config {
+  const tokenPath = path.resolve(__dirname, `../config-${networkType(network)}.json`)
+  const config = require(tokenPath);
+
+  config.save = () => fs.writeFileSync(tokenPath, JSON.stringify(config, null, 2));
+  config.getTokensPairs = (thisNet: string, sideNet: string) => getTokenPairs(thisNet, sideNet, config)
+  config.bridgesInNet = (net: string) => bridgesInNet(net, config)
+
+  return config;
+}
+
 
 
 export function networkName(network: any): string {
@@ -33,25 +53,34 @@ export function networkType(network: any): string {
 }
 
 
-export function getTokenPairs(thisNet: string, sideNet: string, network: any): { [k: string]: string } {
-  return _getTokensPair(thisNet, sideNet, readConfig(configPath(network)));
-}
-
-function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
-  const tokensPair: { [k: string]: string } = {};
+function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
+  const tokenPair: { [k: string]: string } = {};
 
   for (const token of Object.values(configFile.tokens)) {
 
     if (token.addresses[thisNet] && token.addresses[sideNet])
-      tokensPair[token.addresses[thisNet]] = token.addresses[sideNet];
+      tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
 
     if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
-      tokensPair[ethers.constants.AddressZero] = token.addresses[thisNet];
+      tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];
 
   }
 
-  return tokensPair;
+  return tokenPair;
 }
+
+
+// get all deployed bridges in `net` network;
+// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
+// for other networks is array of one address
+function bridgesInNet(net: string, configFile: Config): string[] {
+  const bridges = (net == "amb") ?
+    Object.values(configFile.bridges).map(i => i.amb) :
+    [configFile.bridges[net].side];
+  return bridges.filter(i => !!i);  // filter out empty strings
+}
+
+
 
 
 export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
@@ -126,29 +155,6 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
     },
     log: true
   }
-}
-
-
-// get all deployed bridges in `net` network;
-// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
-// for other networks is array of one address
-export function bridgesInNet(net: string, configFile: Config): string[] {
-  const bridges = (net == "amb") ?
-    Object.values(configFile.bridges).map(i => i.amb) :
-    [configFile.bridges[net].side];
-  return bridges.filter(i => !!i);  // filter out empty strings
-}
-
-export function configPath(network: any): string {
-  return path.resolve(__dirname, `../config-${networkType(network)}.json`);
-}
-
-export function writeConfig(path: string, config: Config) {
-  fs.writeFileSync(path, JSON.stringify(config, null, 2));
-}
-
-export function readConfig(tokenPath: string): Config {
-  return require(tokenPath);
 }
 
 
