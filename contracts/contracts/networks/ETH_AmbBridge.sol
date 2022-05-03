@@ -7,7 +7,10 @@ import "../checks/CheckPoW.sol";
 
 contract ETH_AmbBridge is CommonBridge, CheckPoW {
 
-    function initialize(CommonStructs.ConstructorArgs memory args, uint minimumDifficulty) public initializer {
+    function initialize(
+        CommonStructs.ConstructorArgs memory args,
+        uint minimumDifficulty
+    ) public initializer {
         __CommonBridge_init(args);
         __CheckPoW_init(minimumDifficulty);
         emit Transfer(0, queue); // used to sync validatorSet
