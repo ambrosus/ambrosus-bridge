@@ -19,7 +19,6 @@ const BridgeName = "ethereum"
 
 type Bridge struct {
 	nc.CommonBridge
-	Config     *config.ETHConfig
 	sideBridge networks.BridgeReceiveEthash
 	ethash     *ethash.Ethash
 }
@@ -34,7 +33,6 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 
 	b := &Bridge{
 		CommonBridge: commonBridge,
-		Config:       cfg,
 		ethash:       ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs),
 	}
 	b.CommonBridge.Bridge = b
