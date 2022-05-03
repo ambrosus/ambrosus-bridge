@@ -78,13 +78,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
 
         if (blockNumber % EPOCH_LENGTH == 0) {
-            // todo verifySignature will fail if we do this now
-            currentValidatorSet++;
-
-            address[] memory newValidators = getValidatorSet(block_.extraData);
-            for (uint i = 0; i < newValidators.length; i++) {
-                allValidators[currentValidatorSet][newValidators[i]] = true;
-            }
+            newValidatorSet(block_.extraData);
         }
         // todo finalize ValidatorSet
     }
@@ -102,27 +96,21 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     function getSignature(bytes calldata extraData) private pure returns (bytes memory) {
         uint start = extraData.length - EXTRA_SEAL_LENGTH;
-        return extraData[start:start + EXTRA_SEAL_LENGTH];
+        return extraData[start : start + EXTRA_SEAL_LENGTH];
     }
 
-    function getExtraDataUnsigned(bytes calldata extraData) private pure returns(bytes memory) {
-        return extraData[0:EXTRA_VANITY_LENGTH];
+    function getExtraDataUnsigned(bytes calldata extraData) private pure returns (bytes memory) {
+        return extraData[0 : EXTRA_VANITY_LENGTH];
     }
 
-    function getValidatorSet(bytes calldata extraData) private pure returns (address[] memory) {
-        uint256 currentPosition = EXTRA_VANITY_LENGTH;
-        uint256 endPosition = extraData.length - EXTRA_SEAL_LENGTH;
-        uint256 numValidators = (endPosition - currentPosition) / ADDRESS_LENGTH;
+    function newValidatorSet(bytes calldata extraData) private {
+        uint nextValidatorSet = currentValidatorSet + 1;
+        uint endPos = extraData.length - EXTRA_SEAL_LENGTH;
 
-        address[] memory validators = new address[](numValidators);
-
-        for (uint256 i = 0; i < numValidators; i++) {
-            validators[i] = bytesToAddress(extraData[currentPosition:currentPosition + ADDRESS_LENGTH]);
-
-            currentPosition += ADDRESS_LENGTH;
+        for (uint pos = EXTRA_VANITY_LENGTH; pos < endPos; pos += ADDRESS_LENGTH) {
+            address validator = address(bytes20(extraData[pos : pos + ADDRESS_LENGTH]));
+            allValidators[nextValidatorSet][validator] = true;
         }
-
-        return validators;
     }
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
@@ -134,11 +122,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 
-    function bytesToAddress(bytes calldata _bytes) private pure returns (address) {
-        return address(bytes20(_bytes));
-    }
-
-    function getSigner(bytes32 messageHash, bytes memory signature) internal pure returns(address) {
+    function getSigner(bytes32 messageHash, bytes memory signature) internal pure returns (address) {
         bytes32 r;
         bytes32 s;
         uint8 v;
