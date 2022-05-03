@@ -2,10 +2,10 @@ package main
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/zerolog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger/telegram"
 	"github.com/rs/zerolog/log"
 )
@@ -17,12 +17,12 @@ func main() {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
 
-	var tgAmbLogger, tgEthLogger external_logger.ExternalLogger
+	var tgAmbLogger, tgEthLogger zerolog.ExternalLogger
 
 	if tg := cfg.ExtLoggers.Telegram; tg.Enable {
 		// Creating telegram loggers as an external logger.
-		tgAmbLogger = zerolog.NewLogger(telegram.NewLogger(tg.Token, tg.ChatId, nil))
-		tgEthLogger = zerolog.NewLogger(telegram.NewLogger(tg.Token, tg.ChatId, nil))
+		tgAmbLogger = zerolog.NewTgLogger(telegram.NewLogger(tg.Token, tg.ChatId, nil))
+		tgEthLogger = zerolog.NewTgLogger(telegram.NewLogger(tg.Token, tg.ChatId, nil))
 	}
 
 	// Creating a new ambrosus bridge.
