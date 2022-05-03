@@ -6,28 +6,21 @@ import chai from "chai";
 chai.should();
 export const expect = chai.expect;
 
-const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
-const RELAY_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
 
 describe("Check Aura", () => {
   let ownerS: Signer;
-  let relayS: Signer;
   let owner: string;
-  let relay: string;
 
   let ethBridge: Contract;
 
 
   before(async () => {
     await deployments.fixture(["for_tests"]);
-    ({owner, relay} = await getNamedAccounts());
+    ({owner} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
-    relayS = await ethers.getSigner(relay);
 
-    ethBridge = await ethers.getContract("EthBridgeTest", ownerS);
+    ethBridge = await ethers.getContract("CheckAuraTest", ownerS);
 
-    await ethBridge.grantRole(ADMIN_ROLE, owner);
-    await ethBridge.grantRole(RELAY_ROLE, relay);
   });
 
   beforeEach(async () => {

@@ -1,7 +1,9 @@
 import path from "path";
 import fs from "fs";
-import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
+import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
+import vsAbi from "../abi/ValidatorSet.json";
 
 
 interface Token {
@@ -16,7 +18,27 @@ interface Token {
 interface Config {
   tokens: { [symb: string]: Token };
   bridges: { [net: string]: { amb: string, side: string } };
+
+  save(): void;
+  getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }
+  bridgesInNet(net: string): string[]
 }
+
+
+
+
+
+export function readConfig(network: any): Config {
+  const tokenPath = path.resolve(__dirname, `../config-${networkType(network)}.json`)
+  const config = require(tokenPath);
+
+  config.save = () => fs.writeFileSync(tokenPath, JSON.stringify(config, null, 2));
+  config.getTokensPairs = (thisNet: string, sideNet: string) => getTokenPairs(thisNet, sideNet, config)
+  config.bridgesInNet = (net: string) => bridgesInNet(net, config)
+
+  return config;
+}
+
 
 
 export function networkName(network: any): string {
@@ -32,25 +54,34 @@ export function networkType(network: any): string {
 }
 
 
-export function getTokenPairs(thisNet: string, sideNet: string, network: any): { [k: string]: string } {
-  return _getTokensPair(thisNet, sideNet, readConfig(configPath(network)));
-}
-
-function _getTokensPair(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
-  const tokensPair: { [k: string]: string } = {};
+function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
+  const tokenPair: { [k: string]: string } = {};
 
   for (const token of Object.values(configFile.tokens)) {
 
     if (token.addresses[thisNet] && token.addresses[sideNet])
-      tokensPair[token.addresses[thisNet]] = token.addresses[sideNet];
+      tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
 
     if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
-      tokensPair[ethers.constants.AddressZero] = token.addresses[thisNet];
+      tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];
 
   }
 
-  return tokensPair;
+  return tokenPair;
 }
+
+
+// get all deployed bridges in `net` network;
+// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
+// for other networks is array of one address
+function bridgesInNet(net: string, configFile: Config): string[] {
+  const bridges = (net == "amb") ?
+    Object.values(configFile.bridges).map(i => i.amb) :
+    [configFile.bridges[net].side];
+  return bridges.filter(i => !!i);  // filter out empty strings
+}
+
+
 
 
 export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
@@ -77,33 +108,70 @@ export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
 
 }
 
+export async function setSideBridgeAddress(deploymentName: string, sideAddress: string, hre: HardhatRuntimeEnvironment) {
+  if (!sideAddress) {
+    console.log(`[Setting sideBridgeAddress] Deploy side bridge for ${deploymentName} first`)
+    return
+  }
+  const {owner} = await hre.getNamedAccounts();
 
-// get all deployed bridges in `net` network;
-// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
-// for other networks is array of one address
-export function bridgesInNet(net: string, configFile: Config): string[] {
-  const bridges = (net == "amb") ?
-    Object.values(configFile.bridges).map(i => i.amb) :
-    [configFile.bridges[net].side];
-  return bridges.filter(i => !!i);  // filter out empty strings
+  const curAddr = await hre.deployments.read(deploymentName, {from: owner}, 'sideBridgeAddress');
+  if (curAddr != sideAddress) {
+    console.log("[Setting sideBridgeAddress] old", curAddr, "new", sideAddress)
+    await hre.deployments.execute(deploymentName, {from: owner, log: true}, 'setSideBridge', sideAddress);
+  }
 }
 
-export function configPath(network: any): string {
-  return path.resolve(__dirname, `../config-${networkType(network)}.json`);
+
+export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: string]: string },
+                              commonArgs: any, args: any[]): Promise<DeployOptions> {
+
+  const {owner, proxyAdmin} = await hre.getNamedAccounts();
+  // todo get admin and relay from getNamedAccounts
+  const admin = owner;
+  const relay = owner;
+
+  // add this args to user args
+  const reallyCommonArgs = {
+    adminAddress: admin,
+    relayAddress: relay,
+    feeRecipient: owner,   // todo
+    tokenThisAddresses: Object.keys(tokenPairs),
+    tokenSideAddresses: Object.values(tokenPairs),
+  }
+  // commonArgs is contract `ConstructorArgs` struct
+  commonArgs = {...reallyCommonArgs, ...commonArgs};
+
+  return {
+    from: owner,
+    proxy: {
+      owner: proxyAdmin,
+      proxyContract: "proxyTransparent",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [commonArgs, ...args]
+        }
+      }
+    },
+    log: true
+  }
 }
 
-export function writeConfig(path: string, config: Config) {
-  fs.writeFileSync(path, JSON.stringify(config, null, 2));
-}
 
-export function readConfig(tokenPath: string): Config {
-  return require(tokenPath);
-}
 
+export async function getAmbValidators(ambProvider: EthereumProvider): Promise<[string[], string]> {
+  const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
+
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
+  const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
+  const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
+  return [validators, vsAddress];
+}
 
 // :(((
 export function urlFromHHProvider(provider: any): string {
   while (provider && !provider.url) provider = provider._wrapped;
   return provider.url
 }
-
