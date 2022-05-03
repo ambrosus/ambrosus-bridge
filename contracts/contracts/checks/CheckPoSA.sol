@@ -100,7 +100,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
     }
 
     function getExtraDataUnsigned(bytes calldata extraData) private pure returns (bytes memory) {
-        return extraData[0 : EXTRA_VANITY_LENGTH];
+        return extraData[0 : extraData.length - EXTRA_SEAL_LENGTH];
     }
 
     function newValidatorSet(bytes calldata extraData) private {
