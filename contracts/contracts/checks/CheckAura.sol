@@ -60,12 +60,12 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
-        uint safetyChainLength;
-        bytes32 blockHash;
+        bytes32 parentHash;
         uint lastFinalizedVs;
 
         bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
         require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+        require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
 
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
@@ -88,22 +88,20 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
                     // event_block = finalized_block - txsBeforeFinalize
                     require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
-                    safetyChainLength = txsBeforeFinalize;
                 }
 
                 lastFinalizedVs = block_.finalizedVs;
+
+                // next block in auraProof.blocks can have any parentHash (skipping some blocks)(
+                // (but only if it's not the safety blocks for transfer event)
+                if (i < auraProof.transferEventBlock)
+                    parentHash = bytes32(0);
             }
 
-            blockHash = checkBlock(block_);
+            if (parentHash != bytes32(0))
+                require(block_.parentHash == parentHash, "Wrong parent hash");
 
-
-            if (i + 1 != auraProof.blocks.length && blockHash == auraProof.blocks[i + 1].parentHash) {
-                safetyChainLength++;
-            } else if (i == auraProof.transferEventBlock) {
-                safetyChainLength == 0;
-            } else {
-                require(safetyChainLength >= minSafetyBlocks, "wrong parent hash");
-            }
+            parentHash = checkBlock(block_);
 
         }
 
