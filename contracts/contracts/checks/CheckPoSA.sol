@@ -80,6 +80,8 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
             uint blockNumber = bytesToUint(block_.number);
 
             if (blockNumber % EPOCH_LENGTH == 0) {
+                require(blockNumber / EPOCH_LENGTH == currentValidatorSet + 1, "invalid epoch");
+
                 nextVsSize = newValidatorSet(block_.extraData);
                 finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
             }
