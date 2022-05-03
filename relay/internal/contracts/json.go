@@ -153,26 +153,26 @@ func (t *CheckPoSAPoSAProof) MarshalJSON() ([]byte, error) {
 
 func (t *CheckPoSABlockPoSA) MarshalJSON() ([]byte, error) {
 	type PoSABlockPoSA struct {
-		P0Signed   []byte `json:"p0Signed"`
-		P0Unsigned []byte `json:"p0Unsigned"`
+		P0Signed   hexutil.Bytes `json:"p0Signed"`
+		P0Unsigned hexutil.Bytes `json:"p0Unsigned"`
 
-		ParentHash  [32]byte `json:"parentHash"`
-		P1          []byte   `json:"p1"`
-		ReceiptHash [32]byte `json:"receiptHash"`
-		P2          []byte   `json:"p2"`
-		Number      []byte   `json:"number"`
-		P3          []byte   `json:"p3"`
+		ParentHash  hexutil.Bytes `json:"parentHash"`
+		P1          hexutil.Bytes `json:"p1"`
+		ReceiptHash hexutil.Bytes `json:"receiptHash"`
+		P2          hexutil.Bytes `json:"p2"`
+		Number      hexutil.Bytes `json:"number"`
+		P3          hexutil.Bytes `json:"p3"`
 
-		P4Signed   []byte `json:"p4Signed"`
-		P4Unsigned []byte `json:"p4Unsigned"`
-		ExtraData  []byte `json:"extraData"`
+		P4Signed   hexutil.Bytes `json:"p4Signed"`
+		P4Unsigned hexutil.Bytes `json:"p4Unsigned"`
+		ExtraData  hexutil.Bytes `json:"extraData"`
 
-		P5 []byte `json:"p5"`
+		P5 hexutil.Bytes `json:"p5"`
 	}
 
 	tm := PoSABlockPoSA{
-		t.P0Signed, t.P0Unsigned,
-		t.ParentHash, t.P1, t.ReceiptHash, t.P2, t.Number, t.P3,
+		t.P0Signed[:], t.P0Unsigned[:],
+		t.ParentHash[:], t.P1, t.ReceiptHash[:], t.P2, t.Number, t.P3,
 		t.P4Signed, t.P4Unsigned, t.ExtraData,
 		t.P5,
 	}
