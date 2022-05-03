@@ -1,15 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../eth/EthBridge.sol";
+import "../checks/CheckAura.sol";
 
-contract EthBridgeTest is EthBridge {
+contract CheckAuraTest is CheckAura {
     constructor(
-        CommonStructs.ConstructorArgs memory args,
-        address[] memory initialValidators,
+        address[] memory initialValidators_,
         address validatorSetAddress_
     ) {
-        EthBridge.initialize(args, initialValidators, validatorSetAddress_);
+        __CheckAura_init(initialValidators_, validatorSetAddress_);
     }
 
     function checkAuraTest(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {

@@ -1,11 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../eth/AmbBridge.sol";
+import "../checks/CheckPoW.sol";
 
-contract AmbBridgeTest is AmbBridge {
-    function initialize_(CommonStructs.ConstructorArgs memory args, uint minimumDifficulty) public initializer {
-        AmbBridge.initialize(args, minimumDifficulty);
+contract CheckPoWTest is CheckPoW {
+
+    constructor(
+        uint minimumDifficulty
+    ) {
+        __CheckPoW_init(minimumDifficulty);
     }
 
     function blockHashTest(BlockPoW calldata block_) public pure returns (bytes32) {
