@@ -76,6 +76,9 @@ contract CheckAura is Initializable, CheckReceiptsProof {
                     // vs changes in that block
                     ValidatorSetProof memory vsProof = auraProof.vsChanges[j];
 
+                    // how many block after event validatorSet should be finalized
+                    uint txsBeforeFinalize = validatorSet.length / 2 + 1;
+
                     // apply vs changes
                     for (uint k = 0; k < vsProof.changes.length; k++)
                         applyVsChange(vsProof.changes[k]);
@@ -83,10 +86,9 @@ contract CheckAura is Initializable, CheckReceiptsProof {
                     // check proof
                     receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
 
-                    // event finalize always happened on block one after the block with event
-                    // so event_block is finalized_block - 2
-                    require(auraProof.blocks[i - 2].receiptHash == receiptHash, "Wrong VS receipt hash");
-                    safetyChainLength = 2;
+                    // event_block = finalized_block - txsBeforeFinalize
+                    require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
+                    safetyChainLength = txsBeforeFinalize;
                 }
 
                 lastFinalizedVs = block_.finalizedVs;

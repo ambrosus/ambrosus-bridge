@@ -17,6 +17,7 @@ type blockExt struct {
 	block             *c.CheckAuraBlockAura
 	finalizedVsEvents []c.CheckAuraValidatorSetChange
 	lastEvent         *c.VsInitiateChange
+	safetyAfter       bool
 }
 
 func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
@@ -73,10 +74,9 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 			})
 
 			// in this block contract should finalize all events in vsChanges array up to `FinalizedVs` index
-			blocks[i].FinalizedVs = uint64(len(vsChanges)) - 1
+			blocks[i].FinalizedVs = uint64(len(vsChanges))
 		}
 	}
-
 	return &c.CheckAuraAuraProof{
 		Blocks:             blocks,
 		Transfer:           transfer,
@@ -91,9 +91,11 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.Bridg
 		return c.CommonStructsTransferProof{}, err
 	}
 
-	if err := b.saveBlock(event.Raw.BlockNumber, blocks); err != nil {
+	bl, err := b.saveBlock(event.Raw.BlockNumber, blocks)
+	if err != nil {
 		return c.CommonStructsTransferProof{}, err
 	}
+	bl.safetyAfter = true
 
 	return c.CommonStructsTransferProof{
 		ReceiptProof: proof,
@@ -115,21 +117,22 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		}
 		vsChange := c.CheckAuraValidatorSetChange{DeltaAddress: address, DeltaIndex: index}
 
-		prevSet = event.NewSet
-
-		if err := b.saveBlock(event.Raw.BlockNumber, blocks); err != nil {
+		eventBlock, err := b.saveBlock(event.Raw.BlockNumber, blocks)
+		if err != nil {
 			return err
 		}
+		eventBlock.safetyAfter = true
 
 		// block in which VS will be finalized
-		if err := b.saveBlock(event.Raw.BlockNumber+2, blocks); err != nil {
+		txsBeforeFinalize := uint64(len(prevSet))/2 + 1
+		blockWhenFinalize, err := b.saveBlock(event.Raw.BlockNumber+txsBeforeFinalize, blocks)
+		if err != nil {
 			return err
 		}
-
-		// event should be finalized one block after it was emitted
-		blockWhenFinalize := blocks[event.Raw.BlockNumber+2]
 		blockWhenFinalize.finalizedVsEvents = append(blockWhenFinalize.finalizedVsEvents, vsChange)
 		blockWhenFinalize.lastEvent = event
+
+		prevSet = event.NewSet
 	}
 	return nil
 }
@@ -140,8 +143,11 @@ func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*blockExt, minSafetyBlocks
 	// we'll iterate also over those new values, but we don't need that
 	blockNums := sortedKeys(blocksMap)
 	for _, blockNum := range blockNums {
+		//if !blocksMap[blockNum].safetyAfter {
+		//	continue
+		//}
 		for i := uint64(0); i <= minSafetyBlocks; i++ {
-			if err := b.saveBlock(blockNum+i, blocksMap); err != nil {
+			if _, err := b.saveBlock(blockNum+i, blocksMap); err != nil {
 				return err
 			}
 		}
@@ -183,22 +189,22 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*blockExt) error {
-	if _, ok := blocksMap[blockNumber]; ok {
-		return nil
+func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*blockExt) (*blockExt, error) {
+	if bl, ok := blocksMap[blockNumber]; ok {
+		return bl, nil
 	}
 
 	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
 	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
+		return nil, fmt.Errorf("HeaderByNumber: %w", err)
 	}
 	encodedBlock, err := EncodeBlock(block)
 	if err != nil {
-		return fmt.Errorf("encode: %w", err)
+		return nil, fmt.Errorf("encode: %w", err)
 	}
 
 	blocksMap[blockNumber] = &blockExt{block: encodedBlock}
-	return nil
+	return blocksMap[blockNumber], nil
 }
 
 func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
@@ -206,6 +212,9 @@ func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) 
 	prevEvent, err := b.GetEventById(prevEventId)
 	if err != nil {
 		return 0, fmt.Errorf("side GetEventById: %w", err)
+	}
+	if prevEventId.Uint64() == 0 {
+		return prevEvent.Raw.BlockNumber, nil
 	}
 
 	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
