@@ -1,4 +1,4 @@
-import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
 import {
@@ -6,9 +6,10 @@ import {
   configPath,
   getTokenPairs,
   networkType,
-  readConfig, setSideBridgeAddress,
+  readConfig, setSideBridgeAddress, urlFromHHProvider,
   writeConfig
 } from "./utils";
+import vsAbi from "../abi/ValidatorSet.json";
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -23,10 +24,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const admin = owner;
   const relay = owner;
 
-  const tokenPairs = getTokenPairs("amb", "eth", hre.network)
+  const tokenPairs = getTokenPairs("amb", "bsc", hre.network)
 
-  const deployResult = await hre.deployments.deploy("ETH_AmbBridge", {
-    contract: "ETH_AmbBridge",
+  const bscNet = hre.companionNetworks['bsc']
+  const [initialEpoch, initialValidators] = await getValidators(bscNet.provider);
+  const chainId = bscNet.getChainId();
+
+  const deployResult = await hre.deployments.deploy("BSC_AmbBridge", {
+    contract: "BSC_AmbBridge",
     from: owner,
     proxy: {
       owner: proxyAdmin,
@@ -48,7 +53,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
               lockTime: isMainNet ? 60 * 10 : 60,
               minSafetyBlocks: 10,
             },
-            isMainNet ? 13_000_000_000 : 0  // minimum difficulty
+            initialEpoch,
+            initialValidators,
+            chainId,
           ]
         }
       }
@@ -66,11 +73,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   // set sideBridgeAddress
-  await setSideBridgeAddress("ETH_AmbBridge", configFile.bridges.eth.side, hre)
+  await setSideBridgeAddress("BSC_AmbBridge", configFile.bridges.bsc.side, hre)
 
   // add new tokens
-  await addNewTokensToBridge(tokenPairs, hre, "ETH_AmbBridge");
+  await addNewTokensToBridge(tokenPairs, hre, "BSC_AmbBridge");
 };
 
+
+
+
+async function getValidators(bscProvider: EthereumProvider): Promise<[number, string[]]> {
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(bscProvider))
+  const {number: block} = await provider.getBlock('latest');
+  const epoch = block / 200;
+  const epochStart = epoch * 200;
+  const blockWithValidators = await provider.getBlock(epochStart);
+
+  // todo get validators from blockWithValidators
+  const validators = [""];
+
+  return [epoch, validators];
+}
+
+
+
 export default func;
-func.tags = ["bridges_eth"];
+func.tags = ["bridges_bnb"];

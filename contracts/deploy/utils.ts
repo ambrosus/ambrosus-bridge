@@ -77,6 +77,22 @@ export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
 
 }
 
+export async function setSideBridgeAddress(deploymentName: string, sideAddress: string, hre: HardhatRuntimeEnvironment) {
+  if (!sideAddress) {
+    console.log(`[Setting sideBridgeAddress] Deploy side bridge for ${deploymentName} first`)
+    return
+  }
+  const {owner} = await hre.getNamedAccounts();
+
+  const curAddr = await hre.deployments.read(deploymentName, {from: owner}, 'sideBridgeAddress');
+  if (curAddr != sideAddress) {
+    console.log("[Setting sideBridgeAddress] old", curAddr, "new", sideAddress)
+    await hre.deployments.execute(deploymentName, {from: owner, log: true}, 'setSideBridge', sideAddress);
+  }
+}
+
+
+
 
 // get all deployed bridges in `net` network;
 // for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
