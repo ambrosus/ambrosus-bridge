@@ -488,6 +488,21 @@
         "internalType": "struct CommonStructs.ConstructorArgs",
         "name": "args",
         "type": "tuple"
+      },
+      {
+        "internalType": "address[]",
+        "name": "initialValidators",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256",
+        "name": "initialEpoch",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes1",
+        "name": "chainId",
+        "type": "bytes1"
       }
     ],
     "name": "initialize",
@@ -668,14 +683,14 @@
           {
             "components": [
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0Signed",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
-                "internalType": "bytes",
+                "internalType": "bytes3",
                 "name": "p0Unsigned",
-                "type": "bytes"
+                "type": "bytes3"
               },
               {
                 "internalType": "bytes32",
