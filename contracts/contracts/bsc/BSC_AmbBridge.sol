@@ -7,8 +7,14 @@ import "../checks/CheckPoSA.sol";
 
 contract BSC_AmbBridge is CommonBridge, CheckPoSA {
 
-    function initialize(CommonStructs.ConstructorArgs memory args) public initializer {
+    function initialize(
+        CommonStructs.ConstructorArgs memory args,
+        address[] memory initialValidators,
+        uint initialEpoch,
+        bytes1 chainId
+    ) public initializer {
         __CommonBridge_init(args);
+        __CheckPoSA_init(initialValidators, initialEpoch, chainId);
     }
 
     function submitTransferPoSA(PoSAProof calldata posaProof) public onlyRole(RELAY_ROLE) whenNotPaused {

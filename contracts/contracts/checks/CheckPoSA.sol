@@ -7,29 +7,31 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
 contract CheckPoSA is Initializable, CheckReceiptsProof {
-    mapping(uint => mapping(address => bool)) private allValidators;
-    uint currentValidatorSet;
-
     uint256 private constant ADDRESS_LENGTH = 20;
     uint256 private constant EXTRA_VANITY_LENGTH = 32;
     uint256 private constant EXTRA_SEAL_LENGTH = 65;
     uint256 private constant EPOCH_LENGTH = 200;
+    bytes1 constant PARENT_HASH_PREFIX = 0xA0;
+
+    mapping(uint => mapping(address => bool)) private allValidators;
+    uint currentValidatorSet;
+
+    bytes1 chainId;
 
 
     struct BlockPoSA {
-        bytes p0Signed;
-        bytes p0Unsigned;
+        bytes3 p0Signed;
+        bytes3 p0Unsigned;
 
         bytes32 parentHash;
         bytes p1;
         bytes32 receiptHash;
         bytes p2;
-
         bytes number;
         bytes p3;
 
-        bytes p4Signed;  // rlp
-        bytes p4Unsigned;  // rlp
+        bytes p4Signed;
+        bytes p4Unsigned;
         bytes extraData;
 
         bytes p5;
@@ -44,11 +46,13 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     function __CheckPoSA_init(
         address[] memory _initialValidators,
-        bytes32 _genesisBlockHash,
-        uint256 _currentHeight
+        uint _initialEpoch,
+        bytes1 _chainId
     ) internal initializer {
         require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
 
+        chainId = _chainId;
+        currentValidatorSet = _initialEpoch;
         for (uint i = 0; i < _initialValidators.length; i++) {
             allValidators[currentValidatorSet][_initialValidators[i]] = true;
         }
@@ -86,11 +90,11 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
     }
 
 
-    function calcBlockHash(BlockPoSA calldata block_) internal pure returns (bytes32, bytes32) {
-        bytes memory commonRlp = abi.encodePacked(block_.parentHash, block_.p1, block_.receiptHash, block_.p2, block_.number, block_.p3);
+    function calcBlockHash(BlockPoSA calldata block_) internal view returns (bytes32, bytes32) {
+        bytes memory commonRlp = abi.encodePacked(PARENT_HASH_PREFIX, block_.parentHash, block_.p1, block_.receiptHash, block_.p2, block_.number, block_.p3);
         return (
         // hash without seal (bare), for signature check
-        keccak256(abi.encodePacked(block_.p0Unsigned, commonRlp, block_.p4Unsigned, getExtraDataUnsigned(block_.extraData), block_.p5)),
+        keccak256(abi.encodePacked(block_.p0Unsigned, chainId, commonRlp, block_.p4Unsigned, getExtraDataUnsigned(block_.extraData), block_.p5)),
         // hash with seal, for prev_hash check
         keccak256(abi.encodePacked(block_.p0Signed, commonRlp, block_.p4Signed, block_.extraData, block_.p5))
         );
