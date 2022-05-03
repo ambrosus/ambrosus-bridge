@@ -9,6 +9,7 @@ import (
 )
 
 func (b *CommonBridge) UnlockTransfersLoop() {
+	b.shouldHavePk()
 	for {
 		b.EnsureContractUnpaused()
 

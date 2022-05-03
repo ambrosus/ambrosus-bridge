@@ -142,6 +142,12 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	return err
 }
 
+func (b *CommonBridge) shouldHavePk() {
+	if b.Auth == nil {
+		b.Logger.Fatal().Msg("Private key is required")
+	}
+}
+
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {
 	b, err := hex.DecodeString(pk)
 	if err != nil {

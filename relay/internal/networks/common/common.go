@@ -72,6 +72,8 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 
 		// update metrics
 		b.SetRelayBalanceMetric()
+	} else {
+		b.Logger.Info().Msg("No private key provided")
 	}
 
 	return b, nil

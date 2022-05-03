@@ -12,6 +12,7 @@ import (
 )
 
 func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
+	b.shouldHavePk()
 	b.SideBridge = sideBridge
 
 	for {

@@ -10,6 +10,7 @@ import (
 )
 
 func (b *CommonBridge) SubmitTransfersLoop() {
+	b.shouldHavePk()
 	for {
 		// since we submit transfers to SideBridge, ensure that it is unpaused
 		b.SideBridge.EnsureContractUnpaused()
