@@ -15,6 +15,11 @@ contract CheckAuraTest is CheckAura {
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
     }
 
+    function checkAuraTestVS(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress, address[] memory initialValidators_) public {
+        validatorSet = initialValidators_;
+        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
+    }
+
     function checkSignatureTest(address signer, bytes32 message, bytes memory signature) public pure {
         checkSignature(signer, message, signature);
     }

@@ -33,6 +33,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         address deltaAddress;
         int64 deltaIndex; // < 0 ? remove : add
     }
+
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
@@ -46,7 +47,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     }
 
 
-
     function __CheckAura_init(
         address[] memory initialValidators_,
         address validatorSetAddress_
@@ -55,7 +55,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
         validatorSet = initialValidators_;
         validatorSetAddress = validatorSetAddress_;
-
     }
 
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
@@ -92,16 +91,17 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
                 lastFinalizedVs = block_.finalizedVs;
 
-                // next block in auraProof.blocks can have any parentHash (skipping some blocks)(
-                // (but only if it's not the safety blocks for transfer event)
-                if (i < auraProof.transferEventBlock)
-                    parentHash = bytes32(0);
             }
 
             if (parentHash != bytes32(0))
                 require(block_.parentHash == parentHash, "Wrong parent hash");
 
             parentHash = checkBlock(block_);
+
+            // after proceed vs change event next block in auraProof.blocks can have any parentHash
+            // (skipping some blocks) but only if it's not the safety blocks for transfer event
+            if (block_.finalizedVs != 0 && i < auraProof.transferEventBlock)
+                parentHash = bytes32(0);
 
         }
 

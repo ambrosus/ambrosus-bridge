@@ -34,8 +34,15 @@ describe("Check Aura", () => {
 
   it("Test CheckAura (changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-changeVs.json");
-    // todo fix bug with oe?? block[3].finalizedVs == 2 actually, but validator doesn't deleted
-    await ethBridge.checkAuraTest(proof, 10, "0x5dE56DC76163AE834f565289f291FbeE84544c33");
+    await ethBridge.checkAuraTestVS(proof, 5, "0x48d5cE2A10438559a14D399ca510F4235315dc6e", [
+        '0x45a9645fcd727C2CeE29b5945aB49D92564Af199',
+        '0x4fE180D06096A1216d3ec97ceAcE28d9c255B348',
+        '0xf46BA733b57Da081F27309496CD618cdaB4E12B0',
+        '0xfCf23c040142999e1c9894b421544aaA5805a21B',
+        '0x4940b222D0Ec0c737F1b4f84caeaC60c3021a256',
+        '0xe3746c9406FF78C3854aECAF36769826a22F1C89'
+      ], {gasLimit: 40000000}
+    );
   });
 
 
