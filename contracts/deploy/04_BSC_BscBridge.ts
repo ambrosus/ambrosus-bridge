@@ -6,7 +6,7 @@ import {
   addNewTokensToBridge,
   configPath,
   getTokenPairs,
-  networkType,
+  networkType, options,
   readConfig,
   urlFromHHProvider,
   writeConfig
@@ -22,11 +22,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const path = configPath(hre.network);
   let configFile = readConfig(path);
 
-  const {owner, proxyAdmin} = await hre.getNamedAccounts();
-  // todo get admin and relay from getNamedAccounts
-  const admin = owner;
-  const relay = owner;
-
   const tokenPairs = getTokenPairs("bsc", "amb", hre.network)
 
   const ambNet = hre.companionNetworks['amb']
@@ -36,34 +31,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const deployResult = await hre.deployments.deploy("BSC_BscBridge", {
     contract: "BSC_BscBridge",
-    from: owner,
-    proxy: {
-      owner: proxyAdmin,
-      proxyContract: "proxyTransparent",
-      execute: {
-        init: {
-          methodName: "initialize",
-          args: [
-              {
-              sideBridgeAddress: sideBridgeAddress,
-              adminAddress: admin,
-              relayAddress: relay,
-              wrappingTokenAddress: configFile.tokens.WBNB?.addresses.eth || ethers.constants.AddressZero,
-              tokenThisAddresses: Object.keys(tokenPairs),
-              tokenSideAddresses: Object.values(tokenPairs),
-              fee: 10,    // todo
-              feeRecipient: owner,   // todo
-              timeframeSeconds: isMainNet ? 60*60*4 : 60,
-              lockTime: isMainNet ? 60*10 : 60,
-              minSafetyBlocks: isMainNet ? 10 : 2,
-            },
-            initialValidators,
-            vsAddress,
-          ]
-        }
-      }
-    },
-    log: true
+    ...await options(hre, tokenPairs,
+      {
+        sideBridgeAddress: sideBridgeAddress,
+        wrappingTokenAddress: configFile.tokens.WBNB?.addresses.eth || ethers.constants.AddressZero,
+        fee: 10,    // todo
+        timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+        lockTime: isMainNet ? 60 * 10 : 60,
+        minSafetyBlocks: isMainNet ? 10 : 2,
+      },
+      [
+        initialValidators,
+        vsAddress,
+      ])
   });
 
 

@@ -5,7 +5,7 @@ import {
   addNewTokensToBridge,
   configPath,
   getTokenPairs,
-  networkType,
+  networkType, options,
   readConfig, setSideBridgeAddress, urlFromHHProvider,
   writeConfig
 } from "./utils";
@@ -19,11 +19,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const path = configPath(hre.network);
   let configFile = readConfig(path);
 
-  const {owner, proxyAdmin} = await hre.getNamedAccounts();
-  // todo get admin and relay from getNamedAccounts
-  const admin = owner;
-  const relay = owner;
-
   const tokenPairs = getTokenPairs("amb", "bsc", hre.network)
 
   const bscNet = hre.companionNetworks['bsc']
@@ -32,35 +27,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const deployResult = await hre.deployments.deploy("BSC_AmbBridge", {
     contract: "BSC_AmbBridge",
-    from: owner,
-    proxy: {
-      owner: proxyAdmin,
-      proxyContract: "proxyTransparent",
-      execute: {
-        init: {
-          methodName: "initialize",
-          args: [
-            {
-              sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-              adminAddress: admin,
-              relayAddress: relay,
-              wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-              tokenThisAddresses: Object.keys(tokenPairs),
-              tokenSideAddresses: Object.values(tokenPairs),
-              fee: 1000,  // todo
-              feeRecipient: owner,   // todo
-              timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-              lockTime: isMainNet ? 60 * 10 : 60,
-              minSafetyBlocks: 10,
-            },
-            initialEpoch,
-            initialValidators,
-            chainId,
-          ]
-        }
-      }
-    },
-    log: true,
+    ...await options(hre, tokenPairs,
+      {
+        sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+        wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
+        fee: 1000,  // todo
+        timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+        lockTime: isMainNet ? 60 * 10 : 60,
+        minSafetyBlocks: 10,
+      },
+      [
+        initialEpoch,
+        initialValidators,
+        chainId,
+      ]
+    )
   });
 
   configFile.bridges.eth.amb = deployResult.address;
@@ -80,8 +61,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 };
 
 
-
-
 async function getValidators(bscProvider: EthereumProvider): Promise<[number, string[]]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(bscProvider))
   const {number: block} = await provider.getBlock('latest');
@@ -94,7 +73,6 @@ async function getValidators(bscProvider: EthereumProvider): Promise<[number, st
 
   return [epoch, validators];
 }
-
 
 
 export default func;

@@ -5,7 +5,7 @@ import {
   addNewTokensToBridge,
   configPath,
   getTokenPairs,
-  networkType,
+  networkType, options,
   readConfig, setSideBridgeAddress,
   writeConfig
 } from "./utils";
@@ -18,42 +18,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const path = configPath(hre.network);
   let configFile = readConfig(path);
 
-  const {owner, proxyAdmin} = await hre.getNamedAccounts();
-  // todo get admin and relay from getNamedAccounts
-  const admin = owner;
-  const relay = owner;
-
   const tokenPairs = getTokenPairs("amb", "eth", hre.network)
 
   const deployResult = await hre.deployments.deploy("ETH_AmbBridge", {
     contract: "ETH_AmbBridge",
-    from: owner,
-    proxy: {
-      owner: proxyAdmin,
-      proxyContract: "proxyTransparent",
-      execute: {
-        init: {
-          methodName: "initialize",
-          args: [
-            {
-              sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-              adminAddress: admin,
-              relayAddress: relay,
-              wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-              tokenThisAddresses: Object.keys(tokenPairs),
-              tokenSideAddresses: Object.values(tokenPairs),
-              fee: 1000,  // todo
-              feeRecipient: owner,   // todo
-              timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-              lockTime: isMainNet ? 60 * 10 : 60,
-              minSafetyBlocks: 10,
-            },
-            isMainNet ? 13_000_000_000 : 0  // minimum difficulty
-          ]
-        }
-      }
-    },
-    log: true,
+    ...await options(hre, tokenPairs,
+      {
+        sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+        wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
+        fee: 1000,  // todo
+        timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+        lockTime: isMainNet ? 60 * 10 : 60,
+        minSafetyBlocks: 10,
+      },
+      [
+        isMainNet ? 13_000_000_000 : 0  // minimum difficulty
+      ]
+    )
   });
 
   configFile.bridges.eth.amb = deployResult.address;

@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
 
 
@@ -92,6 +93,40 @@ export async function setSideBridgeAddress(deploymentName: string, sideAddress: 
 }
 
 
+export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: string]: string },
+                              commonArgs: any, args: any[]): Promise<DeployOptions> {
+
+  const {owner, proxyAdmin} = await hre.getNamedAccounts();
+  // todo get admin and relay from getNamedAccounts
+  const admin = owner;
+  const relay = owner;
+
+  // add this args to user args
+  const reallyCommonArgs = {
+    adminAddress: admin,
+    relayAddress: relay,
+    feeRecipient: owner,   // todo
+    tokenThisAddresses: Object.keys(tokenPairs),
+    tokenSideAddresses: Object.values(tokenPairs),
+  }
+  // commonArgs is contract `ConstructorArgs` struct
+  commonArgs = {...reallyCommonArgs, ...commonArgs};
+
+  return {
+    from: owner,
+    proxy: {
+      owner: proxyAdmin,
+      proxyContract: "proxyTransparent",
+      execute: {
+        init: {
+          methodName: "initialize",
+          args: [commonArgs, ...args]
+        }
+      }
+    },
+    log: true
+  }
+}
 
 
 // get all deployed bridges in `net` network;
