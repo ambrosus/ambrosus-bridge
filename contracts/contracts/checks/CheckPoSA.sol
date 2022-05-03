@@ -15,6 +15,7 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
     mapping(uint => mapping(address => bool)) private allValidators;
     uint currentValidatorSet;
+    uint currentValidatorSetSize;
 
     bytes1 chainId;
 
@@ -53,34 +54,43 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
 
         chainId = _chainId;
         currentValidatorSet = _initialEpoch;
+        currentValidatorSetSize = _initialValidators.length;
+
         for (uint i = 0; i < _initialValidators.length; i++) {
             allValidators[currentValidatorSet][_initialValidators[i]] = true;
         }
-
     }
 
-    function CheckPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
+    function checkPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
+        bytes32 bareHash;
+        bytes32 sealHash;
+        uint finalizeVsBlock;
+        uint nextVsSize;
+
         bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
         require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
-            CheckBlock(posaProof.blocks[i]);
-            // todo check parentHash
+            (bareHash, sealHash) = calcBlockHash(posaProof.blocks[i]);
+
+            require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
+
+
+            uint blockNumber = bytesToUint(block_.number);
+
+            if (blockNumber % EPOCH_LENGTH == 0) {
+                nextVsSize = newValidatorSet(block_.extraData);
+                finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
+            }
+            else if (blockNumber == finalizeVsBlock) {
+                currentValidatorSet++;
+                currentValidatorSetSize = nextVsSize;
+            }
+
+            if (i + 1 != auraProof.blocks.length) {
+                require(sealHash == auraProof.blocks[i + 1].parentHash, "wrong parent hash");
+            }
         }
-    }
-
-    function CheckBlock(BlockPoSA calldata block_) private {
-        (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
-
-        require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
-
-        uint blockNumber = bytesToUint(block_.number);
-
-
-        if (blockNumber % EPOCH_LENGTH == 0) {
-            newValidatorSet(block_.extraData);
-        }
-        // todo finalize ValidatorSet
     }
 
 
@@ -103,14 +113,18 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         return extraData[0 : extraData.length - EXTRA_SEAL_LENGTH];
     }
 
-    function newValidatorSet(bytes calldata extraData) private {
+    function newValidatorSet(bytes calldata extraData) private returns(uint) {
         uint nextValidatorSet = currentValidatorSet + 1;
         uint endPos = extraData.length - EXTRA_SEAL_LENGTH;
 
+        uint nextValidatorSetSize;
         for (uint pos = EXTRA_VANITY_LENGTH; pos < endPos; pos += ADDRESS_LENGTH) {
             address validator = address(bytes20(extraData[pos : pos + ADDRESS_LENGTH]));
             allValidators[nextValidatorSet][validator] = true;
+            nextValidatorSetSize++;
         }
+
+        return nextValidatorSetSize;
     }
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
