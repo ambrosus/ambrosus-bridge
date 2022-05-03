@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -18,6 +19,7 @@ func (b *CommonBridge) SubmitTransfersLoop() {
 		if err := b.watchTransfers(); err != nil {
 			b.Logger.Error().Err(err).Msg("watchTransfers error")
 		}
+		time.Sleep(failSleepTIme)
 	}
 }
 
