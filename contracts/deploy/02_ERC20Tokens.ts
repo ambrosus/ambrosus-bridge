@@ -5,7 +5,7 @@ import {networkName, readConfig} from "./utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const netName = networkName(hre.network);
-  let configFile = readConfig(netName);
+  let configFile = readConfig(hre.network);
   const bridgesInThisNetwork = configFile.bridgesInNet(netName)
 
   const {owner} = await hre.getNamedAccounts();

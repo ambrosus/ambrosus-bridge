@@ -33,7 +33,7 @@ export function readConfig(network: any): Config {
   const config = require(tokenPath);
 
   config.save = () => fs.writeFileSync(tokenPath, JSON.stringify(config, null, 2));
-  config.getTokensPairs = (thisNet: string, sideNet: string) => getTokenPairs(thisNet, sideNet, config)
+  config.getTokenPairs = (thisNet: string, sideNet: string) => getTokenPairs(thisNet, sideNet, config)
   config.bridgesInNet = (net: string) => bridgesInNet(net, config)
 
   return config;
