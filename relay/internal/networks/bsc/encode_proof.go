@@ -3,6 +3,7 @@ package bsc
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/big"
 	"sort"
 
@@ -84,11 +85,7 @@ func (b *Bridge) getPrevEventBlockNum() (uint64, error) {
 }
 
 func findFirstEpochChange(start uint64) uint64 {
-	for blockNum := start; ; blockNum++ {
-		if blockNum%EpochLength == 0 {
-			return blockNum
-		}
-	}
+	return uint64(math.Ceil(float64(start)/float64(EpochLength))) * EpochLength
 }
 
 func findEpochChanges(start, end uint64) []uint64 {
