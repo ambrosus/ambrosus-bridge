@@ -9,13 +9,14 @@ import (
 )
 
 func (b *CommonBridge) UnlockTransfersLoop() {
+	b.shouldHavePk()
 	for {
 		b.EnsureContractUnpaused()
 
 		if err := b.unlockOldTransfers(); err != nil {
 			b.Logger.Error().Msgf("UnlockTransfersLoop: %s", err)
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(failSleepTIme)
 	}
 }
 
