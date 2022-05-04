@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 )
 
 const AddressLength = 20
@@ -47,7 +47,7 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer) (*c.CheckPoSAP
 	}
 
 	// fill up blocks and get transfer event index
-	indexToBlockNum := sortedKeys(blocksMap)
+	indexToBlockNum := helpers.SortedKeys(blocksMap)
 	var transferEventIndex uint64
 	for i, blockNum := range indexToBlockNum {
 		if blockNum == currEventBlockNum {
@@ -111,17 +111,6 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckPoSA
 
 	blocksMap[blockNumber] = encodedBlock
 	return encodedBlock, nil
-}
-
-// used for 'ordered' map
-// TODO: шось з цим теж зробити, мб заюзати дженеріки
-func sortedKeys(m map[uint64]*c.CheckPoSABlockPoSA) []uint64 {
-	keys := make([]uint64, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	return keys
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer) (c.CommonStructsTransferProof, error) {

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -45,7 +45,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}
 
 	// sort blocks in blocksMap and use resulting indexes
-	indexToBlockNum := sortedKeys(blocksMap)
+	indexToBlockNum := helpers.SortedKeys(blocksMap)
 	var blocks []c.CheckAuraBlockAura
 	var vsChanges []c.CheckAuraValidatorSetProof
 	var transferEventIndex uint64
@@ -137,7 +137,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*blockExt, minSafetyBlocks uint64) error {
 	// we should iterate over keys because on writing new values to map
 	// we'll iterate also over those new values, but we don't need that
-	blockNums := sortedKeys(blocksMap)
+	blockNums := helpers.SortedKeys(blocksMap)
 	for _, blockNum := range blockNums {
 		for i := uint64(0); i <= minSafetyBlocks; i++ {
 			if err := b.saveBlock(blockNum+i, blocksMap); err != nil {
@@ -233,14 +233,4 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	return curr[i], int64(i), nil
 
 	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
-}
-
-// used for 'ordered' map
-func sortedKeys(m map[uint64]*blockExt) []uint64 {
-	keys := make([]uint64, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	return keys
 }
