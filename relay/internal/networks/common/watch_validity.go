@@ -6,19 +6,22 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
 func (b *CommonBridge) ValidityWatchdog() {
-	b.Logger.Info().Msg("Starting validity watchdog")
+	b.shouldHavePk()
+
 	for {
 		b.EnsureContractUnpaused()
 
 		if err := b.watchLockedTransfers(); err != nil {
 			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
 		}
+		time.Sleep(failSleepTIme)
 	}
 }
 

@@ -15,6 +15,9 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+// failSleepTIme is how many seconds to sleep between iterations in infinity loops
+const failSleepTIme = time.Minute
+
 func (b *CommonBridge) EnsureContractUnpaused() {
 	for {
 		err := b.waitForUnpauseContract()
@@ -23,7 +26,7 @@ func (b *CommonBridge) EnsureContractUnpaused() {
 		}
 
 		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
-		time.Sleep(10 * time.Second)
+		time.Sleep(failSleepTIme)
 	}
 }
 
@@ -140,6 +143,12 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	}, nil)
 
 	return err
+}
+
+func (b *CommonBridge) shouldHavePk() {
+	if b.Auth == nil {
+		b.Logger.Fatal().Msg("Private key is required")
+	}
 }
 
 func parsePK(pk string) (*ecdsa.PrivateKey, error) {
