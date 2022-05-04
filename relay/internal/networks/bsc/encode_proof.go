@@ -8,7 +8,6 @@ import (
 	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 )
 
 const AddressLength = 20
@@ -114,15 +113,6 @@ func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckPoSA
 	return encodedBlock, nil
 }
 
-// TODO: винести в коммон
-func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := b.GetReceipts(event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
-}
-
 // used for 'ordered' map
 // TODO: шось з цим теж зробити, мб заюзати дженеріки
 func sortedKeys(m map[uint64]*c.CheckPoSABlockPoSA) []uint64 {
@@ -135,7 +125,7 @@ func sortedKeys(m map[uint64]*c.CheckPoSABlockPoSA) []uint64 {
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer) (c.CommonStructsTransferProof, error) {
-	proof, err := b.getProof(event)
+	proof, err := b.GetProof(event)
 	if err != nil {
 		return c.CommonStructsTransferProof{}, err
 	}

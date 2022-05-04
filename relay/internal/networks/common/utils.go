@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -114,6 +115,14 @@ func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, err
 	}
 
 	return receipts, errGroup.Wait()
+}
+
+func (b *CommonBridge) GetProof(event receipts_proof.ProofEvent) ([][]byte, error) {
+	receipts, err := b.GetReceipts(event.Log().BlockHash)
+	if err != nil {
+		return nil, fmt.Errorf("GetReceipts: %w", err)
+	}
+	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
 func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {

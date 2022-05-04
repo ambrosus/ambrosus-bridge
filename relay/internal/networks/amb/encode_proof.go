@@ -7,7 +7,6 @@ import (
 	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -63,9 +62,9 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 
 		// fill up 'vsChanges'
 		if blocksMap[blockNum].lastEvent != nil {
-			proof, err := b.getProof(blocksMap[blockNum].lastEvent)
+			proof, err := b.GetProof(blocksMap[blockNum].lastEvent)
 			if err != nil {
-				return nil, fmt.Errorf("getProof: %w", err)
+				return nil, fmt.Errorf("GetProof: %w", err)
 			}
 			vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
 				ReceiptProof: proof,
@@ -86,7 +85,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer) (c.CommonStructsTransferProof, error) {
-	proof, err := b.getProof(event)
+	proof, err := b.GetProof(event)
 	if err != nil {
 		return c.CommonStructsTransferProof{}, err
 	}
@@ -173,14 +172,6 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	}
 
 	return res, nil
-}
-
-func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := b.GetReceipts(event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
 func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*blockExt) error {
