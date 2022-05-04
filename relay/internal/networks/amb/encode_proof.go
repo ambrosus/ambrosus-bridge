@@ -24,7 +24,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	blocksMap := make(map[uint64]*blockExt)
 
 	// encode transferProof and save event block to blocksMap
-	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent)
+	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent, safetyBlocks)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
 	}
@@ -39,12 +39,6 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 		return nil, fmt.Errorf("encodeVSChangeEvents: %w", err)
 	}
 
-	// save safety blocks to blocksMap
-	err = b.addSafetyBlocks(blocksMap, safetyBlocks)
-	if err != nil {
-		return nil, fmt.Errorf("encodeSafetyBlocks: %w", err)
-	}
-
 	// sort blocks in blocksMap and use resulting indexes
 	indexToBlockNum := sortedKeys(blocksMap)
 	var blocks []c.CheckAuraBlockAura
@@ -52,12 +46,6 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	var transferEventIndex uint64
 
 	for i, blockNum := range indexToBlockNum {
-		if blockNum == transferEvent.Raw.BlockNumber {
-			transferEventIndex = uint64(i) // set transferEventIndex to index in blocks array
-		} else if blockNum > transferEvent.Raw.BlockNumber+safetyBlocks {
-			break // in some cases we can fetch more blocks that we need
-		}
-
 		// fill up 'blocks'
 		blocks = append(blocks, *blocksMap[blockNum].block)
 
@@ -73,29 +61,34 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 			})
 
 			// in this block contract should finalize all events in vsChanges array up to `FinalizedVs` index
-			blocks[i].FinalizedVs = uint64(len(vsChanges)) - 1
+			blocks[i].FinalizedVs = uint64(len(vsChanges))
+		}
+
+		// set transferEventIndex to index in blocks array
+		if blockNum == transferEvent.Raw.BlockNumber {
+			transferEventIndex = uint64(i)
 		}
 	}
-
 	return &c.CheckAuraAuraProof{
 		Blocks:             blocks,
-		Transfer:           transfer,
+		Transfer:           *transfer,
 		VsChanges:          vsChanges,
 		TransferEventBlock: transferEventIndex,
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer) (c.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
 	proof, err := b.getProof(event)
 	if err != nil {
-		return c.CommonStructsTransferProof{}, err
+		return nil, err
 	}
 
-	if err := b.saveBlock(event.Raw.BlockNumber, blocks); err != nil {
-		return c.CommonStructsTransferProof{}, err
+	// save `safetyBlocks` blocks after event block
+	if err = b.saveBlocksRange(blocks, event.Raw.BlockNumber, event.Raw.BlockNumber+safetyBlocks); err != nil {
+		return nil, err
 	}
 
-	return c.CommonStructsTransferProof{
+	return &c.CommonStructsTransferProof{
 		ReceiptProof: proof,
 		EventId:      event.EventId,
 		Transfers:    event.Queue,
@@ -115,36 +108,20 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		}
 		vsChange := c.CheckAuraValidatorSetChange{DeltaAddress: address, DeltaIndex: index}
 
-		prevSet = event.NewSet
+		txsBeforeFinalize := uint64(len(prevSet))/2 + 1
+		finalizedBlockNum := event.Raw.BlockNumber + txsBeforeFinalize
 
-		if err := b.saveBlock(event.Raw.BlockNumber, blocks); err != nil {
+		// save blocks up to finalized block
+		if err = b.saveBlocksRange(blocks, event.Raw.BlockNumber, finalizedBlockNum); err != nil {
 			return err
 		}
 
 		// block in which VS will be finalized
-		if err := b.saveBlock(event.Raw.BlockNumber+2, blocks); err != nil {
-			return err
-		}
-
-		// event should be finalized one block after it was emitted
-		blockWhenFinalize := blocks[event.Raw.BlockNumber+2]
+		blockWhenFinalize := blocks[finalizedBlockNum]
 		blockWhenFinalize.finalizedVsEvents = append(blockWhenFinalize.finalizedVsEvents, vsChange)
 		blockWhenFinalize.lastEvent = event
-	}
-	return nil
-}
 
-// add safety blocks after each event block
-func (b *Bridge) addSafetyBlocks(blocksMap map[uint64]*blockExt, minSafetyBlocks uint64) error {
-	// we should iterate over keys because on writing new values to map
-	// we'll iterate also over those new values, but we don't need that
-	blockNums := sortedKeys(blocksMap)
-	for _, blockNum := range blockNums {
-		for i := uint64(0); i <= minSafetyBlocks; i++ {
-			if err := b.saveBlock(blockNum+i, blocksMap); err != nil {
-				return err
-			}
-		}
+		prevSet = event.NewSet
 	}
 	return nil
 }
@@ -183,7 +160,17 @@ func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*blockExt) error {
+// save blocks from `from` to `to` INCLUSIVE
+func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
+	for i := from; i <= to; i++ {
+		if err := b.saveBlock(blocksMap, i); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
 	if _, ok := blocksMap[blockNumber]; ok {
 		return nil
 	}
@@ -206,6 +193,9 @@ func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) 
 	prevEvent, err := b.GetEventById(prevEventId)
 	if err != nil {
 		return 0, fmt.Errorf("side GetEventById: %w", err)
+	}
+	if prevEventId.Uint64() == 0 {
+		return prevEvent.Raw.BlockNumber, nil
 	}
 
 	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value

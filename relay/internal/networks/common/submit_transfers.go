@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
 func (b *CommonBridge) SubmitTransfersLoop() {
+	b.shouldHavePk()
 	for {
 		// since we submit transfers to SideBridge, ensure that it is unpaused
 		b.SideBridge.EnsureContractUnpaused()
@@ -17,15 +19,16 @@ func (b *CommonBridge) SubmitTransfersLoop() {
 		if err := b.watchTransfers(); err != nil {
 			b.Logger.Error().Err(err).Msg("watchTransfers error")
 		}
+		time.Sleep(failSleepTIme)
 	}
 }
 
 func (b *CommonBridge) checkOldTransfers() error {
 	b.Logger.Info().Msg("Checking old events...")
 
-	lastEventId, err := b.SideBridge.GetLastEventId()
+	lastEventId, err := b.SideBridge.GetLastReceivedEventId()
 	if err != nil {
-		return fmt.Errorf("GetLastEventId: %w", err)
+		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
 
 	for i := int64(1); ; i++ {

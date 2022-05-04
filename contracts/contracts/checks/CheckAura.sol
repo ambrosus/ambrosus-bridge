@@ -33,6 +33,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         address deltaAddress;
         int64 deltaIndex; // < 0 ? remove : add
     }
+
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
@@ -46,7 +47,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     }
 
 
-
     function __CheckAura_init(
         address[] memory initialValidators_,
         address validatorSetAddress_
@@ -55,17 +55,16 @@ contract CheckAura is Initializable, CheckReceiptsProof {
 
         validatorSet = initialValidators_;
         validatorSetAddress = validatorSetAddress_;
-
     }
 
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
-        uint safetyChainLength;
-        bytes32 blockHash;
+        bytes32 parentHash;
         uint lastFinalizedVs;
 
         bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
         require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+        require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
 
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
@@ -76,6 +75,9 @@ contract CheckAura is Initializable, CheckReceiptsProof {
                     // vs changes in that block
                     ValidatorSetProof memory vsProof = auraProof.vsChanges[j];
 
+                    // how many block after event validatorSet should be finalized
+                    uint txsBeforeFinalize = validatorSet.length / 2 + 1;
+
                     // apply vs changes
                     for (uint k = 0; k < vsProof.changes.length; k++)
                         applyVsChange(vsProof.changes[k]);
@@ -83,25 +85,23 @@ contract CheckAura is Initializable, CheckReceiptsProof {
                     // check proof
                     receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
 
-                    // event finalize always happened on block one after the block with event
-                    // so event_block is finalized_block - 2
-                    require(auraProof.blocks[i - 2].receiptHash == receiptHash, "Wrong VS receipt hash");
-                    safetyChainLength = 2;
+                    // event_block = finalized_block - txsBeforeFinalize
+                    require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
                 }
 
                 lastFinalizedVs = block_.finalizedVs;
+
             }
 
-            blockHash = checkBlock(block_);
+            if (parentHash != bytes32(0))
+                require(block_.parentHash == parentHash, "Wrong parent hash");
 
+            parentHash = checkBlock(block_);
 
-            if (i + 1 != auraProof.blocks.length && blockHash == auraProof.blocks[i + 1].parentHash) {
-                safetyChainLength++;
-            } else if (i == auraProof.transferEventBlock) {
-                safetyChainLength == 0;
-            } else {
-                require(safetyChainLength >= minSafetyBlocks, "wrong parent hash");
-            }
+            // after proceed vs change event next block in auraProof.blocks can have any parentHash
+            // (skipping some blocks) but only if it's not the safety blocks for transfer event
+            if (block_.finalizedVs != 0 && i < auraProof.transferEventBlock)
+                parentHash = bytes32(0);
 
         }
 
