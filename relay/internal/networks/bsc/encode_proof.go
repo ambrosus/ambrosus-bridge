@@ -23,7 +23,7 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer) (*c.CheckPoSAP
 	var prevEventBlockNum uint64
 
 	// get epochs changes blocks
-	prevEventBlockNum, err := b.getPrevEventBlockNum()
+	prevEventBlockNum, err := b.getPrevEventBlockNum(transferEvent.EventId)
 	if err != nil {
 		return nil, fmt.Errorf("get prev event block num: %w", err)
 	}
@@ -70,18 +70,14 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer) (*c.CheckPoSAP
 	}, nil
 }
 
-func (b *Bridge) getPrevEventBlockNum() (uint64, error) {
-	lastEventId, err := b.GetLastEventId() // 70% шо тут треба не інпут, а аутпут
+func (b *Bridge) getPrevEventBlockNum(currEventId *big.Int) (uint64, error) {
+	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
+	prevEvent, err := b.GetEventById(prevEventId)
 	if err != nil {
-		return 0, fmt.Errorf("GetLastEventId: %w", err)
+		return 0, fmt.Errorf("GetEventById: %w", err)
 	}
 
-	lastEvent, err := b.GetEventById(lastEventId)
-	if err != nil {
-		return 0, fmt.Errorf("GetEventById: %w", err) // TODO: обработать помилку коли останнього івенту нема
-	}
-
-	return lastEvent.Raw.BlockNumber, nil
+	return prevEvent.Raw.BlockNumber, nil
 }
 
 func findFirstEpochChange(start uint64) uint64 {
