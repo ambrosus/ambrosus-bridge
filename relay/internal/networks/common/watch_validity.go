@@ -16,9 +16,8 @@ import (
 
 var ErrEmptyLockedTransfers = errors.New("empty locked transfers")
 
-func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
+func (b *CommonBridge) ValidityWatchdog() {
 	b.shouldHavePk()
-	b.SideBridge = sideBridge
 
 	for {
 		b.EnsureContractUnpaused()
