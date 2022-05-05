@@ -56,7 +56,7 @@ func (b *Bridge) Run() {
 }
 
 func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
-	posaProof, err := b.encodePoSAProof(event)
+	posaProof, err := b.encodePoSAProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodePoSAProof: %w", err)
 	}
