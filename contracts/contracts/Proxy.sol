@@ -11,9 +11,11 @@ import "./MultiSigWallet.sol";
 contract proxyMultiSig is Proxy, MultiSigWallet {
     bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
     bytes32 private constant _ROLLBACK_SLOT = 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143;
-    bytes32 private constant PRECOMPILED_DATA = 0x0000000000000000000000000000000000000000000000000000000000001337;
+
+    bytes16 private constant PRECOMPILED_DATA = 0x3659cfe6000000000000000000000000;  // encoded upgradeTo
 
     event Upgraded(address indexed implementation);
+
 
     constructor(
         address _logic,
@@ -31,8 +33,7 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
     }
 
     function upgradeToAndSubmitTransaction(address newImplementation) external {
-        submitTransaction(address(this), msg.value, PRECOMPILED_DATA);
-        _upgradeToAndCall(newImplementation, bytes(""), false);
+        submitTransaction(address(this), msg.value, abi.encodePacked(PRECOMPILED_DATA, newImplementation));
     }
 
     function upgradeTo(address newImplementation) external {

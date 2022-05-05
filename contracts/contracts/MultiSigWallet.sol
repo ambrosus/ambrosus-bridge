@@ -186,7 +186,7 @@ contract MultiSigWallet {
     function submitTransaction(
       address destination,
       uint value,
-      bytes calldata data
+      bytes memory data
     ) public returns(uint transactionId)
     {
         transactionId = addTransaction(destination, value, data);
@@ -285,7 +285,7 @@ contract MultiSigWallet {
     function addTransaction(
       address destination,
       uint value,
-      bytes calldata data
+      bytes memory data
     ) internal
     notNull(destination) returns (uint transactionId)
     {
