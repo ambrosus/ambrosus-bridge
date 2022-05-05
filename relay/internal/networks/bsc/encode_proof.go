@@ -11,10 +11,12 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 )
 
-const AddressLength = 20
-const ExtraVanityLength = 32
-const ExtraSealLength = 65
-const EpochLength = 200
+const (
+	addressLength     = 20
+	extraVanityLength = 32
+	extraSealLength   = 65
+	epochLength       = 200
+)
 
 func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer) (*c.CheckPoSAPoSAProof, error) {
 	var blocks []c.CheckPoSABlockPoSA
@@ -81,7 +83,7 @@ func (b *Bridge) getPrevEventBlockNum(currEventId *big.Int) (uint64, error) {
 }
 
 func findFirstEpochChange(start uint64) uint64 {
-	return uint64(math.Ceil(float64(start)/float64(EpochLength))) * EpochLength
+	return uint64(math.Ceil(float64(start)/float64(epochLength))) * epochLength
 }
 
 func findEpochChanges(start, end uint64) []uint64 {
@@ -93,7 +95,7 @@ func findEpochChanges(start, end uint64) []uint64 {
 }
 
 func getVSLength(encodedEpochChange *c.CheckPoSABlockPoSA) int {
-	return (len(encodedEpochChange.ExtraData) - ExtraSealLength - ExtraVanityLength) / AddressLength
+	return (len(encodedEpochChange.ExtraData) - extraSealLength - extraVanityLength) / addressLength
 }
 
 func (b *Bridge) saveBlock(blockNumber uint64, blocksMap map[uint64]*c.CheckPoSABlockPoSA) (*c.CheckPoSABlockPoSA, error) {
