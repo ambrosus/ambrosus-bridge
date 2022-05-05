@@ -33,7 +33,8 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
         implementation_ = _implementation();
     }
 
-    function upgradeToAndSubmitTransaction(address newImplementation) external ownerExists(msg.sender) {
+    // todo remove msg.value, payable?
+    function upgradeToAndSubmitTransaction(address newImplementation) external payable ownerExists(msg.sender) {
         submitTransaction(address(this), msg.value, abi.encodePacked(PRECOMPILED_DATA, newImplementation));
     }
 
