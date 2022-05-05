@@ -36,19 +36,11 @@ type response struct {
 	ErrorDescription string `json:"description"` // if Ok is false
 }
 
-func (t *tgLogger) LogError(prefix, msg string) error {
-	return t.log(prefix, "We got an unexpected error:", msg)
-}
-
-func (t *tgLogger) LogWarning(prefix, msg string) error {
-	return t.log(prefix, "Warning!", msg)
-}
-
-func (t *tgLogger) log(prefix, title, msg string) error {
+func (t *tgLogger) send(text string) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Token)
 	body := &request{
 		ChatId:    t.ChatId,
-		Text:      fmt.Sprintf("%s <b>%s</b>\n%s", prefix, title, msg),
+		Text:      text,
 		ParseMode: "html",
 	}
 

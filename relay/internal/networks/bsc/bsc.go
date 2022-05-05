@@ -8,7 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/zerolog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -23,7 +22,7 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.BSCConfig, externalLogger zerolog.ExternalLogger) (*Bridge, error) {
+func New(cfg *config.BSCConfig, externalLogger logger.Hook) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)

@@ -4,16 +4,15 @@ import (
 	"io"
 	"os"
 
-	ext_zerolog "github.com/ambrosus/ambrosus-bridge/relay/internal/logger/zerolog"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
 )
 
-func NewSubLogger(bridge string, extLogger ext_zerolog.ExternalLogger) zerolog.Logger {
+func NewSubLogger(bridge string, extLogger Hook) zerolog.Logger {
 	var writer io.Writer = os.Stderr
 
 	if extLogger != nil {
-		writer = zerolog.MultiLevelWriter(writer, extLogger)
+		writer = zerolog.MultiLevelWriter(writer, hook{extLogger})
 	}
 
 	logger := zerolog.New(writer).With().Str("bridge", bridge).Logger()
