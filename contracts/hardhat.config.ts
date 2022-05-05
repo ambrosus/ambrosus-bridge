@@ -42,7 +42,7 @@ const config: HardhatUserConfig = {
     },
     "integr/eth": {
       url: "http://127.0.0.1:8502",
-      accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc"],
+      accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc", "e7420b6492b8c876d23cd8a1156e35af4bc5dc5703fb4b79b376cb268a718e2e"],
       tags: ["eth", "integr"],
       companionNetworks: {amb: 'integr/amb'},
     },
@@ -67,7 +67,7 @@ const config: HardhatUserConfig = {
     },
     "integr/amb": {
       url: "http://127.0.0.1:8545",
-      accounts: ["0x80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446"],
+      accounts: ["0x80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446", "0x5b18f0adcca221f65373b20158f95313ecd51bde42b96a4c16f5eb851576bc06"],
       tags: ["amb", "integr"],
       hardfork: "byzantium",
     },

@@ -46,10 +46,12 @@ func New(cfg *config.AMBConfig, externalLogger zerolog.ExternalLogger) (*Bridge,
 	return b, nil
 }
 
-func (b *Bridge) Run(sideBridge networks.BridgeReceiveAura) {
+func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
+}
 
+func (b *Bridge) Run() {
 	b.Logger.Debug().Msg("Running ambrosus bridge...")
 
 	go b.UnlockTransfersLoop()

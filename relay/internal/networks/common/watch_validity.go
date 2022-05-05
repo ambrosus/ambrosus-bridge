@@ -6,13 +6,14 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
-func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
-	b.SideBridge = sideBridge
+func (b *CommonBridge) ValidityWatchdog() {
+	b.shouldHavePk()
 
 	for {
 		b.EnsureContractUnpaused()
@@ -20,6 +21,7 @@ func (b *CommonBridge) ValidityWatchdog(sideBridge networks.Bridge) {
 		if err := b.watchLockedTransfers(); err != nil {
 			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
 		}
+		time.Sleep(failSleepTIme)
 	}
 }
 
