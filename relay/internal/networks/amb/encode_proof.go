@@ -151,34 +151,6 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	return res, nil
 }
 
-// save blocks from `from` to `to` INCLUSIVE
-func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
-	for i := from; i <= to; i++ {
-		if err := b.saveBlock(blocksMap, i); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
-	if _, ok := blocksMap[blockNumber]; ok {
-		return nil
-	}
-
-	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
-	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
-	}
-	encodedBlock, err := EncodeBlock(block)
-	if err != nil {
-		return fmt.Errorf("encode: %w", err)
-	}
-
-	blocksMap[blockNumber] = &blockExt{block: encodedBlock}
-	return nil
-}
-
 func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
 	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
 	prevEvent, err := b.GetEventById(prevEventId)
@@ -223,4 +195,32 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	return curr[i], int64(i), nil
 
 	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
+}
+
+// save blocks from `from` to `to` INCLUSIVE
+func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
+	for i := from; i <= to; i++ {
+		if err := b.saveBlock(blocksMap, i); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
+	if _, ok := blocksMap[blockNumber]; ok {
+		return nil
+	}
+
+	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
+	if err != nil {
+		return fmt.Errorf("HeaderByNumber: %w", err)
+	}
+	encodedBlock, err := EncodeBlock(block)
+	if err != nil {
+		return fmt.Errorf("encode: %w", err)
+	}
+
+	blocksMap[blockNumber] = &blockExt{block: encodedBlock}
+	return nil
 }
