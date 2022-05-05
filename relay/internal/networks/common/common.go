@@ -124,39 +124,7 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		Interface("tx_params", params.TxParams).
 		Msgf("Wait the tx to be mined...")
 
-	// TODO: extract to a separate method
-	var receipt *types.Receipt
-	err := retry.Do(
-		func() error {
-			var err error
-
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-			defer cancel()
-
-			receipt, err = bind.WaitMined(ctx, b.Client, params.Tx)
-			if err != nil {
-				return err
-			}
-			return nil
-		},
-
-		retry.RetryIf(func(err error) bool {
-			if errors.Is(err, context.DeadlineExceeded) {
-				return true
-			}
-			return false
-		}),
-		retry.OnRetry(func(n uint, err error) {
-			b.Logger.Warn().
-				Str("method", params.MethodName).
-				Str("tx_hash", params.Tx.Hash().Hex()).
-				// Interface("full_tx", params.Tx).
-				// Interface("tx_params", params.TxParams).
-				Msgf("Timeout waiting for tx to be mined, trying again... (%d/%d)", n+1, 2)
-		}),
-		retry.Attempts(2),
-		retry.LastErrorOnly(true),
-	)
+	receipt, err := b.waitMined(params)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
 	}
@@ -174,4 +142,29 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
 
 	return nil
+}
+
+func (b *CommonBridge) waitMined(params networks.GetTxErrParams) (receipt *types.Receipt, err error) {
+	err = retry.Do(
+		func() (err error) {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+			defer cancel()
+
+			receipt, err = bind.WaitMined(ctx, b.Client, params.Tx)
+			return err
+		},
+
+		retry.RetryIf(func(err error) bool {
+			return errors.Is(err, context.DeadlineExceeded)
+		}),
+		retry.OnRetry(func(n uint, err error) {
+			b.Logger.Warn().
+				Str("method", params.MethodName).
+				Str("tx_hash", params.Tx.Hash().Hex()).
+				Msgf("Timeout waiting for tx to be mined, trying again... (%d/%d)", n+1, 2)
+		}),
+		retry.Attempts(2),
+		retry.LastErrorOnly(true),
+	)
+	return
 }
