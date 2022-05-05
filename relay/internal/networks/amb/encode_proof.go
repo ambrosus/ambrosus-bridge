@@ -130,7 +130,7 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
-	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
+	end := event.Raw.BlockNumber + safetyBlocks - 1 // no need to change vs for last block (it will be changed in next event processing)
 
 	opts := &bind.FilterOpts{
 		Start:   start,

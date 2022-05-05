@@ -62,6 +62,7 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, ev
 		return nil, err
 	}
 
+	// save `safetyBlocks` blocks after event block
 	if err := b.saveBlocksRange(blocks, event.Raw.BlockNumber, event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return nil, err
 	}
@@ -73,18 +74,18 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, ev
 	}, nil
 }
 
-func (b *Bridge) encodeEpochChanges(blocksMap map[uint64]*c.CheckPoSABlockPoSA, epochChanges []uint64) error {
-	// save blocks into blocksMap
+func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epochChanges []uint64) error {
+	// save blocks into blocks
 	for _, epochChange := range epochChanges {
 		// save epoch change block and get VS length
-		epochChangeBlock, err := b.saveBlock(blocksMap, epochChange)
+		epochChangeBlock, err := b.saveBlock(blocks, epochChange)
 		if err != nil {
 			return fmt.Errorf("save epoch change block: %w", err)
 		}
 		vsLength := getVSLength(epochChangeBlock)
 
 		// start from +1 cuz the epoch change block is already saved
-		if err := b.saveBlocksRange(blocksMap, epochChange+1, epochChange+vsLength); err != nil {
+		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength); err != nil {
 			return err
 		}
 	}
