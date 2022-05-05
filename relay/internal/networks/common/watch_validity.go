@@ -39,7 +39,7 @@ func (b *CommonBridge) checkOldLockedTransfers() error {
 
 	for i := int64(0); ; i++ {
 		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
-		nextLockedTransfer, err := b.retryGetLockedTransfersIfEmpty(nextLockedEventId, nil)
+		nextLockedTransfer, err := b.getLockedTransfers(nextLockedEventId, nil)
 		if errors.Is(err, ErrEmptyLockedTransfers) {
 			return nil
 		} else if err != nil {
@@ -80,7 +80,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 
 			// Nodes may be out of sync and the event may be empty (but it's not confirmed info)
 			// So we need to retry if the result is empty
-			lockedTransfer, err := b.retryGetLockedTransfersIfEmpty(event.EventId, &bind.CallOpts{
+			lockedTransfer, err := b.getLockedTransfers(event.EventId, &bind.CallOpts{
 				BlockNumber: big.NewInt(int64(event.Raw.BlockNumber)),
 			})
 			if err != nil {
@@ -132,12 +132,9 @@ Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
 }
 
-func (b *CommonBridge) retryGetLockedTransfersIfEmpty(eventId *big.Int, opts *bind.CallOpts) (contracts.CommonStructsLockedTransfers, error) {
-	var lockedTransfer contracts.CommonStructsLockedTransfers
-	err := retry.Do(
+func (b *CommonBridge) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer contracts.CommonStructsLockedTransfers, err error) {
+	err = retry.Do(
 		func() error {
-			var err error
-
 			lockedTransfer, err = b.Contract.GetLockedTransfers(opts, eventId)
 			if err != nil {
 				return err
@@ -151,10 +148,7 @@ func (b *CommonBridge) retryGetLockedTransfersIfEmpty(eventId *big.Int, opts *bi
 		},
 
 		retry.RetryIf(func(err error) bool {
-			if errors.Is(err, ErrEmptyLockedTransfers) {
-				return true
-			}
-			return false
+			return errors.Is(err, ErrEmptyLockedTransfers)
 		}),
 		retry.Attempts(5),
 		retry.Delay(time.Second*2),
