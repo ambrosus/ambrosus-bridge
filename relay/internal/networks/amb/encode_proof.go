@@ -126,7 +126,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 }
 
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
-	start, err := b.getLastProcessedBlockNum(event.EventId)
+	start, err := b.GetLastProcessedBlockNum(event.EventId)
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
@@ -149,25 +149,6 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	}
 
 	return res, nil
-}
-
-func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
-	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
-	if err != nil {
-		return 0, fmt.Errorf("GetEventById: %w", err)
-	}
-	if prevEventId.Uint64() == 0 {
-		return prevEvent.Raw.BlockNumber, nil
-	}
-
-	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
-	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
-	if err != nil {
-		return 0, fmt.Errorf("get block by hash: %w", err)
-	}
-
-	return prevEvent.Raw.BlockNumber + minSafetyBlocks, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {

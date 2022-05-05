@@ -93,7 +93,7 @@ func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epo
 }
 
 func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint64) ([]uint64, error) {
-	start, err := b.getLastProcessedBlockNum(event.EventId)
+	start, err := b.GetLastProcessedBlockNum(event.EventId)
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
@@ -110,27 +110,6 @@ func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint6
 func getVSLength(epochChangeBlock *c.CheckPoSABlockPoSA) uint64 {
 	validatorsLen := len(epochChangeBlock.ExtraData) - extraSealLength - extraVanityLength
 	return uint64(validatorsLen) / addressLength
-}
-
-// todo move to common
-func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
-	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
-	if err != nil {
-		return 0, fmt.Errorf("GetEventById: %w", err)
-	}
-
-	if prevEventId.Uint64() == 0 {
-		return prevEvent.Raw.BlockNumber, nil
-	}
-
-	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
-	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
-	if err != nil {
-		return 0, fmt.Errorf("get block by hash: %w", err)
-	}
-
-	return prevEvent.Raw.BlockNumber + minSafetyBlocks, nil
 }
 
 // save blocks from `from` to `to` INCLUSIVE
