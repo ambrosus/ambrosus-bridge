@@ -24,6 +24,11 @@ contract proxyTransparent is Proxy, MultiSigWallet {
         _upgradeToAndCall(_logic, _data, false);
     }
 
+
+    function implementation() external returns (address implementation_) {
+        implementation_ = _implementation();
+    }
+
     function upgradeTo(address newImplementation) external {
         _upgradeToAndCall(newImplementation, bytes(""), false);
     }
@@ -31,6 +36,7 @@ contract proxyTransparent is Proxy, MultiSigWallet {
     function upgradeToAndCall(address newImplementation, bytes calldata data) external payable {
         _upgradeToAndCall(newImplementation, data, true);
     }
+
 
     function _upgradeToAndCall(
         address newImplementation,
