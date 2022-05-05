@@ -26,7 +26,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: isMainNet ? 10 : 2,
       },
-      await getAmbValidators(ambNet.provider)
+      await getAmbValidators(ambNet.provider),
+      [
+        ["0xd17C51395268d1EE25bDc1F2E107b7E11b41f5d1", "0x295C2707319ad4BecA6b5bb4086617fD6F240CfE"],
+        2
+      ]  // todo
     )
   });
 

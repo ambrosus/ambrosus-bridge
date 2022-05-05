@@ -28,18 +28,20 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
     }
 
 
+    // todo remove?
     function implementation() external returns (address implementation_) {
         implementation_ = _implementation();
     }
 
-    function upgradeToAndSubmitTransaction(address newImplementation) external {
+    function upgradeToAndSubmitTransaction(address newImplementation) external ownerExists(msg.sender) {
         submitTransaction(address(this), msg.value, abi.encodePacked(PRECOMPILED_DATA, newImplementation));
     }
 
-    function upgradeTo(address newImplementation) external {
+    function upgradeTo(address newImplementation) external onlyWallet {
         _upgradeToAndCall(newImplementation, bytes(""), false);
     }
 
+    // todo remove or add onlyWallet
     function upgradeToAndCall(address newImplementation, bytes calldata data) external payable {
         _upgradeToAndCall(newImplementation, data, true);
     }

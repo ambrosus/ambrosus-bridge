@@ -124,7 +124,7 @@ export async function setSideBridgeAddress(deploymentName: string, sideAddress: 
 
 
 export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: string]: string },
-                              commonArgs: any, args: any[]): Promise<DeployOptions> {
+                              commonArgs: any, args: any[], proxyArgs: any[]): Promise<DeployOptions> {
 
   const {owner, proxyAdmin} = await hre.getNamedAccounts();
   // todo get admin and relay from getNamedAccounts
@@ -146,7 +146,7 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
     from: owner,
     proxy: {
       owner: proxyAdmin,
-      proxyArgs: ["{implementation}",  "{data}", owners_arr, required],
+      proxyArgs: ["{implementation}", "{data}", ...proxyArgs],
       proxyContract: "proxyMultiSig",
       execute: {
         init: {
