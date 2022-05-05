@@ -28,7 +28,7 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}
 
 	// encode vsChange blocks to blocksMap
-	epochChangesNums, err := b.findEpochChangeNums(transferEvent)
+	epochChangesNums, err := b.findEpochChangeNums(transferEvent, safetyBlocks)
 	if err != nil {
 		return nil, fmt.Errorf("findEpochChangeNums: %w", err)
 	}
@@ -91,18 +91,16 @@ func (b *Bridge) encodeEpochChanges(blocksMap map[uint64]*c.CheckPoSABlockPoSA, 
 	return nil
 }
 
-func (b *Bridge) findEpochChangeNums(transferEvent *c.BridgeTransfer) ([]uint64, error) {
-	prevEventId := new(big.Int).Sub(transferEvent.EventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
+func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint64) ([]uint64, error) {
+	start, err := b.getLastProcessedBlockNum(event.EventId)
 	if err != nil {
-		return nil, fmt.Errorf("GetEventById: %w", err)
+		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
-
-	start := math.Ceil(float64(prevEvent.Raw.BlockNumber)/epochLength) * epochLength
-	end := transferEvent.Raw.BlockNumber
+	start = uint64(math.Ceil(float64(start)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
+	end := event.Raw.BlockNumber + safetyBlocks - 1                     // no need to change epoch for last block (it will be changed in next event processing)
 
 	var epochChanges []uint64
-	for blockNum := uint64(start); blockNum < end; blockNum += epochLength {
+	for blockNum := start; blockNum < end; blockNum += epochLength {
 		epochChanges = append(epochChanges, blockNum)
 	}
 	return epochChanges, nil
