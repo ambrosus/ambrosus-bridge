@@ -91,11 +91,11 @@ contract MultiSigWallet {
     }
 
     /// @dev Fallback function allows to deposit ether.
-    receive () external payable
-    {
-        if (msg.value > 0)
-            emit Deposit(msg.sender, msg.value);
-    }
+//    receive () external payable
+//    {
+//        if (msg.value > 0)
+//            emit Deposit(msg.sender, msg.value);
+//    }
 
     /*
      * Public functions

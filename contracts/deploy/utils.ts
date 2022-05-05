@@ -146,11 +146,16 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
     from: owner,
     proxy: {
       owner: proxyAdmin,
+      proxyArgs: ["{implementation}",  "{data}", массив_овнеров, реквайрд],
       proxyContract: "proxyTransparent",
       execute: {
         init: {
           methodName: "initialize",
           args: [commonArgs, ...args]
+        },
+        onUpgrade: {
+          methodName: "",
+          args: []
         }
       }
     },
