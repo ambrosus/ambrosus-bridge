@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -40,7 +39,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}
 
 	// sort blocks in blocksMap and use resulting indexes
-	indexToBlockNum := sortedKeys(blocksMap)
+	indexToBlockNum := helpers.SortedKeys(blocksMap)
 	var blocks []c.CheckAuraBlockAura
 	var vsChanges []c.CheckAuraValidatorSetProof
 	var transferEventIndex uint64
@@ -51,9 +50,9 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 
 		// fill up 'vsChanges'
 		if blocksMap[blockNum].lastEvent != nil {
-			proof, err := b.getProof(blocksMap[blockNum].lastEvent)
+			proof, err := b.GetProof(blocksMap[blockNum].lastEvent)
 			if err != nil {
-				return nil, fmt.Errorf("getProof: %w", err)
+				return nil, fmt.Errorf("GetProof: %w", err)
 			}
 			vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
 				ReceiptProof: proof,
@@ -78,7 +77,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
-	proof, err := b.getProof(event)
+	proof, err := b.GetProof(event)
 	if err != nil {
 		return nil, err
 	}
@@ -127,11 +126,11 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 }
 
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
-	start, err := b.getLastProcessedBlockNum(event.EventId)
+	start, err := b.GetLastProcessedBlockNum(event.EventId)
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
-	end := event.Raw.BlockNumber + safetyBlocks - 1 // we don't need safetyEnd block with VSChange event
+	end := event.Raw.BlockNumber + safetyBlocks - 1 // no need to change vs for last block (it will be changed in next event processing)
 
 	opts := &bind.FilterOpts{
 		Start:   start,
@@ -150,61 +149,6 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	}
 
 	return res, nil
-}
-
-func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := b.GetReceipts(event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
-}
-
-// save blocks from `from` to `to` INCLUSIVE
-func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
-	for i := from; i <= to; i++ {
-		if err := b.saveBlock(blocksMap, i); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
-	if _, ok := blocksMap[blockNumber]; ok {
-		return nil
-	}
-
-	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
-	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
-	}
-	encodedBlock, err := EncodeBlock(block)
-	if err != nil {
-		return fmt.Errorf("encode: %w", err)
-	}
-
-	blocksMap[blockNumber] = &blockExt{block: encodedBlock}
-	return nil
-}
-
-func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
-	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
-	if err != nil {
-		return 0, fmt.Errorf("side GetEventById: %w", err)
-	}
-	if prevEventId.Uint64() == 0 {
-		return prevEvent.Raw.BlockNumber, nil
-	}
-
-	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
-	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
-	if err != nil {
-		return 0, fmt.Errorf("get block by hash: %w", err)
-	}
-
-	return prevEvent.Raw.BlockNumber + minSafetyBlocks, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
@@ -234,12 +178,30 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }
 
-// used for 'ordered' map
-func sortedKeys(m map[uint64]*blockExt) []uint64 {
-	keys := make([]uint64, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
+// save blocks from `from` to `to` INCLUSIVE
+func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
+	for i := from; i <= to; i++ {
+		if err := b.saveBlock(blocksMap, i); err != nil {
+			return err
+		}
 	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	return keys
+	return nil
+}
+
+func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
+	if _, ok := blocksMap[blockNumber]; ok {
+		return nil
+	}
+
+	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
+	if err != nil {
+		return fmt.Errorf("HeaderByNumber: %w", err)
+	}
+	encodedBlock, err := EncodeBlock(block)
+	if err != nil {
+		return fmt.Errorf("encode: %w", err)
+	}
+
+	blocksMap[blockNumber] = &blockExt{block: encodedBlock}
+	return nil
 }

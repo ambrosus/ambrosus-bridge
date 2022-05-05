@@ -96,33 +96,3 @@ func set(addresses ...string) []common.Address {
 	}
 	return result
 }
-
-func Test_sortedKeys(t *testing.T) {
-	type args struct {
-		m map[uint64]*blockExt
-	}
-	tests := []struct {
-		name string
-		args args
-		want []uint64
-	}{
-		{
-			name: "Check order",
-			args: args{map[uint64]*blockExt{
-				1002: {},
-				1000: {},
-				1001: {},
-			}},
-			want: []uint64{
-				1000,
-				1001,
-				1002,
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, sortedKeys(tt.args.m), "sortedKeys(%v)", tt.args.m)
-		})
-	}
-}
