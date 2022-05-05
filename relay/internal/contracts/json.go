@@ -145,3 +145,44 @@ func (t *CheckPoWBlockPoW) MarshalJSON() ([]byte, error) {
 	}
 	return json.Marshal(&tm)
 }
+
+// PoSA
+
+func (t *CheckPoSAPoSAProof) MarshalJSON() ([]byte, error) {
+	type PoSAPoSAProof struct {
+		Blocks             []CheckPoSABlockPoSA       `json:"blocks"`
+		Transfer           CommonStructsTransferProof `json:"transfer"`
+		TransferEventBlock uint64                     `json:"transferEventBlock"`
+	}
+	tm := PoSAPoSAProof{t.Blocks, t.Transfer, t.TransferEventBlock}
+	return json.Marshal(&tm)
+
+}
+
+func (t *CheckPoSABlockPoSA) MarshalJSON() ([]byte, error) {
+	type PoSABlockPoSA struct {
+		P0Signed   hexutil.Bytes `json:"p0Signed"`
+		P0Unsigned hexutil.Bytes `json:"p0Unsigned"`
+
+		ParentHash  hexutil.Bytes `json:"parentHash"`
+		P1          hexutil.Bytes `json:"p1"`
+		ReceiptHash hexutil.Bytes `json:"receiptHash"`
+		P2          hexutil.Bytes `json:"p2"`
+		Number      hexutil.Bytes `json:"number"`
+		P3          hexutil.Bytes `json:"p3"`
+
+		P4Signed   hexutil.Bytes `json:"p4Signed"`
+		P4Unsigned hexutil.Bytes `json:"p4Unsigned"`
+		ExtraData  hexutil.Bytes `json:"extraData"`
+
+		P5 hexutil.Bytes `json:"p5"`
+	}
+
+	tm := PoSABlockPoSA{
+		t.P0Signed[:], t.P0Unsigned[:],
+		t.ParentHash[:], t.P1, t.ReceiptHash[:], t.P2, t.Number, t.P3,
+		t.P4Signed, t.P4Unsigned, t.ExtraData,
+		t.P5,
+	}
+	return json.Marshal(&tm)
+}
