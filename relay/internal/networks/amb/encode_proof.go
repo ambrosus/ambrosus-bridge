@@ -155,7 +155,7 @@ func (b *Bridge) getLastProcessedBlockNum(currEventId *big.Int) (uint64, error) 
 	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
 	prevEvent, err := b.GetEventById(prevEventId)
 	if err != nil {
-		return 0, fmt.Errorf("side GetEventById: %w", err)
+		return 0, fmt.Errorf("GetEventById: %w", err)
 	}
 	if prevEventId.Uint64() == 0 {
 		return prevEvent.Raw.BlockNumber, nil
