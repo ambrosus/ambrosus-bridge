@@ -154,8 +154,8 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
           args: [commonArgs, ...args]
         },
         onUpgrade: {
-          methodName: "",
-          args: []
+          methodName: "upgradeToAndSubmitTransaction",
+          args: ["{implementation}"]
         }
       }
     },
