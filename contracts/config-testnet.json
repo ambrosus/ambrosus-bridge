@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
-      "side": "0xda8816F19a252AF8A68062Eebe266A278C399a93"
+      "amb": "0xA7CB71C94f3fC5Ee2232f8E449461177bc23527B",
+      "side": "0x161e8C344399E3d3A60990bcF849Dc71C6e56131"
     },
     "bsc": {
       "amb": "",
@@ -18,7 +18,7 @@
       "primaryNet": "amb",
       "addresses": {
         "amb": "0xBFe020d24F462c65a7A067BbAA1d6fbF6a827347",
-        "eth": "0x77Ed552De89C4b128F855245aB56873B30715A58",
+        "eth": "0xf80C25fa7710Ee68D20b90D088438d047AA1898E",
         "bsc": ""
       },
       "nativeAnalog": "AMB"
