@@ -21,12 +21,11 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
 
     constructor(
         address _logic,
-        bytes memory _data,
         address[] memory owners,
         uint _required
 
     ) MultiSigWallet(owners, _required) {
-        _upgradeToAndCall(_logic, _data, false);
+        _upgradeToAndCall(_logic, bytes(""), false);
     }
 
 
