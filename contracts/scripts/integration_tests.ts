@@ -18,6 +18,7 @@ const relayAddress = new ethers.Wallet("34d8e83fca265e9ab5bcc1094fa64e98692375bf
 const vsContractAddress = config_r.network.amb.vsContractAddr;
 
 const validators = [
+  "0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79",
   "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
   "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
 ];
@@ -48,12 +49,14 @@ describe("Integration tests", function () {
     console.log("Setup relay")
     // set relay role
     const relayRole = await ethBridge.RELAY_ROLE();
-    await w(ethBridge.grantRole(relayRole, relayAddress, options));
-    await w(ambBridge.grantRole(relayRole, relayAddress, options));
+    await ws(
+      ethBridge.grantRole(relayRole, relayAddress, options),
+      ambBridge.grantRole(relayRole, relayAddress, options),
 
-    // send money to relay
-    await w(ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1"), ...options}));
-    await w(ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...options}));
+      // send money to relay
+      ethSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("0.1"), ...options}),
+      ambSigner.sendTransaction({to: relayAddress, value: ethers.utils.parseEther("1"), ...options})
+    );
 
   });
 
@@ -64,8 +67,9 @@ describe("Integration tests", function () {
 
     // mint tokens
     console.log("Mint tokens");
-    await w(ethToken.mint(ethSigner.address, 10, options));
-    await w(ethToken.increaseAllowance(ethBridge.address, 10, options));
+    await ws(
+      ethToken.mint(ethSigner.address, 10, options),
+      ethToken.increaseAllowance(ethBridge.address, 10, options));
 
     // withdraw
     console.log("Withdraw");
@@ -92,11 +96,24 @@ describe("Integration tests", function () {
 
     // validator set changes
     console.log("Validator set changes");
+
+    // return all validators to set if they were removed
     const currentSet = await vs.getValidators();
-    for (const v of validators)
-      (!currentSet.includes(v)) ?
-        await w(vs.addValidator(v, options)) :
-        await w(vs.removeValidator(v, options))
+    await ws(...
+      validators
+        .filter(v => !currentSet.includes(v))
+        .map(v => vs.addValidator(v, options))
+    )
+
+    // todo this doesn't work, seems we have to use a contract for this, or add validators without nodes
+    // in one block
+    // await ws(
+    //   vs.removeValidator(validators[1]),
+    //   vs.addValidator(validators[1]))
+
+    // one at time
+    await w(vs.removeValidator(validators[2]))
+    await w(vs.addValidator(validators[2]))
 
 
     // withdraw
@@ -162,3 +179,7 @@ async function w(call: Promise<any>): Promise<any> {
   return tx;
 }
 
+// wait for transactions to be mined
+async function ws(...calls: Promise<any>[]): Promise<any> {
+  return Promise.all(calls.map(c => w(c)));
+}

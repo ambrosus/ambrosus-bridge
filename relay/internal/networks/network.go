@@ -25,6 +25,9 @@ type GetTxErrParams struct {
 }
 
 type Bridge interface {
+	Run()
+	ValidityWatchdog()
+
 	// GetLastReceivedEventId used by the other side of the bridge for synchronization
 	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error)
@@ -49,4 +52,9 @@ type BridgeReceiveEthash interface {
 	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
 	SubmitEpochData(*ethash.EpochData) error
 	IsEpochSet(epoch uint64) (bool, error)
+}
+
+type BridgeReceivePoSA interface {
+	Bridge
+	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }
