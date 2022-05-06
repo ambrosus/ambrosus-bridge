@@ -12,7 +12,9 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
     bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
     bytes32 private constant _ROLLBACK_SLOT = 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143;
 
-    bytes16 private constant PRECOMPILED_DATA = 0x3659cfe6000000000000000000000000;  // encoded upgradeTo
+    bytes16 private constant PRECOMPILED_DATA_P0 = 0x4f1ef286000000000000000000000000;
+    bytes32 private constant PRECOMPILED_DATA_P2 = 0x0000000000000000000000000000000000000000000000000000000000000040;  // todo 0x?
+    bytes32 private constant PRECOMPILED_DATA_P3 = 0x0000000000000000000000000000000000000000000000000000000000000000;
 
     event Upgraded(address indexed implementation);
 
@@ -33,17 +35,20 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
         implementation_ = _implementation();
     }
 
-    // todo remove msg.value, payable?
-    function upgradeToAndSubmitTransaction(address newImplementation) external payable ownerExists(msg.sender) {
-        submitTransaction(address(this), msg.value, abi.encodePacked(PRECOMPILED_DATA, newImplementation));
+    function upgradeTo(address newImplementation) external payable ownerExists(msg.sender) {
+        submitTransaction(
+            address(this),
+            msg.value,
+            abi.encodePacked(
+                PRECOMPILED_DATA_P0,
+                newImplementation,
+                PRECOMPILED_DATA_P2,
+                PRECOMPILED_DATA_P3
+            )
+        );
     }
 
-    function upgradeTo(address newImplementation) external onlyWallet {
-        _upgradeToAndCall(newImplementation, bytes(""), false);
-    }
-
-    // todo remove or add onlyWallet
-    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable {
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external onlyWallet payable {
         _upgradeToAndCall(newImplementation, data, true);
     }
 
