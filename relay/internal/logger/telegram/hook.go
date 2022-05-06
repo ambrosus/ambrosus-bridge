@@ -14,6 +14,8 @@ const fieldsFormat = "<b>%s</b>: %s\n"
 func (t *tgLogger) Log(l *logger.ExtLog) {
 	var msg string
 
+	msg += fmt.Sprintf("[<b>%s</b>] ", strings.ToUpper(l.Bridge))
+
 	switch l.Level {
 	case zerolog.LevelErrorValue:
 		msg += fmt.Sprintf("<b>%s</b>\n", "We got an unexpected error:")
@@ -22,8 +24,6 @@ func (t *tgLogger) Log(l *logger.ExtLog) {
 	default:
 		return
 	}
-
-	msg += fmt.Sprintf("[<b>%s</b>]", strings.ToUpper(l.Bridge))
 
 	var fields = make([]string, 0, len(l.Rest))
 	for field := range l.Rest {
