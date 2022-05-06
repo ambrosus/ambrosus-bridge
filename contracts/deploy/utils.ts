@@ -145,7 +145,7 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
   return {
     from: owner,
     proxy: {
-      owner: proxyAdmin,
+      owner: owner,
       proxyArgs: ["{implementation}", "{data}", ...proxyArgs],
       proxyContract: "proxyMultiSig",
       execute: {
