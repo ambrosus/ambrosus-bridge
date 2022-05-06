@@ -48,6 +48,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msg("side bridge not created")
 	}
+	ambBridge.SetSideBridge(sideBridge)
 
 	if cfg.IsRelay {
 		go ambBridge.Run()
