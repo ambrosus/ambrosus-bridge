@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"math"
 	"math/big"
-	"sort"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 )
 
 const (
@@ -29,7 +28,7 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}
 
 	// encode vsChange blocks to blocksMap
-	epochChangesNums, err := b.findEpochChangeNums(transferEvent)
+	epochChangesNums, err := b.findEpochChangeNums(transferEvent, safetyBlocks)
 	if err != nil {
 		return nil, fmt.Errorf("findEpochChangeNums: %w", err)
 	}
@@ -39,7 +38,7 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}
 
 	// fill up blocks and get transfer event index
-	indexToBlockNum := sortedKeys(blocksMap)
+	indexToBlockNum := helpers.SortedKeys(blocksMap)
 	var blocks []c.CheckPoSABlockPoSA
 	var transferEventIndex uint64
 
@@ -58,11 +57,12 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
-	proof, err := b.getProof(event)
+	proof, err := b.GetProof(event)
 	if err != nil {
 		return nil, err
 	}
 
+	// save `safetyBlocks` blocks after event block
 	if err := b.saveBlocksRange(blocks, event.Raw.BlockNumber, event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return nil, err
 	}
@@ -74,36 +74,34 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, ev
 	}, nil
 }
 
-func (b *Bridge) encodeEpochChanges(blocksMap map[uint64]*c.CheckPoSABlockPoSA, epochChanges []uint64) error {
-	// save blocks into blocksMap
+func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epochChanges []uint64) error {
+	// save blocks into blocks
 	for _, epochChange := range epochChanges {
 		// save epoch change block and get VS length
-		epochChangeBlock, err := b.saveBlock(blocksMap, epochChange)
+		epochChangeBlock, err := b.saveBlock(blocks, epochChange)
 		if err != nil {
 			return fmt.Errorf("save epoch change block: %w", err)
 		}
 		vsLength := getVSLength(epochChangeBlock)
 
 		// start from +1 cuz the epoch change block is already saved
-		if err := b.saveBlocksRange(blocksMap, epochChange+1, epochChange+vsLength); err != nil {
+		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (b *Bridge) findEpochChangeNums(transferEvent *c.BridgeTransfer) ([]uint64, error) {
-	prevEventId := new(big.Int).Sub(transferEvent.EventId, big.NewInt(1))
-	prevEvent, err := b.GetEventById(prevEventId)
+func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint64) ([]uint64, error) {
+	start, err := b.GetLastProcessedBlockNum(event.EventId)
 	if err != nil {
-		return nil, fmt.Errorf("GetEventById: %w", err)
+		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
-
-	start := math.Ceil(float64(prevEvent.Raw.BlockNumber)/epochLength) * epochLength
-	end := transferEvent.Raw.BlockNumber
+	start = uint64(math.Ceil(float64(start)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
+	end := event.Raw.BlockNumber + safetyBlocks - 1                     // no need to change epoch for last block (it will be changed in next event processing)
 
 	var epochChanges []uint64
-	for blockNum := uint64(start); blockNum < end; blockNum += epochLength {
+	for blockNum := start; blockNum < end; blockNum += epochLength {
 		epochChanges = append(epochChanges, blockNum)
 	}
 	return epochChanges, nil
@@ -114,8 +112,6 @@ func getVSLength(epochChangeBlock *c.CheckPoSABlockPoSA) uint64 {
 	return uint64(validatorsLen) / addressLength
 }
 
-// todo all functions before is copy-pasted from amb. can be merged if use generics
-
 // save blocks from `from` to `to` INCLUSIVE
 func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*c.CheckPoSABlockPoSA, from, to uint64) error {
 	for i := from; i <= to; i++ {
@@ -125,6 +121,7 @@ func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*c.CheckPoSABlockPoSA, fro
 	}
 	return nil
 }
+
 func (b *Bridge) saveBlock(blocksMap map[uint64]*c.CheckPoSABlockPoSA, blockNumber uint64) (*c.CheckPoSABlockPoSA, error) {
 	if encodedBlock, ok := blocksMap[blockNumber]; ok {
 		return encodedBlock, nil
@@ -141,24 +138,4 @@ func (b *Bridge) saveBlock(blocksMap map[uint64]*c.CheckPoSABlockPoSA, blockNumb
 
 	blocksMap[blockNumber] = encodedBlock
 	return encodedBlock, nil
-}
-
-// TODO: винести в коммон
-func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := b.GetReceipts(event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
-}
-
-// used for 'ordered' map
-// TODO: шось з цим теж зробити, мб заюзати дженеріки
-func sortedKeys(m map[uint64]*c.CheckPoSABlockPoSA) []uint64 {
-	keys := make([]uint64, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	return keys
 }

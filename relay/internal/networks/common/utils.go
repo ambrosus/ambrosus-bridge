@@ -5,9 +5,11 @@ import (
 	"crypto/ecdsa"
 	"encoding/hex"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -119,6 +121,14 @@ func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, err
 	return receipts, errGroup.Wait()
 }
 
+func (b *CommonBridge) GetProof(event receipts_proof.ProofEvent) ([][]byte, error) {
+	receipts, err := b.GetReceipts(event.Log().BlockHash)
+	if err != nil {
+		return nil, fmt.Errorf("GetReceipts: %w", err)
+	}
+	return receipts_proof.CalcProofEvent(receipts, event)
+}
+
 func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
@@ -143,6 +153,25 @@ func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
 	}, nil)
 
 	return err
+}
+
+func (b *CommonBridge) GetLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
+	prevEventId := new(big.Int).Sub(currEventId, big.NewInt(1))
+	prevEvent, err := b.GetEventById(prevEventId)
+	if err != nil {
+		return 0, fmt.Errorf("GetEventById: %w", err)
+	}
+	if prevEventId.Uint64() == 0 {
+		return prevEvent.Raw.BlockNumber, nil
+	}
+
+	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
+	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
+	if err != nil {
+		return 0, fmt.Errorf("get block by hash: %w", err)
+	}
+
+	return prevEvent.Raw.BlockNumber + minSafetyBlocks, nil
 }
 
 func (b *CommonBridge) shouldHavePk() {
