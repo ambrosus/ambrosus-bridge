@@ -41,5 +41,5 @@ func (t *tgLogger) Log(l *logger.ExtLog) {
 		msg += fmt.Sprintf("\n%s", l.Message)
 	}
 
-	_ = t.sendSplitting(msg, " ")
+	_ = t.send(msg)
 }

@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	MaxMessageLength = 4096
+	maxMessageLength = 4096
+	separator        = " "
 )
 
 type tgLogger struct {
@@ -41,9 +42,9 @@ type response struct {
 	ErrorDescription string `json:"description"` // if Ok is false
 }
 
-// sendSplitting used for splitting too long message into parts (telegram limits that to 4096 symbols)
-func (t *tgLogger) sendSplitting(text, separator string) error {
-	partsText := safeSplitText(text, MaxMessageLength, separator)
+// Send method will split too long message into parts (telegram limits that to 4096 symbols)
+func (t *tgLogger) Send(text string) error {
+	partsText := safeSplitText(text, maxMessageLength, separator)
 	for _, part := range partsText {
 		if err := t.send(part); err != nil {
 			return err
@@ -81,27 +82,31 @@ func (t *tgLogger) send(text string) error {
 
 }
 
-// safeSplitText splits text into slices of length by separator
-func safeSplitText(text string, length int, separator string) []string {
+// safeSplitText splits text into slices of maxLength by separator
+func safeSplitText(text string, maxLength int, separator string) []string {
 	tempText := text
-	var splitPosition int
 	var slices []string
 
 	for len(tempText) > 0 {
-		if len(tempText) > length {
-			splitPosition = strings.LastIndex(tempText[:length], separator)
-			if splitPosition == -1 {
-				splitPosition = length
+
+		if len(tempText) > maxLength {
+			splitPosition := strings.LastIndex(tempText[:maxLength], separator)
+
+			// if there is no separator in the last 1/4 (of maxLength) symbols then split at maxLength
+			if splitPosition < maxLength*3/4 {
+				splitPosition = maxLength
 			}
-			if splitPosition < length/4*3 {
-				splitPosition = length
-			}
+
 			slices = append(slices, tempText[:splitPosition])
-			tempText = strings.TrimLeft(tempText[splitPosition:], "\n\t\v\f\r ")
+
+			tempText = tempText[splitPosition:]
+			tempText = strings.TrimLeft(tempText, "\n\t\v\f\r ")
+
 		} else {
 			slices = append(slices, tempText)
 			break
 		}
+
 	}
 	return slices
 }
