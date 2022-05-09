@@ -28,4 +28,8 @@ contract ETH_AmbBridge is CommonBridge, CheckPoW {
         sideBridgeAddress = _sideBridgeAddress;
     }
 
+    function updateLastProcessedBlock(bytes32 lastProcessedBlock_) public {
+        require(msg.sender == address(this), "Only this contract can call this function");
+        lastProcessedBlock = lastProcessedBlock_;
+    }
 }
