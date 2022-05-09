@@ -11,7 +11,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -24,7 +23,7 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+func New(cfg *config.ETHConfig, externalLogger logger.Hook) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
@@ -39,10 +38,12 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 	return b, nil
 }
 
-func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
+func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
+}
 
+func (b *Bridge) Run() {
 	b.Logger.Debug().Msg("Running ethereum bridge...")
 
 	go b.ensureDAGsExists()

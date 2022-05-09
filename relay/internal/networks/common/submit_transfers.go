@@ -79,7 +79,7 @@ func (b *CommonBridge) watchTransfers() error {
 }
 
 func (b *CommonBridge) processEvent(event *contracts.BridgeTransfer) error {
-	safetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
+	safetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}

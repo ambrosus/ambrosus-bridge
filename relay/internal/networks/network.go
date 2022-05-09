@@ -7,7 +7,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -25,9 +24,12 @@ type GetTxErrParams struct {
 }
 
 type Bridge interface {
+	Run()
+	ValidityWatchdog()
+
 	// GetLastReceivedEventId used by the other side of the bridge for synchronization
 	GetLastReceivedEventId() (*big.Int, error)
-	GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error)
+	GetMinSafetyBlocksNum() (uint64, error)
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
@@ -42,6 +44,7 @@ type BridgeReceiveAura interface {
 	Bridge
 	SubmitTransferAura(*contracts.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
+	GetLastProcessedBlockHash() (*common.Hash, error)
 }
 
 type BridgeReceiveEthash interface {
@@ -49,4 +52,9 @@ type BridgeReceiveEthash interface {
 	SubmitTransferPoW(*contracts.CheckPoWPoWProof) error
 	SubmitEpochData(*ethash.EpochData) error
 	IsEpochSet(epoch uint64) (bool, error)
+}
+
+type BridgeReceivePoSA interface {
+	Bridge
+	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }

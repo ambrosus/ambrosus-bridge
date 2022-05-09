@@ -6,7 +6,6 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 )
 
 func (b *Bridge) encodePoWProof(transferEvent *contracts.BridgeTransfer, safetyBlocks uint64) (*contracts.CheckPoWPoWProof, error) {
@@ -40,9 +39,9 @@ func (b *Bridge) encodePoWProof(transferEvent *contracts.BridgeTransfer, safetyB
 }
 
 func (b *Bridge) encodeTransferEvent(event *contracts.BridgeTransfer) (*contracts.CommonStructsTransferProof, error) {
-	proof, err := b.getProof(event)
+	proof, err := b.GetProof(event)
 	if err != nil {
-		return nil, fmt.Errorf("getProof: %w", err)
+		return nil, fmt.Errorf("GetProof: %w", err)
 	}
 
 	return &contracts.CommonStructsTransferProof{
@@ -50,12 +49,4 @@ func (b *Bridge) encodeTransferEvent(event *contracts.BridgeTransfer) (*contract
 		EventId:      event.EventId,
 		Transfers:    event.Queue,
 	}, nil
-}
-
-func (b *Bridge) getProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := b.GetReceipts(event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
 }
