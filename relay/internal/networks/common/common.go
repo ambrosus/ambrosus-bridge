@@ -19,6 +19,9 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// ContractCallFn is a callback type for calling paid contract's method.
+type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
+
 type CommonBridge struct {
 	networks.Bridge
 	Client     *ethclient.Client
@@ -110,7 +113,8 @@ func (b *CommonBridge) GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error
 	return safetyBlocks.Uint64(), nil
 }
 
-func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
+func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetTxErrParams) error {
+	params.Tx, params.TxErr = txCallback(b.Auth)
 	if err := b.Bridge.GetTxErr(params); err != nil {
 		return err
 	}
