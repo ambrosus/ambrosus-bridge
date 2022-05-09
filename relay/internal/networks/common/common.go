@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"sync"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
@@ -32,6 +33,8 @@ type CommonBridge struct {
 	SideBridge networks.Bridge
 	Logger     zerolog.Logger
 	Name       string
+
+	ContractCallLock *sync.Mutex
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -82,6 +85,8 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 		b.Logger.Info().Msg("No private key provided")
 	}
 
+	b.ContractCallLock = &sync.Mutex{}
+
 	return b, nil
 
 }
@@ -114,10 +119,12 @@ func (b *CommonBridge) GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error
 }
 
 func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetTxErrParams) error {
+	b.ContractCallLock.Lock()
 	params.Tx, params.TxErr = txCallback(b.Auth)
 	if err := b.Bridge.GetTxErr(params); err != nil {
 		return err
 	}
+	b.ContractCallLock.Unlock()
 
 	b.IncTxCountMetric(params.MethodName)
 
