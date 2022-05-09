@@ -40,7 +40,7 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
         submitTransaction(
             address(this),
             msg.value,
-            abi.encodeWithSelector(UPGRADE_TO_AND_CALL__SIGNATURE, newImplementation)
+            abi.encodeWithSelector(UPGRADE_TO_AND_CALL__SIGNATURE, newImplementation, bytes(""))
         );
     }
 
