@@ -13,9 +13,7 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
 
     bytes32 private constant ADMIN_STORAGE_LOCATION = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
 
-    bytes16 private constant PRECOMPILED_DATA_P0 = 0x4f1ef286000000000000000000000000;
-    bytes32 private constant PRECOMPILED_DATA_P2 = 0x0000000000000000000000000000000000000000000000000000000000000040;  // todo 0x?
-    bytes32 private constant PRECOMPILED_DATA_P3 = 0x0000000000000000000000000000000000000000000000000000000000000000;
+    bytes4 private constant UPGRADE_TO_AND_CALL__SIGNATURE = 0x3393e57a;
 
     event Upgraded(address indexed implementation);
 
@@ -42,16 +40,19 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
         submitTransaction(
             address(this),
             msg.value,
-            abi.encodePacked(
-                PRECOMPILED_DATA_P0,
-                newImplementation,
-                PRECOMPILED_DATA_P2,
-                PRECOMPILED_DATA_P3
-            )
+            abi.encodeWithSelector(UPGRADE_TO_AND_CALL__SIGNATURE, newImplementation)
         );
     }
 
-    function upgradeToAndCall(address newImplementation, bytes calldata data) external onlyWallet payable {
+    function upgradeToAndCall(address newImplementation, bytes calldata data) external payable ownerExists(msg.sender) {
+        submitTransaction(
+            address(this),
+            msg.value,
+            abi.encodeWithSelector(UPGRADE_TO_AND_CALL__SIGNATURE, newImplementation, data)
+        );
+    }
+
+    function upgradeToAndCall_(address newImplementation, bytes calldata data) external onlyWallet payable {
         _upgradeToAndCall(newImplementation, data, true);
     }
 

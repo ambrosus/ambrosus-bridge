@@ -23,4 +23,9 @@ contract ETH_EthBridge is CommonBridge, CheckAura {
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
         lockTransfers(auraProof.transfer.transfers, auraProof.transfer.eventId);
     }
+
+    function updateLastProcessedBlock(bytes32 lastProcessedBlock_) public {
+        require(msg.sender == address(this), "Only this contract can call this function");
+        lastProcessedBlock = lastProcessedBlock_;
+    }
 }
