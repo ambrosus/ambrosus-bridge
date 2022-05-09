@@ -66,7 +66,6 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
     }
 
-
     function wrapWithdraw(address toAddress) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
@@ -104,6 +103,16 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
 
         withdrawFinish();
+    }
+
+    function triggerTransfers() public payable {
+        if (!hasRole(RELAY_ROLE, msg.sender)) {
+            require(msg.value == fee, "Sent value is not equal fee");
+            feeRecipient.transfer(fee);
+        }
+
+        emit Transfer(outputEventId++, queue);
+        delete queue;
     }
 
     function withdrawFinish() internal {

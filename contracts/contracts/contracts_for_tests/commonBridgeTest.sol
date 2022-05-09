@@ -19,11 +19,13 @@ contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
         lockTransfers(events, eventId);
     }
 
+    function getOutputEventId() public view returns(uint) {
+        return outputEventId;
+    }
+
     // checkReceiptsProof
 
     function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
         return calcTransferReceiptsHash(p, eventContractAddress);
     }
-
-
 }
