@@ -66,6 +66,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
     }
 
+    function triggerTransfers() public {
+        emit Transfer(outputEventId++, queue);
+        delete queue;
+    }
 
     function wrapWithdraw(address toAddress) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
