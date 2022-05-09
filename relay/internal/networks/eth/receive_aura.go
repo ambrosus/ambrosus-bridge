@@ -17,3 +17,12 @@ func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
 func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
 	return b.Contract.GetValidatorSet(nil)
 }
+
+func (b *Bridge) GetLastProcessedBlockHash() (*common.Hash, error) {
+	blockHash, err := b.Contract.LastProcessedBlock(nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return (*common.Hash)(&blockHash), nil
+}

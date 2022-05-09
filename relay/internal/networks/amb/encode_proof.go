@@ -126,14 +126,14 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 }
 
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
-	start, err := b.GetLastProcessedBlockNum(event.EventId)
+	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // no need to change vs for last block (it will be changed in next event processing)
 
 	opts := &bind.FilterOpts{
-		Start:   start,
+		Start:   start.Uint64(),
 		End:     &end,
 		Context: context.Background(),
 	}
@@ -149,6 +149,20 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	}
 
 	return res, nil
+}
+
+func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
+	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+	if err != nil {
+		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
+	}
+
+	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	if err != nil {
+		return nil, fmt.Errorf("get block by hash: %w", err)
+	}
+
+	return block.Number(), nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
