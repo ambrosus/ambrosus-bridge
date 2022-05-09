@@ -6,9 +6,10 @@ import "../checks/CheckAura.sol";
 contract CheckAuraTest is CheckAura {
     constructor(
         address[] memory initialValidators_,
-        address validatorSetAddress_
+        address validatorSetAddress_,
+        bytes32 lastProcessedBlock
     ) {
-        __CheckAura_init(initialValidators_, validatorSetAddress_);
+        __CheckAura_init(initialValidators_, validatorSetAddress_, lastProcessedBlock);
     }
 
     function checkAuraTest(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {

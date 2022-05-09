@@ -10,10 +10,11 @@ contract BSC_BscBridge is CommonBridge, CheckAura {
     function initialize(
         CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
-        address validatorSetAddress
+        address validatorSetAddress,
+        bytes32 lastProcessedBlock
     ) public initializer {
         __CommonBridge_init(args);
-        __CheckAura_init(initialValidators, validatorSetAddress);
+        __CheckAura_init(initialValidators, validatorSetAddress, lastProcessedBlock);
     }
 
     function submitTransferAura(AuraProof calldata auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
