@@ -8,10 +8,12 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 const BridgeName = "ambrosus"
@@ -31,10 +33,36 @@ func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (
 	}
 	commonBridge.Logger = logger.NewSubLogger(BridgeName, externalLogger)
 
+	// ///////////////////
+
 	// Creating a new ambrosus VS contract instance.
 	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), commonBridge.Client)
 	if err != nil {
 		return nil, fmt.Errorf("create vs contract: %w", err)
+	}
+
+	commonBridge.Client, err = parity.Dial(cfg.HttpURL)
+	if err != nil {
+		return nil, fmt.Errorf("dial http: %w", err)
+	}
+
+	// Creating a new bridge contract instance.
+	commonBridge.Contract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.Client)
+	if err != nil {
+		return nil, fmt.Errorf("create contract http: %w", err)
+	}
+
+	// Create websocket instances if wsUrl provided
+	if cfg.WsURL != "" {
+		commonBridge.WsClient, err = ethclient.Dial(cfg.WsURL)
+		if err != nil {
+			return nil, fmt.Errorf("dial ws: %w", err)
+		}
+
+		commonBridge.WsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.WsClient)
+		if err != nil {
+			return nil, fmt.Errorf("create contract ws: %w", err)
+		}
 	}
 
 	b := &Bridge{

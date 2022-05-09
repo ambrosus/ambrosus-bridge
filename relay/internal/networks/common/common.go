@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -25,7 +26,7 @@ type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
 
 type CommonBridge struct {
 	networks.Bridge
-	Client     *ethclient.Client
+	Client     ethclients.ClientInterface
 	WsClient   *ethclient.Client
 	Contract   *contracts.Bridge
 	WsContract *contracts.Bridge
