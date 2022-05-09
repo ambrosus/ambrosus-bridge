@@ -5,6 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+)
+
+const (
+	maxMessageLength = 4096
+	separator        = " "
 )
 
 type tgLogger struct {
@@ -14,7 +20,7 @@ type tgLogger struct {
 	Prefix     string
 }
 
-func NewLogger(token string, chatId int, prefix string, httpClient *http.Client) *tgLogger {
+func NewLogger(token string, chatId int, httpClient *http.Client) *tgLogger {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
@@ -22,7 +28,6 @@ func NewLogger(token string, chatId int, prefix string, httpClient *http.Client)
 		Token:      token,
 		ChatId:     chatId,
 		HttpClient: httpClient,
-		Prefix:     prefix,
 	}
 }
 
@@ -37,19 +42,22 @@ type response struct {
 	ErrorDescription string `json:"description"` // if Ok is false
 }
 
-func (t *tgLogger) LogError(msg string) error {
-	return t.log("We got an unexpected error:", msg)
+// Send method will split too long message into parts (telegram limits that to 4096 symbols)
+func (t *tgLogger) Send(text string) error {
+	partsText := safeSplitText(text, maxMessageLength, separator)
+	for _, part := range partsText {
+		if err := t.send(part); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
-func (t *tgLogger) LogWarning(msg string) error {
-	return t.log("Warning!", msg)
-}
-
-func (t *tgLogger) log(title, msg string) error {
+func (t *tgLogger) send(text string) error {
 	url := fmt.Sprintf("https://api.telegram.org/bot%s/sendMessage", t.Token)
 	body := &request{
 		ChatId:    t.ChatId,
-		Text:      fmt.Sprintf("%s <b>%s</b>\n%s", t.Prefix, title, msg),
+		Text:      text,
 		ParseMode: "html",
 	}
 
@@ -72,4 +80,33 @@ func (t *tgLogger) log(title, msg string) error {
 	}
 	return nil
 
+}
+
+// safeSplitText splits text into slices of maxLength by separator
+func safeSplitText(text string, maxLength int, separator string) []string {
+	tempText := text
+	var slices []string
+
+	for len(tempText) > 0 {
+
+		if len(tempText) > maxLength {
+			splitPosition := strings.LastIndex(tempText[:maxLength], separator)
+
+			// if there is no separator in the last 1/4 (of maxLength) symbols then split at maxLength
+			if splitPosition < maxLength*3/4 {
+				splitPosition = maxLength
+			}
+
+			slices = append(slices, tempText[:splitPosition])
+
+			tempText = tempText[splitPosition:]
+			tempText = strings.TrimLeft(tempText, "\n\t\v\f\r ")
+
+		} else {
+			slices = append(slices, tempText)
+			break
+		}
+
+	}
+	return slices
 }
