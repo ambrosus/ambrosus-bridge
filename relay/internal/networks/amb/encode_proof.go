@@ -100,6 +100,8 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		return fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
+	var lastBlock uint64
+	var txsBeforeFinalize uint64
 	for _, event := range events {
 		address, index, err := deltaVS(prevSet, event.NewSet)
 		if err != nil {
@@ -107,7 +109,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		}
 		vsChange := c.CheckAuraValidatorSetChange{DeltaAddress: address, DeltaIndex: index}
 
-		txsBeforeFinalize := uint64(len(prevSet))/2 + 1
+		if lastBlock != event.Raw.BlockNumber {
+			txsBeforeFinalize = uint64(len(prevSet))/2 + 1
+			lastBlock = event.Raw.BlockNumber
+		}
 		finalizedBlockNum := event.Raw.BlockNumber + txsBeforeFinalize
 
 		// save blocks up to finalized block
