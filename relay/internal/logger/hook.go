@@ -2,6 +2,7 @@ package logger
 
 import (
 	"encoding/json"
+	"strings"
 )
 
 type ExtLog struct {
@@ -33,6 +34,10 @@ func (h hook) Write(p []byte) (n int, err error) {
 	delete(extLog.Rest, "message")
 	delete(extLog.Rest, "error")
 
+	// TODO: remove
+	if strings.Contains(extLog.Error, "websocket: close 1006 (abnormal closure): unexpected EOF") {
+		return 0, nil
+	}
 	h.hook.Log(extLog)
 
 	return len(p), nil
