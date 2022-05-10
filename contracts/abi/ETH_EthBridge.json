@@ -511,6 +511,11 @@
         "internalType": "address",
         "name": "validatorSetAddress",
         "type": "address"
+      },
+      {
+        "internalType": "bytes32",
+        "name": "lastProcessedBlock_",
+        "type": "bytes32"
       }
     ],
     "name": "initialize",
@@ -526,6 +531,19 @@
         "internalType": "uint256",
         "name": "",
         "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastProcessedBlock",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",

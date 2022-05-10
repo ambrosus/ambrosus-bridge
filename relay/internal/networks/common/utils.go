@@ -166,7 +166,7 @@ func (b *CommonBridge) GetLastProcessedBlockNum(currEventId *big.Int) (uint64, e
 	}
 
 	// todo specify block when prevEvent submitted in side network for 100$ correct `minSafetyBlocks` value
-	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum(nil)
+	minSafetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return 0, fmt.Errorf("get block by hash: %w", err)
 	}

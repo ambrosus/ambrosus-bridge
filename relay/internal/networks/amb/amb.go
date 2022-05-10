@@ -9,7 +9,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -26,7 +25,7 @@ type Bridge struct {
 }
 
 // New creates a new ambrosus bridge.
-func New(cfg *config.AMBConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
