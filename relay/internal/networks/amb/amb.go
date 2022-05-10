@@ -12,16 +12,16 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 const BridgeName = "ambrosus"
 
 type Bridge struct {
 	nc.CommonBridge
+	Client     *parity.Client
+	WsClient   *parity.Client
 	VSContract *contracts.Vs
 	sideBridge networks.BridgeReceiveAura
-	httpUrl    string // httpUrl used in HeaderByNumber
 }
 
 // New creates a new ambrosus bridge.
@@ -34,31 +34,32 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 
 	// ///////////////////
 
-	// Creating a new ambrosus VS contract instance.
-	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), commonBridge.Client)
-	if err != nil {
-		return nil, fmt.Errorf("create vs contract: %w", err)
-	}
-
-	commonBridge.Client, err = parity.Dial(cfg.HttpURL)
+	client, err := parity.Dial(cfg.HttpURL)
 	if err != nil {
 		return nil, fmt.Errorf("dial http: %w", err)
 	}
 
+	// Creating a new ambrosus VS contract instance.
+	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
+	if err != nil {
+		return nil, fmt.Errorf("create vs contract: %w", err)
+	}
+
 	// Creating a new bridge contract instance.
-	commonBridge.Contract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.Client)
+	commonBridge.Contract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, fmt.Errorf("create contract http: %w", err)
 	}
 
 	// Create websocket instances if wsUrl provided
+	var wsClient *parity.Client
 	if cfg.WsURL != "" {
-		commonBridge.WsClient, err = ethclient.Dial(cfg.WsURL)
+		wsClient, err = parity.Dial(cfg.WsURL)
 		if err != nil {
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 
-		commonBridge.WsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.WsClient)
+		commonBridge.WsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
 		if err != nil {
 			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
@@ -66,8 +67,9 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 
 	b := &Bridge{
 		CommonBridge: commonBridge,
+		Client:       client,
+		WsClient:     wsClient,
 		VSContract:   vsContract,
-		httpUrl:      cfg.HttpURL,
 	}
 	b.CommonBridge.Bridge = b
 	return b, nil

@@ -1,31 +1,12 @@
-package amb
+package parity
 
 import (
-	"bytes"
-	"encoding/json"
-	"fmt"
-	"math/big"
-	"net/http"
-
-	"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
-
-type request struct {
-	Jsonrpc string        `json:"jsonrpc"`
-	Id      int           `json:"id"`
-	Method  string        `json:"method"`
-	Params  []interface{} `json:"params"`
-}
-type response struct {
-	Jsonrpc string `json:"jsonrpc"`
-	Result  Header `json:"result"`
-	Id      int    `json:"id"`
-}
 
 type Header struct {
 	ParentHash  *common.Hash    `json:"parentHash"`
@@ -43,35 +24,6 @@ type Header struct {
 	Extra       *hexutil.Bytes  `json:"extraData"`
 
 	SealFields []hexutil.Bytes `json:"sealFields"`
-}
-
-func (b *Bridge) HeaderByNumber(number *big.Int) (*Header, error) {
-	body := &request{
-		Jsonrpc: "2.0",
-		Id:      1,
-		Method:  "eth_getBlockByNumber",
-		Params:  []interface{}{hexutil.EncodeBig(number), false},
-	}
-	payloadBuf := new(bytes.Buffer)
-	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
-		return nil, fmt.Errorf("json encode request: %w", err)
-	}
-	resp, err := http.Post(b.httpUrl, "application/json", payloadBuf)
-	if err != nil {
-		return nil, fmt.Errorf("http post: %w", err)
-	}
-	defer resp.Body.Close()
-
-	respData := new(response)
-	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return nil, fmt.Errorf("json decode response: %w", err)
-	}
-
-	// Check if result is empty
-	if respData.Result.Number == nil {
-		return nil, fmt.Errorf("there is no header with number %d", number.Int64())
-	}
-	return &respData.Result, nil
 }
 
 func (h *Header) Rlp(withSeal bool) ([]byte, error) {

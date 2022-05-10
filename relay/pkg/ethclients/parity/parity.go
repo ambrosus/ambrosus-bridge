@@ -2,7 +2,9 @@ package parity
 
 import (
 	"context"
+	"math/big"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -42,4 +44,24 @@ func (ec *Client) PendingNonceAt(ctx context.Context, account common.Address) (u
 	return uint64(result), err
 }
 
-// TODO: HeaderByNumber
+// ParityHeaderByNumber returns a block header from the current canonical chain. If number is
+// nil, the latest known header is returned.
+func (ec *Client) ParityHeaderByNumber(ctx context.Context, number *big.Int) (*Header, error) {
+	var head *Header
+	err := ec.c.CallContext(ctx, &head, "eth_getBlockByNumber", toBlockNumArg(number), false)
+	if err == nil && head == nil {
+		err = ethereum.NotFound
+	}
+	return head, err
+}
+
+func toBlockNumArg(number *big.Int) string {
+	if number == nil {
+		return "latest"
+	}
+	pending := big.NewInt(-1)
+	if number.Cmp(pending) == 0 {
+		return "pending"
+	}
+	return hexutil.EncodeBig(number)
+}

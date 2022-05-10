@@ -27,7 +27,7 @@ type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
 type CommonBridge struct {
 	networks.Bridge
 	Client     ethclients.ClientInterface
-	WsClient   *ethclient.Client
+	WsClient   ethclients.ClientInterface
 	Contract   *contracts.Bridge
 	WsContract *contracts.Bridge
 	Auth       *bind.TransactOpts
