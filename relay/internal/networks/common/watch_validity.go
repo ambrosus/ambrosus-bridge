@@ -19,7 +19,7 @@ func (b *CommonBridge) ValidityWatchdog() {
 		b.EnsureContractUnpaused()
 
 		if err := b.watchLockedTransfers(); err != nil {
-			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
+			b.Logger.Error().Err(fmt.Errorf("ValidityWatchdog: %s", err)).Msg("ValidityWatchdog error")
 		}
 		time.Sleep(failSleepTIme)
 	}
@@ -80,7 +80,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 				return fmt.Errorf("GetLockedTransfers: %w", err)
 			}
 			if err := b.checkValidity(event.EventId, &lockedTransfer); err != nil {
-				b.Logger.Error().Msgf("checkValidity: %s", err)
+				b.Logger.Error().Err(fmt.Errorf("checkValidity: %s", err)).Msg("checkValidity error")
 			}
 		}
 	}

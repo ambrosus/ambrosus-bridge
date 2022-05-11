@@ -14,7 +14,7 @@ func (b *CommonBridge) UnlockTransfersLoop() {
 		b.EnsureContractUnpaused()
 
 		if err := b.unlockOldTransfers(); err != nil {
-			b.Logger.Error().Msgf("UnlockTransfersLoop: %s", err)
+			b.Logger.Error().Err(fmt.Errorf("UnlockTransfersLoop: %s", err)).Msg("UnlockTransfersLoop error")
 		}
 		time.Sleep(failSleepTIme)
 	}

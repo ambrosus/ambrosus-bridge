@@ -109,7 +109,7 @@ func (b *Bridge) ensureDAGsExists() {
 	// Getting last ethereum block number.
 	blockNumber, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
-		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
+		b.Logger.Error().Err(err).Msgf("error getting last block number")
 		return
 	}
 	b.ethash.GenDagForEpoch(blockNumber / 30000)
