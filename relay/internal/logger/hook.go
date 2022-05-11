@@ -36,7 +36,7 @@ func (h hook) Write(p []byte) (n int, err error) {
 
 	// TODO: remove
 	if strings.Contains(extLog.Error, "websocket: close 1006 (abnormal closure): unexpected EOF") {
-		return 0, nil
+		return len(p), nil
 	}
 	h.hook.Log(extLog)
 
