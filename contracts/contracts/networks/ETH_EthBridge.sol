@@ -11,7 +11,7 @@ contract ETH_EthBridge is CommonBridge, CheckAura {
         CommonStructs.ConstructorArgs memory args,
         address[] memory initialValidators,
         address validatorSetAddress,
-        bytes32 lastProcessedBlock_
+        bytes32 lastProcessedBlock
     ) public initializer {
         __CommonBridge_init(args);
         __CheckAura_init(initialValidators, validatorSetAddress, lastProcessedBlock);
