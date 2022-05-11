@@ -10,9 +10,12 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 )
+
+var ErrEmptyLockedTransfers = errors.New("empty locked transfers")
 
 func (b *CommonBridge) ValidityWatchdog() {
 	b.shouldHavePk()
@@ -41,12 +44,11 @@ func (b *CommonBridge) checkOldLockedTransfers() error {
 func (b *CommonBridge) checkOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
 	for i := int64(0); ; i++ {
 		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
-		nextLockedTransfer, err := b.Contract.GetLockedTransfers(nil, nextLockedEventId)
-		if err != nil {
-			return fmt.Errorf("GetLockedTransfers: %w", err)
-		}
-		if nextLockedTransfer.EndTimestamp.Uint64() == 0 {
+		nextLockedTransfer, err := b.getLockedTransfers(nextLockedEventId, nil)
+		if errors.Is(err, ErrEmptyLockedTransfers) {
 			return nil
+		} else if err != nil {
+			return fmt.Errorf("GetLockedTransfers: %w", err)
 		}
 
 		b.Logger.Info().Str("event_id", nextLockedEventId.String()).Msg("Found old TransferSubmit event")
@@ -81,7 +83,11 @@ func (b *CommonBridge) watchLockedTransfers() error {
 
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
 
-			lockedTransfer, err := b.Contract.GetLockedTransfers(nil, event.EventId)
+			// Nodes may be out of sync and the event may be empty (but it's not confirmed info)
+			// So we need to retry if the result is empty
+			lockedTransfer, err := b.getLockedTransfers(event.EventId, &bind.CallOpts{
+				BlockNumber: big.NewInt(int64(event.Raw.BlockNumber)),
+			})
 			if err != nil {
 				return fmt.Errorf("GetLockedTransfers: %w", err)
 			}
@@ -130,4 +136,29 @@ Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 	b.Logger.Warn().Str("event_id", lockedEventId.String()).Msg("checkValidity: Contract has been paused")
 	return nil
 
+}
+
+func (b *CommonBridge) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer contracts.CommonStructsLockedTransfers, err error) {
+	err = retry.Do(
+		func() error {
+			lockedTransfer, err = b.Contract.GetLockedTransfers(opts, eventId)
+			if err != nil {
+				return err
+			}
+
+			// check
+			if lockedTransfer.EndTimestamp.Uint64() == 0 {
+				return ErrEmptyLockedTransfers
+			}
+			return nil
+		},
+
+		retry.RetryIf(func(err error) bool {
+			return errors.Is(err, ErrEmptyLockedTransfers)
+		}),
+		retry.Attempts(5),
+		retry.Delay(time.Second*2),
+		retry.LastErrorOnly(true),
+	)
+	return lockedTransfer, err
 }
