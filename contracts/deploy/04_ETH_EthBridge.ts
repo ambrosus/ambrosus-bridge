@@ -35,10 +35,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     )
   }
 
-  optionsWithOnUpgrade.proxy.execute.onUpgrade = {
-    methodName: "updateLastProcessedBlock",
-    args: ["0x1111111111111111111111111111111111111111111111111111111111111111"]
-  };
+  // Uncomment when updateLastProcessedBlock is needed
+  // optionsWithOnUpgrade.proxy.execute.onUpgrade = {
+  //   methodName: "updateLastProcessedBlock",
+  //   args: ["0x1111111111111111111111111111111111111111111111111111111111111111"]
+  // };
 
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {

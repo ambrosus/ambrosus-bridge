@@ -12,7 +12,7 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
 
     bytes32 private constant ADMIN_STORAGE_LOCATION = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
 
-    bytes4 private constant UPGRADE_TO_AND_CALL__SIGNATURE = 0x3393e57a;
+    bytes4 private constant UPGRADE_TO_AND_CALL__SIGNATURE = bytes4(keccak256("upgradeToAndCall_(address,bytes)"));
 
     event Upgraded(address indexed implementation);
 
