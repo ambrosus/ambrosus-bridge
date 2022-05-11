@@ -33,6 +33,10 @@ func (b *CommonBridge) checkOldLockedTransfers() error {
 		return fmt.Errorf("get oldest locked event id: %w", err)
 	}
 
+	return b.checkOldLockedTransferFromId(oldestLockedEventId)
+}
+
+func (b *CommonBridge) checkOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
 	for i := int64(0); ; i++ {
 		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
 		nextLockedTransfer, err := b.Contract.GetLockedTransfers(nil, nextLockedEventId)
