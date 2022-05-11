@@ -5,14 +5,14 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x63B825C40a78e2e9A7aeaC83027215A022b37B93",
+            "contractAddr": "0x41E2661363228b6A211A9B4E7f74301303B425a5",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xc4A53948cf9bEd15177fa4A8EadA035C867Be05e",
+            "contractAddr": "0x6321a6658e906076D676E4dCFDe61682936Db507",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
