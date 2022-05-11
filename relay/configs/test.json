@@ -16,7 +16,7 @@
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 1
+            "ethashGenNextEpochs": 0
         }
     },
     "externalLogger": {
