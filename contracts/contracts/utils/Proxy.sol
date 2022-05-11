@@ -6,10 +6,9 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./MultiSigWallet.sol";
 
 
-// todo + create utils dir for multisig and proxy
 contract proxyMultiSig is Proxy, MultiSigWallet {
     bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
-    bytes32 private constant _ROLLBACK_SLOT = 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143;  // todo remove?
+    bytes32 private constant _ROLLBACK_SLOT = 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143;
 
     bytes32 private constant ADMIN_STORAGE_LOCATION = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
 
@@ -31,7 +30,6 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
     }
 
 
-    // todo remove?
     function implementation() external returns (address implementation_) {
         implementation_ = _implementation();
     }
@@ -55,7 +53,6 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
     function upgradeToAndCall_(address newImplementation, bytes calldata data) external onlyWallet payable {
         _upgradeToAndCall(newImplementation, data, true);
     }
-
 
     function _upgradeToAndCall(
         address newImplementation,
