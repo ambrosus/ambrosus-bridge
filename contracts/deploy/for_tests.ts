@@ -84,6 +84,31 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ],
     log: true,
   });
+
+  // using this contract only for mock implementation address
+  // (address must be contract's address)
+  const deployed = await hre.deployments.deploy("MultiSigWallet", {
+    from: owner,
+    args: [
+      [owner, proxyAdmin],
+      2
+    ]
+  });
+
+  await hre.deployments.deploy("ProxyMultisigTest", {
+    from: owner,
+    args: []
+  });
+
+  await hre.deployments.deploy("proxyMultiSig", {
+    from: owner,
+    args: [
+      deployed.address,
+      "0x",
+      [owner, proxyAdmin],
+      2
+    ],
+  });
 };
 
 export default func;
