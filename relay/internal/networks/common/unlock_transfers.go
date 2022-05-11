@@ -61,6 +61,10 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	}
 
 	// Unlock the oldest transfer.
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: check validity of locked transfers...")
+	if err := b.checkOldLockedTransferFromId(oldestLockedEventId); err != nil {
+		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
+	}
 	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocking...")
 	err = b.unlockTransfers()
 	if err != nil {
