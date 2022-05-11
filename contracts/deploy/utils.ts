@@ -160,14 +160,14 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
 
 
 
-export async function getAmbValidators(ambProvider: EthereumProvider): Promise<[string[], string]> {
+export async function getAmbValidators(ambProvider: EthereumProvider): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
 
   const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
   const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
   const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
-  return [validators, vsAddress];
+  return [validators, vsAddress, block.hash];
 }
 
 // :(((

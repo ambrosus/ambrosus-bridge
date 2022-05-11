@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 var ErrEmptyLockedTransfers = errors.New("empty locked transfers")
@@ -23,7 +24,7 @@ func (b *CommonBridge) ValidityWatchdog() {
 		b.EnsureContractUnpaused()
 
 		if err := b.watchLockedTransfers(); err != nil {
-			b.Logger.Error().Msgf("ValidityWatchdog: %s", err)
+			b.Logger.Error().Err(fmt.Errorf("ValidityWatchdog: %s", err)).Msg("ValidityWatchdog error")
 		}
 		time.Sleep(failSleepTIme)
 	}
@@ -37,6 +38,10 @@ func (b *CommonBridge) checkOldLockedTransfers() error {
 		return fmt.Errorf("get oldest locked event id: %w", err)
 	}
 
+	return b.checkOldLockedTransferFromId(oldestLockedEventId)
+}
+
+func (b *CommonBridge) checkOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
 	for i := int64(0); ; i++ {
 		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
 		nextLockedTransfer, err := b.getLockedTransfers(nextLockedEventId, nil)
@@ -87,7 +92,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 				return fmt.Errorf("GetLockedTransfers: %w", err)
 			}
 			if err := b.checkValidity(event.EventId, &lockedTransfer); err != nil {
-				b.Logger.Error().Msgf("checkValidity: %s", err)
+				b.Logger.Error().Err(fmt.Errorf("checkValidity: %s", err)).Msg("checkValidity error")
 			}
 		}
 	}
@@ -122,8 +127,9 @@ this network locked transfers: %s \n
 side network transfer event: %s \n
 Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
-	tx, txErr := b.Contract.Pause(b.Auth)
-	if err := b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+	if err := b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.Pause(b.Auth)
+	}, networks.GetTxErrParams{MethodName: "pause"}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 

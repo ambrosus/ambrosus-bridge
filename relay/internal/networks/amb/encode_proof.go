@@ -100,6 +100,8 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		return fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
+	var lastBlock uint64
+	var txsBeforeFinalize uint64
 	for _, event := range events {
 		address, index, err := deltaVS(prevSet, event.NewSet)
 		if err != nil {
@@ -107,7 +109,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		}
 		vsChange := c.CheckAuraValidatorSetChange{DeltaAddress: address, DeltaIndex: index}
 
-		txsBeforeFinalize := uint64(len(prevSet))/2 + 1
+		if lastBlock != event.Raw.BlockNumber {
+			txsBeforeFinalize = uint64(len(prevSet))/2 + 1
+			lastBlock = event.Raw.BlockNumber
+		}
 		finalizedBlockNum := event.Raw.BlockNumber + txsBeforeFinalize
 
 		// save blocks up to finalized block
@@ -126,14 +131,14 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 }
 
 func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
-	start, err := b.GetLastProcessedBlockNum(event.EventId)
+	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
 	end := event.Raw.BlockNumber + safetyBlocks - 1 // no need to change vs for last block (it will be changed in next event processing)
 
 	opts := &bind.FilterOpts{
-		Start:   start,
+		Start:   start.Uint64(),
 		End:     &end,
 		Context: context.Background(),
 	}
@@ -149,6 +154,20 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	}
 
 	return res, nil
+}
+
+func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
+	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+	if err != nil {
+		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
+	}
+
+	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	if err != nil {
+		return nil, fmt.Errorf("get block by hash: %w", err)
+	}
+
+	return block.Number(), nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
@@ -193,7 +212,7 @@ func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) e
 		return nil
 	}
 
-	block, err := b.HeaderByNumber(big.NewInt(int64(blockNumber)))
+	block, err := b.Client.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return fmt.Errorf("HeaderByNumber: %w", err)
 	}

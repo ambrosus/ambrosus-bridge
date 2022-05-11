@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 func (b *CommonBridge) UnlockTransfersLoop() {
@@ -14,7 +16,7 @@ func (b *CommonBridge) UnlockTransfersLoop() {
 		b.EnsureContractUnpaused()
 
 		if err := b.unlockOldTransfers(); err != nil {
-			b.Logger.Error().Msgf("UnlockTransfersLoop: %s", err)
+			b.Logger.Error().Err(fmt.Errorf("UnlockTransfersLoop: %s", err)).Msg("UnlockTransfersLoop error")
 		}
 		time.Sleep(failSleepTIme)
 	}
@@ -61,6 +63,10 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	}
 
 	// Unlock the oldest transfer.
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: check validity of locked transfers...")
+	if err := b.checkOldLockedTransferFromId(oldestLockedEventId); err != nil {
+		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
+	}
 	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocking...")
 	err = b.unlockTransfers()
 	if err != nil {
@@ -83,6 +89,7 @@ func (b *CommonBridge) unlockTransfers() error {
 	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
 	authCustomGas := *b.Auth
 	authCustomGas.GasLimit = customGas
-	tx, err = b.Contract.UnlockTransfersBatch(&authCustomGas)
-	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"})
+	return b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.UnlockTransfersBatch(&authCustomGas)
+	}, networks.GetTxErrParams{MethodName: "unlockTransfersBatch"})
 }

@@ -2,13 +2,18 @@ package common
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
+	"sync"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -16,16 +21,21 @@ import (
 	"github.com/rs/zerolog"
 )
 
+// ContractCallFn is a callback type for calling paid contract's method.
+type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
+
 type CommonBridge struct {
 	networks.Bridge
-	Client     *ethclient.Client
-	WsClient   *ethclient.Client
+	Client     ethclients.ClientInterface
+	WsClient   ethclients.ClientInterface
 	Contract   *contracts.Bridge
 	WsContract *contracts.Bridge
 	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
 	Logger     zerolog.Logger
 	Name       string
+
+	ContractCallLock *sync.Mutex
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -76,6 +86,8 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 		b.Logger.Info().Msg("No private key provided")
 	}
 
+	b.ContractCallLock = &sync.Mutex{}
+
 	return b, nil
 
 }
@@ -99,18 +111,21 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 	return nil, networks.ErrEventNotFound
 }
 
-func (b *CommonBridge) GetMinSafetyBlocksNum(opts *bind.CallOpts) (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(opts)
+func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
+	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
 	if err != nil {
 		return 0, err
 	}
 	return safetyBlocks.Uint64(), nil
 }
 
-func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
+func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetTxErrParams) error {
+	b.ContractCallLock.Lock()
+	params.Tx, params.TxErr = txCallback(b.Auth)
 	if err := b.Bridge.GetTxErr(params); err != nil {
 		return err
 	}
+	b.ContractCallLock.Unlock()
 
 	b.IncTxCountMetric(params.MethodName)
 
@@ -120,7 +135,8 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 		Interface("full_tx", params.Tx).
 		Interface("tx_params", params.TxParams).
 		Msgf("Wait the tx to be mined...")
-	receipt, err := bind.WaitMined(context.Background(), b.Client, params.Tx)
+
+	receipt, err := b.waitMined(params)
 	if err != nil {
 		return fmt.Errorf("wait mined: %w", err)
 	}
@@ -138,4 +154,29 @@ func (b *CommonBridge) ProcessTx(params networks.GetTxErrParams) error {
 	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
 
 	return nil
+}
+
+func (b *CommonBridge) waitMined(params networks.GetTxErrParams) (receipt *types.Receipt, err error) {
+	err = retry.Do(
+		func() (err error) {
+			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+			defer cancel()
+
+			receipt, err = bind.WaitMined(ctx, b.Client, params.Tx)
+			return err
+		},
+
+		retry.RetryIf(func(err error) bool {
+			return errors.Is(err, context.DeadlineExceeded)
+		}),
+		retry.OnRetry(func(n uint, err error) {
+			b.Logger.Warn().
+				Str("method", params.MethodName).
+				Str("tx_hash", params.Tx.Hash().Hex()).
+				Msgf("Timeout waiting for tx to be mined, trying again... (%d/%d)", n+1, 2)
+		}),
+		retry.Attempts(2),
+		retry.LastErrorOnly(true),
+	)
+	return
 }
