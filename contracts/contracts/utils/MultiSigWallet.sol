@@ -246,9 +246,11 @@ contract MultiSigWallet {
             let x := mload(0x40)   // "Allocate" memory for output (0x40 is where "free memory" pointer is stored by convention)
             let d := add(data, 32) // First 32 bytes are the padded length of data, so exclude that
             result := call(
-            sub(gas(), 34710),   // 34710 is the value that solidity is currently emitting  // todo
+            sub(gas(), 36810),   // 34710 is the value that solidity is currently emitting  // todo
             // It includes callGas (700) + callVeryLow (3, to pay for SUB) + callValueTransferGas (9000) +
-            // callNewAccountGas (25000, in case the destination address does not exist and needs creating)
+            // callNewAccountGas (25000, in case the destination address does not exist and needs creating) +
+            // gasSLoadEIP2929 (2100)
+
             destination,
             value,
             d,
