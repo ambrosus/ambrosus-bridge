@@ -173,6 +173,12 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "tokenFrom",
         "type": "address"
@@ -186,7 +192,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "eventId",
+        "name": "amount",
         "type": "uint256"
       },
       {
@@ -792,14 +798,21 @@
                 "type": "bytes[]"
               },
               {
-                "internalType": "address",
-                "name": "deltaAddress",
-                "type": "address"
-              },
-              {
-                "internalType": "int64",
-                "name": "deltaIndex",
-                "type": "int64"
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "deltaAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "int64",
+                    "name": "deltaIndex",
+                    "type": "int64"
+                  }
+                ],
+                "internalType": "struct CheckAura.ValidatorSetChange[]",
+                "name": "changes",
+                "type": "tuple[]"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",
@@ -933,6 +946,13 @@
     "name": "tokensRemoveBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "triggerTransfers",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {

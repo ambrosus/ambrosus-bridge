@@ -173,6 +173,12 @@
       },
       {
         "indexed": false,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "tokenFrom",
         "type": "address"
@@ -186,7 +192,7 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "eventId",
+        "name": "amount",
         "type": "uint256"
       },
       {
@@ -514,7 +520,7 @@
       },
       {
         "internalType": "bytes32",
-        "name": "lastProcessedBlock_",
+        "name": "lastProcessedBlock",
         "type": "bytes32"
       }
     ],
@@ -940,6 +946,13 @@
     "name": "tokensRemoveBatch",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "triggerTransfers",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {

@@ -41,7 +41,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, address tokenFrom, address tokenTo, uint eventId, uint feeAmount);
+    event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount, uint feeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
@@ -73,12 +73,12 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(msg.value > fee, "Sent value <= fee");
         feeRecipient.transfer(fee);
 
-        uint restOfValue = msg.value - fee;
-        IWrapper(wrapperAddress).deposit{value : restOfValue}();
+        uint amount = msg.value - fee;
+        IWrapper(wrapperAddress).deposit{value : amount}();
 
         //
-        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, address(0), tokenSideAddress, outputEventId, fee);
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
+        emit Withdraw(msg.sender, outputEventId, address(0), tokenSideAddress, amount, fee);
 
         withdrawFinish();
     }
@@ -100,7 +100,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
-        emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
+        emit Withdraw(msg.sender, outputEventId, tokenThisAddress, tokenSideAddress, amount, fee);
 
         withdrawFinish();
     }
