@@ -10,6 +10,8 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 func (b *CommonBridge) ValidityWatchdog() {
@@ -119,8 +121,9 @@ this network locked transfers: %s \n
 side network transfer event: %s \n
 Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
-	tx, txErr := b.Contract.Pause(b.Auth)
-	if err := b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: txErr, MethodName: "pause"}); err != nil {
+	if err := b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.Pause(b.Auth)
+	}, networks.GetTxErrParams{MethodName: "pause"}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 

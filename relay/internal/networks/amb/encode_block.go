@@ -4,10 +4,11 @@ import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 )
 
-func EncodeBlock(header *Header) (*contracts.CheckAuraBlockAura, error) {
+func EncodeBlock(header *parity.Header) (*contracts.CheckAuraBlockAura, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash, parentHash
 	// - Step, Signature (for AURA)

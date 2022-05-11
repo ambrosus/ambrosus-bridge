@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 func (b *CommonBridge) UnlockTransfersLoop() {
@@ -87,6 +89,7 @@ func (b *CommonBridge) unlockTransfers() error {
 	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
 	authCustomGas := *b.Auth
 	authCustomGas.GasLimit = customGas
-	tx, err = b.Contract.UnlockTransfersBatch(&authCustomGas)
-	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"})
+	return b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.UnlockTransfersBatch(&authCustomGas)
+	}, networks.GetTxErrParams{MethodName: "unlockTransfersBatch"})
 }
