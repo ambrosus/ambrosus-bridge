@@ -23,7 +23,7 @@
         "telegram": {
             "enable": true,
             "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
-            "chatId": "-1001744413670"
+            "chatId": "-1001732781392"
         }
     },
     "prometheus": {
