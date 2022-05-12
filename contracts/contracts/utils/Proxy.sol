@@ -51,7 +51,7 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
     }
 
     function upgradeToAndCall_(address newImplementation, bytes calldata data) external onlyWallet payable {
-        _upgradeToAndCall(newImplementation, data, true);
+        _upgradeToAndCall(newImplementation, data, false);
     }
 
     function _upgradeToAndCall(

@@ -34,13 +34,7 @@ describe("MultiSig test", () => {
     });
 
     it("Check Proxy", async () => {
-        const lastProcessedBlock = "0x1111111111111111111111111111111111111111111111111111111111111111";
-
-        const callData = implementation.interface.encodeFunctionData(
-            implementation.interface.functions["updateLastProcessedBlock(bytes32)"],
-            [lastProcessedBlock]
-        );
-        await proxy.upgradeToAndCall(implementation.address, callData);
+        await proxy.upgradeTo(implementation.address);
 
         const tx = await proxy.connect(proxyAdminS).confirmTransaction(0);
         const receipt = await tx.wait();
@@ -50,7 +44,8 @@ describe("MultiSig test", () => {
         const Factory = await ethers.getContractFactory("ProxyMultisigTest");
         const contract = await Factory.attach(proxy.address);
 
-        expect(await contract.lastProcessedBlock()).eq(lastProcessedBlock);
+        await (await contract.changeValue("0x11223344")).wait();
+        expect(await contract.value()).eq("0x11223344");
     });
 
     it ("Non admin submitTransactionCall", async () => {
