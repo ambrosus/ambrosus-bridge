@@ -153,9 +153,6 @@ func (b *CommonBridge) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts)
 			return nil
 		},
 
-		retry.RetryIf(func(err error) bool {
-			return errors.Is(err, ErrEmptyLockedTransfers)
-		}),
 		retry.Attempts(5),
 		retry.Delay(time.Second*2),
 		retry.LastErrorOnly(true),
