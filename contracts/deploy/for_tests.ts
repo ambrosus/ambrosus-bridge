@@ -84,6 +84,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ],
     log: true,
   });
+
+  await hre.deployments.deploy("ProxyMultisigTest", {
+    from: owner,
+    args: []
+  });
+
+  await hre.deployments.deploy("ProxyMultiSig", {
+    from: owner,
+    args: [
+      mockAddr,
+      "0x",
+      [owner, proxyAdmin],
+      2
+    ],
+  });
 };
 
 export default func;

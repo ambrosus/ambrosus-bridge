@@ -145,8 +145,9 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
   return {
     from: owner,
     proxy: {
-      owner: proxyAdmin,
-      proxyContract: "proxyTransparent",
+      owner: owner,
+      proxyArgs: ["{implementation}", "{data}", [owner, proxyAdmin], 2],
+      proxyContract: "ProxyMultiSig",
       execute: {
         init: {
           methodName: "initialize",

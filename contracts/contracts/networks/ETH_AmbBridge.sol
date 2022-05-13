@@ -27,5 +27,4 @@ contract ETH_AmbBridge is CommonBridge, CheckPoW {
         require(sideBridgeAddress == address(0), "sideBridgeAddress already set");
         sideBridgeAddress = _sideBridgeAddress;
     }
-
 }

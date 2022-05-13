@@ -25,7 +25,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       },
       [
         isMainNet ? 13_000_000_000 : 0  // minimum difficulty
-      ]
+      ],
     )
   });
 
