@@ -23,7 +23,7 @@ library CommonStructs {
         address sideBridgeAddress; address adminAddress;
         address relayAddress; address wrappingTokenAddress;
         address[] tokenThisAddresses; address[] tokenSideAddresses;
-        uint fee; address payable feeRecipient;
+        address payable transferFeeRecipient; address payable bridgeFeeRecipient;
         uint timeframeSeconds; uint lockTime; uint minSafetyBlocks;
     }
 }

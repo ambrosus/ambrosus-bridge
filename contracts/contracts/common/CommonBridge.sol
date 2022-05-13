@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CommonStructs.sol";
 import "../tokens/IWrapper.sol";
-
+import "../checks/SignatureCheck.sol";
 
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
@@ -15,6 +15,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
 
+    uint private constant SIGNATURE_FEE_TIMESTAMP = 1800;  // 30 min
 
     // queue to be pushed in another network
     CommonStructs.Transfer[] queue;
@@ -28,8 +29,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     mapping(address => address) public tokenAddresses;
     address public wrapperAddress;
 
-    uint public fee;
-    address payable feeRecipient;
+    address payable transferFeeRecipient;
+    address payable bridgeFeeRecipient;
 
     address public sideBridgeAddress;
     uint public minSafetyBlocks;
@@ -41,7 +42,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount, uint feeAmount);
+    event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount,
+                   uint transferFeeAmount, uint bridgeFeeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
@@ -56,8 +58,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         wrapperAddress = args.wrappingTokenAddress;
 
         sideBridgeAddress = args.sideBridgeAddress;
-        fee = args.fee;
-        feeRecipient = args.feeRecipient;
+        transferFeeRecipient = args.transferFeeRecipient;
+        bridgeFeeRecipient = args.bridgeFeeRecipient;
         minSafetyBlocks = args.minSafetyBlocks;
         timeframeSeconds = args.timeframeSeconds;
         lockTime = args.lockTime;
@@ -66,24 +68,33 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
     }
 
-    function wrapWithdraw(address toAddress) public payable {
+    function wrapWithdraw(address toAddress, bytes memory signature, uint transferFee, uint bridgeFee) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
-        require(msg.value > fee, "Sent value <= fee");
-        feeRecipient.transfer(fee);
+        feeCheck(wrapperAddress, signature, transferFee, bridgeFee);
+        transferFeeRecipient.transfer(transferFee);
+        bridgeFeeRecipient.transfer(bridgeFee);
 
-        uint amount = msg.value - fee;
+        uint amount = msg.value - transferFee - bridgeFee;
         IWrapper(wrapperAddress).deposit{value : amount}();
 
         //
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId, address(0), tokenSideAddress, amount, fee);
+        emit Withdraw(msg.sender, outputEventId, address(0), tokenSideAddress, amount, transferFee, bridgeFee);
 
         withdrawFinish();
     }
 
-    function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
+    function withdraw(
+        address tokenThisAddress,
+        address toAddress,
+        uint amount,
+        bool unwrapSide,
+        bytes memory signature,
+        uint transferFee,
+        uint bridgeFee
+    ) payable public {
         address tokenSideAddress;
         if (unwrapSide) {
             require(tokenAddresses[address(0)] == tokenThisAddress, "Token not point to native token");
@@ -94,21 +105,46 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         }
 
         require(amount > 0, "Cannot withdraw 0");
-        require(msg.value == fee, "Sent value != fee");
-        feeRecipient.transfer(msg.value);
+
+        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee);
+        transferFeeRecipient.transfer(transferFee);
+        bridgeFeeRecipient.transfer(bridgeFee);
 
         require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
-        emit Withdraw(msg.sender, outputEventId, tokenThisAddress, tokenSideAddress, amount, fee);
+        emit Withdraw(msg.sender, outputEventId, tokenThisAddress, tokenSideAddress, amount, transferFee, bridgeFee);
 
         withdrawFinish();
     }
 
-    function triggerTransfers() public payable {
+
+    function feeCheck(
+        address token,
+        bytes memory signature,
+        uint transferFee,
+        uint bridgeFee
+    ) private {
+        bytes32 messageHash = keccak256(abi.encodePacked(
+            "\x19Ethereum Signed Message:\n32",
+            keccak256(abi.encodePacked(
+                token,
+                block.timestamp / SIGNATURE_FEE_TIMESTAMP,
+                transferFee,
+                bridgeFee
+            ))
+        ));
+
+        address signer = ecdsaRecover(messageHash, signature);
+        require(hasRole(RELAY_ROLE, signer), "wrong fee signer");
+    }
+
+
+    function triggerTransfers(bytes memory signature, uint transferFee, uint bridgeFee) public payable {
         if (!hasRole(RELAY_ROLE, msg.sender)) {
-            require(msg.value == fee, "Sent value is not equal fee");
-            feeRecipient.transfer(fee);
+            feeCheck(address(0), signature, transferFee, bridgeFee);  // todo smth
+            transferFeeRecipient.transfer(transferFee);
+            bridgeFeeRecipient.transfer(bridgeFee);
         }
 
         emit Transfer(outputEventId++, queue);
@@ -201,12 +237,12 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         minSafetyBlocks = minSafetyBlocks_;
     }
 
-    function changeFee(uint fee_) public onlyRole(ADMIN_ROLE) {
-        fee = fee_;
+    function changeTransferFeeRecipient(address payable feeRecipient_) public onlyRole(ADMIN_ROLE) {
+        transferFeeRecipient = feeRecipient_;
     }
 
-    function changeFeeRecipient(address payable feeRecipient_) public onlyRole(ADMIN_ROLE) {
-        feeRecipient = feeRecipient_;
+    function changeBridgeFeeRecipient(address payable feeRecipient_) public onlyRole(ADMIN_ROLE) {
+        transferFeeRecipient = feeRecipient_;
     }
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
