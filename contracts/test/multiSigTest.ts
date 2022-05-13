@@ -36,9 +36,9 @@ describe("MultiSig test", () => {
     it("Check Proxy", async () => {
         await proxy.upgradeTo(implementation.address);
 
-        const tx = await proxy.connect(proxyAdminS).confirmTransaction(0);
-        const receipt = await tx.wait();
-        expect((await getEvents(receipt, "Upgraded"))[0].args[0]).eq(implementation.address);
+        await expect(proxy.connect(proxyAdminS).confirmTransaction(0)).
+            to.emit(proxy, "Upgraded")
+            .withArgs(implementation.address);
 
         // Cannot use implementation.METHOD()
         const Factory = await ethers.getContractFactory("ProxyMultisigTest");
