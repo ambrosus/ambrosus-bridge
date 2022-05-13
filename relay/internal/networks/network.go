@@ -6,7 +6,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_api"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -57,4 +57,10 @@ type BridgeReceiveEthash interface {
 type BridgeReceivePoSA interface {
 	Bridge
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
+}
+
+type BridgePriceApi interface {
+	Bridge
+	price_api.Signer
+	price_api.PriceGetter
 }
