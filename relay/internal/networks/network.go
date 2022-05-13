@@ -63,6 +63,6 @@ type BridgeReceivePoSA interface {
 
 type BridgeFeeApi interface {
 	Bridge
-	Sign(tokenPrice float64, tokenAddress string) ([]byte, error)
-	GetPrice(tokenAddress string) (float64, error)
+	Sign(tokenAddress string, transferFee *big.Int, bridgeFee *big.Int) ([]byte, error)
+	GetPrice(tokenAddress string) (*big.Int, *big.Int, error)
 }

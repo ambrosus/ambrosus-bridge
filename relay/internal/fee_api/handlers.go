@@ -2,12 +2,14 @@ package fee_api
 
 import (
 	"encoding/json"
+	"math/big"
 	"net/http"
 )
 
 type Result struct {
-	Price     float64 `json:"price"`
-	Signature []byte  `json:"signature"`
+	TransferFee *big.Int `json:"transfer_fee"`
+	BridgeFee   *big.Int `json:"bridge_fee"`
+	Signature   []byte   `json:"signature"`
 }
 
 /*
@@ -35,7 +37,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 
 	// get the token price
 	// tokenPrice, err := getTokenPrice(tokenAddress)
-	tokenPrice, err := p.GetPrice(tokenAddress)
+	transferFee, bridgeFee, err := p.GetPrice(tokenAddress) // TODO: this is stub, `GetPrice` returns only price of token
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(NewAppError(nil, "error when getting token price", err.Error()).Marshal())
@@ -44,12 +46,16 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 
 	// sign the price with private key
 	// signature, err := signData(pk, tokenPrice, tokenAddress)
-	signature, err := p.Sign(tokenPrice, tokenAddress)
+	signature, err := p.Sign(tokenAddress, transferFee, bridgeFee)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(NewAppError(nil, "error when signing data", err.Error()).Marshal())
 		return
 	}
 
-	json.NewEncoder(w).Encode(Result{Price: tokenPrice, Signature: signature})
+	json.NewEncoder(w).Encode(Result{
+		TransferFee: transferFee,
+		BridgeFee:   bridgeFee,
+		Signature:   signature,
+	})
 }
