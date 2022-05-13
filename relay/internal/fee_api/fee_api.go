@@ -3,15 +3,9 @@ package fee_api
 import (
 	"log"
 	"net/http"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
-
-type Signer interface {
-	Sign(tokenPrice float64, tokenAddress string) ([]byte, error)
-}
-
-type PriceGetter interface {
-	GetPrice(tokenAddress string) (float64, error)
-}
 
 // func signData(pk *ecdsa.PrivateKey, tokenPrice float64, tokenAddress string) ([]byte, error) {
 // 	var data bytes.Buffer
@@ -27,15 +21,11 @@ type PriceGetter interface {
 // }
 
 type FeeAPI struct {
-	signer      Signer
-	priceGetter PriceGetter
+	networks.BridgeFeeApi
 }
 
-func NewFeeAPI(signer Signer, priceGetter PriceGetter) *FeeAPI {
-	return &FeeAPI{
-		signer:      signer,
-		priceGetter: priceGetter,
-	}
+func NewFeeAPI(bridgeFeeApi networks.BridgeFeeApi) *FeeAPI {
+	return &FeeAPI{BridgeFeeApi: bridgeFeeApi}
 }
 
 func (p *FeeAPI) Run(endpoint string) {

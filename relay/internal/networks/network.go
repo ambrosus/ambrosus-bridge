@@ -6,7 +6,6 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/fee_api"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -61,6 +60,6 @@ type BridgeReceivePoSA interface {
 
 type BridgeFeeApi interface {
 	Bridge
-	fee_api.Signer
-	fee_api.PriceGetter
+	Sign(tokenPrice float64, tokenAddress string) ([]byte, error)
+	GetPrice(tokenAddress string) (float64, error)
 }

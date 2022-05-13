@@ -35,7 +35,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 
 	// get the token price
 	// tokenPrice, err := getTokenPrice(tokenAddress)
-	tokenPrice, err := p.priceGetter.GetPrice(tokenAddress)
+	tokenPrice, err := p.GetPrice(tokenAddress)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(NewAppError(nil, "error when getting token price", err.Error()).Marshal())
@@ -44,7 +44,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 
 	// sign the price with private key
 	// signature, err := signData(pk, tokenPrice, tokenAddress)
-	signature, err := p.signer.Sign(tokenPrice, tokenAddress)
+	signature, err := p.Sign(tokenPrice, tokenAddress)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write(NewAppError(nil, "error when signing data", err.Error()).Marshal())

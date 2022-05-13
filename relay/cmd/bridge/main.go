@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
@@ -9,7 +10,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/fee_api"
 	"github.com/rs/zerolog/log"
 )
 
@@ -58,7 +58,7 @@ func main() {
 	}
 
 	sideBridgeFeeApi := sideBridge.(networks.BridgeFeeApi)
-	feeApi := fee_api.NewFeeAPI(sideBridgeFeeApi, sideBridgeFeeApi)
+	feeApi := fee_api.NewFeeAPI(sideBridgeFeeApi)
 	go feeApi.Run("/price")
 
 	if cfg.Prometheus.Enable {
