@@ -100,7 +100,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: []
   });
 
-  await hre.deployments.deploy("proxyMultiSig", {
+  await hre.deployments.deploy("ProxyMultiSig", {
     from: owner,
     args: [
       deployed.address,

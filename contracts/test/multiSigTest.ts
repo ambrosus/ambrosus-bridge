@@ -25,7 +25,7 @@ describe("MultiSig test", () => {
         proxyAdminS = await ethers.getSigner(proxyAdmin);
         userS = await ethers.getSigner(user);
 
-        proxy = await ethers.getContract("proxyMultiSig", ownerS);
+        proxy = await ethers.getContract("ProxyMultiSig", ownerS);
         implementation = await ethers.getContract("ProxyMultisigTest", ownerS);
     });
 
@@ -54,7 +54,6 @@ describe("MultiSig test", () => {
             .to.emit(proxy, "Execution")
             .withArgs(1);
 
-        // implementation.attach(proxy.address);
         expect(await implementation.value()).eq("0x11223344");
 
     });

@@ -7,7 +7,7 @@ import "./MultiSigWallet.sol";
 import "hardhat/console.sol";
 
 
-contract proxyMultiSig is Proxy, MultiSigWallet {
+contract ProxyMultiSig is Proxy, MultiSigWallet {
     bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
     bytes32 private constant _ROLLBACK_SLOT = 0x4910fdfa16fed3260ed0e7147f7cc6da11a60208b5b9406d12a635614ffd9143;
     bytes32 private constant ADMIN_STORAGE_LOCATION = 0xb53127684a568b3173ae13b9f8a6016e243e63b6e8ee1178d6a717850b5d6103;
@@ -24,6 +24,7 @@ contract proxyMultiSig is Proxy, MultiSigWallet {
         uint _required
 
     ) MultiSigWallet(owners, _required) {
+        // Cannot use _upgradeToAndCall because of onlyWallet modifier
         _upgradeTo(_logic);
         if (_data.length > 0) {
             Address.functionDelegateCall(_logic, _data);
