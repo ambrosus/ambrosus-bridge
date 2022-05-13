@@ -40,12 +40,23 @@ describe("MultiSig test", () => {
             to.emit(proxy, "Upgraded")
             .withArgs(implementation.address);
 
-        // Cannot use implementation.METHOD()
-        const Factory = await ethers.getContractFactory("ProxyMultisigTest");
-        const contract = await Factory.attach(proxy.address);
+        const callData = implementation.interface.encodeFunctionData(
+            implementation.interface.functions["changeValue(bytes4)"], ["0x11223344"]
+        );
 
-        await (await contract.changeValue("0x11223344")).wait();
-        expect(await contract.value()).eq("0x11223344");
+        await proxy.submitTransaction(
+            implementation.address,
+            0,
+            callData
+        );
+
+        await expect(proxy.connect(proxyAdminS).confirmTransaction(1))
+            .to.emit(proxy, "Execution")
+            .withArgs(1);
+
+        // implementation.attach(proxy.address);
+        expect(await implementation.value()).eq("0x11223344");
+
     });
 
     it ("Non admin submitTransactionCall", async () => {
@@ -53,6 +64,3 @@ describe("MultiSig test", () => {
             .to.be.revertedWith("");
     });
 });
-
-const getEvents = async (receipt: any, eventName: string) =>
-    receipt.events?.filter((x: any) => x.event === eventName);
