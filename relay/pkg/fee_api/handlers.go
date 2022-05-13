@@ -1,4 +1,4 @@
-package price_api
+package fee_api
 
 import (
 	"encoding/json"
@@ -22,7 +22,7 @@ type Result struct {
  * respond the "bridge fee" and "transfer fee"
  */
 
-func (p *PriceAPI) priceHandler(w http.ResponseWriter, r *http.Request) {
+func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// get the token address from the query string

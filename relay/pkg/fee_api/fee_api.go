@@ -1,4 +1,4 @@
-package price_api
+package fee_api
 
 import (
 	"log"
@@ -26,19 +26,19 @@ type PriceGetter interface {
 // 	return 13.37, nil
 // }
 
-type PriceAPI struct {
+type FeeAPI struct {
 	signer      Signer
 	priceGetter PriceGetter
 }
 
-func NewPriceAPI(signer Signer, priceGetter PriceGetter) *PriceAPI {
-	return &PriceAPI{
+func NewFeeAPI(signer Signer, priceGetter PriceGetter) *FeeAPI {
+	return &FeeAPI{
 		signer:      signer,
 		priceGetter: priceGetter,
 	}
 }
 
-func (p *PriceAPI) Run(endpoint string) {
-	http.HandleFunc(endpoint, p.priceHandler)
+func (p *FeeAPI) Run(endpoint string) {
+	http.HandleFunc(endpoint, p.feesHandler)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }

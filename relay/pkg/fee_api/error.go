@@ -1,4 +1,4 @@
-package price_api
+package fee_api
 
 import "encoding/json"
 

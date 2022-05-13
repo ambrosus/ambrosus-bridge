@@ -9,7 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_api"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/fee_api"
 	"github.com/rs/zerolog/log"
 )
 
@@ -57,9 +57,9 @@ func main() {
 		go sideBridge.ValidityWatchdog()
 	}
 
-	sideBridgePriceApi := sideBridge.(networks.BridgePriceApi)
-	priceApi := price_api.NewPriceAPI(sideBridgePriceApi, sideBridgePriceApi)
-	go priceApi.Run("/price")
+	sideBridgeFeeApi := sideBridge.(networks.BridgeFeeApi)
+	feeApi := fee_api.NewFeeAPI(sideBridgeFeeApi, sideBridgeFeeApi)
+	go feeApi.Run("/price")
 
 	if cfg.Prometheus.Enable {
 		// Prometheus endpoint
