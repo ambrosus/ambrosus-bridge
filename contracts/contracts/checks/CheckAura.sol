@@ -3,6 +3,8 @@ pragma solidity 0.8.6;
 
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./SignatureCheck.sol";
+
 
 contract CheckAura is Initializable, CheckReceiptsProof {
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
@@ -138,7 +140,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
 
         address validator = validatorSet[bytesToUint(block_.step) % validatorSet.length];
-        checkSignature(validator, bareHash, block_.signature);
+        require(ecdsaRecover(bareHash, block_.signature) == validator, "Failed to verify sign");
 
         return sealHash;
     }
@@ -153,19 +155,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         );
     }
 
-
-    function checkSignature(address signer, bytes32 messageHash, bytes memory signature) internal pure {
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
-            if lt(v, 27) {v := add(v, 27)}
-        }
-        require(ecrecover(messageHash, v, r, s) == signer, "Failed to verify sign");
-    }
 
     function calcValidatorSetReceiptHash(bytes[] memory receipt_proof, address validatorSetAddress, address[] memory vSet) private pure returns (bytes32) {
         bytes32 el = keccak256(abi.encodePacked(
