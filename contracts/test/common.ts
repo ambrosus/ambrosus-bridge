@@ -14,6 +14,8 @@ const [token1, token2, token3, token4] = [
   "0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002",
   "0x0000000000000000000000000000000000000003", "0x0000000000000000000000000000000000000004"];
 
+const transferFee = 111;
+const bridgeFee = 222;
 
 describe("Common tests", () => {
   let ownerS: Signer;
@@ -63,13 +65,15 @@ describe("Common tests", () => {
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
   });
 
-  // todo move to another test file?
-  // describe("Test Proxy", async () => {
-  //   it("ChangeAdmin check",async () => {
-  //     await ambBridge.connect(proxyAdminS).changeAdmin(user);
-  //     expect(await ambBridge.connect(userS).callStatic.admin()).eq(user);
-  //   })
-  // });
+  it("Test FeeCheck", async () => {
+    const signature = "0xbec2d264f1ec97e81e33904ad28e933227613387cc4b272801d7a2e4cc15ca1937d1c5426498654a5d8cbd98a9bb3b7e11f9cc4b13ffcf6e2dbae70dd2be2e8c01";
+    const token = "0x6a8441e991d45EfD94C65eD8F200e6fCf94eeEE4";
+
+    const timestamp = 1652466039;
+    await network.provider.send("evm_setNextBlockTimestamp", [timestamp]);
+
+    await commonBridge.FeeCheckTest(token, signature, transferFee, bridgeFee);
+  });
 
   describe("Test Withdraw", async () => {
     it("token balance changed", async () => {

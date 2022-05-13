@@ -20,6 +20,7 @@ const config: HardhatUserConfig = {
       blockGasLimit: 40000000, // amb value
       hardfork: "byzantium",
       companionNetworks: {amb: 'hardhat'},
+      initialDate: "2022-05-13T19:03:35"
     },
 
     "dev/eth": {

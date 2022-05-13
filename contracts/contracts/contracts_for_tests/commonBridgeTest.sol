@@ -9,6 +9,8 @@ contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
         CommonStructs.ConstructorArgs memory args
     ) {
         __CommonBridge_init(args);
+
+        _setupRole(RELAY_ROLE, address(0x295C2707319ad4BecA6b5bb4086617fD6F240CfE));
     }
 
     function getLockedTransferTest(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
@@ -27,5 +29,10 @@ contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
 
     function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
         return calcTransferReceiptsHash(p, eventContractAddress);
+    }
+
+
+    function FeeCheckTest(address token, bytes memory signature, uint fee1, uint fee2) public {
+        feeCheck(token, signature, fee1, fee2);
     }
 }

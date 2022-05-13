@@ -124,7 +124,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         bytes memory signature,
         uint transferFee,
         uint bridgeFee
-    ) private {
+    ) internal {
         bytes32 messageHash = keccak256(abi.encodePacked(
             "\x19Ethereum Signed Message:\n32",
             keccak256(abi.encodePacked(
