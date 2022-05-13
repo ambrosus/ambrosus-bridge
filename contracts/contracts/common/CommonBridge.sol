@@ -41,7 +41,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     uint lastTimeframe;
 
-    event Withdraw(address indexed from, address tokenFrom, address tokenTo, uint eventId, uint feeAmount);
+    event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount, uint feeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
@@ -66,22 +66,21 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
     }
 
-
     function wrapWithdraw(address toAddress) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
-        require(msg.value > fee, "Sent value < fee");
+        require(msg.value > fee, "Sent value <= fee");
         feeRecipient.transfer(fee);
 
-        uint restOfValue = msg.value - fee;
-        IWrapper(wrapperAddress).deposit{value : restOfValue}();
+        uint amount = msg.value - fee;
+        IWrapper(wrapperAddress).deposit{value : amount}();
 
         //
-        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, restOfValue));
-        emit Withdraw(msg.sender, address(0), tokenSideAddress, outputEventId, fee);
+        queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
+        emit Withdraw(msg.sender, outputEventId, address(0), tokenSideAddress, amount, fee);
 
-        withdraw_finish();
+        withdrawFinish();
     }
 
     function withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide) payable public {
@@ -94,18 +93,29 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             require(tokenSideAddress != address(0), "Unknown token address");
         }
 
+        require(amount > 0, "Cannot withdraw 0");
         require(msg.value == fee, "Sent value != fee");
         feeRecipient.transfer(msg.value);
 
         require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
-        emit Withdraw(msg.sender, tokenThisAddress, tokenSideAddress, outputEventId, fee);
+        emit Withdraw(msg.sender, outputEventId, tokenThisAddress, tokenSideAddress, amount, fee);
 
-        withdraw_finish();
+        withdrawFinish();
     }
 
-    function withdraw_finish() internal {
+    function triggerTransfers() public payable {
+        if (!hasRole(RELAY_ROLE, msg.sender)) {
+            require(msg.value == fee, "Sent value is not equal fee");
+            feeRecipient.transfer(fee);
+        }
+
+        emit Transfer(outputEventId++, queue);
+        delete queue;
+    }
+
+    function withdrawFinish() internal {
         uint nowTimeframe = block.timestamp / timeframeSeconds;
         if (nowTimeframe != lastTimeframe) {
             emit Transfer(outputEventId++, queue);
@@ -181,6 +191,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
+        inputEventId = eventId-1; // pretend like we don't receive that event
     }
 
 

@@ -1,29 +1,44 @@
 package logger
 
 import (
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"encoding/json"
+	"strings"
 )
 
-type Hook struct {
-	extLogger external_logger.ExternalLogger
+type ExtLog struct {
+	Level   string                 `json:"level"`
+	Bridge  string                 `json:"bridge"`
+	Message string                 `json:"message"`
+	Error   string                 `json:"error"`
+	Rest    map[string]interface{} `json:"-"`
 }
 
-func (h Hook) Run(event *zerolog.Event, level zerolog.Level, message string) {
-	var logFunc func(string) error
+type Hook interface {
+	Log(*ExtLog)
+}
 
-	switch level {
-	case zerolog.ErrorLevel:
-		logFunc = h.extLogger.LogError
-	case zerolog.WarnLevel:
-		logFunc = h.extLogger.LogWarning
-	default:
-		return
-	}
+type hook struct {
+	hook Hook
+}
 
-	if err := logFunc(message); err != nil {
-		log.Error().Err(err).Msg("error send external log")
+func (h hook) Write(p []byte) (n int, err error) {
+	extLog := new(ExtLog)
+	if err := json.Unmarshal(p, extLog); err != nil {
+		return 0, err
 	}
+	if err := json.Unmarshal(p, &extLog.Rest); err != nil {
+		return 0, err
+	}
+	delete(extLog.Rest, "level")
+	delete(extLog.Rest, "bridge")
+	delete(extLog.Rest, "message")
+	delete(extLog.Rest, "error")
+
+	// TODO: remove
+	if strings.Contains(extLog.Error, "websocket: close 1006 (abnormal closure): unexpected EOF") {
+		return len(p), nil
+	}
+	h.hook.Log(extLog)
+
+	return len(p), nil
 }

@@ -220,7 +220,7 @@ contract Ethash is SHA3_512 {
         uint epochNum,
         uint fullSizeIn128Resultion,
         uint branchDepth,
-        uint[] memory merkleNodes
+        uint[] calldata merkleNodes
     ) public {
 
         // we store only previous and current epochs

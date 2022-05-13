@@ -11,7 +11,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -19,13 +18,12 @@ const BridgeName = "ethereum"
 
 type Bridge struct {
 	nc.CommonBridge
-	Config     *config.ETHConfig
 	sideBridge networks.BridgeReceiveEthash
 	ethash     *ethash.Ethash
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (*Bridge, error) {
+func New(cfg *config.ETHConfig, externalLogger logger.Hook) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
@@ -34,51 +32,29 @@ func New(cfg *config.ETHConfig, externalLogger external_logger.ExternalLogger) (
 
 	b := &Bridge{
 		CommonBridge: commonBridge,
-		Config:       cfg,
 		ethash:       ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs),
 	}
 	b.CommonBridge.Bridge = b
 	return b, nil
 }
 
-func (b *Bridge) Run(sideBridge networks.BridgeReceiveEthash) {
-	b.Logger.Debug().Msg("Running ethereum bridge...")
-
+func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
-
-	b.ensureDAGsExists()
-
-	go b.UnlockTransfersLoop()
-
-	b.Logger.Info().Msg("Ethereum bridge runned!")
-
-	b.ListenTransfersLoop()
 }
 
-func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Waiting for safety blocks...")
+func (b *Bridge) Run() {
+	b.Logger.Debug().Msg("Running ethereum bridge...")
 
-	// Wait for safety blocks.
-	safetyBlocks, err := b.sideBridge.GetMinSafetyBlocksNum()
+	go b.ensureDAGsExists()
+	go b.UnlockTransfersLoop()
+	b.SubmitTransfersLoop()
+}
+
+func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
+	powProof, err := b.encodePoWProof(event, safetyBlocks)
 	if err != nil {
-		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
-	}
-
-	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
-		return fmt.Errorf("WaitForBlock: %w", err)
-	}
-
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
-
-	// Check if the event has been removed.
-	if err := b.isEventRemoved(event); err != nil {
-		return fmt.Errorf("isEventRemoved: %w", err)
-	}
-
-	powProof, err := b.getBlocksAndEvents(event, safetyBlocks)
-	if err != nil {
-		return fmt.Errorf("getBlocksAndEvents: %w", err)
+		return fmt.Errorf("encodePoWProof: %w", err)
 	}
 
 	for _, blockNum := range []uint64{event.Raw.BlockNumber, event.Raw.BlockNumber + safetyBlocks} {
@@ -87,7 +63,7 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer) error {
 		}
 	}
 
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
+	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer PoW...")
 	err = b.sideBridge.SubmitTransferPoW(powProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
@@ -108,11 +84,9 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 
 func (b *Bridge) checkEpochData(blockNumber uint64, eventId *big.Int) error {
 	epoch := blockNumber / 30000
-	isEpochSet, err := b.sideBridge.IsEpochSet(epoch)
-	if err != nil {
+	if isEpochSet, err := b.sideBridge.IsEpochSet(epoch); err != nil {
 		return fmt.Errorf("IsEpochSet: %w", err)
-	}
-	if isEpochSet {
+	} else if isEpochSet {
 		return nil
 	}
 
@@ -135,20 +109,8 @@ func (b *Bridge) ensureDAGsExists() {
 	// Getting last ethereum block number.
 	blockNumber, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
-		b.Logger.Error().Msgf("error getting last block number: %s", err.Error())
+		b.Logger.Error().Err(err).Msgf("error getting last block number")
 		return
 	}
-	go b.ethash.GenDagForEpoch(blockNumber / 30000)
-}
-
-func (b *Bridge) isEventRemoved(event *contracts.BridgeTransfer) error {
-	block, err := b.Client.BlockByNumber(context.Background(), big.NewInt(int64(event.Raw.BlockNumber)))
-	if err != nil {
-		return fmt.Errorf("HeaderByNumber: %w", err)
-	}
-
-	if block.Hash() != event.Raw.BlockHash {
-		return fmt.Errorf("block hash != event's block hash")
-	}
-	return nil
+	b.ethash.GenDagForEpoch(blockNumber / 30000)
 }

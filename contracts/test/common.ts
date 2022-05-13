@@ -27,8 +27,6 @@ describe("Common tests", () => {
 
 
   let commonBridge: Contract;
-  let ethBridge: Contract;
-  let ambBridge: Contract;
   let mockERC20: Contract;
   let sAmb: Contract;
 
@@ -42,8 +40,6 @@ describe("Common tests", () => {
     proxyAdminS = await ethers.getSigner(proxyAdmin);
 
     commonBridge = await ethers.getContract("CommonBridgeTest", ownerS);
-    ambBridge = await ethers.getContract("AmbBridgeTest", ownerS);
-    ethBridge = await ethers.getContract("EthBridgeTest", ownerS);
     mockERC20 = await ethers.getContract("BridgeERC20Test", ownerS);
     sAmb = await ethers.getContract("sAMB", ownerS);
 
@@ -58,23 +54,22 @@ describe("Common tests", () => {
       [ethers.constants.AddressZero]: mockERC20.address,  // mean that mockERC20 point to native token in side network
     }
 
-    for (let bridge of [commonBridge, ethBridge, ambBridge]) {
-      await bridge.grantRole(ADMIN_ROLE, owner);
-      await bridge.grantRole(RELAY_ROLE, relay);
-      await bridge.tokensAddBatch(Object.keys(tokens), Object.values(tokens));
-      await mockERC20.grantRole(BRIDGE_ROLE, bridge.address);
-    }
+    await commonBridge.grantRole(ADMIN_ROLE, owner);
+    await commonBridge.grantRole(RELAY_ROLE, relay);
+    await commonBridge.tokensAddBatch(Object.keys(tokens), Object.values(tokens));
+    await mockERC20.grantRole(BRIDGE_ROLE, commonBridge.address);
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
   });
 
-  describe("Test Proxy", async () => {
-    it("ChangeAdmin check",async () => {
-      await ambBridge.connect(proxyAdminS).changeAdmin(user);
-      expect(await ambBridge.connect(userS).callStatic.admin()).eq(user);
-    })
-  });
+  // todo move to another test file?
+  // describe("Test Proxy", async () => {
+  //   it("ChangeAdmin check",async () => {
+  //     await ambBridge.connect(proxyAdminS).changeAdmin(user);
+  //     expect(await ambBridge.connect(userS).callStatic.admin()).eq(user);
+  //   })
+  // });
 
   describe("Test Withdraw", async () => {
     it("token balance changed", async () => {
@@ -211,25 +206,26 @@ describe("Common tests", () => {
       expect(await commonBridge.lockTime()).eq(2000);
     });
 
-    it("Test setSideBridge [AMB]", async () => {
-      await ambBridge.setSideBridge(mockERC20.address);
-      expect(await ambBridge.sideBridgeAddress()).eq(mockERC20.address);
-    });
+    // todo move to another test file?
+    // it("Test setSideBridge [AMB]", async () => {
+    //   await ambBridge.setSideBridge(mockERC20.address);
+    //   expect(await ambBridge.sideBridgeAddress()).eq(mockERC20.address);
+    // });
   });
 
 
-  describe("Test Transfer lock/unlock/remove", () => {
+  describe("Test Transfer lock/unlock/remove/trigger", () => {
     beforeEach(async () => {
       const data1 = [[mockERC20.address, user, 10]];
       const data2 = [[mockERC20.address, user, 20], [mockERC20.address, user, 30]];
 
-      await ambBridge.lockTransfersTest(data1, 1);
-      await ambBridge.lockTransfersTest(data2, 2);
+      await commonBridge.lockTransfersTest(data1, 1);
+      await commonBridge.lockTransfersTest(data2, 2);
     });
 
     it("locked correctly", async () => {
-      const d1 = await ambBridge.getLockedTransferTest(1);
-      const d2 = await ambBridge.getLockedTransferTest(2);
+      const d1 = await commonBridge.getLockedTransferTest(1);
+      const d2 = await commonBridge.getLockedTransferTest(2);
 
       expect(d1.transfers[0].amount).eq(10)
       expect(d2.transfers[0].amount).eq(20)
@@ -239,60 +235,80 @@ describe("Common tests", () => {
     it("unlock", async () => {
       await nextTimeframe();
 
-      await expect(() => ambBridge.unlockTransfers(1))
+      await expect(() => commonBridge.unlockTransfers(1))
         .to.changeTokenBalance(mockERC20, userS, 10);
     });
 
     it("unlock before endTime passed", async () => {
-      await expect(ambBridge.unlockTransfers(1))
+      await expect(commonBridge.unlockTransfers(1))
         .to.be.revertedWith("lockTime has not yet passed")
     });
 
     it("unlock not oldest", async () => {
       await nextTimeframe();
 
-      await expect(ambBridge.unlockTransfers(2))
+      await expect(commonBridge.unlockTransfers(2))
         .to.be.revertedWith("can unlock only oldest event")
     });
 
     it("unlock batch", async () => {
       await nextTimeframe();
 
-      await expect(() => ambBridge.unlockTransfersBatch())
+      await expect(() => commonBridge.unlockTransfersBatch())
         .to.changeTokenBalance(mockERC20, userS, 10 + 20 + 30);
     });
 
     it("remove transfers from 1", async () => {
-      await ambBridge.pause();
-      await ambBridge.removeLockedTransfers(1);
+      await commonBridge.pause();
+      await commonBridge.removeLockedTransfers(1);
 
-      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.be.empty;
-      expect((await ambBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
     });
 
     it("remove transfers from 2", async () => {
-      await ambBridge.pause();
-      await ambBridge.removeLockedTransfers(2);
+      await commonBridge.pause();
+      await commonBridge.removeLockedTransfers(2);
 
-      expect((await ambBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
-      expect((await ambBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
+      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
     });
 
     it("remove unlocked", async () => {
       await nextTimeframe();
-      await ambBridge.unlockTransfers(1);
+      await commonBridge.unlockTransfers(1);
 
-      await ambBridge.pause();
-      await expect(ambBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
+      await commonBridge.pause();
+      await expect(commonBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
     });
 
     it("unlock native coins", async () => {
-      await ambBridge.wrapWithdraw(user, {value: +await commonBridge.fee() + 50});  // lock some SAMB tokens on bridge
-      await ambBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
+      await commonBridge.wrapWithdraw(user, {value: +await commonBridge.fee() + 50});  // lock some SAMB tokens on bridge
+      await commonBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
       await nextTimeframe();
 
-      await expect(() => ambBridge.unlockTransfers(1))
+      await expect(() => commonBridge.unlockTransfers(1))
         .to.changeEtherBalance(userS, 25);
+    });
+
+    it("trigger transfers event check", async () => {
+      const beforeEventOutputEventId = await commonBridge.getOutputEventId();
+
+      const tx = await commonBridge.triggerTransfers({value: 1000});
+      const receipt = await tx.wait();
+      const events = await getEvents(receipt);
+
+      const afterEventOutputEventId = await commonBridge.getOutputEventId();
+
+      expect(events[0].event).eq("Transfer");
+      expect(beforeEventOutputEventId.add("0x1")).eq(afterEventOutputEventId);
+    });
+
+    it("trigger transfers fee check", async () => {
+      await expect(commonBridge.triggerTransfers())
+          .to.be.revertedWith("Sent value is not equal fee");
+
+      await commonBridge.connect(relayS).triggerTransfers();
     });
   });
 
@@ -305,7 +321,7 @@ describe("Common tests", () => {
     ];
     const sideBridgeAddress = "0xd34baced0bf45ad4752783ad610450d0167ef6c7";
 
-    expect(await ambBridge.calcTransferReceiptsHashTest(transferProof, sideBridgeAddress))
+    expect(await commonBridge.calcTransferReceiptsHashTest(transferProof, sideBridgeAddress))
       .to.eq("0x3cd6a7c9c4b79bd7231f9c85f7c6ef783b012faaadf908e54fb75c0b28ee2f88");
   });
 });

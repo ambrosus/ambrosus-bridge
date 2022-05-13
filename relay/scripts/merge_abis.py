@@ -1,3 +1,4 @@
+import sys
 import json
 from pathlib import Path
 
@@ -5,17 +6,16 @@ ABI_FILES_PATH = Path.cwd().parent.parent.resolve() / "contracts" / "abi"
 
 
 def main():
-    amb_abi_file = open(ABI_FILES_PATH / "AmbBridge.json")
-    eth_abi_file = open(ABI_FILES_PATH / "EthBridge.json")
-
-    amb_abi = json.load(amb_abi_file)
-    eth_abi = json.load(eth_abi_file)
+    abis = (
+        json.load((ABI_FILES_PATH / f).open())
+        for f in sys.argv[1:]
+    )
 
     res = []
     already_used = []
 
-    for network_abi in (amb_abi, eth_abi):
-        for i in network_abi[1:]:  # skip "constructor"
+    for network_abi in abis:
+        for i in network_abi[1:-1]:  # skip "constructor" and "receive" func
             if i["name"] in already_used:
                 continue
             res.append(i)

@@ -3,20 +3,22 @@ package common
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 func (b *CommonBridge) UnlockTransfersLoop() {
+	b.shouldHavePk()
 	for {
 		b.EnsureContractUnpaused()
 
 		if err := b.unlockOldTransfers(); err != nil {
-			b.Logger.Error().Msgf("UnlockTransfersLoop: %s", err)
+			b.Logger.Error().Err(fmt.Errorf("UnlockTransfersLoop: %s", err)).Msg("UnlockTransfersLoop error")
 		}
-		time.Sleep(time.Minute)
+		time.Sleep(failSleepTIme)
 	}
 }
 
@@ -30,13 +32,13 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	if err != nil {
 		return fmt.Errorf("get locked transfer time %v: %w", oldestLockedEventId, err)
 	}
-	if lockedTransferTime.Cmp(big.NewInt(0)) == 0 {
+	if lockedTransferTime.Uint64() == 0 {
 		lockTime, err := b.Contract.LockTime(nil)
 		if err != nil {
 			return fmt.Errorf("get lock time: %w", err)
 		}
 
-		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"unlockOldTransfers: there are no locked transfers with that id. Sleep %v seconds...",
 			lockTime.Uint64(),
 		)
@@ -53,7 +55,7 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	// Check if the unlocking is allowed and get the sleep time.
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
-		b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf(
+		b.Logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
 			"unlockOldTransfers: sleep %v seconds...",
 			sleepTime,
 		)
@@ -61,6 +63,10 @@ func (b *CommonBridge) unlockOldTransfers() error {
 	}
 
 	// Unlock the oldest transfer.
+	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: check validity of locked transfers...")
+	if err := b.checkOldLockedTransferFromId(oldestLockedEventId); err != nil {
+		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
+	}
 	b.Logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocking...")
 	err = b.unlockTransfers()
 	if err != nil {
@@ -83,6 +89,7 @@ func (b *CommonBridge) unlockTransfers() error {
 	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
 	authCustomGas := *b.Auth
 	authCustomGas.GasLimit = customGas
-	tx, err = b.Contract.UnlockTransfersBatch(&authCustomGas)
-	return b.ProcessTx(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"})
+	return b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.UnlockTransfersBatch(&authCustomGas)
+	}, networks.GetTxErrParams{MethodName: "unlockTransfersBatch"})
 }

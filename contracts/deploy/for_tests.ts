@@ -44,26 +44,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  await hre.deployments.deploy("AmbBridgeTest", {
+  await hre.deployments.deploy("CheckPoWTest", {
     from: owner,
-    proxy: {
-      proxyContract: "proxyTransparent",
-      // viaAdminContract: "proxyAdmin",
-      execute: {
-        init: {
-          methodName: "initialize_",
-          args: [commonArgs]
-        }
-      }
-    },
+    args: [
+      0 // minimum difficulty
+    ],
     log: true,
   });
-  await hre.deployments.execute("AmbBridgeTest", {from: owner, log: true}, 'changeAdmin', proxyAdmin);
 
-  await hre.deployments.deploy("EthBridgeTest", {
-    contract: "EthBridgeTest",
+  await hre.deployments.deploy("CheckAuraTest", {
     from: owner,
-    args: [commonArgs,
+    args: [
       [
         "0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79",
         "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
@@ -75,6 +66,39 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
+  await hre.deployments.deploy("CheckPoSATest", {
+    from: owner,
+    args: [
+      [
+        "0x049153b8dae0a232ac90d20c78f1a5d1de7b7dc5",
+        "0x35552c16704d214347f29fa77f77da6d75d7c752",
+        "0x7a1a4ad9cc746a70ee58568466f7996dd0ace4e8",
+        "0x980a75ecd1309ea12fa2ed87a8744fbfc9b863d5",
+        "0xa2959d3f95eae5dc7d70144ce1b73b403b7eb6e0",
+        "0xb71b214cb885500844365e95cd9942c7276e7fd8",
+        "0xc89c669357d161d57b0b255c94ea96e179999919",
+        "0xf474cf03cceff28abc65c9cbae594f725c80e12d"
+      ],
+      64643,
+      "0x61"
+    ],
+    log: true,
+  });
+
+  await hre.deployments.deploy("ProxyMultisigTest", {
+    from: owner,
+    args: []
+  });
+
+  await hre.deployments.deploy("ProxyMultiSig", {
+    from: owner,
+    args: [
+      mockAddr,
+      "0x",
+      [owner, proxyAdmin],
+      2
+    ],
+  });
 };
 
 export default func;

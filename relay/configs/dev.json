@@ -5,13 +5,15 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x4D6c49Dd98A25AD7bDAA64aA9ad7e0E9221bC2Ce",
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
+            "contractAddr": "0xA7CB71C94f3fC5Ee2232f8E449461177bc23527B",
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "privateKey": "in env"
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xF634554393053F77F3C5093B52E3064A49aaB851",
+            "contractAddr": "0x38eC3621e15a730c42a8094a62886CEA2E0aAEb4",
+            "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 0
@@ -19,9 +21,9 @@
     },
     "externalLogger": {
         "telegram": {
-            "enable": false,
-            "token": "",
-            "chatId": ""
+            "enable": true,
+            "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
+            "chatId": "-1001732781392"
         }
     },
     "prometheus": {

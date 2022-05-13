@@ -1,6 +1,7 @@
 package amb
 
 import (
+	"context"
 	"fmt"
 	"math/big"
 	"testing"
@@ -27,7 +28,7 @@ func TestHeader(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h, err := ambBridge.HeaderByNumber(big.NewInt(13000000))
+	h, err := ambBridge.Client.ParityHeaderByNumber(context.Background(), big.NewInt(13000000))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,7 +59,7 @@ func TestEncoding(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	h, err := ambBridge.HeaderByNumber(big.NewInt(16021709))
+	h, err := ambBridge.Client.ParityHeaderByNumber(context.Background(), big.NewInt(16021709))
 	if err != nil {
 		t.Fatal(err)
 	}

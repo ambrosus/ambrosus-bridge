@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "./CheckPoW_Ethash.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract CheckPoW is CheckReceiptsProof, Ethash  {
+
+contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
     struct BlockPoW {
         bytes3 p0WithNonce;
         bytes3 p0WithoutNonce;
@@ -30,7 +31,15 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
         CommonStructs.TransferProof transfer;
     }
 
-    function checkPoW_(PoWProof memory powProof, address sideBridgeAddress) internal view
+    uint256 minimumDifficulty;
+
+    function __CheckPoW_init(
+        uint256 minimumDifficulty_
+    ) internal initializer {
+        minimumDifficulty = minimumDifficulty_;
+    }
+
+    function checkPoW_(PoWProof calldata powProof, address sideBridgeAddress) internal view
     {
         bytes32 hash = calcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
         for (uint i = 0; i < powProof.blocks.length; i++) {
@@ -42,18 +51,20 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
     }
 
 
-    function verifyEthash(BlockPoW memory block_) internal view {
+    function verifyEthash(BlockPoW calldata block_) internal view {
+        uint difficulty = bytesToUint(block_.difficulty);
+        require(difficulty >= minimumDifficulty, "difficulty too low");
         verifyPoW(
             bytesToUint(block_.number),
             blockHashWithoutNonce(block_),
             bytesToUint(block_.nonce),
-            bytesToUint(block_.difficulty),
+            difficulty,
             block_.dataSetLookup,
             block_.witnessForLookup
         );
     }
 
-    function blockHash(BlockPoW memory block_) internal pure returns (bytes32) {
+    function blockHash(BlockPoW calldata block_) internal pure returns (bytes32) {
         // Note: too much arguments in abi.encodePacked() function cause CompilerError: Stack too deep...
         return keccak256(abi.encodePacked(
                 abi.encodePacked(
@@ -74,17 +85,21 @@ contract CheckPoW is CheckReceiptsProof, Ethash  {
             ));
     }
 
-    function blockHashWithoutNonce(BlockPoW memory block_) internal pure returns (bytes32) {
+    function blockHashWithoutNonce(BlockPoW calldata block_) internal pure returns (bytes32) {
         bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
-            block_.p0WithoutNonce,
-            block_.p1,
-            block_.parentOrReceiptHash,
-            block_.p2,
-            block_.difficulty,
-            block_.p3,
-            block_.number,
-            block_.p4,
-            block_.p6
+            abi.encodePacked(
+                block_.p0WithoutNonce,
+                block_.p1,
+                block_.parentOrReceiptHash,
+                block_.p2
+            ),
+            abi.encodePacked(
+                block_.difficulty,
+                block_.p3,
+                block_.number,
+                block_.p4,
+                block_.p6
+            )
         );
 
         return keccak256(rlpHeaderHashWithoutNonce);

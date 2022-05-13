@@ -1,14 +1,13 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {configPath, readConfig, writeConfig} from "./utils";
+import {readConfig} from "./utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["amb"]) return;
 
   const {owner} = await hre.getNamedAccounts();
 
-  const path = configPath(hre.network);
-  let configFile = readConfig(path);
+  let configFile = readConfig(hre.network);
 
   const samb = configFile.tokens.SAMB;
   if (!!samb.addresses.amb) {
@@ -24,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
   samb.addresses.amb = deployResult.address;
-  writeConfig(path, configFile);
+  configFile.save();
 
 };
 

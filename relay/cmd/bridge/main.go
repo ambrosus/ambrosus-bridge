@@ -2,11 +2,13 @@ package main
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/external_logger/telegram"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/metric"
 	"github.com/rs/zerolog/log"
 )
 
@@ -17,33 +19,41 @@ func main() {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
 
-	var tgAmbLogger, tgEthLogger external_logger.ExternalLogger
-
+	var tgLogger logger.Hook
 	if tg := cfg.ExtLoggers.Telegram; tg.Enable {
-		// Creating telegram loggers as an external logger.
-		tgAmbLogger = telegram.NewLogger(tg.Token, tg.ChatId, "<b>[AMB]</b>", nil)
-		tgEthLogger = telegram.NewLogger(tg.Token, tg.ChatId, "<b>[ETH]</b>", nil)
+		tgLogger = telegram.NewLogger(tg.Token, tg.ChatId, nil)
 	}
 
 	// Creating a new ambrosus bridge.
-	ambBridge, err := amb.New(&cfg.Networks.AMB, tgAmbLogger)
+	ambBridge, err := amb.New(cfg.Networks.AMB, tgLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ambrosus bridge not created")
 	}
 
-	// Creating a new ethereum bridge.
-	ethBridge, err := eth.New(&cfg.Networks.ETH, tgEthLogger)
-	if err != nil {
-		log.Fatal().Err(err).Msg("ethereum bridge not created")
+	// Creating a side (eth or bsc) bridge.
+	var sideBridge networks.BridgeReceiveAura
+	switch {
+	case cfg.Networks.ETH != nil:
+		sideBridge, err = eth.New(cfg.Networks.ETH, tgLogger)
+		sideBridge.(*eth.Bridge).SetSideBridge(ambBridge)
+
+	case cfg.Networks.BSC != nil:
+		sideBridge, err = bsc.New(cfg.Networks.BSC, tgLogger)
+		sideBridge.(*bsc.Bridge).SetSideBridge(ambBridge)
+
 	}
+	if err != nil {
+		log.Fatal().Err(err).Msg("side bridge not created")
+	}
+	ambBridge.SetSideBridge(sideBridge)
 
 	if cfg.IsRelay {
-		go ambBridge.Run(ethBridge)
-		go ethBridge.Run(ambBridge)
+		go ambBridge.Run()
+		go sideBridge.Run()
 	}
 	if cfg.IsWatchdog {
-		go ambBridge.ValidityWatchdog(ethBridge)
-		go ethBridge.ValidityWatchdog(ambBridge)
+		go ambBridge.ValidityWatchdog()
+		go sideBridge.ValidityWatchdog()
 	}
 
 	if cfg.Prometheus.Enable {

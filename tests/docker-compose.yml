@@ -55,6 +55,7 @@ services:
       --networkid ${NETWORK_ID}
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
+      --gcmode=archive
       --verbosity 5
       --keystore /root/keystore
       #--datadir data
@@ -92,6 +93,7 @@ services:
       --networkid ${NETWORK_ID}
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
+      --gcmode=archive
       --verbosity 5
       --keystore /root/keystore
       --ws
@@ -127,6 +129,7 @@ services:
       --networkid ${NETWORK_ID}
       --netrestrict "10.0.0.0/22"
       --syncmode "full"
+      --gcmode=archive
       --mine
       --miner.threads 1
       --verbosity 5
