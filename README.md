@@ -182,3 +182,42 @@ hash(abi.encodePacked(
 ```
 
 
+### Fees API
+#### Endpoint: /fees
+
+#### Query params:
+- `token` - hex address of side network token
+
+#### Examples:
+- Success request:
+  - **URL**: http://localhost:8080/fees?token=0x123123
+  - **Status code**: 200
+  - **Result**: 
+  ```
+  {
+    "bridge_fee": 1337,
+    "transfer_fee": 228,
+    "signature": "0x6105ca999d43b1f1182d4955f5706e8bf27097b8cb80da35c04016238e2adff91e38f275d640911a46b208d0bb7239d83d5e427b7b93b0cd7390034d724bdb0500"
+  }
+  ```
+
+- Failure request (not passed token address):
+  - **URL**: http://localhost:8080/fees
+  - **Status code**: 400
+  - **Result**: 
+  ```
+  {
+    "message":"token address is not passed"
+  }
+  ```
+
+- Failure request (internal error):
+  - **URL**: http://localhost:8080/fees?token=0x123123
+  - **Status code**: 500
+  - **Result**: 
+  ```
+  {
+    "message": "error when getting bridge fee",
+    "developerMessage": "якась помилка"
+  }
+  ```
