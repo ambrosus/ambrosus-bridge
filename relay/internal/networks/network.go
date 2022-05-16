@@ -63,7 +63,6 @@ type BridgeReceivePoSA interface {
 
 type BridgeFeeApi interface {
 	Bridge
-	Sign(tokenAddress string, transferFee *big.Int, bridgeFee *big.Int) ([]byte, error)
-	GetBridgeFee(tokenAddress string) (*big.Int, error)
+	Sign(digestHash []byte) ([]byte, error)
 	GetTransferFee() (*big.Int, error)
 }

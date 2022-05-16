@@ -1,13 +1,17 @@
 package fee_api
 
 import (
+	"bytes"
 	"encoding/json"
 	"math/big"
 	"net/http"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const signatureFeeTimestamp = 30 * 60 // 30 minutes
@@ -77,7 +81,8 @@ func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
 
 	// sign the price with private key
 	// signature, err := signData(pk, tokenPrice, tokenAddress)
-	signature, err := p.Sign(req.TokenAddress, transferFee, bridgeFee)
+	message := buildMessage(req.TokenAddress, transferFee, bridgeFee)
+	signature, err := bridge.Sign(message)
 	if err != nil {
 		return nil, NewAppError(nil, "error when signing data", err.Error())
 	}
@@ -113,4 +118,21 @@ func getBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 func calcBps(amount *big.Int, bps int64) *big.Int {
 	// amount * bps / 10_000
 	return new(big.Int).Div(new(big.Int).Mul(amount, big.NewInt(bps)), big.NewInt(10_000))
+}
+
+func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *big.Int) []byte {
+	// tokenAddress + timestamp + transferFee + bridgeFee
+
+	var data bytes.Buffer
+	var b32 [32]byte // solidity fills uint256 with zero
+
+	data.Write(tokenAddress.Bytes())
+
+	timestamp := time.Now().Unix() / signatureFeeTimestamp
+	data.Write(big.NewInt(timestamp).FillBytes(b32[:]))
+
+	data.Write(transferFee.FillBytes(b32[:]))
+	data.Write(bridgeFee.FillBytes(b32[:]))
+
+	return accounts.TextHash(crypto.Keccak256(data.Bytes()))
 }
