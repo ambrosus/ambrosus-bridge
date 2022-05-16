@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -36,15 +37,16 @@ var percentFromAmount = map[uint64]int64{
 func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 	var req reqParams
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		helpers.JSONError(w, NewAppError(nil, "error when decoding request body", err.Error()).Marshal(), http.StatusBadRequest)
 		return
 	}
 
 	result, err := p.getFees(req)
 	if err != nil {
-		http.Error(w, string(err.Marshal()), http.StatusInternalServerError)
+		helpers.JSONError(w, err.Marshal(), http.StatusInternalServerError)
 		return
 	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(result)
 }
