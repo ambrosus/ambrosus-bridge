@@ -136,7 +136,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         ));
 
         address signer = ecdsaRecover(messageHash, signature);
-        require(hasRole(RELAY_ROLE, signer), "wrong fee signer");
+        require(hasRole(RELAY_ROLE, signer), "Signature check failed");
     }
 
 
@@ -242,7 +242,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     function changeBridgeFeeRecipient(address payable feeRecipient_) public onlyRole(ADMIN_ROLE) {
-        transferFeeRecipient = feeRecipient_;
+        bridgeFeeRecipient = feeRecipient_;
     }
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
