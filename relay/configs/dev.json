@@ -5,14 +5,14 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0xA7CB71C94f3fC5Ee2232f8E449461177bc23527B",
+            "contractAddr": "0x6a8441e991d45EfD94C65eD8F200e6fCf94eeEE4",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "eth": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x38eC3621e15a730c42a8094a62886CEA2E0aAEb4",
+            "httpUrl": "https://data-seed-prebsc-1-s1.binance.org:8545/",
+            "wsUrl": "",
+            "contractAddr": "0xEC93078e99F171212d9a1e2edCB7BcE7911e3DA2",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
@@ -21,10 +21,16 @@
     },
     "externalLogger": {
         "telegram": {
-            "enable": true,
+            "enable": false,
             "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
             "chatId": "-1001732781392"
         }
+    },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees"
     },
     "prometheus": {
         "enable": true,

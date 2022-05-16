@@ -57,9 +57,11 @@ func main() {
 		go sideBridge.ValidityWatchdog()
 	}
 
-	sideBridgeFeeApi := sideBridge.(networks.BridgeFeeApi)
-	feeApi := fee_api.NewFeeAPI(sideBridgeFeeApi)
-	go feeApi.Run("/price")
+	if cfg.FeeApi.Enable {
+		sideBridgeFeeApi := sideBridge.(networks.BridgeFeeApi)
+		feeApi := fee_api.NewFeeAPI(sideBridgeFeeApi)
+		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
+	}
 
 	if cfg.Prometheus.Enable {
 		// Prometheus endpoint

@@ -1,6 +1,7 @@
 package fee_api
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 
@@ -28,7 +29,7 @@ func NewFeeAPI(bridgeFeeApi networks.BridgeFeeApi) *FeeAPI {
 	return &FeeAPI{BridgeFeeApi: bridgeFeeApi}
 }
 
-func (p *FeeAPI) Run(endpoint string) {
+func (p *FeeAPI) Run(endpoint string, ip string, port int) {
 	http.HandleFunc(endpoint, p.feesHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), nil))
 }
