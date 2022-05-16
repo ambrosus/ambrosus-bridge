@@ -112,7 +112,15 @@ func getBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 	usdtFee := calcBps(tokensInUsdt, percent)
 
 	// convert usdt to native token
-	return bridge.UsdtToNative(usdtFee)
+	nativeToUsdtPrice, err := bridge.CoinPrice()
+	if err != nil {
+		return nil, err
+	}
+
+	_, _ = usdtFee, nativeToUsdtPrice
+	nativeFee := new(big.Int) // todo nativeFee = usdtFee / nativeToUsdtPrice
+
+	return nativeFee, nil
 }
 
 func calcBps(amount *big.Int, bps int64) *big.Int {
