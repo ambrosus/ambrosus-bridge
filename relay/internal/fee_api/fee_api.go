@@ -22,11 +22,11 @@ import (
 // }
 
 type FeeAPI struct {
-	networks.BridgeFeeApi
+	amb, side networks.BridgeFeeApi
 }
 
-func NewFeeAPI(bridgeFeeApi networks.BridgeFeeApi) *FeeAPI {
-	return &FeeAPI{BridgeFeeApi: bridgeFeeApi}
+func NewFeeAPI(amb, side networks.BridgeFeeApi) *FeeAPI {
+	return &FeeAPI{amb: amb, side: side}
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int) {

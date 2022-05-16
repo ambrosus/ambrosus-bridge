@@ -58,8 +58,7 @@ func main() {
 	}
 
 	if cfg.FeeApi.Enable {
-		sideBridgeFeeApi := sideBridge.(networks.BridgeFeeApi)
-		feeApi := fee_api.NewFeeAPI(sideBridgeFeeApi)
+		feeApi := fee_api.NewFeeAPI(ambBridge, sideBridge.(networks.BridgeFeeApi))
 		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
 	}
 

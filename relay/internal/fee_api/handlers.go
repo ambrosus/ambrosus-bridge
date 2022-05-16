@@ -5,14 +5,9 @@ import (
 	"math/big"
 	"net/http"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 )
-
-type Result struct {
-	BridgeFee   *big.Int      `json:"bridge_fee"`
-	TransferFee *big.Int      `json:"transfer_fee"`
-	Signature   hexutil.Bytes `json:"signature"`
-}
 
 /*
  * accepts a token address of this net, gets side token address from the contract (maybe accepts dev test or prod net and "amb" or "eth")
@@ -27,44 +22,61 @@ type Result struct {
  */
 
 func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-
-	// get the token address from the query string
-	tokenAddress := r.URL.Query().Get("token")
-	if tokenAddress == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(ErrTokenAddressNotPassed.Marshal())
+	var req reqParams
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
+	}
+
+	result, err := p.getFees(req)
+	if err != nil {
+		http.Error(w, string(err.Marshal()), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(result)
+}
+
+type reqParams struct {
+	TokenAddress common.Address `json:"tokenAddress"`
+	IsAmb        bool           `json:"isAmb"`
+	Amount       *hexutil.Big   `json:"amount"`
+}
+
+type Result struct {
+	BridgeFee   *big.Int      `json:"bridge_fee"`
+	TransferFee *big.Int      `json:"transfer_fee"`
+	Signature   hexutil.Bytes `json:"signature"`
+}
+
+func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
+	bridge := p.amb
+	if !req.IsAmb {
+		bridge = p.side
 	}
 
 	// get the bridge fee
-	bridgeFee, err := p.GetBridgeFee(tokenAddress)
+	bridgeFee, err := getBridgeFee(bridge, req.TokenAddress, (*big.Int)(req.Amount)) // todo
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(NewAppError(nil, "error when getting bridge fee", err.Error()).Marshal())
-		return
+		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
 
 	// get the transfer fee
-	transferFee, err := p.GetTransferFee()
+	transferFee, err := bridge.GetTransferFee()
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(NewAppError(nil, "error when getting transfer fee", err.Error()).Marshal())
-		return
+		return nil, NewAppError(nil, "error when getting transfer fee", err.Error())
 	}
 
 	// sign the price with private key
 	// signature, err := signData(pk, tokenPrice, tokenAddress)
-	signature, err := p.Sign(tokenAddress, transferFee, bridgeFee)
+	signature, err := p.Sign(req.TokenAddress, transferFee, bridgeFee)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(NewAppError(nil, "error when signing data", err.Error()).Marshal())
-		return
+		return nil, NewAppError(nil, "error when signing data", err.Error())
 	}
 
-	json.NewEncoder(w).Encode(Result{
+	return &Result{
 		BridgeFee:   bridgeFee,
 		TransferFee: transferFee,
 		Signature:   signature,
-	})
+	}, nil
 }
