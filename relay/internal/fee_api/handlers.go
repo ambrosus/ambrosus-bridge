@@ -35,12 +35,19 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get the token price
-	// tokenPrice, err := getTokenPrice(tokenAddress)
-	transferFee, bridgeFee, err := p.GetPrice(tokenAddress) // TODO: this is stub, `GetPrice` returns only price of token
+	// get the bridge fee
+	bridgeFee, err := p.GetBridgeFee(tokenAddress)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(NewAppError(nil, "error when getting token price", err.Error()).Marshal())
+		w.Write(NewAppError(nil, "error when getting bridge fee", err.Error()).Marshal())
+		return
+	}
+
+	// get the transfer fee
+	transferFee, err := p.GetTransferFee()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write(NewAppError(nil, "error when getting transfer fee", err.Error()).Marshal())
 		return
 	}
 

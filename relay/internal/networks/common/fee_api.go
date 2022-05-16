@@ -27,6 +27,16 @@ func (b *CommonBridge) Sign(tokenAddress string, transferFee *big.Int, bridgeFee
 	return crypto.Sign(accounts.TextHash(crypto.Keccak256(data.Bytes())), b.Pk)
 }
 
-func (b *CommonBridge) GetPrice(tokenAddress string) (*big.Int, *big.Int, error) {
-	return big.NewInt(1337), big.NewInt(228), nil
+func (b *CommonBridge) GetBridgeFee(tokenAddress string) (*big.Int, error) {
+	return big.NewInt(1337), nil
+}
+
+func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
+	// res, err := b.GasPerWithdraw(1)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	// return big.NewInt(res), nil
+
+	return big.NewInt(228), nil
 }
