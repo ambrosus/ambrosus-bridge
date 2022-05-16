@@ -21,7 +21,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       {
         sideBridgeAddress: sideBridgeAddress,
         wrappingTokenAddress: configFile.tokens.WBNB?.addresses.eth || ethers.constants.AddressZero,
-        fee: 10,    // todo
+        transferFeeRecipient: ethers.constants.AddressZero,
+        bridgeFeeRecipient: ethers.constants.AddressZero,
         timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: isMainNet ? 10 : 2,

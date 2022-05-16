@@ -18,7 +18,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       {
         sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
         wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-        fee: 1000,  // todo
+        transferFeeRecipient: ethers.constants.AddressZero,
+        bridgeFeeRecipient: ethers.constants.AddressZero,
         timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: 10,
