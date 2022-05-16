@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"math/big"
 	"net/http"
+
+	"github.com/ethereum/go-ethereum/common/hexutil"
 )
 
 type Result struct {
-	TransferFee *big.Int `json:"transfer_fee"`
-	BridgeFee   *big.Int `json:"bridge_fee"`
-	Signature   []byte   `json:"signature"`
+	BridgeFee   *big.Int      `json:"bridge_fee"`
+	TransferFee *big.Int      `json:"transfer_fee"`
+	Signature   hexutil.Bytes `json:"signature"`
 }
 
 /*
@@ -61,8 +63,8 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(Result{
-		TransferFee: transferFee,
 		BridgeFee:   bridgeFee,
+		TransferFee: transferFee,
 		Signature:   signature,
 	})
 }
