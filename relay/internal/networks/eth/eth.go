@@ -46,7 +46,7 @@ func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceiveEthash) {
 func (b *Bridge) Run() {
 	b.Logger.Debug().Msg("Running ethereum bridge...")
 
-	go b.ensureDAGsExists()
+	// go b.ensureDAGsExists()
 	go b.UnlockTransfersLoop()
 	b.SubmitTransfersLoop()
 }
