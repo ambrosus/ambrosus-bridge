@@ -68,7 +68,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
     }
 
-    function wrapWithdraw(address toAddress, bytes memory signature, uint transferFee, uint bridgeFee) public payable {
+    function wrapWithdraw(address toAddress, bytes calldata signature, uint transferFee, uint bridgeFee) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
@@ -91,7 +91,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         address toAddress,
         uint amount,
         bool unwrapSide,
-        bytes memory signature,
+        bytes calldata signature,
         uint transferFee,
         uint bridgeFee
     ) payable public {
@@ -121,7 +121,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     function feeCheck(
         address token,
-        bytes memory signature,
+        bytes calldata signature,
         uint transferFee,
         uint bridgeFee
     ) internal {

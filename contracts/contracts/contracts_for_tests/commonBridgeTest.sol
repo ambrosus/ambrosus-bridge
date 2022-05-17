@@ -32,7 +32,7 @@ contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
     }
 
 
-    function FeeCheckTest(address token, bytes memory signature, uint fee1, uint fee2) public {
+    function FeeCheckTest(address token, bytes calldata signature, uint fee1, uint fee2) public {
         feeCheck(token, signature, fee1, fee2);
     }
 }
