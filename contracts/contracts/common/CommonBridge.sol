@@ -140,13 +140,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
 
-    function triggerTransfers(bytes memory signature, uint transferFee, uint bridgeFee) public payable {
-        if (!hasRole(RELAY_ROLE, msg.sender)) {
-            feeCheck(address(0), signature, transferFee, bridgeFee);  // todo smth
-            transferFeeRecipient.transfer(transferFee);
-            bridgeFeeRecipient.transfer(bridgeFee);
-        }
-
+    function triggerTransfers() public {
         emit Transfer(outputEventId++, queue);
         delete queue;
     }
