@@ -131,14 +131,14 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     ) internal {
         bytes32 messageHash;
         address signer;
-        uint timestamp = block.timestamp;
+        uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
 
         for (uint i = 0; i < signatureFeeCheckNumber; i++) {
             messageHash = keccak256(abi.encodePacked(
                     "\x19Ethereum Signed Message:\n32",
                     keccak256(abi.encodePacked(
                         token,
-                        timestamp / SIGNATURE_FEE_TIMESTAMP,
+                        timestampEpoch,
                         transferFee,
                         bridgeFee
                     ))
@@ -148,7 +148,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             if (hasRole(RELAY_ROLE, signer)) {
                 return;
             } else {
-                timestamp -= SIGNATURE_FEE_TIMESTAMP;
+                timestampEpoch--;
             }
         }
         revert("Signature check failed");
@@ -262,8 +262,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         lockTime = lockTime_;
     }
 
-    function changeSignatureFeeCheckNumber(uint lockTime_) public onlyRole(ADMIN_ROLE) {
-        signatureFeeCheckNumber = lockTime_;
+    function changeSignatureFeeCheckNumber(uint signatureFeeCheckNumber_) public onlyRole(ADMIN_ROLE) {
+        signatureFeeCheckNumber = signatureFeeCheckNumber_;
     }
 
     // token addressed mapping
