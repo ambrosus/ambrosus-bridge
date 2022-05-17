@@ -42,6 +42,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     uint lastTimeframe;
 
+    uint internal signatureFeeCheckNumber;
+
     event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount,
                    uint transferFeeAmount, uint bridgeFeeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
@@ -66,6 +68,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         oldestLockedEventId = 1;
         outputEventId = 1;
+
+        signatureFeeCheckNumber = 3;
     }
 
     function wrapWithdraw(address toAddress, bytes calldata signature, uint transferFee, uint bridgeFee) public payable {
@@ -125,18 +129,29 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         uint transferFee,
         uint bridgeFee
     ) internal {
-        bytes32 messageHash = keccak256(abi.encodePacked(
-            "\x19Ethereum Signed Message:\n32",
-            keccak256(abi.encodePacked(
-                token,
-                block.timestamp / SIGNATURE_FEE_TIMESTAMP,
-                transferFee,
-                bridgeFee
-            ))
-        ));
+        bytes32 messageHash;
+        address signer;
+        uint timestamp = block.timestamp;
 
-        address signer = ecdsaRecover(messageHash, signature);
-        require(hasRole(RELAY_ROLE, signer), "Signature check failed");
+        for (uint i = 0; i < signatureFeeCheckNumber; i++) {
+            messageHash = keccak256(abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    keccak256(abi.encodePacked(
+                        token,
+                        timestamp / SIGNATURE_FEE_TIMESTAMP,
+                        transferFee,
+                        bridgeFee
+                    ))
+                ));
+
+            signer = ecdsaRecover(messageHash, signature);
+            if (hasRole(RELAY_ROLE, signer)) {
+                return;
+            } else {
+                timestamp -= SIGNATURE_FEE_TIMESTAMP;
+            }
+        }
+        revert("Signature check failed");
     }
 
 
@@ -247,6 +262,9 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         lockTime = lockTime_;
     }
 
+    function changeSignatureFeeCheckNumber(uint lockTime_) public onlyRole(ADMIN_ROLE) {
+        signatureFeeCheckNumber = lockTime_;
+    }
 
     // token addressed mapping
 

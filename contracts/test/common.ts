@@ -132,9 +132,16 @@ describe("Common tests", () => {
     });
 
     it("wrong signature", async () => {
-      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP - 3600);
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP);
+      await network.provider.send("evm_setNextBlockTimestamp", [START_TIMESTAMP + 4400]);
       await expect(commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature)))
           .to.be.revertedWith("Signature check failed");
+    });
+
+    it("withdraw feeCheck with delay", async () => {
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP);
+      await network.provider.send("evm_setNextBlockTimestamp", [START_TIMESTAMP + 2400]);
+      await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
     });
   });
 
@@ -243,6 +250,12 @@ describe("Common tests", () => {
     it("Test changeLockTime", async () => {
       await commonBridge.changeLockTime(2000);
       expect(await commonBridge.lockTime()).eq(2000);
+    });
+
+    it("Test ChangeSignatureFeeCheckNumber", async () => {
+      await commonBridge.changeSignatureFeeCheckNumber(5);
+
+      expect(await commonBridge.getSignatureFeeCheckNumber()).eq(5);
     });
 
     // todo move to another test file?
