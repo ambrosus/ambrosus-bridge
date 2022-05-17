@@ -2,7 +2,7 @@
   "bridges": {
     "eth": {
       "amb": "0xA7CB71C94f3fC5Ee2232f8E449461177bc23527B",
-      "side": "0x38eC3621e15a730c42a8094a62886CEA2E0aAEb4"
+      "side": "0x147DA7e8458d1f1998d11BBC5c1f36deaC2878c3"
     },
     "bsc": {
       "amb": "",
@@ -18,7 +18,7 @@
       "primaryNet": "amb",
       "addresses": {
         "amb": "0xBFe020d24F462c65a7A067BbAA1d6fbF6a827347",
-        "eth": "0xfc39db09544dD9bad261682B47E30623e13c567A",
+        "eth": "0xaE2189234BF64e4efb1Bc1997728885F21c5b77d",
         "bsc": ""
       },
       "nativeAnalog": "AMB"

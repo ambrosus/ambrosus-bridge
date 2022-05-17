@@ -12,7 +12,7 @@
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x38eC3621e15a730c42a8094a62886CEA2E0aAEb4",
+            "contractAddr": "0x147DA7e8458d1f1998d11BBC5c1f36deaC2878c3",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
