@@ -117,5 +117,5 @@ func (b *Bridge) ensureDAGsExists() {
 }
 
 func (b *Bridge) CoinPrice() (float64, error) {
-	return price.CoinToUsdt(price.Bnb)
+	return price.CoinToUsdt(price.Eth)
 }
