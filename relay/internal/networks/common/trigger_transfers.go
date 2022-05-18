@@ -11,15 +11,15 @@ func (b *CommonBridge) TriggerTransfersLoop() {
 	for {
 		b.EnsureContractUnpaused()
 
-		if err := b.checkWithdraws(); err != nil {
-			b.Logger.Error().Err(err).Msg("watchWithdraws error")
+		if err := b.checkTriggerTransfers(); err != nil {
+			b.Logger.Error().Err(err).Msg("checkTriggerTransfers error")
 		}
 		time.Sleep(failSleepTIme)
 	}
 }
 
-func (b *CommonBridge) checkWithdraws() error {
-	b.Logger.Info().Msg("Checking old events...")
+func (b *CommonBridge) checkTriggerTransfers() error {
+	b.Logger.Info().Msg("checkTriggerTransfers... ")
 
 	timeFrameSeconds, lastTimeFrame, err := fetchTimeParams(b)
 	if err != nil {
