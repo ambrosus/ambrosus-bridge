@@ -58,8 +58,8 @@ type reqParams struct {
 }
 
 type Result struct {
-	BridgeFee   *big.Int      `json:"bridge_fee"`
-	TransferFee *big.Int      `json:"transfer_fee"`
+	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
+	TransferFee *hexutil.Big  `json:"transferFee"`
 	Signature   hexutil.Bytes `json:"signature"`
 }
 
@@ -90,8 +90,8 @@ func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
 	}
 
 	return &Result{
-		BridgeFee:   bridgeFee,
-		TransferFee: transferFee,
+		BridgeFee:   (*hexutil.Big)(bridgeFee),
+		TransferFee: (*hexutil.Big)(transferFee),
 		Signature:   signature,
 	}, nil
 }
