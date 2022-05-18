@@ -104,7 +104,8 @@ func getBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 	// use lower percent for higher amount
 	var percent int64
 	for _, minUsdt := range helpers.SortedKeys(percentFromAmount) {
-		if tokensInUsdt.Uint64() < percentFromAmount[minUsdt] {
+		percent_ := percentFromAmount[minUsdt]
+		if tokensInUsdt.Uint64() < uint64(percent_) {
 			break
 		}
 		percent = percent_
