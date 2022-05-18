@@ -39,7 +39,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     uint public inputEventId; // last processed event from side network
     uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
-    uint lastTimeframe;
+    uint public lastTimeframe; // timestamp / timeframeSeconds of latest withdraw
 
     event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount, uint feeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
