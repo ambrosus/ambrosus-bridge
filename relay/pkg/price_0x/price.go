@@ -2,6 +2,7 @@ package price_0x
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
@@ -9,6 +10,8 @@ import (
 
 type response struct {
 	Price float64 `json:"price,string"`
+
+	Reason string `json:"reason"` // when error occurred
 }
 
 func CoinToUSDT(symbol string, decimals uint8) (float64, error) {
@@ -23,6 +26,10 @@ func CoinToUSDT(symbol string, decimals uint8) (float64, error) {
 	var r response
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
 		return 0, err
+	}
+
+	if r.Reason != "" {
+		return 0, errors.New(r.Reason)
 	}
 
 	return r.Price, nil
