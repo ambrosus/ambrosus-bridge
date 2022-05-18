@@ -3,8 +3,13 @@ package common
 import (
 	"math/big"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/crypto"
 )
+
+func (b *CommonBridge) GetClient() ethclients.ClientInterface {
+	return b.Client
+}
 
 func (b *CommonBridge) Sign(digestHash []byte) ([]byte, error) {
 	return crypto.Sign(digestHash, b.Pk)

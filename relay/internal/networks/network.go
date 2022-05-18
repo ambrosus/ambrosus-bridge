@@ -6,6 +6,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -63,6 +64,7 @@ type BridgeReceivePoSA interface {
 
 type BridgeFeeApi interface {
 	Bridge
+	GetClient() ethclients.ClientInterface
 	Sign(digestHash []byte) ([]byte, error)
 	GetTransferFee() (*big.Int, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
