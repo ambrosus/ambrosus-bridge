@@ -123,7 +123,7 @@ const config: HardhatUserConfig = {
       ":ValidatorSet$",
       "sAMB",
       "IWrapper",
-      "IERC20$",
+      ":ERC20$",
     ]
   }
 };
