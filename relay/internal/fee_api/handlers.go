@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
@@ -53,7 +52,7 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 	}
 
 	// get the bridge fee
-	bridgeFee, err := getBridgeFee(bridge, req.TokenAddress, (*big.Int)(req.Amount))
+	bridgeFee, err := GetBridgeFee(bridge, req.TokenAddress, (*big.Int)(req.Amount))
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
@@ -77,41 +76,6 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 		TransferFee: (*hexutil.Big)(transferFee),
 		Signature:   signature,
 	}, nil
-}
-
-func getBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	// get token price
-	tokenToUsdtPrice := big.NewInt(0) // todo
-	tokensInUsdt := new(big.Int).Mul(amount, tokenToUsdtPrice)
-
-	// use lower percent for higher amount
-	var percent int64
-	for _, minUsdt := range helpers.SortedKeys(percentFromAmount) {
-		percent_ := percentFromAmount[minUsdt]
-		if tokensInUsdt.Uint64() < uint64(percent_) {
-			break
-		}
-		percent = percent_
-	}
-
-	// calc fee
-	usdtFee := calcBps(tokensInUsdt, percent)
-
-	// convert usdt to native token
-	nativeToUsdtPrice, err := bridge.CoinPrice()
-	if err != nil {
-		return nil, err
-	}
-
-	_, _ = usdtFee, nativeToUsdtPrice
-	nativeFee := new(big.Int) // todo nativeFee = usdtFee / nativeToUsdtPrice
-
-	return nativeFee, nil
-}
-
-func calcBps(amount *big.Int, bps int64) *big.Int {
-	// amount * bps / 10_000
-	return new(big.Int).Div(new(big.Int).Mul(amount, big.NewInt(bps)), big.NewInt(10_000))
 }
 
 func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *big.Int) []byte {
