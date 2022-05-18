@@ -70,7 +70,7 @@ func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
 	}
 
 	// get the bridge fee
-	bridgeFee, err := getBridgeFee(bridge, req.TokenAddress, (*big.Int)(req.Amount))
+	bridgeFee, err := getBridgeFeeStub(bridge, req.TokenAddress, (*big.Int)(req.Amount)) // TODO: replace with `getBridgeFee`
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
@@ -94,6 +94,10 @@ func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
 		TransferFee: (*hexutil.Big)(transferFee),
 		Signature:   signature,
 	}, nil
+}
+
+func getBridgeFeeStub(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
+	return big.NewInt(53000000000000000), nil // 0.053 ether
 }
 
 func getBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {

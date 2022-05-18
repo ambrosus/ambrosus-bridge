@@ -17,5 +17,5 @@ func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
 	// }
 	// return big.NewInt(res), nil
 
-	return big.NewInt(228), nil
+	return big.NewInt(1000000000000), nil // 0.000001 ether
 }
