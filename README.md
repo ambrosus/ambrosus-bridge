@@ -184,38 +184,55 @@ hash(abi.encodePacked(
 
 ### Fees API
 #### Endpoint: /fees
+#### Method: POST
 
 #### Query params:
-- `token` - hex address of side network token
+- `tokenAddress` - string, hex address of token in **from** network
+- `isAmb` - bool, is the **from** network is **AMB**
+- `amount` - string, amount of tokens in hex
+
+#### Response params:
+- `bridgeFee` - string, bridge fee in hex
+- `transferFee` - string, transfer fee in hex
+- `signature` - string, signature of the data
 
 #### Examples:
+Request body:
+- **URL**: http://localhost:8080/fees
+- **Body**:
+```json
+{
+  "tokenAddress": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+  "isAmb": true,
+  "amount": "0xDE0B6B3A7640000"
+}
+```
+
 - Success request:
-  - **URL**: http://localhost:8080/fees?token=0x123123
-  - **Status code**: 200
-  - **Result**: 
-  ```
+    - **Status code**: 200
+    - **Result**:
+  ```json
   {
-    "bridge_fee": 1337,
-    "transfer_fee": 228,
+    "bridgeFee": "0xbc4b381d188000",
+    "transferFee": "0xe8d4a51000",
     "signature": "0x6105ca999d43b1f1182d4955f5706e8bf27097b8cb80da35c04016238e2adff91e38f275d640911a46b208d0bb7239d83d5e427b7b93b0cd7390034d724bdb0500"
   }
   ```
 
-- Failure request (not passed token address):
-  - **URL**: http://localhost:8080/fees
-  - **Status code**: 400
-  - **Result**: 
-  ```
+- Failure request (wrong request body):
+    - **Status code**: 400
+    - **Result**:
+  ```json
   {
-    "message":"token address is not passed"
+    "message": "error when decoding request body",
+    "developerMessage": "якась помилка"
   }
   ```
 
 - Failure request (internal error):
-  - **URL**: http://localhost:8080/fees?token=0x123123
-  - **Status code**: 500
-  - **Result**: 
-  ```
+    - **Status code**: 500
+    - **Result**:
+  ```json
   {
     "message": "error when getting bridge fee",
     "developerMessage": "якась помилка"
