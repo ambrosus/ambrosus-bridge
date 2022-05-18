@@ -17,7 +17,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
 
     // queue to be pushed in another network
-    CommonStructs.Transfer[] queue;
+    CommonStructs.Transfer[] public queue;
 
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
