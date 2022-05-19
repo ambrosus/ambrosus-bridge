@@ -21,10 +21,16 @@
     },
     "externalLogger": {
         "telegram": {
-            "enable": true,
+            "enable": false,
             "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
             "chatId": "-1001732781392"
         }
+    },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees"
     },
     "prometheus": {
         "enable": true,

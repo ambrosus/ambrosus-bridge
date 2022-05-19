@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
@@ -54,6 +55,11 @@ func main() {
 	if cfg.IsWatchdog {
 		go ambBridge.ValidityWatchdog()
 		go sideBridge.ValidityWatchdog()
+	}
+
+	if cfg.FeeApi.Enable {
+		feeApi := fee_api.NewFeeAPI(ambBridge, sideBridge.(networks.BridgeFeeApi))
+		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
 	}
 
 	if cfg.Prometheus.Enable {

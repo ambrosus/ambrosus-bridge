@@ -30,6 +30,7 @@ type (
 		Networks   Networks        `mapstructure:"network"`
 		ExtLoggers ExternalLoggers `mapstructure:"externalLogger"`
 		Prometheus Prometheus      `mapstructure:"prometheus"`
+		FeeApi     FeeApi          `mapstructure:"feeApi"`
 		IsRelay    bool            `mapstructure:"isRelay"`
 		IsWatchdog bool            `mapstructure:"isWatchdog"`
 	}
@@ -47,6 +48,13 @@ type (
 		Enable bool   `mapstructure:"enable"`
 		Token  string `mapstructure:"token"`
 		ChatId int    `mapstructure:"chatId"`
+	}
+
+	FeeApi struct {
+		Enable   bool   `mapstructure:"enable"`
+		Ip       string `mapstructure:"ip"`
+		Port     int    `mapstructure:"port"`
+		Endpoint string `mapstructure:"endpoint"`
 	}
 
 	Prometheus struct {
