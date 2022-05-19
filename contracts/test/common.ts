@@ -143,6 +143,12 @@ describe("Common tests", () => {
       await network.provider.send("evm_setNextBlockTimestamp", [START_TIMESTAMP + 2400]);
       await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
     });
+
+    it("withdraw msg.value != transferFee + bridgeFee", async () => {
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP);
+      await expect(commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature, false, 60)))
+          .to.be.revertedWith("sent value is not equal transferFee + BridgeFee");
+    });
   });
 
 
@@ -394,8 +400,8 @@ const nextTimeframe = async (amount = 1) => {
 const getEvents = async (receipt: any) =>
   receipt.events?.filter((x: any) => x.event == "Transfer");
 
-const withdrawArgs = (token: string, user: string, signature: any, unwrapSide = false) => {
-  return [token, user, 1, unwrapSide, signature, transferFee, bridgeFee, {value: +transferFee + bridgeFee}];
+const withdrawArgs = (token: string, user: string, signature: any, unwrapSide = false, feeAddition = 0) => {
+  return [token, user, 1, unwrapSide, signature, transferFee, bridgeFee, {value: +transferFee + bridgeFee + feeAddition}];
 }
 
 const getSignature = async (
