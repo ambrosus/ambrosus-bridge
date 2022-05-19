@@ -34,9 +34,6 @@ type Bridge interface {
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
 
-	// WithdrawCount return count of `Withdraw` events emitted after given event
-	WithdrawCount(afterEventId *big.Int) (int, error)
-
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error
 
@@ -68,4 +65,8 @@ type BridgeFeeApi interface {
 	Sign(digestHash []byte) ([]byte, error)
 	GetTransferFee() (*big.Int, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
+
+	// WithdrawCount return count of `Withdraw` events emitted after given event
+	WithdrawCount(afterBlockNumber, endBlockNumber uint64) (int, error)
+	GetLatestBlockNumber() (uint64, error)
 }

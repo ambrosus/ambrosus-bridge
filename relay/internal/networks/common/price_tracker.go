@@ -3,38 +3,70 @@ package common
 import (
 	"context"
 	"fmt"
-	"math/big"
 	"sync/atomic"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/errgroup"
 )
 
-func (b *CommonBridge) GasPerWithdraw(afterEventId *big.Int) (float64, error) {
-	totalGasCost, totalGas, err := b.usedGas(afterEventId)
+// PriceTrackerData is kinda memory DB for storing previous results and prev used event id
+type PriceTrackerData struct {
+	PrevUsedBlockNumber     uint64
+	PrevSideUsedBlockNumber uint64
+	TotalGasCost            uint64 // TODO: make it as big.Int
+	WithdrawsCount          int
+}
+
+func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, totalGasCost uint64, withdrawsCount int) {
+	d.PrevUsedBlockNumber = blockNumber
+	d.PrevSideUsedBlockNumber = sideBlockNumber
+	d.TotalGasCost += totalGasCost
+	d.WithdrawsCount += withdrawsCount
+}
+
+func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
+	b.GasPerWithdrawLock.Lock()
+	defer b.GasPerWithdrawLock.Unlock()
+
+	// get the latest block numbers from both sides
+	end, err := b.Client.BlockNumber(context.Background())
+	if err != nil {
+		return 0, fmt.Errorf("get latest block number: %v", err)
+	}
+	endSide, err := b.SideBridge.(networks.BridgeFeeApi).GetLatestBlockNumber()
+	if err != nil {
+		return 0, fmt.Errorf("get side latest block number: %v", err)
+	}
+
+	//
+	if data.PrevSideUsedBlockNumber == 0 {
+		data.PrevUsedBlockNumber = end - 10000 // TODO: get block number from the first event за останій тиждень для кожної мережі
+		data.PrevSideUsedBlockNumber = endSide - 10000
+	}
+
+	// get total gas cost
+	totalGasCost, totalGas, err := b.usedGas(data.PrevUsedBlockNumber, end)
 	if err != nil {
 		return 0, fmt.Errorf("get used gas: %w", err)
 	}
 
-	withdrawsCount, err := b.SideBridge.WithdrawCount(afterEventId)
+	// get withdraws count
+	withdrawsCount, err := b.SideBridge.(networks.BridgeFeeApi).WithdrawCount(data.PrevSideUsedBlockNumber, endSide)
 	if err != nil {
 		return 0, fmt.Errorf("get withdraw count: %w", err)
 	}
 
 	b.Logger.Info().Msgf("withdraws count: %d, totalGas: %d, totalGasCost: %d", withdrawsCount, totalGas, totalGasCost)
-	return float64(totalGasCost) / float64(withdrawsCount), nil
+	data.save(end, endSide, totalGasCost, withdrawsCount)
+	return float64(data.TotalGasCost) / float64(data.WithdrawsCount), nil
 }
 
-func (b *CommonBridge) WithdrawCount(afterEventId *big.Int) (int, error) {
-	event, err := b.GetEventById(afterEventId)
-	if err != nil {
-		return 0, fmt.Errorf("failed to get event: %w", err)
-	}
-
+func (b *CommonBridge) WithdrawCount(startBlockNumber, endBlockNumber uint64) (int, error) {
 	count := 0
 
-	opts := &bind.FilterOpts{Start: event.Raw.BlockNumber}
+	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
 	logs, err := b.Contract.FilterTransfer(opts, nil)
 	if err != nil {
 		return 0, fmt.Errorf("filter transfer: %w", err)
@@ -46,17 +78,12 @@ func (b *CommonBridge) WithdrawCount(afterEventId *big.Int) (int, error) {
 	return count, nil
 }
 
-func (b *CommonBridge) usedGas(afterEventId *big.Int) (uint64, uint64, error) {
-	event, err := b.GetEventById(afterEventId)
-	if err != nil {
-		return 0, 0, fmt.Errorf("failed to get event: %w", err)
-	}
-
+func (b *CommonBridge) usedGas(startBlockNumber, endBlockNumber uint64) (uint64, uint64, error) {
 	// collect unique transaction hashes
 
 	txs := map[common.Hash]interface{}{} // use as hashset, coz 1 tx can emit many events
 
-	opts := &bind.FilterOpts{Start: event.Raw.BlockNumber}
+	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
 	logsSubmit, err := b.Contract.FilterTransferSubmit(opts, nil)
 	if err != nil {
 		return 0, 0, fmt.Errorf("filter transfer submit: %w", err)

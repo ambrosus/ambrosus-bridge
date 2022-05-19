@@ -38,6 +38,9 @@ type CommonBridge struct {
 	Pk         *ecdsa.PrivateKey
 
 	ContractCallLock *sync.Mutex
+
+	GasPerWithdrawLock *sync.Mutex
+	PriceTrackerData   PriceTrackerData
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -90,6 +93,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	}
 
 	b.ContractCallLock = &sync.Mutex{}
+	b.GasPerWithdrawLock = &sync.Mutex{}
 
 	return b, nil
 

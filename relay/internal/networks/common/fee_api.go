@@ -1,6 +1,7 @@
 package common
 
 import (
+	"context"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -16,11 +17,13 @@ func (b *CommonBridge) Sign(digestHash []byte) ([]byte, error) {
 }
 
 func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
-	// res, err := b.GasPerWithdraw(1)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return big.NewInt(res), nil
+	res, err := b.GasPerWithdraw(&b.PriceTrackerData)
+	if err != nil {
+		return nil, err
+	}
+	return big.NewInt(int64(res)), nil
+}
 
-	return big.NewInt(228), nil
+func (b *CommonBridge) GetLatestBlockNumber() (uint64, error) {
+	return b.Client.BlockNumber(context.Background())
 }

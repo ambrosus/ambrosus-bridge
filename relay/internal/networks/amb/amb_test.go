@@ -113,16 +113,16 @@ func TestGasPrice(t *testing.T) {
 	ambBridge.SideBridge = ethBridge
 	ethBridge.SideBridge = ambBridge
 
-	r, err := ethBridge.CommonBridge.GasPerWithdraw(big.NewInt(2))
+	r, err := ethBridge.CommonBridge.GasPerWithdraw(&ethBridge.PriceTrackerData)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("amb->eth", r)
+	t.Logf("amb->eth %f\n", r)
 
-	r, err = ambBridge.CommonBridge.GasPerWithdraw(big.NewInt(2))
+	r, err = ambBridge.CommonBridge.GasPerWithdraw(&ambBridge.PriceTrackerData)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Log("eth->amb", r)
+	t.Logf("eth->amb %f", r)
 
 }
