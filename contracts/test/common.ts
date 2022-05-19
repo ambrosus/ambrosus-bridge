@@ -147,7 +147,7 @@ describe("Common tests", () => {
     it("withdraw msg.value != transferFee + bridgeFee", async () => {
       const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP);
       await expect(commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature, false, 60)))
-          .to.be.revertedWith("sent value is not equal transferFee + BridgeFee");
+          .to.be.revertedWith("Sent value != fee");
     });
   });
 
@@ -197,6 +197,15 @@ describe("Common tests", () => {
 
       // Checking that eventId increased
       expect(events2Amb[0].args.eventId).eq(events1Amb[0].args.eventId.add("1"));
+    });
+
+    it('Check msg.value', async () => {
+      const fee = transferFee + bridgeFee;
+      const wrapperAddress = await commonBridge.wrapperAddress();
+      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP);
+
+      await expect(commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee}))
+          .to.be.revertedWith("Sent value <= fee");
     });
   });
 
