@@ -16,3 +16,4 @@
 4. Function and event/structure definitions can be added (or removed) anywhere in a contract, as they don't take up storage space.
 5. Gap is uint256 because the EVM only operates on 32 bytes at a time.
 6. If you rename a variable, then it will keep the same value as before after upgrading. This may be the desired behavior if the new variable is semantically the same as the old one
+7. Mappings and dynamically-sized array occupy only 32 bytes, the elements they contain are stored starting at a different storage slot that is computed using a Keccak-256 hash
