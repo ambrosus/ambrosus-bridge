@@ -64,7 +64,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         bytes32 parentHash;
-        uint lastFinalizedVs;
 
         bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
         require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
@@ -75,25 +74,21 @@ contract CheckAura is Initializable, CheckReceiptsProof {
             BlockAura calldata block_ = auraProof.blocks[i];
 
             if (block_.finalizedVs != 0) {// 0 means no events should be finalized, so indexes are shifted by 1
-                for (uint j = lastFinalizedVs; j < block_.finalizedVs; j++) {
-                    // vs changes in that block
-                    ValidatorSetProof memory vsProof = auraProof.vsChanges[j];
+                // vs changes in that block
+                ValidatorSetProof memory vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
 
-                    // how many block after event validatorSet should be finalized
-                    uint txsBeforeFinalize = validatorSet.length / 2 + 1;
+                // how many block after event validatorSet should be finalized
+                uint txsBeforeFinalize = validatorSet.length / 2 + 1;
 
-                    // apply vs changes
-                    for (uint k = 0; k < vsProof.changes.length; k++)
-                        applyVsChange(vsProof.changes[k]);
+                // apply vs changes
+                for (uint k = 0; k < vsProof.changes.length; k++)
+                    applyVsChange(vsProof.changes[k]);
 
-                    // check proof
-                    receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
+                // check proof
+                receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
 
-                    // event_block = finalized_block - txsBeforeFinalize
-                    require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
-                }
-
-                lastFinalizedVs = block_.finalizedVs;
+                // event_block = finalized_block - txsBeforeFinalize
+                require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
 
             }
 
