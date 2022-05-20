@@ -50,4 +50,6 @@ contract CheckReceiptsProof {
         }
         return res;
     }
+
+    uint256[50] private ____gap;
 }

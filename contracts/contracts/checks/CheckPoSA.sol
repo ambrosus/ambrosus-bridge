@@ -151,4 +151,6 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
         }
         return ecrecover(messageHash, v, r, s);
     }
+
+    uint256[50] private ___gap;
 }

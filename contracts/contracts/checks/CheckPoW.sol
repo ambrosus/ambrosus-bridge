@@ -109,4 +109,6 @@ contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
     function bytesToUint(bytes memory b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
+
+    uint256[50] private ___gap;
 }

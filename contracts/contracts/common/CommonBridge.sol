@@ -263,4 +263,5 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     receive() external payable {}  // need to receive native token from wrapper contract
 
+    uint256[50] private __gap;
 }

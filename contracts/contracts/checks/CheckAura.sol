@@ -181,4 +181,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     function bytesToUint(bytes4 b) internal pure returns (uint){
         return uint(uint32(b));
     }
+
+    uint256[50] private ___gap;
 }
