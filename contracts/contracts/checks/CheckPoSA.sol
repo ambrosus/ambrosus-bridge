@@ -6,7 +6,7 @@ import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
-contract CheckPoSA is Initializable, CheckReceiptsProof {
+contract CheckPoSA is Initializable {
     uint256 private constant ADDRESS_LENGTH = 20;
     uint256 private constant EXTRA_VANITY_LENGTH = 32;
     uint256 private constant EXTRA_SEAL_LENGTH = 65;

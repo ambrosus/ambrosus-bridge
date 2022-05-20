@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../checks/CheckReceiptsProof.sol";
 
-contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
+contract CommonBridgeTest is CommonBridge {
     constructor(
         CommonStructs.ConstructorArgs memory args
     ) {

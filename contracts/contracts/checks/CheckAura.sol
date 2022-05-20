@@ -4,7 +4,8 @@ pragma solidity 0.8.6;
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
-contract CheckAura is Initializable, CheckReceiptsProof {
+
+contract CheckAura is Initializable {
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
     bytes1 constant STEP_PREFIX = 0x84;
     bytes2 constant SIGNATURE_PREFIX = 0xB841;
