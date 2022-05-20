@@ -27,3 +27,7 @@ func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
 func (b *CommonBridge) GetLatestBlockNumber() (uint64, error) {
 	return b.Client.BlockNumber(context.Background())
 }
+
+func (b *CommonBridge) GetMinBridgeFee() *big.Float {
+	return b.MinBridgeFee
+}

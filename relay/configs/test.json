@@ -7,7 +7,8 @@
             "wsUrl": "wss://network.ambrosus-test.io/ws",
             "contractAddr": "0xE776102fc41CA89C7D7aA9ee17d805EBfCa39216",
             "privateKey": "in env",
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "minBridgeFeeUSD": 5
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
@@ -16,7 +17,8 @@
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 0
+            "ethashGenNextEpochs": 0,
+            "minBridgeFeeUSD": 5
         }
     },
     "externalLogger": {

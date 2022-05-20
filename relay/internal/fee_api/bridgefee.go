@@ -36,6 +36,11 @@ func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 	feePercent := getFeePercent(amountInUsdt)
 	feeUsdt := calcBps(amountInUsdt, feePercent)
 
+	// if fee < minBridgeFee then use the minBridgeFee
+	if minBridgeFee := bridge.GetMinBridgeFee(); feeUsdt.Cmp(minBridgeFee) == -1 {
+		feeUsdt = minBridgeFee
+	}
+
 	// convert usdt to native token
 	nativeToUsdtPrice, err := bridge.CoinPrice()
 	if err != nil {

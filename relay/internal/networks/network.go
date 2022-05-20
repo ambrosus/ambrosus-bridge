@@ -69,4 +69,7 @@ type BridgeFeeApi interface {
 	// WithdrawCount return count of `Withdraw` events emitted after given event
 	WithdrawCount(afterBlockNumber, endBlockNumber uint64) (int, error)
 	GetLatestBlockNumber() (uint64, error)
+
+	// GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetMinBridgeFee() *big.Float
 }
