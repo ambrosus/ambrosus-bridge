@@ -3,9 +3,12 @@ package common
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"sync/atomic"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/errgroup"
@@ -46,21 +49,96 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
 		data.PrevSideUsedBlockNumber = endSide - 10000
 	}
 
-	// get total gas cost
-	totalGasCost, totalGas, err := b.SideBridge.(networks.BridgeFeeApi).UsedGas(data.PrevSideUsedBlockNumber, endSide)
+	// get submits and unlocks for `UsedGas`
+	eventUnlock, submits, unlocks, err := b.SideBridge.(networks.BridgeFeeApi).GetLastCorrectSubmitUnlockPair(
+		data.PrevSideUsedBlockNumber,
+		endSide,
+	)
 	if err != nil {
-		return 0, fmt.Errorf("get used gas: %w", err)
+		return 0, fmt.Errorf("get last correct submit unlock pair: %w", err)
 	}
 
-	// get withdraws count
-	withdrawsCount, err := b.withdrawCount(data.PrevUsedBlockNumber, end)
-	if err != nil {
-		return 0, fmt.Errorf("get withdraw count: %w", err)
+	// if we didn't find the pair, then we don't need to calculate anything, just return previous results from data
+	if eventUnlock != nil {
+		// get total gas cost
+		totalGasCost, totalGas, err := b.SideBridge.(networks.BridgeFeeApi).UsedGas(submits, unlocks)
+		if err != nil {
+			return 0, fmt.Errorf("get used gas: %w", err)
+		}
+
+		// get withdraws count, setting the `endBlockNumber` to the transfer event's block number
+		eventTransfer, err := b.GetEventById(eventUnlock.EventId)
+		if err != nil {
+			return 0, fmt.Errorf("get event by id: %w", err)
+		}
+		withdrawsCount, err := b.withdrawCount(data.PrevUsedBlockNumber, eventTransfer.Raw.BlockNumber)
+		if err != nil {
+			return 0, fmt.Errorf("get withdraw count: %w", err)
+		}
+
+		b.Logger.Info().Msgf("withdraws count: %d, totalGas: %d, totalGasCost: %d", withdrawsCount, totalGas, totalGasCost)
+		data.save(eventTransfer.Raw.BlockNumber, eventUnlock.Raw.BlockNumber, totalGasCost, withdrawsCount)
 	}
 
-	b.Logger.Info().Msgf("withdraws count: %d, totalGas: %d, totalGasCost: %d", withdrawsCount, totalGas, totalGasCost)
-	data.save(end, endSide, totalGasCost, withdrawsCount)
 	return float64(data.TotalGasCost) / float64(data.WithdrawsCount), nil
+}
+
+func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64) (
+	event *contracts.BridgeTransferFinish,
+	submits []*contracts.BridgeTransferSubmit,
+	unlocks []*contracts.BridgeTransferFinish,
+	err error,
+) {
+	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
+
+	// get submit events
+	logsSubmit, err := b.Contract.FilterTransferSubmit(opts, nil)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("filter transfer submit: %w", err)
+	}
+	for logsSubmit.Next() {
+		submits = append(submits, logsSubmit.Event)
+	}
+
+	// get unlock events
+	logsUnlock, err := b.Contract.FilterTransferFinish(opts, nil)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("filter transfer finish: %w", err)
+	}
+	for logsUnlock.Next() {
+		unlocks = append(unlocks, logsUnlock.Event)
+	}
+
+	// make zip of the events and iterate in reverse order while we'll find the correct pair
+	z := helpers.ZipDiff(submits, unlocks)
+	for i := len(z) - 1; i >= 0; i-- {
+		submitId := new(big.Int)
+		unlockId := new(big.Int)
+
+		// needed to compare big.Ints later
+		if z[i].First != nil {
+			submitId = z[i].First.EventId
+		}
+		// it's unreal, but let it be
+		if z[i].Second != nil {
+			unlockId = z[i].Second.EventId
+		}
+
+		// if ids are equal, then we found the correct pair
+		if submitId.Cmp(unlockId) == 0 {
+			event = z[i].Second     // also can be got from `unlocks[-1]`, but "Explicit is better than implicit"
+			submits = submits[:i+1] // cut unneeded events
+			unlocks = unlocks[:i+1] // cut unneeded events
+			break
+		}
+
+		// if it's the end, but we didn't find the pair
+		if i == 0 {
+			submits, unlocks = nil, nil
+		}
+	}
+
+	return event, submits, unlocks, nil
 }
 
 func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (int, error) {
@@ -78,25 +156,16 @@ func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (i
 	return count, nil
 }
 
-func (b *CommonBridge) UsedGas(startBlockNumber, endBlockNumber uint64) (uint64, uint64, error) {
+func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (uint64, uint64, error) {
 	// collect unique transaction hashes
 
 	txs := map[common.Hash]interface{}{} // use as hashset, coz 1 tx can emit many events
 
-	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
-	logsSubmit, err := b.Contract.FilterTransferSubmit(opts, nil)
-	if err != nil {
-		return 0, 0, fmt.Errorf("filter transfer submit: %w", err)
+	for _, log := range logsSubmit {
+		txs[log.Raw.TxHash] = 0
 	}
-	for logsSubmit.Next() {
-		txs[logsSubmit.Event.Raw.TxHash] = 0
-	}
-	logsUnlock, err := b.Contract.FilterTransferFinish(opts, nil)
-	if err != nil {
-		return 0, 0, fmt.Errorf("filter transfer finish: %w", err)
-	}
-	for logsUnlock.Next() {
-		txs[logsUnlock.Event.Raw.TxHash] = 0
+	for _, log := range logsUnlock {
+		txs[log.Raw.TxHash] = 0
 	}
 
 	// fetch transactions and sum gas
