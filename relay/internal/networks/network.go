@@ -66,8 +66,9 @@ type BridgeFeeApi interface {
 	GetTransferFee() (*big.Int, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
 
-	// WithdrawCount return count of `Withdraw` events emitted after given event
-	WithdrawCount(afterBlockNumber, endBlockNumber uint64) (int, error)
+	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
+	// from `startBlockNumber` to `endBlockNumber`
+	UsedGas(startBlockNumber, endBlockNumber uint64) (uint64, uint64, error)
 	GetLatestBlockNumber() (uint64, error)
 
 	// GetMinBridgeFee returns the minimal bridge fee that can be used

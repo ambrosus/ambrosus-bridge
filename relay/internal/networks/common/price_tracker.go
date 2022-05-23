@@ -47,13 +47,13 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
 	}
 
 	// get total gas cost
-	totalGasCost, totalGas, err := b.usedGas(data.PrevUsedBlockNumber, end)
+	totalGasCost, totalGas, err := b.SideBridge.(networks.BridgeFeeApi).UsedGas(data.PrevSideUsedBlockNumber, endSide)
 	if err != nil {
 		return 0, fmt.Errorf("get used gas: %w", err)
 	}
 
 	// get withdraws count
-	withdrawsCount, err := b.SideBridge.(networks.BridgeFeeApi).WithdrawCount(data.PrevSideUsedBlockNumber, endSide)
+	withdrawsCount, err := b.withdrawCount(data.PrevUsedBlockNumber, end)
 	if err != nil {
 		return 0, fmt.Errorf("get withdraw count: %w", err)
 	}
@@ -63,7 +63,7 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
 	return float64(data.TotalGasCost) / float64(data.WithdrawsCount), nil
 }
 
-func (b *CommonBridge) WithdrawCount(startBlockNumber, endBlockNumber uint64) (int, error) {
+func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (int, error) {
 	count := 0
 
 	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
@@ -78,7 +78,7 @@ func (b *CommonBridge) WithdrawCount(startBlockNumber, endBlockNumber uint64) (i
 	return count, nil
 }
 
-func (b *CommonBridge) usedGas(startBlockNumber, endBlockNumber uint64) (uint64, uint64, error) {
+func (b *CommonBridge) UsedGas(startBlockNumber, endBlockNumber uint64) (uint64, uint64, error) {
 	// collect unique transaction hashes
 
 	txs := map[common.Hash]interface{}{} // use as hashset, coz 1 tx can emit many events
