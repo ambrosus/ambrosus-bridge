@@ -110,5 +110,5 @@ contract CheckPoW is Initializable, Ethash {
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 
-    uint256[50] private ___gap;
+    uint256[15] private ___gap;
 }

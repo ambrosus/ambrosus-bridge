@@ -152,5 +152,5 @@ contract CheckPoSA is Initializable {
         return ecrecover(messageHash, v, r, s);
     }
 
-    uint256[50] private ___gap;
+    uint256[15] private ___gap;
 }

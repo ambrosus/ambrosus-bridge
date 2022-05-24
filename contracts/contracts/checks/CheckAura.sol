@@ -183,5 +183,5 @@ contract CheckAura is Initializable {
         return uint(uint32(b));
     }
 
-    uint256[50] private ___gap;
+    uint256[15] private ___gap;
 }
