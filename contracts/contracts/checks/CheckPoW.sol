@@ -6,7 +6,7 @@ import "./CheckPoW_Ethash.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 
-contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
+contract CheckPoW is Initializable, Ethash {
     struct BlockPoW {
         bytes3 p0WithNonce;
         bytes3 p0WithoutNonce;
@@ -109,4 +109,6 @@ contract CheckPoW is Initializable, CheckReceiptsProof, Ethash {
     function bytesToUint(bytes memory b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
+
+    uint256[15] private ___gap;
 }
