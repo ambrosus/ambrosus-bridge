@@ -186,7 +186,7 @@ hash(abi.encodePacked(
 #### Endpoint: /fees
 #### Method: POST
 
-#### Query params:
+#### Request body params:
 - `tokenAddress` - string, hex address of token in **from** network
 - `isAmb` - bool, is the **from** network is **AMB**
 - `amount` - string, amount of tokens in hex
