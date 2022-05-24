@@ -81,6 +81,11 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 		data.save(eventTransfer.Raw.BlockNumber, eventUnlock.Raw.BlockNumber, totalGasCost, withdrawsCount)
 	}
 
+	// if there's no transfers then return default transfer fee
+	if data.WithdrawsCount == 0 {
+		return b.DefaultTransferFeeWei, nil
+	}
+
 	return new(big.Int).Div(data.TotalGasCost, big.NewInt(data.WithdrawsCount)), nil
 }
 

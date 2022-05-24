@@ -8,7 +8,8 @@
             "contractAddr": "",
             "privateKey": "in env",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "minBridgeFeeUSD": 5
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 1
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
@@ -18,7 +19,8 @@
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 1,
-            "minBridgeFeeUSD": 5
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 0.01
         }
     },
     "externalLogger": {

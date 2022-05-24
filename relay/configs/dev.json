@@ -8,7 +8,8 @@
             "contractAddr": "0x6a8441e991d45EfD94C65eD8F200e6fCf94eeEE4",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env",
-            "minBridgeFeeUSD": 5
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 1
         },
         "eth": {
             "httpUrl": "https://data-seed-prebsc-1-s1.binance.org:8545/",
@@ -18,7 +19,8 @@
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 0,
-            "minBridgeFeeUSD": 5
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 0.01
         }
     },
     "externalLogger": {

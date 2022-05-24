@@ -7,7 +7,8 @@ type (
 		ContractAddr string `mapstructure:"contractAddr"`
 		PrivateKey   string `mapstructure:"privateKey"`
 
-		MinBridgeFee float64 `mapstructure:"minBridgeFeeUSD"`
+		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
+		DefaultTransferFee float64 `mapstructure:"defaultTransferFee"`
 	}
 
 	AMBConfig struct {

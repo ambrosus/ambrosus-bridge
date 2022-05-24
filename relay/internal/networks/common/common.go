@@ -27,16 +27,18 @@ type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
 
 type CommonBridge struct {
 	networks.Bridge
-	Client       ethclients.ClientInterface
-	WsClient     ethclients.ClientInterface
-	Contract     *contracts.Bridge
-	WsContract   *contracts.Bridge
-	Auth         *bind.TransactOpts
-	SideBridge   networks.Bridge
-	Logger       zerolog.Logger
-	Name         string
-	Pk           *ecdsa.PrivateKey
-	MinBridgeFee *big.Float
+	Client     ethclients.ClientInterface
+	WsClient   ethclients.ClientInterface
+	Contract   *contracts.Bridge
+	WsContract *contracts.Bridge
+	Auth       *bind.TransactOpts
+	SideBridge networks.Bridge
+	Logger     zerolog.Logger
+	Name       string
+	Pk         *ecdsa.PrivateKey
+
+	MinBridgeFee          *big.Float
+	DefaultTransferFeeWei *big.Int
 
 	ContractCallLock *sync.Mutex
 
@@ -97,6 +99,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	b.GasPerWithdrawLock = &sync.Mutex{}
 
 	b.MinBridgeFee = big.NewFloat(cfg.MinBridgeFee)
+	b.DefaultTransferFeeWei = big.NewInt(int64(cfg.DefaultTransferFee * 1e18))
 
 	return b, nil
 
