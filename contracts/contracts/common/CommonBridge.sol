@@ -106,6 +106,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     function triggerTransfers() public payable {
+        require(queue.length != 0, "Queue is empty");
+
         if (!hasRole(RELAY_ROLE, msg.sender)) {
             require(msg.value == fee, "Sent value is not equal fee");
             feeRecipient.transfer(fee);
