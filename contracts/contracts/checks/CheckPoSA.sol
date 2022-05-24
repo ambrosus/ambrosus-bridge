@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
 
 
-contract CheckPoSA is Initializable, CheckReceiptsProof {
+contract CheckPoSA is Initializable {
     uint256 private constant ADDRESS_LENGTH = 20;
     uint256 private constant EXTRA_VANITY_LENGTH = 32;
     uint256 private constant EXTRA_SEAL_LENGTH = 65;
@@ -139,4 +139,6 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
     function bytesToUint(bytes memory b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
+
+    uint256[15] private ___gap;
 }

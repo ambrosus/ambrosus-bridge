@@ -126,7 +126,6 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         withdrawFinish();
     }
 
-
     function feeCheck(
         address token,
         bytes calldata signature,
@@ -158,8 +157,9 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         revert("Signature check failed");
     }
 
-
     function triggerTransfers() public {
+        require(queue.length != 0, "Queue is empty");
+
         emit Transfer(outputEventId++, queue);
         delete queue;
     }
@@ -315,4 +315,5 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     receive() external payable {}  // need to receive native token from wrapper contract
 
+    uint256[15] private __gap;
 }
