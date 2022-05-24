@@ -20,6 +20,14 @@ const config: HardhatUserConfig = {
       blockGasLimit: 40000000, // amb value
       hardfork: "byzantium",
       companionNetworks: {amb: 'hardhat'},
+
+      // for debugging: run local node with state from some network
+      forking: {
+        enabled: false,
+        url: "https://network.ambrosus-dev.io",
+        // url: "https://eth-rinkeby.alchemyapi.io/v2/e1F5R9XuWDU2-zCtzaMDg4Ybb5SuoEDA"
+        blockNumber: 0xb00ba,
+      }
     },
 
     "dev/eth": {
