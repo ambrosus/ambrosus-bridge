@@ -293,6 +293,7 @@ describe("Common tests", () => {
 
     it("trigger transfers event check", async () => {
       const beforeEventOutputEventId = await commonBridge.getOutputEventId();
+      await commonBridge.addElementToQueue();
 
       const tx = await commonBridge.triggerTransfers({value: 1000});
       const receipt = await tx.wait();
@@ -305,10 +306,17 @@ describe("Common tests", () => {
     });
 
     it("trigger transfers fee check", async () => {
+      await commonBridge.addElementToQueue();
+
       await expect(commonBridge.triggerTransfers())
           .to.be.revertedWith("Sent value is not equal fee");
 
       await commonBridge.connect(relayS).triggerTransfers();
+    });
+
+    it("trigger transfers empty queue check", async () => {
+      await expect(commonBridge.triggerTransfers())
+          .to.be.revertedWith("Queue is empty");
     });
   });
 

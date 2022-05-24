@@ -23,6 +23,10 @@ contract CommonBridgeTest is CommonBridge {
         return outputEventId;
     }
 
+    function addElementToQueue() public {
+        queue.push(CommonStructs.Transfer(address(0), address(0), 100));
+    }
+
     // checkReceiptsProof
 
     function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
