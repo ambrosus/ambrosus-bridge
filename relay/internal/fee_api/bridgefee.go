@@ -19,16 +19,31 @@ var percentFromAmount = map[uint64]int64{
 }
 
 func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	// get token symbol and decimals
-	tokenSymbol, tokenDecimals, err := getTokenData(bridge, tokenAddress)
+	// convert usdt to native token
+	nativeToUsdtPrice, err := bridge.CoinPrice()
 	if err != nil {
-		return nil, fmt.Errorf("get token data: %w", err)
+		return nil, fmt.Errorf("get native to usdt price: %w", err)
 	}
 
-	// get token price
-	tokenToUsdtPrice, err := getTokenToUsdtPrice(tokenSymbol, tokenDecimals)
-	if err != nil {
-		return nil, fmt.Errorf("get token price: %w", err)
+	var tokenToUsdtPrice float64
+	var tokenDecimals uint8
+	// if token is native
+	if tokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
+		tokenToUsdtPrice = nativeToUsdtPrice
+		tokenDecimals = 18
+	} else {
+		// get token symbol and decimals
+		var tokenSymbol string
+		tokenSymbol, tokenDecimals, err = getTokenData(bridge, tokenAddress)
+		if err != nil {
+			return nil, fmt.Errorf("get token data: %w", err)
+		}
+
+		// get token price
+		tokenToUsdtPrice, err = getTokenToUsdtPrice(tokenSymbol, tokenDecimals)
+		if err != nil {
+			return nil, fmt.Errorf("get token price: %w", err)
+		}
 	}
 
 	// get fee in usdt
@@ -39,12 +54,6 @@ func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 	// if fee < minBridgeFee then use the minBridgeFee
 	if minBridgeFee := bridge.GetMinBridgeFee(); feeUsdt.Cmp(minBridgeFee) == -1 {
 		feeUsdt = minBridgeFee
-	}
-
-	// convert usdt to native token
-	nativeToUsdtPrice, err := bridge.CoinPrice()
-	if err != nil {
-		return nil, fmt.Errorf("get native to usdt price: %w", err)
 	}
 
 	// calc fee in native token
