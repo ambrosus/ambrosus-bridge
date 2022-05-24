@@ -21,7 +21,7 @@ func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
-	return big.NewInt(int64(res)), nil
+	return res, nil
 }
 
 func (b *CommonBridge) GetLatestBlockNumber() (uint64, error) {

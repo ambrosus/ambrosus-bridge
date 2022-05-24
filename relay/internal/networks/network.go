@@ -67,7 +67,7 @@ type BridgeFeeApi interface {
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
 
 	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
-	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (uint64, uint64, error)
+	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error)
 
 	// GetLastCorrectSubmitUnlockPair returns last correct submit and unlock pair and correct submits and unlocks slices
 	GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64) (

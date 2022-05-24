@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"sync/atomic"
+	"sync"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -18,35 +18,36 @@ import (
 type PriceTrackerData struct {
 	PrevUsedBlockNumber     uint64
 	PrevSideUsedBlockNumber uint64
-	TotalGasCost            uint64 // TODO: make it as big.Int
-	WithdrawsCount          int
+	TotalGasCost            *big.Int
+	WithdrawsCount          int64
 }
 
-func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, totalGasCost uint64, withdrawsCount int) {
+func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, totalGasCost *big.Int, withdrawsCount int64) {
 	d.PrevUsedBlockNumber = blockNumber
 	d.PrevSideUsedBlockNumber = sideBlockNumber
-	d.TotalGasCost += totalGasCost
+	d.TotalGasCost.Add(d.TotalGasCost, totalGasCost)
 	d.WithdrawsCount += withdrawsCount
 }
 
-func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
+func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) {
 	b.GasPerWithdrawLock.Lock()
 	defer b.GasPerWithdrawLock.Unlock()
 
 	// get the latest block numbers from both sides
 	end, err := b.Client.BlockNumber(context.Background())
 	if err != nil {
-		return 0, fmt.Errorf("get latest block number: %v", err)
+		return nil, fmt.Errorf("get latest block number: %v", err)
 	}
 	endSide, err := b.SideBridge.(networks.BridgeFeeApi).GetLatestBlockNumber()
 	if err != nil {
-		return 0, fmt.Errorf("get side latest block number: %v", err)
+		return nil, fmt.Errorf("get side latest block number: %v", err)
 	}
 
 	//
 	if data.PrevSideUsedBlockNumber == 0 {
 		data.PrevUsedBlockNumber = end - 10000 // TODO: get block number from the first event за останій тиждень для кожної мережі
 		data.PrevSideUsedBlockNumber = endSide - 10000
+		data.TotalGasCost = big.NewInt(0)
 	}
 
 	// get submits and unlocks for `UsedGas`
@@ -55,7 +56,7 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
 		endSide,
 	)
 	if err != nil {
-		return 0, fmt.Errorf("get last correct submit unlock pair: %w", err)
+		return nil, fmt.Errorf("get last correct submit unlock pair: %w", err)
 	}
 
 	// if we didn't find the pair, then we don't need to calculate anything, just return previous results from data
@@ -63,24 +64,24 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (float64, error) {
 		// get total gas cost
 		totalGasCost, totalGas, err := b.SideBridge.(networks.BridgeFeeApi).UsedGas(submits, unlocks)
 		if err != nil {
-			return 0, fmt.Errorf("get used gas: %w", err)
+			return nil, fmt.Errorf("get used gas: %w", err)
 		}
 
 		// get withdraws count, setting the `endBlockNumber` to the transfer event's block number
 		eventTransfer, err := b.GetEventById(eventUnlock.EventId)
 		if err != nil {
-			return 0, fmt.Errorf("get event by id: %w", err)
+			return nil, fmt.Errorf("get event by id: %w", err)
 		}
 		withdrawsCount, err := b.withdrawCount(data.PrevUsedBlockNumber, eventTransfer.Raw.BlockNumber)
 		if err != nil {
-			return 0, fmt.Errorf("get withdraw count: %w", err)
+			return nil, fmt.Errorf("get withdraw count: %w", err)
 		}
 
 		b.Logger.Info().Msgf("withdraws count: %d, totalGas: %d, totalGasCost: %d", withdrawsCount, totalGas, totalGasCost)
 		data.save(eventTransfer.Raw.BlockNumber, eventUnlock.Raw.BlockNumber, totalGasCost, withdrawsCount)
 	}
 
-	return float64(data.TotalGasCost) / float64(data.WithdrawsCount), nil
+	return new(big.Int).Div(data.TotalGasCost, big.NewInt(data.WithdrawsCount)), nil
 }
 
 func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64) (
@@ -141,7 +142,7 @@ func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlock
 	return event, submits, unlocks, nil
 }
 
-func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (int, error) {
+func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (int64, error) {
 	count := 0
 
 	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
@@ -153,10 +154,10 @@ func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (i
 		count += len(logs.Event.Queue)
 	}
 
-	return count, nil
+	return int64(count), nil
 }
 
-func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (uint64, uint64, error) {
+func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error) {
 	// collect unique transaction hashes
 
 	txs := map[common.Hash]interface{}{} // use as hashset, coz 1 tx can emit many events
@@ -170,9 +171,10 @@ func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, log
 
 	// fetch transactions and sum gas
 
-	totalGas := uint64(0)
-	totalGasCost := uint64(0)
+	totalGas := new(big.Int)
+	totalGasCost := new(big.Int)
 
+	lock := sync.Mutex{}
 	sem := make(chan interface{}, 10) // max 20 simultaneous requests
 	errGroup := new(errgroup.Group)
 	for txHash := range txs {
@@ -185,13 +187,16 @@ func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, log
 			if err != nil {
 				return fmt.Errorf("get transaction by hash: %w", err)
 			}
-			atomic.AddUint64(&totalGas, tx.Gas())
-			atomic.AddUint64(&totalGasCost, tx.Cost().Uint64())
+
+			lock.Lock()
+			totalGas.Add(totalGas, big.NewInt(int64(tx.Gas())))
+			totalGasCost.Add(totalGasCost, tx.Cost())
+			lock.Unlock()
 			return nil
 		})
 	}
 	if err := errGroup.Wait(); err != nil {
-		return 0, 0, fmt.Errorf("calc used gas: %w", err)
+		return nil, nil, fmt.Errorf("calc used gas: %w", err)
 	}
 
 	return totalGasCost, totalGas, nil
