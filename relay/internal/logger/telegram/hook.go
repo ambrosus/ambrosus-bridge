@@ -31,14 +31,17 @@ func (t *tgLogger) Log(l *logger.ExtLog) {
 	}
 	sort.Strings(fields)
 
+	// escape telegram markup symbols
+	replacer := strings.NewReplacer("<", "&lt;", ">", "&gt;", "&", "&amp;")
+
 	for _, field := range fields {
-		msg += fmt.Sprintf(fieldsFormat, field, l.Rest[field])
+		msg += fmt.Sprintf(fieldsFormat, field, replacer.Replace(l.Rest[field].(string)))
 	}
 	if l.Error != "" {
-		msg += fmt.Sprintf(fieldsFormat, "error", l.Error)
+		msg += fmt.Sprintf(fieldsFormat, "error", replacer.Replace(l.Error))
 	}
 	if l.Message != "" {
-		msg += fmt.Sprintf("\n%s", l.Message)
+		msg += fmt.Sprintf("\n%s", replacer.Replace(l.Message))
 	}
 
 	_ = t.send(msg)
