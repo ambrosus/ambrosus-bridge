@@ -21,6 +21,10 @@ func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
 	if err != nil {
 		return nil, err
 	}
+	if res == nil {
+		return b.DefaultTransferFeeWei, nil
+	}
+
 	return res, nil
 }
 

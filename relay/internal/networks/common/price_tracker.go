@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	foo = 5
+	eventsForGasCalc = 5
 )
 
 // PriceTrackerData is kinda memory DB for storing previous results and prev used event id
@@ -35,38 +35,41 @@ func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, totalGasCos
 
 func (b *CommonBridge) initPriceTrackerData(data *PriceTrackerData) error {
 	// init data if needed
-	if data.PrevSideUsedBlockNumber != 0 {
+	if data.TotalGasCost != nil {
 		return nil
 	}
-
-	data.TotalGasCost = big.NewInt(0)
 
 	// get oldest locked event id from side net to get start block number
 	oldestLockedEvendId, err := b.SideBridge.(networks.BridgeFeeApi).GetOldestLockedEventId()
 	if err != nil {
 		return fmt.Errorf("get side oldest locked event id: %v", err)
 	}
+	// there's no unlocked events, so we can't get start block number
 	if oldestLockedEvendId.Cmp(big.NewInt(1)) == 0 {
 		return nil
 	}
 
-	oldestLockedEvendId.Sub(oldestLockedEvendId, big.NewInt(foo+1)) // +1 cuz oldestLockedEventId is for locked event but we need unlocked event
+	//
+	oldestLockedEvendId.Sub(oldestLockedEvendId, big.NewInt(eventsForGasCalc+1)) // +1 cuz oldestLockedEventId is for locked event but we need unlocked event
 	if oldestLockedEvendId.Cmp(big.NewInt(0)) < 0 {
-		oldestLockedEvendId = big.NewInt(1) // force set to 1
+		oldestLockedEvendId = big.NewInt(1) // force set to 1 if it's < 0
 	}
 
+	// get start block number for this net
 	startBlockNumber, err := b.getStartBlockNumber(oldestLockedEvendId)
 	if err != nil {
 		return fmt.Errorf("get start block number: %v", err)
 	}
-	data.PrevUsedBlockNumber = startBlockNumber
 
+	// get start block number for side net
 	sideStartBlockNumber, err := b.getSideStartBlockNumber(oldestLockedEvendId)
 	if err != nil {
 		return fmt.Errorf("get side start block number: %v", err)
 	}
-	data.PrevSideUsedBlockNumber = sideStartBlockNumber
 
+	data.PrevUsedBlockNumber = startBlockNumber
+	data.PrevSideUsedBlockNumber = sideStartBlockNumber
+	data.TotalGasCost = big.NewInt(0)
 	return nil
 }
 
@@ -74,12 +77,9 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 	b.GasPerWithdrawLock.Lock()
 	defer b.GasPerWithdrawLock.Unlock()
 
+	// init data if needed
 	if err := b.initPriceTrackerData(data); err != nil {
 		return nil, fmt.Errorf("init price tracker data: %w", err)
-	}
-	// if data has not initialized then there's no unlocked transfers, so return the default transfer fee
-	if data.PrevUsedBlockNumber == 0 {
-		return b.DefaultTransferFeeWei, nil
 	}
 
 	// get the latest block number from side net
@@ -119,9 +119,9 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 		data.save(eventTransfer.Raw.BlockNumber, eventUnlock.Raw.BlockNumber, totalGasCost, withdrawsCount)
 	}
 
-	// if there's no transfers then return default transfer fee
+	// if there's no transfers then return nil
 	if data.WithdrawsCount == 0 {
-		return b.DefaultTransferFeeWei, nil
+		return nil, nil
 	}
 
 	return new(big.Int).Div(data.TotalGasCost, big.NewInt(data.WithdrawsCount)), nil
