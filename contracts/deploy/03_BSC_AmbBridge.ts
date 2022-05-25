@@ -1,13 +1,13 @@
-import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
+import {getBscValidators} from "./utils";
 import {
   addNewTokensToBridge,
   networkType,
   options,
   readConfig,
   setSideBridgeAddress,
-  urlFromHHProvider,
 } from "./utils";
 
 const BRIDGE_NAME = "BSC_AmbBridge";
@@ -19,8 +19,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig(hre.network);
   const tokenPairs = configFile.getTokenPairs("amb", "bsc")
 
-  const bscNet = hre.companionNetworks['bsc']
-  const [initialEpoch, initialValidators] = await getBscValidators(bscNet.provider);
+  const bscNet = hre.companionNetworks['bsc'];
+  const [initialEpoch, initialValidators] = await getBscValidators(bscNet.provider, hre);
   const chainId = await bscNet.getChainId();
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
@@ -58,20 +58,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
-
-
-async function getBscValidators(bscProvider: EthereumProvider): Promise<[number, string[]]> {
-  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(bscProvider))
-  const {number: block} = await provider.getBlock('latest');
-  const epoch = block / 200;
-  const epochStart = epoch * 200;
-  const blockWithValidators = await provider.getBlock(epochStart);
-
-  // todo get validators from blockWithValidators
-  const validators = [""];
-
-  return [epoch, validators];
-}
 
 
 export default func;

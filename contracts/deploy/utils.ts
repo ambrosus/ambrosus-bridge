@@ -4,6 +4,8 @@ import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
 import vsAbi from "../abi/ValidatorSet.json";
+import vsAbiBsc from "../abi/ValidatorSetBsc.json";
+import {Block} from "@ethersproject/abstract-provider";
 
 
 interface Token {
@@ -159,17 +161,42 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
   }
 }
 
+async function getValidators(
+    provider_: EthereumProvider,
+    hre: HardhatRuntimeEnvironment,
+    vsAddress: string,
+    bridgeName: string,
+    abi_: any
+): Promise<[string[], Block]> {
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(provider_));
 
+  const { address, abi } = await hre.deployments.get(bridgeName);
+  const bridge = await ethers.ContractFactory.getContract(address, abi);
+  const blockNumber = (await bridge.queryFilter(bridge.filters.Transfer(0)))[0].blockNumber;
 
-export async function getAmbValidators(ambProvider: EthereumProvider): Promise<[string[], string, string]> {
-  const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
-  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, abi_);
+  const block = await provider.getBlock(blockNumber);
 
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
-  const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
   const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
-  return [validators, vsAddress, block.hash];
+
+  return [validators, block];
 }
+
+export async function getBscValidators(bscProvider: EthereumProvider, hre: HardhatRuntimeEnvironment): Promise<[number, string[]]> {
+  const vsAddress = "0x0000000000000000000000000000000000001000";
+  const [validators, block] = await getValidators(bscProvider, hre, vsAddress, "BSC_BscBridge", vsAbiBsc);
+  const epoch = block.number / 200;
+
+  return [epoch, validators];
+}
+
+export async function getAmbValidators(ambProvider: EthereumProvider, hre: HardhatRuntimeEnvironment): Promise<[string[], string, string]> {
+  const vsAddress = "0x0000000000000000000000000000000000000F00";
+  const [validators, block] = await getValidators(ambProvider, hre, vsAddress, "ETH_AmbBridge", vsAbi);
+
+  return [validators, vsAddress, block.hash]
+}
+
 
 // :(((
 export function urlFromHHProvider(provider: any): string {

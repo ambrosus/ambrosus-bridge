@@ -15,6 +15,7 @@ contract BSC_BscBridge is CommonBridge, CheckAura {
     ) public initializer {
         __CommonBridge_init(args);
         __CheckAura_init(initialValidators, validatorSetAddress, lastProcessedBlock);
+        emit Transfer(0, queue);
     }
 
     function submitTransferAura(AuraProof calldata auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {

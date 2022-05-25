@@ -15,6 +15,7 @@ contract BSC_AmbBridge is CommonBridge, CheckPoSA {
     ) public initializer {
         __CommonBridge_init(args);
         __CheckPoSA_init(initialValidators, initialEpoch, chainId);
+        emit Transfer(0, queue);
     }
 
     function submitTransferPoSA(PoSAProof calldata posaProof) public onlyRole(RELAY_ROLE) whenNotPaused {
