@@ -4,7 +4,6 @@ import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
 import vsAbi from "../abi/ValidatorSet.json";
-import vsAbiBsc from "../abi/ValidatorSetBsc.json";
 import {Block} from "@ethersproject/abstract-provider";
 
 
@@ -183,6 +182,24 @@ async function getValidators(
 }
 
 export async function getBscValidators(bscProvider: EthereumProvider, hre: HardhatRuntimeEnvironment): Promise<[number, string[]]> {
+  const vsAbiBsc = [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getValidators",
+      "outputs": [
+        {
+          "internalType": "address[]",
+          "name": "",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+  ]
+
   const vsAddress = "0x0000000000000000000000000000000000001000";
   const [validators, block] = await getValidators(bscProvider, hre, vsAddress, "BSC_BscBridge", vsAbiBsc);
   const epoch = block.number / 200;
