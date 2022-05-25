@@ -198,7 +198,13 @@
       {
         "indexed": false,
         "internalType": "uint256",
-        "name": "feeAmount",
+        "name": "transferFeeAmount",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "bridgeFeeAmount",
         "type": "uint256"
       }
     ],
@@ -247,25 +253,12 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "fee_",
-        "type": "uint256"
-      }
-    ],
-    "name": "changeFee",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "address payable",
         "name": "feeRecipient_",
         "type": "address"
       }
     ],
-    "name": "changeFeeRecipient",
+    "name": "changeBridgeFeeRecipient",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -300,6 +293,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "signatureFeeCheckNumber_",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeSignatureFeeCheckNumber",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "timeframeSeconds_",
         "type": "uint256"
       }
@@ -310,16 +316,16 @@
     "type": "function"
   },
   {
-    "inputs": [],
-    "name": "fee",
-    "outputs": [
+    "inputs": [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
+        "internalType": "address payable",
+        "name": "feeRecipient_",
+        "type": "address"
       }
     ],
-    "stateMutability": "view",
+    "name": "changeTransferFeeRecipient",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -701,7 +707,7 @@
     "inputs": [],
     "name": "triggerTransfers",
     "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -752,6 +758,21 @@
         "internalType": "bool",
         "name": "unwrapSide",
         "type": "bool"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "transferFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bridgeFee",
+        "type": "uint256"
       }
     ],
     "name": "withdraw",
@@ -765,6 +786,21 @@
         "internalType": "address",
         "name": "toAddress",
         "type": "address"
+      },
+      {
+        "internalType": "bytes",
+        "name": "signature",
+        "type": "bytes"
+      },
+      {
+        "internalType": "uint256",
+        "name": "transferFee",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "bridgeFee",
+        "type": "uint256"
       }
     ],
     "name": "wrapWithdraw",
