@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/errgroup"
@@ -115,33 +115,10 @@ func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlock
 		unlocks = append(unlocks, logsUnlock.Event)
 	}
 
-	// make zip of the events and iterate in reverse order while we'll find the correct pair
-	z := helpers.ZipDiff(submits, unlocks)
-	for i := len(z) - 1; i >= 0; i-- {
-		submitId := new(big.Int)
-		unlockId := new(big.Int)
-
-		// needed to compare big.Ints later
-		if z[i].First != nil {
-			submitId = z[i].First.EventId
-		}
-		// it's unreal, but let it be
-		if z[i].Second != nil {
-			unlockId = z[i].Second.EventId
-		}
-
-		// if ids are equal, then we found the correct pair
-		if submitId.Cmp(unlockId) == 0 {
-			event = z[i].Second     // also can be got from `unlocks[-1]`, but "Explicit is better than implicit"
-			submits = submits[:i+1] // cut unneeded events
-			unlocks = unlocks[:i+1] // cut unneeded events
-			break
-		}
-
-		// if it's the end, but we didn't find the pair
-		if i == 0 {
-			submits, unlocks = nil, nil
-		}
+	// intersect submits and unlocks
+	submits, unlocks = helpers.IntersectionSubmitsUnlocks(submits, unlocks)
+	if len(unlocks) != 0 {
+		event = unlocks[len(unlocks)-1]
 	}
 
 	return event, submits, unlocks, nil
