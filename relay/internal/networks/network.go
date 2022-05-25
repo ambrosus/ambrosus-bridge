@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	ErrEventNotFound = errors.New("error event not found")
+	ErrEventNotFound          = errors.New("error event not found")
+	ErrTransferSubmitNotFound = errors.New("error transfer submit not found")
 )
 
 type GetTxErrParams struct {
@@ -77,6 +78,8 @@ type BridgeFeeApi interface {
 		err error,
 	)
 	GetLatestBlockNumber() (uint64, error)
+	GetOldestLockedEventId() (*big.Int, error)
+	GetTransferSubmitById(eventId *big.Int) (*contracts.BridgeTransferSubmit, error)
 
 	// GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetMinBridgeFee() *big.Float

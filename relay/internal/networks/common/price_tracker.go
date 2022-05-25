@@ -14,6 +14,10 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
+const (
+	foo = 5
+)
+
 // PriceTrackerData is kinda memory DB for storing previous results and prev used event id
 type PriceTrackerData struct {
 	PrevUsedBlockNumber     uint64
@@ -29,25 +33,59 @@ func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, totalGasCos
 	d.WithdrawsCount += withdrawsCount
 }
 
+func (b *CommonBridge) initPriceTrackerData(data *PriceTrackerData) error {
+	// init data if needed
+	if data.PrevSideUsedBlockNumber != 0 {
+		return nil
+	}
+
+	data.TotalGasCost = big.NewInt(0)
+
+	// get oldest locked event id from side net to get start block number
+	oldestLockedEvendId, err := b.SideBridge.(networks.BridgeFeeApi).GetOldestLockedEventId()
+	if err != nil {
+		return fmt.Errorf("get side oldest locked event id: %v", err)
+	}
+	if oldestLockedEvendId.Cmp(big.NewInt(1)) == 0 {
+		return nil
+	}
+
+	oldestLockedEvendId.Sub(oldestLockedEvendId, big.NewInt(foo+1)) // +1 cuz oldestLockedEventId is for locked event but we need unlocked event
+	if oldestLockedEvendId.Cmp(big.NewInt(0)) < 0 {
+		oldestLockedEvendId = big.NewInt(1) // force set to 1
+	}
+
+	startBlockNumber, err := b.getStartBlockNumber(oldestLockedEvendId)
+	if err != nil {
+		return fmt.Errorf("get start block number: %v", err)
+	}
+	data.PrevUsedBlockNumber = startBlockNumber
+
+	sideStartBlockNumber, err := b.getSideStartBlockNumber(oldestLockedEvendId)
+	if err != nil {
+		return fmt.Errorf("get side start block number: %v", err)
+	}
+	data.PrevSideUsedBlockNumber = sideStartBlockNumber
+
+	return nil
+}
+
 func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) {
 	b.GasPerWithdrawLock.Lock()
 	defer b.GasPerWithdrawLock.Unlock()
 
-	// get the latest block numbers from both sides
-	end, err := b.Client.BlockNumber(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("get latest block number: %v", err)
+	if err := b.initPriceTrackerData(data); err != nil {
+		return nil, fmt.Errorf("init price tracker data: %w", err)
 	}
+	// if data has not initialized then there's no unlocked transfers, so return the default transfer fee
+	if data.PrevUsedBlockNumber == 0 {
+		return b.DefaultTransferFeeWei, nil
+	}
+
+	// get the latest block number from side net
 	endSide, err := b.SideBridge.(networks.BridgeFeeApi).GetLatestBlockNumber()
 	if err != nil {
 		return nil, fmt.Errorf("get side latest block number: %v", err)
-	}
-
-	//
-	if data.PrevSideUsedBlockNumber == 0 {
-		data.PrevUsedBlockNumber = end - 10000 // TODO: get block number from the first event за останій тиждень для кожної мережі
-		data.PrevSideUsedBlockNumber = endSide - 10000
-		data.TotalGasCost = big.NewInt(0)
 	}
 
 	// get submits and unlocks for `UsedGas`
@@ -182,4 +220,39 @@ func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, log
 	}
 
 	return totalGasCost, totalGas, nil
+}
+
+func (b *CommonBridge) getStartBlockNumber(eventId *big.Int) (uint64, error) {
+	event, err := b.GetEventById(eventId)
+	if err != nil {
+		return 0, fmt.Errorf("get event by id: %w", err)
+	}
+	return event.Raw.BlockNumber, nil
+}
+
+func (b *CommonBridge) getSideStartBlockNumber(eventId *big.Int) (uint64, error) {
+	event, err := b.SideBridge.(networks.BridgeFeeApi).GetTransferSubmitById(eventId)
+	if err != nil {
+		return 0, fmt.Errorf("get transfer submit by id: %w", err)
+	}
+
+	return event.Raw.BlockNumber, nil
+}
+
+func (b *CommonBridge) GetOldestLockedEventId() (*big.Int, error) {
+	return b.Contract.OldestLockedEventId(nil)
+}
+
+func (b *CommonBridge) GetTransferSubmitById(eventId *big.Int) (*contracts.BridgeTransferSubmit, error) {
+	logSubmit, err := b.Contract.FilterTransferSubmit(nil, []*big.Int{eventId})
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer submit: %w", err)
+	}
+	for logSubmit.Next() {
+		if !logSubmit.Event.Raw.Removed {
+			return logSubmit.Event, nil
+		}
+	}
+
+	return nil, networks.ErrTransferSubmitNotFound
 }
