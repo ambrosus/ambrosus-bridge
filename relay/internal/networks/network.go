@@ -6,7 +6,6 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -34,6 +33,9 @@ type Bridge interface {
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
 
+	// WithdrawCount return count of `Withdraw` events emitted after given event
+	WithdrawCount(afterEventId *big.Int) (int, error)
+
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error
 
@@ -57,4 +59,11 @@ type BridgeReceiveEthash interface {
 type BridgeReceivePoSA interface {
 	Bridge
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
+}
+
+type BridgeFeeApi interface {
+	Bridge
+	Sign(digestHash []byte) ([]byte, error)
+	GetTransferFee() (*big.Int, error)
+	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
 }

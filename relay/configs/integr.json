@@ -26,6 +26,12 @@
             "chatId": ""
         }
     },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees"
+    },
     "prometheus": {
         "enable": false,
         "ip": "localhost",

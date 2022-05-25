@@ -4,7 +4,7 @@ pragma solidity 0.8.6;
 import "../common/CommonBridge.sol";
 import "../checks/CheckReceiptsProof.sol";
 
-contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
+contract CommonBridgeTest is CommonBridge {
     constructor(
         CommonStructs.ConstructorArgs memory args
     ) {
@@ -23,6 +23,10 @@ contract CommonBridgeTest is CommonBridge, CheckReceiptsProof {
 
     function getOutputEventId() public view returns(uint) {
         return outputEventId;
+    }
+
+    function addElementToQueue() public {
+        queue.push(CommonStructs.Transfer(address(0), address(0), 100));
     }
 
     // checkReceiptsProof

@@ -5,14 +5,14 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0xA7CB71C94f3fC5Ee2232f8E449461177bc23527B",
+            "contractAddr": "0x2c7016a40E24BC83f791866fE82c78f0f599f2C5",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "eth": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x38eC3621e15a730c42a8094a62886CEA2E0aAEb4",
+            "contractAddr": "0x9E43199Be9b8Fb7544705d031EC4d07DbF07F4bb",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
@@ -25,6 +25,12 @@
             "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
             "chatId": "-1001732781392"
         }
+    },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees"
     },
     "prometheus": {
         "enable": true,

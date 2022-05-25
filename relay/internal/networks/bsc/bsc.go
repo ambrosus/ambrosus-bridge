@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -77,4 +78,8 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 		return params.TxErr
 	}
 	return nil
+}
+
+func (b *Bridge) CoinPrice() (float64, error) {
+	return price.CoinToUsdt(price.Bnb)
 }

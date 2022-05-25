@@ -67,14 +67,13 @@ describe("Common tests", () => {
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
   });
 
-  it("Test FeeCheck", async () => {  // todo remove?
-    // const signature = "0xbec2d264f1ec97e81e33904ad28e933227613387cc4b272801d7a2e4cc15ca1937d1c5426498654a5d8cbd98a9bb3b7e11f9cc4b13ffcf6e2dbae70dd2be2e8c01";
-    // const token = "0x6a8441e991d45EfD94C65eD8F200e6fCf94eeEE4";
-    //
-    // await network.provider.send("evm_setNextBlockTimestamp", [START_TIMESTAMP]);
-    //
-    // await commonBridge.FeeCheckTest(token, signature, transferFee, bridgeFee);
-  });
+  // todo move to another test file?
+  // describe("Test Proxy", async () => {
+  //   it("ChangeAdmin check",async () => {
+  //     await ambBridge.connect(proxyAdminS).changeAdmin(user);
+  //     expect(await ambBridge.connect(userS).callStatic.admin()).eq(user);
+  //   })
+  // });
 
   describe("Test Withdraw", async () => {
     it("token balance changed", async () => {
@@ -363,6 +362,7 @@ describe("Common tests", () => {
 
     it("trigger transfers event check", async () => {
       const beforeEventOutputEventId = await commonBridge.getOutputEventId();
+      await commonBridge.addElementToQueue();
 
       const tx = await commonBridge.triggerTransfers();
       const receipt = await tx.wait();
@@ -374,12 +374,19 @@ describe("Common tests", () => {
       expect(beforeEventOutputEventId.add("0x1")).eq(afterEventOutputEventId);
     });
 
-    // it("trigger transfers fee check", async () => {
-    //   await expect(commonBridge.triggerTransfers())
-    //       .to.be.revertedWith("Sent value is not equal fee");
-    //
-    //   await commonBridge.connect(relayS).triggerTransfers();
-    // });
+    it("trigger transfers fee check", async () => {
+      await commonBridge.addElementToQueue();
+
+      await expect(commonBridge.triggerTransfers())
+          .to.be.revertedWith("Sent value is not equal fee");
+
+      await commonBridge.connect(relayS).triggerTransfers();
+    });
+
+    it("trigger transfers empty queue check", async () => {
+      await expect(commonBridge.triggerTransfers())
+          .to.be.revertedWith("Queue is empty");
+    });
   });
 
 
