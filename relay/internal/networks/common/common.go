@@ -136,6 +136,7 @@ func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetT
 	b.ContractCallLock.Lock()
 	params.Tx, params.TxErr = txCallback(b.Auth)
 	if err := b.Bridge.GetTxErr(params); err != nil {
+		b.ContractCallLock.Unlock()
 		return err
 	}
 	b.ContractCallLock.Unlock()

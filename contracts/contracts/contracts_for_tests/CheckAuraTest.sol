@@ -21,8 +21,8 @@ contract CheckAuraTest is CheckAura {
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
     }
 
-    function checkSignatureTest(address signer, bytes32 message, bytes memory signature) public pure {
-        checkSignature(signer, message, signature);
+    function checkSignatureTest(bytes32 message, bytes memory signature) public pure returns(address){
+        return ecdsaRecover(message, signature);
     }
 
     function blockHashTest(BlockAura calldata block_) public pure returns (bytes32, bytes32) {

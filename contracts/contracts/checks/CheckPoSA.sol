@@ -4,9 +4,10 @@ pragma solidity 0.8.6;
 import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./SignatureCheck.sol";
 
 
-contract CheckPoSA is Initializable, CheckReceiptsProof {
+contract CheckPoSA is Initializable {
     uint256 private constant ADDRESS_LENGTH = 20;
     uint256 private constant EXTRA_VANITY_LENGTH = 32;
     uint256 private constant EXTRA_SEAL_LENGTH = 65;
@@ -131,24 +132,11 @@ contract CheckPoSA is Initializable, CheckReceiptsProof {
     }
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
-        address signer = getSigner(hash, signature);
+        address signer = ecdsaRecover(hash, signature);
         return allValidators[currentValidatorSet][signer];
     }
 
     function bytesToUint(bytes memory b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
-    }
-
-    function getSigner(bytes32 messageHash, bytes memory signature) internal pure returns (address) {
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
-            if lt(v, 27) {v := add(v, 27)}
-        }
-        return ecrecover(messageHash, v, r, s);
     }
 }

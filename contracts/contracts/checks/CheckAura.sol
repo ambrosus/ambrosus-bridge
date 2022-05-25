@@ -3,8 +3,11 @@ pragma solidity 0.8.6;
 
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "./SignatureCheck.sol";
 
-contract CheckAura is Initializable, CheckReceiptsProof {
+
+
+contract CheckAura is Initializable {
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
     bytes1 constant STEP_PREFIX = 0x84;
     bytes2 constant SIGNATURE_PREFIX = 0xB841;
@@ -64,7 +67,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         bytes32 parentHash;
-        uint lastFinalizedVs;
 
         bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
         require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
@@ -75,25 +77,21 @@ contract CheckAura is Initializable, CheckReceiptsProof {
             BlockAura calldata block_ = auraProof.blocks[i];
 
             if (block_.finalizedVs != 0) {// 0 means no events should be finalized, so indexes are shifted by 1
-                for (uint j = lastFinalizedVs; j < block_.finalizedVs; j++) {
-                    // vs changes in that block
-                    ValidatorSetProof memory vsProof = auraProof.vsChanges[j];
+                // vs changes in that block
+                ValidatorSetProof memory vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
 
-                    // how many block after event validatorSet should be finalized
-                    uint txsBeforeFinalize = validatorSet.length / 2 + 1;
+                // how many block after event validatorSet should be finalized
+                uint txsBeforeFinalize = validatorSet.length / 2 + 1;
 
-                    // apply vs changes
-                    for (uint k = 0; k < vsProof.changes.length; k++)
-                        applyVsChange(vsProof.changes[k]);
+                // apply vs changes
+                for (uint k = 0; k < vsProof.changes.length; k++)
+                    applyVsChange(vsProof.changes[k]);
 
-                    // check proof
-                    receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
+                // check proof
+                receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
 
-                    // event_block = finalized_block - txsBeforeFinalize
-                    require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
-                }
-
-                lastFinalizedVs = block_.finalizedVs;
+                // event_block = finalized_block - txsBeforeFinalize
+                require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
 
             }
 
@@ -138,7 +136,7 @@ contract CheckAura is Initializable, CheckReceiptsProof {
         (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
 
         address validator = validatorSet[bytesToUint(block_.step) % validatorSet.length];
-        checkSignature(validator, bareHash, block_.signature);
+        require(ecdsaRecover(bareHash, block_.signature) == validator, "Failed to verify sign");
 
         return sealHash;
     }
@@ -154,19 +152,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     }
 
 
-    function checkSignature(address signer, bytes32 messageHash, bytes memory signature) internal pure {
-        bytes32 r;
-        bytes32 s;
-        uint8 v;
-        assembly {
-            r := mload(add(signature, 32))
-            s := mload(add(signature, 64))
-            v := byte(0, mload(add(signature, 96)))
-            if lt(v, 27) {v := add(v, 27)}
-        }
-        require(ecrecover(messageHash, v, r, s) == signer, "Failed to verify sign");
-    }
-
     function calcValidatorSetReceiptHash(bytes[] memory receipt_proof, address validatorSetAddress, address[] memory vSet) private pure returns (bytes32) {
         bytes32 el = keccak256(abi.encodePacked(
                 receipt_proof[0],
@@ -181,4 +166,6 @@ contract CheckAura is Initializable, CheckReceiptsProof {
     function bytesToUint(bytes4 b) internal pure returns (uint){
         return uint(uint32(b));
     }
+
+    uint256[15] private ___gap;
 }
