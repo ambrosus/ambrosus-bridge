@@ -69,8 +69,18 @@ func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
 		bridge = p.side
 	}
 
+	// if token address is native, then it's "wrapWithdraw" and we need to work with "wrapperAddress"
+	var tokenAddress = req.TokenAddress
+	if req.TokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
+		var err error
+		tokenAddress, err = bridge.GetWrapperAddress()
+		if err != nil {
+			return nil, NewAppError(nil, "error when getting wrapper address", err.Error())
+		}
+	}
+
 	// get the bridge fee
-	bridgeFee, err := getBridgeFeeStub(bridge, req.TokenAddress, (*big.Int)(req.Amount)) // TODO: replace with `getBridgeFee`
+	bridgeFee, err := getBridgeFeeStub(bridge, tokenAddress, (*big.Int)(req.Amount)) // TODO: replace with `getBridgeFee`
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
@@ -83,7 +93,7 @@ func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
 
 	// sign the price with private key
 	// signature, err := signData(pk, tokenPrice, tokenAddress)
-	message := buildMessage(req.TokenAddress, transferFee, bridgeFee)
+	message := buildMessage(tokenAddress, transferFee, bridgeFee)
 	signature, err := bridge.Sign(message)
 	if err != nil {
 		return nil, NewAppError(nil, "error when signing data", err.Error())

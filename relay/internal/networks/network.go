@@ -66,4 +66,6 @@ type BridgeFeeApi interface {
 	Sign(digestHash []byte) ([]byte, error)
 	GetTransferFee() (*big.Int, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
+
+	GetWrapperAddress() (common.Address, error)
 }
