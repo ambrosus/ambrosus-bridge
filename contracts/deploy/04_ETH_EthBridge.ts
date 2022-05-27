@@ -13,14 +13,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tokenPairs = configFile.getTokenPairs("eth", "amb")
 
   const ambNet = hre.companionNetworks['amb']
-  const {address: sideBridgeAddress} = await ambNet.deployments.get('ETH_AmbBridge');
+  const ambBridge = await ambNet.deployments.get('ETH_AmbBridge');
 
   const optionsWithOnUpgrade: any = {
     ...await options(
          hre,
          tokenPairs,
          {
-           sideBridgeAddress: sideBridgeAddress,
+           sideBridgeAddress: ambBridge.address,
            wrappingTokenAddress: configFile.tokens.WETH?.addresses.eth || ethers.constants.AddressZero,
            transferFeeRecipient: ethers.constants.AddressZero,
            bridgeFeeRecipient: ethers.constants.AddressZero,
@@ -28,7 +28,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
            lockTime: isMainNet ? 60 * 10 : 60,
            minSafetyBlocks: isMainNet ? 10 : 2,
          },
-        await getAmbValidators(ambNet),
+        await getAmbValidators(ambNet, ambBridge.receipt),
     )
   }
 
