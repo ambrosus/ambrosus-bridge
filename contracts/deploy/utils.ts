@@ -1,10 +1,10 @@
 import path from "path";
 import fs from "fs";
-import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
 import vsAbi from "../abi/ValidatorSet.json";
-import {Block} from "@ethersproject/abstract-provider";
+import {Receipt} from "hardhat-deploy/dist/types";
 
 
 interface Token {
@@ -21,12 +21,11 @@ interface Config {
   bridges: { [net: string]: { amb: string, side: string } };
 
   save(): void;
+
   getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }
+
   bridgesInNet(net: string): string[]
 }
-
-
-
 
 
 export function readConfig(network: any): Config {
@@ -39,7 +38,6 @@ export function readConfig(network: any): Config {
 
   return config;
 }
-
 
 
 export function networkName(network: any): string {
@@ -160,39 +158,25 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
   }
 }
 
-async function getValidators(
-    network: any,
-    vsAddress: string,
-    bridgeName: string,
-    abi_: any
-): Promise<[string[], Block]> {
+async function getValidators(network: any, vsAddress: string, vsAbi: any, blockNum: number,): Promise<string[]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));
-
-  const { address, abi } = await network.deployments.get(bridgeName);
-  const bridge = await ethers.ContractFactory.getContract(address, abi);
-  const blockNumber = (await bridge.queryFilter(bridge.filters.Transfer(0)))[0].blockNumber;
-
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, abi_);
-  const block = await provider.getBlock(blockNumber);
-
-  const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
-
-  return [validators, block];
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi);
+  return await vsContract.connect(provider).getValidators({blockTag: blockNum});
 }
 
-export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
+export async function getBscValidators(bscNetwork: any, bscDeployReceipt: Receipt): Promise<[number, string[]]> {
   const vsAddress = "0x0000000000000000000000000000000000001000";
-  const [validators, block] = await getValidators(bscNetwork, vsAddress, "BSC_BscBridge", vsAbi);
-  const epoch = block.number / 200;
+  const validators = await getValidators(bscNetwork, vsAddress, vsAbi, bscDeployReceipt.blockNumber);
+  const epoch = bscDeployReceipt.blockNumber / 200;
 
   return [epoch, validators];
 }
 
-export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
+export async function getAmbValidators(ambNetwork: any, ambDeployReceipt: Receipt): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00";
-  const [validators, block] = await getValidators(ambNetwork, vsAddress, "ETH_AmbBridge", vsAbi);
+  const validators = await getValidators(ambNetwork, vsAddress, vsAbi, ambDeployReceipt.blockNumber);
 
-  return [validators, vsAddress, block.hash]
+  return [validators, vsAddress, ambDeployReceipt.blockHash]
 }
 
 
