@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
@@ -34,4 +35,8 @@ func (b *CommonBridge) GetLatestBlockNumber() (uint64, error) {
 
 func (b *CommonBridge) GetMinBridgeFee() *big.Float {
 	return b.MinBridgeFee
+}
+
+func (b *CommonBridge) GetWrapperAddress() (common.Address, error) {
+	return b.Contract.WrapperAddress(nil)
 }

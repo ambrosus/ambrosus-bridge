@@ -80,6 +80,7 @@ type BridgeFeeApi interface {
 	GetLatestBlockNumber() (uint64, error)
 	GetOldestLockedEventId() (*big.Int, error)
 	GetTransferSubmitById(eventId *big.Int) (*contracts.BridgeTransferSubmit, error)
+	GetWrapperAddress() (common.Address, error)
 
 	// GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetMinBridgeFee() *big.Float
