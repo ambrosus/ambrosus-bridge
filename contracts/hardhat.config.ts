@@ -33,7 +33,7 @@ const config: HardhatUserConfig = {
     },
 
     "dev/eth": {
-      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
+      url: "https://nunki.htznr.fault.dev/rpc",
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},

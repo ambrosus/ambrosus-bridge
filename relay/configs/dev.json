@@ -10,8 +10,8 @@
             "privateKey": "in env"
         },
         "eth": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "httpUrl": "https://nunki.htznr.fault.dev/rpc",
+            "wsUrl": "wss://nunki.htznr.fault.dev/ws",
             "contractAddr": "0xAd6557e9793F119e4d8601Eb5cB1b79b26d89fDb",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
