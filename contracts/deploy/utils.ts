@@ -161,15 +161,14 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
 }
 
 async function getValidators(
-    provider_: EthereumProvider,
-    hre: HardhatRuntimeEnvironment,
+    network: any,
     vsAddress: string,
     bridgeName: string,
     abi_: any
 ): Promise<[string[], Block]> {
-  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(provider_));
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));
 
-  const { address, abi } = await hre.deployments.get(bridgeName);
+  const { address, abi } = await network.deployments.get(bridgeName);
   const bridge = await ethers.ContractFactory.getContract(address, abi);
   const blockNumber = (await bridge.queryFilter(bridge.filters.Transfer(0)))[0].blockNumber;
 
@@ -181,7 +180,7 @@ async function getValidators(
   return [validators, block];
 }
 
-export async function getBscValidators(bscProvider: EthereumProvider, hre: HardhatRuntimeEnvironment): Promise<[number, string[]]> {
+export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
   const vsAbiBsc = [
     {
       "constant": true,
@@ -201,15 +200,15 @@ export async function getBscValidators(bscProvider: EthereumProvider, hre: Hardh
   ]
 
   const vsAddress = "0x0000000000000000000000000000000000001000";
-  const [validators, block] = await getValidators(bscProvider, hre, vsAddress, "BSC_BscBridge", vsAbiBsc);
+  const [validators, block] = await getValidators(bscNetwork, vsAddress, "BSC_BscBridge", vsAbiBsc);
   const epoch = block.number / 200;
 
   return [epoch, validators];
 }
 
-export async function getAmbValidators(ambProvider: EthereumProvider, hre: HardhatRuntimeEnvironment): Promise<[string[], string, string]> {
+export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00";
-  const [validators, block] = await getValidators(ambProvider, hre, vsAddress, "ETH_AmbBridge", vsAbi);
+  const [validators, block] = await getValidators(ambNetwork, vsAddress, "ETH_AmbBridge", vsAbi);
 
   return [validators, vsAddress, block.hash]
 }
