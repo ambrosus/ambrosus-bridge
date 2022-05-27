@@ -5,12 +5,13 @@ import "solidity-coverage";
 import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
 import {HardhatUserConfig} from "hardhat/types";
+import {ethers} from "ethers";
 
 dotenv.config();
 // todo add other roles
 const PK = [
-  process.env.PRIVATEKEY || "00000000",
-  process.env.SECONDPRIVATEKEY || "00000000"
+  process.env.PRIVATEKEY || ethers.constants.HashZero,
+  process.env.SECONDPRIVATEKEY || ethers.constants.HashZero,
 ];
 
 const config: HardhatUserConfig = {
@@ -32,7 +33,7 @@ const config: HardhatUserConfig = {
     },
 
     "dev/eth": {
-      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
+      url: "https://nunki.htznr.fault.dev/rpc",
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
