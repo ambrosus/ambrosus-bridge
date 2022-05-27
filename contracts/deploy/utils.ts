@@ -181,26 +181,8 @@ async function getValidators(
 }
 
 export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
-  const vsAbiBsc = [
-    {
-      "constant": true,
-      "inputs": [],
-      "name": "getValidators",
-      "outputs": [
-        {
-          "internalType": "address[]",
-          "name": "",
-          "type": "address[]"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-  ]
-
   const vsAddress = "0x0000000000000000000000000000000000001000";
-  const [validators, block] = await getValidators(bscNetwork, vsAddress, "BSC_BscBridge", vsAbiBsc);
+  const [validators, block] = await getValidators(bscNetwork, vsAddress, "BSC_BscBridge", vsAbi);
   const epoch = block.number / 200;
 
   return [epoch, validators];
