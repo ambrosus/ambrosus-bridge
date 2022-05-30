@@ -85,6 +85,7 @@ func (b *Bridge) Run() {
 	b.Logger.Debug().Msg("Running ambrosus bridge...")
 
 	go b.UnlockTransfersLoop()
+	go b.TriggerTransfersLoop()
 	b.SubmitTransfersLoop()
 }
 

@@ -49,6 +49,7 @@ func (b *Bridge) Run() {
 
 	// go b.ensureDAGsExists()
 	go b.UnlockTransfersLoop()
+	go b.TriggerTransfersLoop()
 	b.SubmitTransfersLoop()
 }
 

@@ -5,18 +5,22 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x2FA390265Fd43c996f6335293ad60446494c621B",
+            "contractAddr": "0x1E712576FA72fa90C445bf1FcCCD8807FFA89467",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "privateKey": "in env"
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 1
         },
         "eth": {
             "httpUrl": "https://nunki.htznr.fault.dev/rpc",
             "wsUrl": "wss://nunki.htznr.fault.dev/ws",
-            "contractAddr": "0x89F600091bB7D6f94fD1EC183866dce67F1ba19A",
+            "contractAddr": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 0
+            "ethashGenNextEpochs": 0,
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 0.01
         }
     },
     "externalLogger": {

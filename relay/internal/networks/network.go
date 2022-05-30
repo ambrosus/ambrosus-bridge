@@ -6,12 +6,14 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
 var (
-	ErrEventNotFound = errors.New("error event not found")
+	ErrEventNotFound          = errors.New("error event not found")
+	ErrTransferSubmitNotFound = errors.New("error transfer submit not found")
 )
 
 type GetTxErrParams struct {
@@ -32,9 +34,6 @@ type Bridge interface {
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
-
-	// WithdrawCount return count of `Withdraw` events emitted after given event
-	WithdrawCount(afterEventId *big.Int) (int, error)
 
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error
@@ -63,9 +62,26 @@ type BridgeReceivePoSA interface {
 
 type BridgeFeeApi interface {
 	Bridge
+	GetClient() ethclients.ClientInterface
 	Sign(digestHash []byte) ([]byte, error)
 	GetTransferFee() (*big.Int, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
 
+	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
+	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error)
+
+	// GetLastCorrectSubmitUnlockPair returns last correct submit and unlock pair and correct submits and unlocks slices
+	GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64) (
+		event *contracts.BridgeTransferFinish,
+		submits []*contracts.BridgeTransferSubmit,
+		unlocks []*contracts.BridgeTransferFinish,
+		err error,
+	)
+	GetLatestBlockNumber() (uint64, error)
+	GetOldestLockedEventId() (*big.Int, error)
+	GetTransferSubmitById(eventId *big.Int) (*contracts.BridgeTransferSubmit, error)
 	GetWrapperAddress() (common.Address, error)
+
+	// GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetMinBridgeFee() *big.Float
 }
