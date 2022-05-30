@@ -74,7 +74,6 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 	}
 
 	// sign the price with private key
-	// signature, err := signData(pk, tokenPrice, tokenAddress)
 	message := buildMessage(tokenAddress, transferFee, bridgeFee)
 	signature, err := bridge.Sign(message)
 	if err != nil {

@@ -25,25 +25,16 @@ func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 		return nil, fmt.Errorf("get native to usdt price: %w", err)
 	}
 
-	var tokenToUsdtPrice float64
-	var tokenDecimals uint8
-	// if token is native
-	if tokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
-		tokenToUsdtPrice = nativeToUsdtPrice
-		tokenDecimals = 18
-	} else {
-		// get token symbol and decimals
-		var tokenSymbol string
-		tokenSymbol, tokenDecimals, err = getTokenData(bridge, tokenAddress)
-		if err != nil {
-			return nil, fmt.Errorf("get token data: %w", err)
-		}
+	// get token symbol and decimals
+	tokenSymbol, tokenDecimals, err := getTokenData(bridge, tokenAddress)
+	if err != nil {
+		return nil, fmt.Errorf("get token data: %w", err)
+	}
 
-		// get token price
-		tokenToUsdtPrice, err = getTokenToUsdtPrice(tokenSymbol, tokenDecimals)
-		if err != nil {
-			return nil, fmt.Errorf("get token price: %w", err)
-		}
+	// get token price
+	tokenToUsdtPrice, err := getTokenToUsdtPrice(tokenSymbol, tokenDecimals)
+	if err != nil {
+		return nil, fmt.Errorf("get token price: %w", err)
 	}
 
 	// get fee in usdt

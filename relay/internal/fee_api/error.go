@@ -2,10 +2,6 @@ package fee_api
 
 import "encoding/json"
 
-var (
-	ErrTokenAddressNotPassed = NewAppError(nil, "token address is not passed", "")
-)
-
 type AppError struct {
 	Err              error  `json:"-"`
 	Message          string `json:"message,omitempty"`
