@@ -71,7 +71,7 @@ type BridgeFeeApi interface {
 	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error)
 
 	// GetLastCorrectSubmitUnlockPair returns last correct submit and unlock pair and correct submits and unlocks slices
-	GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64) (
+	GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64, lastUnlockEventId *big.Int) (
 		event *contracts.BridgeTransferFinish,
 		submits []*contracts.BridgeTransferSubmit,
 		unlocks []*contracts.BridgeTransferFinish,

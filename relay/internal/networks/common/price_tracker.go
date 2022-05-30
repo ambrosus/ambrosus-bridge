@@ -22,13 +22,16 @@ const (
 type PriceTrackerData struct {
 	PrevUsedBlockNumber     uint64
 	PrevSideUsedBlockNumber uint64
+	PrevUsedUnlockEventId   *big.Int
 	TotalGasCost            *big.Int
 	WithdrawsCount          int64
 }
 
-func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, totalGasCost *big.Int, withdrawsCount int64) {
+func (d *PriceTrackerData) save(blockNumber, sideBlockNumber uint64, unlockEventId *big.Int, totalGasCost *big.Int, withdrawsCount int64) {
 	d.PrevUsedBlockNumber = blockNumber
 	d.PrevSideUsedBlockNumber = sideBlockNumber
+	d.PrevUsedUnlockEventId = unlockEventId
+
 	d.TotalGasCost.Add(d.TotalGasCost, totalGasCost)
 	d.WithdrawsCount += withdrawsCount
 }
@@ -69,6 +72,7 @@ func (b *CommonBridge) initPriceTrackerData(data *PriceTrackerData) error {
 
 	data.PrevUsedBlockNumber = startBlockNumber
 	data.PrevSideUsedBlockNumber = sideStartBlockNumber
+	data.PrevUsedUnlockEventId = big.NewInt(0)
 	data.TotalGasCost = big.NewInt(0)
 	return nil
 }
@@ -92,6 +96,7 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 	eventUnlock, submits, unlocks, err := b.SideBridge.(networks.BridgeFeeApi).GetLastCorrectSubmitUnlockPair(
 		data.PrevSideUsedBlockNumber,
 		endSide,
+		data.PrevUsedUnlockEventId,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("get last correct submit unlock pair: %w", err)
@@ -110,13 +115,13 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 		if err != nil {
 			return nil, fmt.Errorf("get event by id: %w", err)
 		}
-		withdrawsCount, err := b.withdrawCount(data.PrevUsedBlockNumber, eventTransfer.Raw.BlockNumber)
+		withdrawsCount, err := b.withdrawCount(data.PrevUsedBlockNumber, eventTransfer.Raw.BlockNumber, data.PrevUsedUnlockEventId)
 		if err != nil {
 			return nil, fmt.Errorf("get withdraw count: %w", err)
 		}
 
 		b.Logger.Info().Msgf("withdraws count: %d, totalGas: %d, totalGasCost: %d", withdrawsCount, totalGas, totalGasCost)
-		data.save(eventTransfer.Raw.BlockNumber, eventUnlock.Raw.BlockNumber, totalGasCost, withdrawsCount)
+		data.save(eventTransfer.Raw.BlockNumber, eventUnlock.Raw.BlockNumber, eventUnlock.EventId, totalGasCost, withdrawsCount)
 	}
 
 	// if there's no transfers then return nil
@@ -124,10 +129,11 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 		return nil, nil
 	}
 
+	b.Logger.Info().Msgf("withdraws count: %d, totalGasCost: %d", data.WithdrawsCount, data.TotalGasCost)
 	return new(big.Int).Div(data.TotalGasCost, big.NewInt(data.WithdrawsCount)), nil
 }
 
-func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64) (
+func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64, lastUnlockEventId *big.Int) (
 	event *contracts.BridgeTransferFinish,
 	submits []*contracts.BridgeTransferSubmit,
 	unlocks []*contracts.BridgeTransferFinish,
@@ -141,7 +147,9 @@ func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlock
 		return nil, nil, nil, fmt.Errorf("filter transfer submit: %w", err)
 	}
 	for logsSubmit.Next() {
-		submits = append(submits, logsSubmit.Event)
+		if logsSubmit.Event.EventId.Cmp(lastUnlockEventId) == 1 {
+			submits = append(submits, logsSubmit.Event)
+		}
 	}
 
 	// get unlock events
@@ -150,7 +158,9 @@ func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlock
 		return nil, nil, nil, fmt.Errorf("filter transfer finish: %w", err)
 	}
 	for logsUnlock.Next() {
-		unlocks = append(unlocks, logsUnlock.Event)
+		if logsUnlock.Event.EventId.Cmp(lastUnlockEventId) == 1 {
+			unlocks = append(unlocks, logsUnlock.Event)
+		}
 	}
 
 	// intersect submits and unlocks
@@ -162,7 +172,7 @@ func (b *CommonBridge) GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlock
 	return event, submits, unlocks, nil
 }
 
-func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (int64, error) {
+func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64, lastUnlockEventId *big.Int) (int64, error) {
 	count := 0
 
 	opts := &bind.FilterOpts{Start: startBlockNumber, End: &endBlockNumber}
@@ -171,7 +181,9 @@ func (b *CommonBridge) withdrawCount(startBlockNumber, endBlockNumber uint64) (i
 		return 0, fmt.Errorf("filter transfer: %w", err)
 	}
 	for logs.Next() {
-		count += len(logs.Event.Queue)
+		if logs.Event.EventId.Cmp(lastUnlockEventId) == 1 {
+			count += len(logs.Event.Queue)
+		}
 	}
 
 	return int64(count), nil
