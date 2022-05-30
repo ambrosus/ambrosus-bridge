@@ -123,26 +123,56 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 }
 
 func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetTxErrParams) error {
-	b.ContractCallLock.Lock()
-	params.Tx, params.TxErr = txCallback(b.Auth)
-	if err := b.Bridge.GetTxErr(params); err != nil {
-		b.ContractCallLock.Unlock()
-		return err
-	}
-	b.ContractCallLock.Unlock()
+	// if the transaction get stuck, then retry it with the higher gas price
+	var txOpts = b.Auth
+	var receipt *types.Receipt
+	err := retry.Do(
+		func() (err error) {
+			b.ContractCallLock.Lock()
+			params.Tx, params.TxErr = txCallback(txOpts)
+			if err := b.Bridge.GetTxErr(params); err != nil {
+				b.ContractCallLock.Unlock()
+				return err
+			}
+			b.ContractCallLock.Unlock()
 
-	b.IncTxCountMetric(params.MethodName)
+			b.IncTxCountMetric(params.MethodName)
 
-	b.Logger.Info().
-		Str("method", params.MethodName).
-		Str("tx_hash", params.Tx.Hash().Hex()).
-		Interface("full_tx", params.Tx).
-		Interface("tx_params", params.TxParams).
-		Msgf("Wait the tx to be mined...")
+			b.Logger.Info().
+				Str("method", params.MethodName).
+				Str("tx_hash", params.Tx.Hash().Hex()).
+				Interface("full_tx", params.Tx).
+				Interface("tx_params", params.TxParams).
+				Msgf("Wait the tx to be mined...")
 
-	receipt, err := b.waitMined(params)
+			receipt, err = b.waitMined(params)
+			if err != nil {
+				return fmt.Errorf("wait mined: %w", err)
+			}
+			return nil
+		},
+
+		retry.RetryIf(func(err error) bool {
+			return errors.Is(err, context.DeadlineExceeded)
+		}),
+		retry.OnRetry(func(n uint, err error) {
+			b.Logger.Warn().
+				Str("method", params.MethodName).
+				Str("tx_hash", params.Tx.Hash().Hex()).
+				Msgf("Seems the transaction get stuck, making new tx with higher gas price and the same nonce to replace the old one... (%d/%d)", n+1, 2)
+
+			// set gas price higher by 30%
+			txOpts.GasPrice, _ = new(big.Float).Mul(
+				new(big.Float).SetInt(params.Tx.GasPrice()),
+				big.NewFloat(1.30),
+			).Int(nil)
+			txOpts.Nonce = big.NewInt(int64(params.Tx.Nonce()))
+		}),
+		retry.Attempts(2),
+		retry.LastErrorOnly(true),
+	)
 	if err != nil {
-		return fmt.Errorf("wait mined: %w", err)
+		return err
 	}
 
 	b.SetUsedGasMetric(params.MethodName, receipt.GasUsed, params.Tx.GasPrice())
