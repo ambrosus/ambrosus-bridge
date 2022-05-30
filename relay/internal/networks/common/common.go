@@ -37,7 +37,13 @@ type CommonBridge struct {
 	Name       string
 	Pk         *ecdsa.PrivateKey
 
+	MinBridgeFee          *big.Float
+	DefaultTransferFeeWei *big.Int
+
 	ContractCallLock *sync.Mutex
+
+	GasPerWithdrawLock *sync.Mutex
+	PriceTrackerData   PriceTrackerData
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -90,6 +96,10 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	}
 
 	b.ContractCallLock = &sync.Mutex{}
+	b.GasPerWithdrawLock = &sync.Mutex{}
+
+	b.MinBridgeFee = big.NewFloat(cfg.MinBridgeFee)
+	b.DefaultTransferFeeWei = big.NewInt(int64(cfg.DefaultTransferFee * 1e18))
 
 	return b, nil
 
