@@ -2,7 +2,6 @@ package common
 
 import (
 	"fmt"
-	"math/big"
 	"time"
 )
 
@@ -35,10 +34,10 @@ func (b *CommonBridge) checkTriggerTransfers() error {
 		return nil                        // return so we can get actual `lastTimeFrame` value in next iteration
 	}
 
-	queue, err := b.Contract.Queue(nil, big.NewInt(0))
+	isQueueEmpty, err := b.Contract.IsQueueEmpty(nil)
 	if err != nil {
-		return fmt.Errorf("Contract.Queue error: %w", err)
-	} else if queue.Amount.Int64() == 0 {
+		return fmt.Errorf("IsQueueEmpty: %w", err)
+	} else if isQueueEmpty {
 		b.Logger.Info().Msg("Queue empty, skipping...")
 
 		// if lastTimeFrame has no transfers we should sleep at least until current time frame end
