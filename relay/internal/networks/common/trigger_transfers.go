@@ -3,6 +3,10 @@ package common
 import (
 	"fmt"
 	"time"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 func (b *CommonBridge) TriggerTransfersLoop() {
@@ -47,14 +51,18 @@ func (b *CommonBridge) checkTriggerTransfers() error {
 		return nil
 	}
 
-	return b.triggerTransfers()
+	if err := b.triggerTransfers(); err != nil {
+		return fmt.Errorf("triggerTransfers error: %w", err)
+	}
+	return nil
 }
 
 func (b *CommonBridge) triggerTransfers() error {
 	b.Logger.Info().Msg("Triggering transfers...")
 
-	// todo trigger transfers
-	return nil
+	return b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.TriggerTransfers(opts)
+	}, networks.GetTxErrParams{MethodName: "triggerTransfers"})
 }
 
 func calcTriggerAt(timeFrameId, timeFrameSeconds int64) time.Time {
