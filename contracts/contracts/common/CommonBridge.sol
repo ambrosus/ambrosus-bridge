@@ -40,7 +40,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     uint public inputEventId; // last processed event from side network
     uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
-    uint lastTimeframe;
+    uint public lastTimeframe; // timestamp / timeframeSeconds of latest withdraw
 
     uint internal signatureFeeCheckNumber;
 
@@ -242,6 +242,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
         inputEventId = eventId-1; // pretend like we don't receive that event
+    }
+
+    function isQueueEmpty() public view returns (bool) {
+        return queue.length == 0;
     }
 
 
