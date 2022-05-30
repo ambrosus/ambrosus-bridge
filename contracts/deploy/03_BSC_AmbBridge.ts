@@ -20,8 +20,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tokenPairs = configFile.getTokenPairs("amb", "bsc")
 
   const bscNet = hre.companionNetworks['bsc'];
-  const bscBridge = await bscNet.deployments.get('BSC_BscBridge');
-  const [initialEpoch, initialValidators] = await getBscValidators(bscNet, bscBridge.receipt);
+  const [initialEpoch, initialValidators] = await getBscValidators(bscNet);
   const chainId = await bscNet.getChainId();
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
