@@ -22,6 +22,6 @@ contract CheckPoSATest is CheckPoSA {
     }
 
     function checkSignatureTest(bytes32 hash, bytes memory signature) public view returns(address) {
-        return getSigner(hash, signature);
+        return ecdsaRecover(hash, signature);
     }
 }

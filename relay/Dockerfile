@@ -8,6 +8,7 @@ RUN go mod download
 COPY . .
 
 RUN go build -o bridge cmd/bridge/main.go
-EXPOSE 9091
+EXPOSE 9090
+EXPOSE 8080
 
 CMD ["/app/bridge"]

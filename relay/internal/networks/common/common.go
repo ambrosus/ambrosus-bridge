@@ -2,6 +2,7 @@ package common
 
 import (
 	"context"
+	"crypto/ecdsa"
 	"errors"
 	"fmt"
 	"math/big"
@@ -34,6 +35,7 @@ type CommonBridge struct {
 	SideBridge networks.Bridge
 	Logger     zerolog.Logger
 	Name       string
+	Pk         *ecdsa.PrivateKey
 
 	ContractCallLock *sync.Mutex
 }
@@ -71,6 +73,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 		if err != nil {
 			return b, fmt.Errorf("parse private key: %w", err)
 		}
+		b.Pk = pk
 		chainId, err := b.Client.ChainID(context.Background())
 		if err != nil {
 			return b, fmt.Errorf("chain id: %w", err)
@@ -123,6 +126,7 @@ func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetT
 	b.ContractCallLock.Lock()
 	params.Tx, params.TxErr = txCallback(b.Auth)
 	if err := b.Bridge.GetTxErr(params); err != nil {
+		b.ContractCallLock.Unlock()
 		return err
 	}
 	b.ContractCallLock.Unlock()

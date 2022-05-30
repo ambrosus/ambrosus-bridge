@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -113,4 +114,8 @@ func (b *Bridge) ensureDAGsExists() {
 		return
 	}
 	b.ethash.GenDagForEpoch(blockNumber / 30000)
+}
+
+func (b *Bridge) CoinPrice() (float64, error) {
+	return price.CoinToUsdt(price.Eth)
 }

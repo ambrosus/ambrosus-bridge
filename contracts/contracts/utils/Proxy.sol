@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.6;
 
 import "@openzeppelin/contracts/proxy/Proxy.sol";
@@ -69,11 +70,5 @@ contract ProxyMultiSig is Proxy, MultiSigWallet {
 
     function _implementation() internal view override returns (address) {
         return StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value;
-    }
-
-    receive() external payable override {
-        if (msg.value > 0)
-            emit Deposit(msg.sender, msg.value);
-        super._fallback();
     }
 }

@@ -5,12 +5,13 @@ import "solidity-coverage";
 import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
 import {HardhatUserConfig} from "hardhat/types";
+import {ethers} from "ethers";
 
 dotenv.config();
 // todo add other roles
 const PK = [
-  process.env.PRIVATEKEY || "00000000",
-  process.env.SECONDPRIVATEKEY || "00000000"
+  process.env.PRIVATEKEY || ethers.constants.HashZero,
+  process.env.SECONDPRIVATEKEY || ethers.constants.HashZero,
 ];
 
 const config: HardhatUserConfig = {
@@ -20,10 +21,19 @@ const config: HardhatUserConfig = {
       blockGasLimit: 40000000, // amb value
       hardfork: "byzantium",
       companionNetworks: {amb: 'hardhat'},
+      initialDate: "13 May 2022 18:10:36 GMT",
+
+      // for debugging: run local node with state from some network
+      forking: {
+        enabled: false,
+        url: "https://network.ambrosus-dev.io",
+        // url: "https://eth-rinkeby.alchemyapi.io/v2/e1F5R9XuWDU2-zCtzaMDg4Ybb5SuoEDA"
+        blockNumber: 0xb00ba,
+      }
     },
 
     "dev/eth": {
-      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
+      url: "https://nunki.htznr.fault.dev/rpc",
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
@@ -123,6 +133,7 @@ const config: HardhatUserConfig = {
       ":ValidatorSet$",
       "sAMB",
       "IWrapper",
+      "IERC20$",
     ]
   }
 };
