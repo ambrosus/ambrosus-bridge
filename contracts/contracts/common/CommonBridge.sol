@@ -18,7 +18,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     uint private constant SIGNATURE_FEE_TIMESTAMP = 1800;  // 30 min
 
     // queue to be pushed in another network
-    CommonStructs.Transfer[] public queue;
+    CommonStructs.Transfer[] queue;
 
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
@@ -242,6 +242,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
         inputEventId = eventId-1; // pretend like we don't receive that event
+    }
+
+    function isQueueEmpty() public view returns (bool) {
+        return queue.length == 0;
     }
 
 
