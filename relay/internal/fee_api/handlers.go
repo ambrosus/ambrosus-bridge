@@ -87,7 +87,7 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 	}, nil
 }
 
-func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *big.Int, amount *big.Int) []byte {
+func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *big.Int) []byte {
 	// tokenAddress + timestamp + transferFee + bridgeFee
 
 	var data bytes.Buffer
