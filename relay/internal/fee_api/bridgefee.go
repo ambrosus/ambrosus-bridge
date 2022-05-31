@@ -2,7 +2,6 @@ package fee_api
 
 import (
 	"fmt"
-	"math"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
@@ -18,13 +17,7 @@ var percentFromAmount = map[uint64]int64{
 	100_000: 2 * 100, // 100_000...$ => 2%
 }
 
-func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	// convert usdt to native token
-	nativeToUsdtPrice, err := bridge.CoinPrice()
-	if err != nil {
-		return nil, fmt.Errorf("get native to usdt price: %w", err)
-	}
-
+func GetBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
 	// get token symbol and decimals
 	tokenSymbol, tokenDecimals, err := getTokenData(bridge, tokenAddress)
 	if err != nil {
@@ -38,7 +31,7 @@ func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 	}
 
 	// get fee in usdt
-	amountInUsdt := calcAmountInUsdt(amount, tokenToUsdtPrice, tokenDecimals)
+	amountInUsdt := Coin2Usd(amount, tokenToUsdtPrice, tokenDecimals)
 	feePercent := getFeePercent(amountInUsdt)
 	feeUsdt := calcBps(amountInUsdt, feePercent)
 
@@ -48,10 +41,8 @@ func GetBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amo
 	}
 
 	// calc fee in native token
-	nativeFee := calcNativeFee(feeUsdt, nativeToUsdtPrice, tokenDecimals)
-
-	res, _ := nativeFee.Int(nil)
-	return res, nil
+	nativeFee := Usd2Coin(feeUsdt, nativeCoinPriceInUsd, 18)
+	return nativeFee, nil
 }
 
 func getTokenData(bridge networks.BridgeFeeApi, tokenAddress common.Address) (string, uint8, error) {
@@ -79,17 +70,6 @@ func getTokenToUsdtPrice(tokenSymbol string, tokenDecimals uint8) (tokenToUsdtPr
 	return tokenToUsdtPrice, err
 }
 
-// tokenToUsdtPrice * (amount / 10^tokenDecimals)
-func calcAmountInUsdt(amount *big.Int, tokenToUsdtPrice float64, tokenDecimals uint8) *big.Float {
-	return new(big.Float).Mul(
-		big.NewFloat(tokenToUsdtPrice),
-		new(big.Float).Quo(
-			new(big.Float).SetInt(amount),
-			big.NewFloat(math.Pow10(int(tokenDecimals))),
-		),
-	)
-}
-
 func getFeePercent(amountInUsdt *big.Float) (percent int64) {
 	// use lower percent for higher amount
 	for _, minUsdt := range helpers.SortedKeys(percentFromAmount) {
@@ -108,18 +88,4 @@ func calcBps(amount *big.Float, bps int64) *big.Float {
 		new(big.Float).Mul(amount, big.NewFloat(float64(bps))),
 		big.NewFloat(10_000),
 	)
-}
-
-// usdtFeeWei / nativeToUsdtPrice * 10^tokenDecimals
-func calcNativeFee(feeUsdt *big.Float, nativeToUsdtPrice float64, tokenDecimals uint8) *big.Float {
-	nativeFee := new(big.Float)
-	nativeFee.Quo(
-		feeUsdt,
-		big.NewFloat(nativeToUsdtPrice),
-	)
-	nativeFee.Mul(
-		nativeFee,
-		big.NewFloat(math.Pow10(int(tokenDecimals))),
-	)
-	return nativeFee
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -17,16 +18,20 @@ func (b *CommonBridge) Sign(digestHash []byte) ([]byte, error) {
 	return crypto.Sign(digestHash, b.Pk)
 }
 
-func (b *CommonBridge) GetTransferFee() (*big.Int, error) {
-	res, err := b.GasPerWithdraw(&b.PriceTrackerData)
+func (b *CommonBridge) GetTransferFee(thisCoinPrice, sideCoinPrice float64) (*big.Int, error) {
+	// get gas cost per withdraw in side bridge currency
+	gasCostInSide, err := b.GasPerWithdraw(&b.PriceTrackerData)
 	if err != nil {
 		return nil, err
 	}
-	if res == nil {
+	if gasCostInSide == nil {
 		return b.DefaultTransferFeeWei, nil
 	}
 
-	return res, nil
+	// convert it to native bridge currency
+	gasCostInUsd := fee_api.Coin2Usd(gasCostInSide, sideCoinPrice, 18)
+	gasCostInNative := fee_api.Usd2Coin(gasCostInUsd, thisCoinPrice, 18)
+	return gasCostInNative, nil
 }
 
 func (b *CommonBridge) GetLatestBlockNumber() (uint64, error) {
