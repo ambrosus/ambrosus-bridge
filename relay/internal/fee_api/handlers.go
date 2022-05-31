@@ -74,7 +74,7 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 	}
 
 	// sign the price with private key
-	message := buildMessage(tokenAddress, transferFee, bridgeFee)
+	message := buildMessage(tokenAddress, transferFee, bridgeFee, (*big.Int)(req.Amount))
 	signature, err := bridge.Sign(message)
 	if err != nil {
 		return nil, NewAppError(nil, "error when signing data", err.Error())
@@ -87,7 +87,7 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 	}, nil
 }
 
-func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *big.Int) []byte {
+func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *big.Int, amount *big.Int) []byte {
 	// tokenAddress + timestamp + transferFee + bridgeFee
 
 	var data bytes.Buffer
@@ -100,6 +100,7 @@ func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *
 
 	data.Write(transferFee.FillBytes(b32[:]))
 	data.Write(bridgeFee.FillBytes(b32[:]))
+	data.Write(amount.FillBytes(b32[:]))
 
 	return accounts.TextHash(crypto.Keccak256(data.Bytes()))
 }
