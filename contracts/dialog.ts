@@ -5,7 +5,6 @@ import fs from "fs";
 import {execSync} from "child_process";
 import {ethers} from "hardhat";
 
-// todo add confirmation
 
 async function main() {
     const getNetworkName = (type: string, side: string) => `${type}/${side}`;
@@ -41,10 +40,10 @@ async function main() {
         }
     }
 
-    const networkType = await Dialog.askToChooseFromArray(Object.keys(networks), "Choose network type");
+    const networkType = await Dialog.askToChooseFromArray(Object.keys(networks), "Choose network type:");
 
     const bridgeTypes = ["eth", "bsc"];
-    const bridgeType = await Dialog.askToChooseFromArray(bridgeTypes, "Choose bridge type");
+    const bridgeType = await Dialog.askToChooseFromArray(bridgeTypes, "Choose bridge type:");
 
     if (action === "redeploy") {
         const configPath = `./configs/${getConfigName(networkType)}`;
@@ -64,8 +63,8 @@ async function main() {
         } else {
             const pattern = `${bridgeType.toUpperCase()}` + "_(.+)Bridge";
 
-            for (let network in networks[networkType]) {
-                const path = `./deployments/${networkType}/${network}`;
+            for (let i in networks[networkType]) {
+                const path = `./deployments/${networkType}/${networks[networkType][i]}`;
                 const files = fs.readdirSync(path);
 
                 for (let f in files) {
@@ -76,10 +75,16 @@ async function main() {
             }
 
             execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+            Dialog.output(`${networkType}/amb deployed.`);
             execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`);
+            Dialog.output(`${networkType}/${bridgeType} deployed.`);
+
             execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+            Dialog.output(`sideBridgeAddress was set`);
+
             execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`);
             execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`);
+            Dialog.output(`Tokens successfully added`);
 
         }
 
