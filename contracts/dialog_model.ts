@@ -3,12 +3,12 @@ import inquirer from "inquirer";
 class Dialog {
     output = (data: string) => console.log(data);
 
-    confirmation = async() => {
+    confirmation = async(message: string) => {
         const {confirmation} = await inquirer.prompt([
             {
                 type: 'list',
                 name: 'confirmation',
-                message: "Are you sure?",
+                message: message,
                 choices: [
                     {
                         name: "NO",

@@ -12,12 +12,19 @@ async function main() {
 
     const actions = ["redeploy", "upgrade", "confirmTransaction", "exit"];
     let action;
+    let fullRedeploy = false;
 
     while (true) {
         action = await Dialog.askToChooseFromArray(actions, "Choose action:");
         if (action === "exit") return;
 
-        const confirm = await Dialog.confirmation();
+        if (action === "redeploy") {
+            const msg = "Do you want a full redeploy? (Tokens will be redeployed):"
+            fullRedeploy = await Dialog.confirmation(msg);
+        }
+
+        const msg = `[${!fullRedeploy ? action : 'full_redeploy'}] Are you sure?`;
+        const confirm = await Dialog.confirmation(msg);
         if (confirm) break;
     }
 
@@ -47,26 +54,34 @@ async function main() {
         obj.bridges[bridgeType]["side"] = "";
         fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
 
-        const pattern = `${bridgeType.toUpperCase()}` + "_(.+)Bridge";
-
-        for (let network in networks[networkType]) {
-            const path = `./deployments/${networkType}/${network}`;
-            const files = fs.readdirSync(path);
-
-            for (let f in files) {
-                const res = new RegExp(pattern).exec(files[f]);
-                if (res !== null)
-                    execSync(`rm ${path}/${res.input}`);
+        if (fullRedeploy) {
+            for (let network in networks[networkType]) {
+                execSync(`rm -r ./deployments/${networkType}/${network}`);
             }
+
+            execSync(`./deploy.sh ${bridgeType} ${networkType}`);
+
+        } else {
+            const pattern = `${bridgeType.toUpperCase()}` + "_(.+)Bridge";
+
+            for (let network in networks[networkType]) {
+                const path = `./deployments/${networkType}/${network}`;
+                const files = fs.readdirSync(path);
+
+                for (let f in files) {
+                    const res = new RegExp(pattern).exec(files[f]);
+                    if (res !== null)
+                        execSync(`rm ${path}/${res.input}`);
+                }
+            }
+
+            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`);
+            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`);
+            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`);
+
         }
-
-        execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
-        execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`);
-        execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
-        execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`);
-        execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`);
-
-        // execSync(`./deploy.sh ${bridgeType} ${networkType}`);
 
         Dialog.output("Successfully redeployed!");
         return;
