@@ -78,7 +78,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(msg.value > transferFee + bridgeFee, "Sent value <= fee");
 
-        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, msg.value);
+        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, msg.value - transferFee - bridgeFee);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
@@ -114,7 +114,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(amount > 0, "Cannot withdraw 0");
 
-        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee, msg.value);
+        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee, amount);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 

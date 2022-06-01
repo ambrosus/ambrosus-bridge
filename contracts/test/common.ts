@@ -77,7 +77,7 @@ describe("Common tests", () => {
 
   describe("Test Withdraw", async () => {
     it("token balance changed", async () => {
-      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, transferFee + bridgeFee);
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, 1);
 
       await expect(() =>
         commonBridge.withdraw(
@@ -92,18 +92,18 @@ describe("Common tests", () => {
       let signature;
       let changedTimestamp;
 
-      signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, transferFee + bridgeFee);
+      signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, 1);
       await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
       changedTimestamp = await nextTimeframe();
 
-      signature = await getSignature(relayS, mockERC20.address, changedTimestamp, transferFee + bridgeFee);
+      signature = await getSignature(relayS, mockERC20.address, changedTimestamp, 1);
       let tx1Amb: ContractTransaction = await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
       await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
       await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
       changedTimestamp = await nextTimeframe();
 
       // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      signature = await getSignature(relayS, mockERC20.address, changedTimestamp, transferFee + bridgeFee);
+      signature = await getSignature(relayS, mockERC20.address, changedTimestamp, 1);
       let tx2Amb: ContractTransaction = await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
       await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
 
@@ -125,27 +125,27 @@ describe("Common tests", () => {
     });
 
     it("unwrapSide == true, but wrong token", async () => {
-      const signature = await getSignature(relayS, token1, START_TIMESTAMP, transferFee + bridgeFee);
+      const signature = await getSignature(relayS, token1, START_TIMESTAMP, 1);
       await expect(commonBridge.withdraw(...withdrawArgs(token1, user, signature, true)))
         .to.be.revertedWith("Token not point to native token")
     });
 
     it("wrong signature", async () => {
-      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, transferFee + bridgeFee);
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, 1);
       await network.provider.send("evm_setNextBlockTimestamp", [START_TIMESTAMP + 4400]);
       await expect(commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature)))
           .to.be.revertedWith("Signature check failed");
     });
 
     it("withdraw feeCheck with delay", async () => {
-      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, transferFee + bridgeFee);
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, 1);
       await network.provider.send("evm_setNextBlockTimestamp", [START_TIMESTAMP + 2400]);
       await commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature));
     });
 
     it("withdraw msg.value != transferFee + bridgeFee", async () => {
       const feeAddition = 60;
-      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, transferFee + bridgeFee + feeAddition);
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, feeAddition);
       await expect(commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature, false, feeAddition)))
           .to.be.revertedWith("Sent value != fee");
     });
@@ -159,7 +159,7 @@ describe("Common tests", () => {
 
       const wrapperAddress = await commonBridge.wrapperAddress();
       const feeAddition = 50;
-      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, transferFee + bridgeFee + feeAddition);
+      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, feeAddition);
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + feeAddition});
 
       await expect(() => commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + feeAddition}))
@@ -173,20 +173,20 @@ describe("Common tests", () => {
 
       const fee = transferFee + bridgeFee;
 
-      signature = await getSignature(relayS, wrapperAddress, changedTimestamp, fee + 1);
+      signature = await getSignature(relayS, wrapperAddress, changedTimestamp, 1);
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
       changedTimestamp = await nextTimeframe();
 
       // will catch previous txs (because nextTimeframe happened)
-      signature = await getSignature(relayS, wrapperAddress, changedTimestamp, fee + 1);
+      signature = await getSignature(relayS, wrapperAddress, changedTimestamp, 1);
       let tx1Amb: ContractTransaction = await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
       changedTimestamp = await nextTimeframe();
 
       // will catch previous txs started from tx1Amb/tx1Eth (because nextTimeframe happened)
-      signature = await getSignature(relayS, wrapperAddress, changedTimestamp, fee + 1);
+      signature = await getSignature(relayS, wrapperAddress, changedTimestamp, 1);
       let tx2Amb: ContractTransaction = await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee + 1});
 
@@ -203,7 +203,7 @@ describe("Common tests", () => {
     it('Check msg.value', async () => {
       const fee = transferFee + bridgeFee;
       const wrapperAddress = await commonBridge.wrapperAddress();
-      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, fee);
+      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, 0);
 
       await expect(commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: fee}))
           .to.be.revertedWith("Sent value <= fee");
@@ -244,7 +244,7 @@ describe("Common tests", () => {
   describe("Test change methods", () => {
     it("Test changeFeeRecipient", async () => {
       await commonBridge.changeTransferFeeRecipient(user);
-      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, transferFee + bridgeFee);
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, 1);
       await expect(() => commonBridge.withdraw(...withdrawArgs(mockERC20.address, owner, signature)))
         .to.changeEtherBalance(userS, transferFee);
 
@@ -353,7 +353,7 @@ describe("Common tests", () => {
     it("unlock native coins", async () => {
       const wrapperAddress = await commonBridge.wrapperAddress();
 
-      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, transferFee + bridgeFee + 50);
+      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, 50);
       await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: transferFee + bridgeFee + 50});  // lock some SAMB tokens on bridge
       await commonBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
       await nextTimeframe();
