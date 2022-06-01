@@ -36,8 +36,8 @@ contract CommonBridgeTest is CommonBridge {
     }
 
 
-    function FeeCheckTest(address token, bytes calldata signature, uint fee1, uint fee2) public {
-        feeCheck(token, signature, fee1, fee2);
+    function FeeCheckTest(address token, bytes calldata signature, uint fee1, uint fee2) public payable {
+        feeCheck(token, signature, fee1, fee2, msg.value);
     }
 
     function getSignatureFeeCheckNumber() public view returns(uint) {

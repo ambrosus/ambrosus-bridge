@@ -78,7 +78,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(msg.value > transferFee + bridgeFee, "Sent value <= fee");
 
-        feeCheck(wrapperAddress, signature, transferFee, bridgeFee);
+        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, msg.value);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
@@ -114,7 +114,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(amount > 0, "Cannot withdraw 0");
 
-        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee);
+        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee, msg.value);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
@@ -131,7 +131,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         address token,
         bytes calldata signature,
         uint transferFee,
-        uint bridgeFee
+        uint bridgeFee,
+        uint amount
     ) internal {
         bytes32 messageHash;
         address signer;
@@ -144,7 +145,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
                         token,
                         timestampEpoch,
                         transferFee,
-                        bridgeFee
+                        bridgeFee,
+                        amount
                     ))
                 ));
 
