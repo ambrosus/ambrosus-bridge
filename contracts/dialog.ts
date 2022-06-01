@@ -53,6 +53,9 @@ async function main() {
         obj.bridges[bridgeType]["side"] = "";
         fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
 
+        Dialog.output(`Beginning of the deploy process: ${new Date().toLocaleTimeString()}`);
+        Dialog.output(`If deploy is stuck at ${networkType}/${bridgeType} stage - continue with manual deploy\n`);
+
         if (fullRedeploy) {
             for (let network in networks[networkType]) {
                 execSync(`rm -r ./deployments/${networkType}/${network}`);
@@ -74,17 +77,15 @@ async function main() {
                 }
             }
 
-            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
-            Dialog.output(`${networkType}/amb deployed.`);
-            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`);
-            Dialog.output(`${networkType}/${bridgeType} deployed.`);
+            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`, {stdio: 'inherit'});
+            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`, {stdio: 'inherit'});
 
-            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`, {stdio: 'inherit'});
             Dialog.output(`sideBridgeAddress was set`);
 
-            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`);
-            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`);
-            Dialog.output(`Tokens successfully added`);
+            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`, {stdio: 'inherit'});
+            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`, {stdio: 'inherit'});
+            Dialog.output(`Tokens are successfully added`);
 
         }
 

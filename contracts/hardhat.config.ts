@@ -37,6 +37,7 @@ const config: HardhatUserConfig = {
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
+      gasPrice: 9000000000
     },
     "test/eth": {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
