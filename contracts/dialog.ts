@@ -51,19 +51,25 @@ async function main() {
 
         obj.bridges[bridgeType]["amb"] = "";
         obj.bridges[bridgeType]["side"] = "";
-        fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
 
         Dialog.output(`Beginning of the deploy process: ${new Date().toLocaleTimeString()}`);
         Dialog.output(`If deploy is stuck at ${networkType}/${bridgeType} stage - continue with manual deploy\n`);
 
         if (fullRedeploy) {
-            for (let network in networks[networkType]) {
-                execSync(`rm -r ./deployments/${networkType}/${network}`);
+            obj.tokens["SAMB"]["addresses"]["amb"]= "";
+            obj.tokens["SAMB"]["addresses"][bridgeType]= "";
+            obj.tokens["WETH"]["addresses"]["amb"]= "";
+            obj.tokens["WETH"]["addresses"][bridgeType]= "";
+            fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
+
+            for (let i in networks[networkType]) {
+                execSync(`rm -r ./deployments/${networkType}/${networks[networkType][i]}`);
             }
 
-            execSync(`./deploy.sh ${bridgeType} ${networkType}`);
+            execSync(`./deploy.sh ${bridgeType} ${networkType}`, {stdio: 'inherit'});
 
         } else {
+            fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
             const pattern = `${bridgeType.toUpperCase()}` + "_(.+)Bridge";
 
             for (let i in networks[networkType]) {
