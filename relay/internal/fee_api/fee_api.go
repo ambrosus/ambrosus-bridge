@@ -5,17 +5,20 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/kofalt/go-memoize"
 	"github.com/rs/cors"
 )
 
 type FeeAPI struct {
 	amb, side networks.BridgeFeeApi
+	cache     *memoize.Memoizer
 }
 
 func NewFeeAPI(amb, side networks.BridgeFeeApi) *FeeAPI {
-	return &FeeAPI{amb: amb, side: side}
+	return &FeeAPI{amb: amb, side: side, cache: memoize.NewMemoizer(time.Minute, time.Hour)}
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int) {
