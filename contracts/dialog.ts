@@ -35,6 +35,43 @@ async function main() {
     }
 
     const networkType = await Dialog.askToChooseFromArray(Object.keys(networks), "Choose network type");
+
+    const bridgeTypes = ["eth", "bsc"];
+    const bridgeType = await Dialog.askToChooseFromArray(bridgeTypes, "Choose bridge type");
+
+    if (action === "redeploy") {
+        const configPath = `./configs/${getConfigName(networkType)}`;
+        let obj = require(configPath);
+
+        obj.bridges[bridgeType]["amb"] = "";
+        obj.bridges[bridgeType]["side"] = "";
+        fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
+
+        const pattern = `${bridgeType.toUpperCase()}` + "_(.+)Bridge";
+
+        for (let network in networks[networkType]) {
+            const path = `./deployments/${networkType}/${network}`;
+            const files = fs.readdirSync(path);
+
+            for (let f in files) {
+                const res = new RegExp(pattern).exec(files[f]);
+                if (res !== null)
+                    execSync(`rm ${path}/${res.input}`);
+            }
+        }
+
+        execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+        execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`);
+        execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`);
+        execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`);
+        execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`);
+
+        // execSync(`./deploy.sh ${bridgeType} ${networkType}`);
+
+        Dialog.output("Successfully redeployed!");
+        return;
+    }
+
     const networkSide = await Dialog.askToChooseFromArray(networks[networkType], "Choose network side");
 
     const path = `./deployments/${networkType}/${networkSide}`;
@@ -57,41 +94,6 @@ async function main() {
         }
     }
 
-    const bridgeTypes = ["eth", "bsc"];
-    const bridgeType = await Dialog.askToChooseFromArray(bridgeTypes, "Choose bridge type");
-
-    if (action === "redeploy") {
-        // todo
-        if (bridgeDeploymentExists) {
-            const configPath = `./configs/${getConfigName(networkType)}`;
-            let obj = require(configPath);
-            obj.bridges[bridgeType]["amb"] = "";
-            obj.bridges[bridgeType]["side"] = "";
-            fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
-
-            if (networkType === "main") {
-                const pattern = "(.+)_" +
-                    `${networkSide.charAt(0).toUpperCase() + networkSide.slice(1)}` +
-                    "Bridge";
-
-                for (let i in deploymentsFiles) {
-                    const res = new RegExp(pattern).exec(deploymentsFiles[i]);
-                    if (res !== null) {
-                        execSync(`rm ${path}/${res.input}`);
-                    }
-                }
-            } else {
-                execSync(`rm -r ${path}`);
-            }
-        }
-        execSync(`./deploy.sh ${bridgeType} ${networkType}`);
-
-        Dialog.output("Successfully redeployed!");
-    }
-
-    // const bridgeSides = ["amb", "side"];
-    // const bridgeSide = await Dialog.askToChooseBridgeSide(bridgeSides);
-
     if (action === "upgrade") {
         execSync(`yarn hardhat deploy --network ${getNetworkName(networkType, networkSide)} --tags bridges_${bridgeType}`);
 
@@ -102,8 +104,8 @@ async function main() {
         const Factory = await ethers.getContractFactory("MultiSigWallet");
         const proxy = await Factory.attach(contract.address);
 
-        const lastTransaction = await proxy.getTransactionCount(true, true) - 1;
-        await (await proxy.connect(proxyAdminS).confirmTransaction(lastTransaction)).wait();
+        const lastTransactionNum = await proxy.getTransactionCount(true, true) - 1;
+        await (await proxy.connect(proxyAdminS).confirmTransaction(lastTransactionNum)).wait();
 
         Dialog.output("Successfully upgraded!");
     }
@@ -112,24 +114,6 @@ async function main() {
         // todo
     }
 }
-// if (bridgeDeploymentExists) {
-//     const configPath = `./configs/${getConfigName(networkType)}`;
-//     let obj = require(configPath);
-//     obj.bridges[bridgeType][bridgeSide] = "";
-//     fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
-//
-//     const pattern = "(.+)_" +
-//         `${networkSide.charAt(0).toUpperCase() + networkSide.slice(1)}` +
-//         "Bridge";
-//
-//     for (let i in deploymentsFiles) {
-//         const res = new RegExp(pattern).exec(deploymentsFiles[i]);
-//         if (res !== null) {
-//             execSync(`rm ${path}/${res.input}`);
-//         }
-//     }
-// }
-// execSync(`yarn hardhat deploy --network ${getNetworkName(networkType, networkSide)} --tags bridges_${bridgeType}`);
 
 const getConfigName = (networkType: string) => {
     if (networkType === "integr")
