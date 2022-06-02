@@ -120,7 +120,11 @@ async function main() {
 
     if (action === "upgrade") {
         execSync(`yarn hardhat deploy --network ${networkType}/${networkSide} --tags bridges_${bridgeType}`, {stdio: 'inherit'});
-        execSync(`yarn hardhat confirmUpgrade --bridgename ${bridgeName} --network ${networkType}/${networkSide}`, {stdio: 'inherit'})
+
+        // Can't pass arguments to script directly
+        fs.writeFileSync("./scripts/tmpBridgeName", bridgeName);
+        execSync(`yarn hardhat run scripts/confirm_upgrade.ts --network ${networkType}/${networkSide}`, {stdio: 'inherit'});
+        execSync("rm ./scripts/tmpBridgeName");
         Dialog.output("Successfully upgraded!");
     }
 

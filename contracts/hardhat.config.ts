@@ -6,7 +6,7 @@ import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
 import {HardhatUserConfig, TaskArguments} from "hardhat/types";
 import {ethers} from "ethers";
-import {task} from "hardhat/config";
+
 
 dotenv.config();
 // todo add other roles
@@ -139,21 +139,5 @@ const config: HardhatUserConfig = {
     ]
   }
 };
-
-task("confirmUpgrade", "Confirms last transaction", async (args: TaskArguments, hre) => {
-  const {proxyAdmin} = await hre.getNamedAccounts();
-  const proxyAdminS = await hre.ethers.getSigner(proxyAdmin);
-
-  const contract = await hre.ethers.getContract(args.bridgename);
-  const Factory = await hre.ethers.getContractFactory("MultiSigWallet");
-  const proxy = await Factory.attach(contract.address);
-
-  let transactionCount = await proxy.getTransactionCount(true, true);
-  if (transactionCount === 0) {
-    console.log("There is no transactions to confirm");
-  } else {
-    await (await proxy.connect(proxyAdminS).confirmTransaction(transactionCount.toNumber() - 1)).wait();
-  }
-}).addParam("bridgename");
 
 export default config;
