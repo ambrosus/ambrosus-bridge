@@ -70,6 +70,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
 
         signatureFeeCheckNumber = 3;
+
+        lastTimeframe = block.timestamp / timeframeSeconds;
     }
 
     function wrapWithdraw(address toAddress, bytes calldata signature, uint transferFee, uint bridgeFee) public payable {
@@ -264,6 +266,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
+        lastTimeframe = (lastTimeframe * timeframeSeconds) / timeframeSeconds_;
         timeframeSeconds = timeframeSeconds_;
     }
 

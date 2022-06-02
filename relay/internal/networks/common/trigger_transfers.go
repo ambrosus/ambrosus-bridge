@@ -32,22 +32,24 @@ func (b *CommonBridge) checkTriggerTransfers() error {
 	// when we should trigger transfers from lastTimeFrame
 	triggerAt := calcTriggerAt(lastTimeFrame, timeFrameSeconds)
 
-	if time.Until(triggerAt) > 0 {
-		b.Logger.Info().Msg("Sleep until next time frame")
-		time.Sleep(time.Until(triggerAt)) // sleep to the moment where we should trigger transfers
-		return nil                        // return so we can get actual `lastTimeFrame` value in next iteration
+	remained := time.Until(triggerAt)
+	if remained > 0 {
+		b.Logger.Info().Msgf("Sleep until next time frame (%s)", remained.String())
+		time.Sleep(remained) // sleep to the moment where we should trigger transfers
+		return nil           // return so we can get actual `lastTimeFrame` value in next iteration
 	}
 
 	isQueueEmpty, err := b.Contract.IsQueueEmpty(nil)
 	if err != nil {
 		return fmt.Errorf("IsQueueEmpty: %w", err)
 	} else if isQueueEmpty {
-		b.Logger.Info().Msg("Queue empty, skipping...")
-
 		// if lastTimeFrame has no transfers we should sleep at least until current time frame end
 		currentTimeFrame := time.Now().Unix() / timeFrameSeconds
 		triggerAt = calcTriggerAt(currentTimeFrame, timeFrameSeconds)
-		time.Sleep(time.Until(triggerAt)) // sleep to the moment where we should trigger transfers
+
+		remained := time.Until(triggerAt)
+		b.Logger.Info().Msgf("Queue empty, skipping... (sleep for %s)", remained.String())
+		time.Sleep(remained) // sleep to the moment where we should trigger transfers
 		return nil
 	}
 
