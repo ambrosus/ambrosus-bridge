@@ -17,8 +17,12 @@ type FeeAPI struct {
 	cache     *memoize.Memoizer
 }
 
+const (
+	cacheExpiration = time.Minute * 10
+)
+
 func NewFeeAPI(amb, side networks.BridgeFeeApi) *FeeAPI {
-	return &FeeAPI{amb: amb, side: side, cache: memoize.NewMemoizer(time.Minute, time.Hour)}
+	return &FeeAPI{amb: amb, side: side, cache: memoize.NewMemoizer(cacheExpiration, time.Hour)}
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int) {
