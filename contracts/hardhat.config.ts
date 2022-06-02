@@ -4,8 +4,9 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
-import {HardhatUserConfig} from "hardhat/types";
+import {HardhatUserConfig, TaskArguments} from "hardhat/types";
 import {ethers} from "ethers";
+import {task} from "hardhat/config";
 
 dotenv.config();
 // todo add other roles
@@ -138,5 +139,22 @@ const config: HardhatUserConfig = {
     ]
   }
 };
+
+task("confirmUpgrade", "Confirms last transaction", async (args: TaskArguments, hre) => {
+  const {proxyAdmin} = await hre.getNamedAccounts();
+  const proxyAdminS = await hre.ethers.getSigner(proxyAdmin);
+
+  const contract = await hre.ethers.getContract(args.bridgename);
+  const Factory = await hre.ethers.getContractFactory("MultiSigWallet");
+  const proxy = await Factory.attach(contract.address);
+
+  let lastTransactionNum = await proxy.getTransactionCount(true, true);
+  if (lastTransactionNum === 0) {
+    console.log("There is no transactions to confirm");
+  } else {
+    // todo proxyAdmin isn't admin?
+    await (await proxy.connect(proxyAdminS).confirmTransaction(lastTransactionNum.toNumber())).wait();
+  }
+}).addParam("bridgename");
 
 export default config;

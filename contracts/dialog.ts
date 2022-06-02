@@ -3,12 +3,9 @@ import hardhat from "hardhat";
 import config from "./hardhat.config";
 import fs from "fs";
 import {execSync} from "child_process";
-import {ethers} from "hardhat";
 
 
 async function main() {
-    const getNetworkName = (type: string, side: string) => `${type}/${side}`;
-
     const actions = ["redeploy", "upgrade", "confirmTransaction", "exit"];
     let action;
     let fullRedeploy = false;
@@ -122,18 +119,8 @@ async function main() {
     }
 
     if (action === "upgrade") {
-        execSync(`yarn hardhat deploy --network ${getNetworkName(networkType, networkSide)} --tags bridges_${bridgeType}`);
-
-        const {proxyAdmin} = await hardhat.getNamedAccounts();
-        const proxyAdminS = await ethers.getSigner(proxyAdmin);
-
-        const contract = await ethers.getContract(bridgeName);
-        const Factory = await ethers.getContractFactory("MultiSigWallet");
-        const proxy = await Factory.attach(contract.address);
-
-        const lastTransactionNum = await proxy.getTransactionCount(true, true) - 1;
-        await (await proxy.connect(proxyAdminS).confirmTransaction(lastTransactionNum)).wait();
-
+        execSync(`yarn hardhat deploy --network ${networkType}/${networkSide} --tags bridges_${bridgeType}`, {stdio: 'inherit'});
+        execSync(`yarn hardhat confirmUpgrade --bridgename ${bridgeName} --network ${networkType}/${networkSide}`, {stdio: 'inherit'})
         Dialog.output("Successfully upgraded!");
     }
 
