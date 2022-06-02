@@ -4,7 +4,7 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
-import {HardhatUserConfig, TaskArguments} from "hardhat/types";
+import {HardhatUserConfig} from "hardhat/types";
 import {ethers} from "ethers";
 
 
