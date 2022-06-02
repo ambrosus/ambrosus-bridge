@@ -15,6 +15,7 @@ import (
 var (
 	ErrEventNotFound          = errors.New("error event not found")
 	ErrTransferSubmitNotFound = errors.New("error transfer submit not found")
+	ErrTransferFinishNotFound = errors.New("error transfer finish not found")
 )
 
 type GetTxErrParams struct {
@@ -33,6 +34,7 @@ type Bridge interface {
 	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
+	GetEventsByIds(eventIds []*big.Int) ([]*contracts.BridgeTransfer, error)
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
 
@@ -73,18 +75,15 @@ type BridgeFeeApi interface {
 	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
 	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error)
 
-	// GetLastCorrectSubmitUnlockPair returns last correct submit and unlock pair and correct submits and unlocks slices
-	GetLastCorrectSubmitUnlockPair(startBlockNumber, endBlockNumber uint64, lastUnlockEventId *big.Int) (
-		event *contracts.BridgeTransferFinish,
-		submits []*contracts.BridgeTransferSubmit,
-		unlocks []*contracts.BridgeTransferFinish,
-		err error,
-	)
-	GetLatestBlockNumber() (uint64, error)
 	GetOldestLockedEventId() (*big.Int, error)
 	GetTransferSubmitById(eventId *big.Int) (*contracts.BridgeTransferSubmit, error)
+	GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error)
+	GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error)
 	GetWrapperAddress() (common.Address, error)
 
 	// GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetMinBridgeFee() *big.Float
+
+	// WatchUnlocksLoop(sideData *nc.PriceTrackerData)
+	// GetPriceTrackerData() *nc.PriceTrackerData
 }

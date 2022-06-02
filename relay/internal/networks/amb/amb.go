@@ -73,6 +73,9 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 		VSContract:   vsContract,
 	}
 	b.CommonBridge.Bridge = b
+	b.CommonBridge.PriceTrackerData = &nc.PriceTrackerData{
+		Bridge: &b.CommonBridge,
+	}
 	return b, nil
 }
 

@@ -43,7 +43,7 @@ type CommonBridge struct {
 	ContractCallLock *sync.Mutex
 
 	GasPerWithdrawLock *sync.Mutex
-	PriceTrackerData   PriceTrackerData
+	PriceTrackerData   *PriceTrackerData
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -122,6 +122,21 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 		}
 	}
 	return nil, networks.ErrEventNotFound
+}
+
+// GetEventsByIds gets contract events by ids.
+func (b *CommonBridge) GetEventsByIds(eventIds []*big.Int) (transfers []*contracts.BridgeTransfer, err error) {
+	logTransfer, err := b.Contract.FilterTransfer(nil, eventIds)
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer: %w", err)
+	}
+
+	for logTransfer.Next() {
+		if !logTransfer.Event.Raw.Removed {
+			transfers = append(transfers, logTransfer.Event)
+		}
+	}
+	return transfers, nil
 }
 
 func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {

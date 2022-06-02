@@ -25,15 +25,25 @@ func NewFeeAPI(amb, side networks.BridgeFeeApi) *FeeAPI {
 	return &FeeAPI{amb: amb, side: side, cache: memoize.NewMemoizer(cacheExpiration, time.Hour)}
 }
 
-func (p *FeeAPI) Run(endpoint string, ip string, port int) {
+func (p *FeeAPI) setupCORS() *cors.Cors {
 	// setup CORS
 	var allowedOrigins = []string{"*"}
 	if os.Getenv("STAGE") == "main" {
 		allowedOrigins = []string{"https://*.ambrosus.io"}
 	}
-	c := cors.New(cors.Options{
+
+	return cors.New(cors.Options{
 		AllowedOrigins: allowedOrigins,
 	})
+}
+
+func (p *FeeAPI) Run(endpoint string, ip string, port int) {
+	// p.amb.InitPriceTrackerData(p.amb.GetPriceTrackerData())
+	// p.side.InitPriceTrackerData(p.side.GetPriceTrackerData())
+	// go p.amb.WatchUnlocksLoop(p.side.GetPriceTrackerData())
+	// go p.side.WatchUnlocksLoop(p.amb.GetPriceTrackerData())
+
+	c := p.setupCORS()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc(endpoint, p.feesHandler)

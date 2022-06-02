@@ -23,7 +23,7 @@ func (b *CommonBridge) Sign(digestHash []byte) ([]byte, error) {
 func (b *CommonBridge) GetTransferFee(thisCoinPrice, sideCoinPrice float64, cache *memoize.Memoizer) (*big.Int, error) {
 	// get gas cost per withdraw in side bridge currency
 	gasCostInSideI, err, _ := cache.Memoize("gasPerWithdraw"+b.Name, func() (interface{}, error) {
-		return b.GasPerWithdraw(&b.PriceTrackerData)
+		return b.GasPerWithdraw(b.PriceTrackerData)
 	})
 	if err != nil {
 		return nil, err
@@ -57,4 +57,8 @@ func (b *CommonBridge) CachedCoinPrice() (interface{}, error) {
 
 func (b *CommonBridge) GetName() string {
 	return b.Name
+}
+
+func (b *CommonBridge) GetPriceTrackerData() *PriceTrackerData {
+	return b.PriceTrackerData
 }
