@@ -9,6 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/kofalt/go-memoize"
 )
 
 var (
@@ -62,10 +63,12 @@ type BridgeReceivePoSA interface {
 
 type BridgeFeeApi interface {
 	Bridge
+	GetName() string
 	GetClient() ethclients.ClientInterface
 	Sign(digestHash []byte) ([]byte, error)
-	GetTransferFee(thisCoinPrice, sideCoinPrice float64) (*big.Int, error)
-	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
+	GetTransferFee(thisCoinPrice, sideCoinPrice float64, cache *memoize.Memoizer) (*big.Int, error)
+	CoinPrice() (float64, error)           // CoinPrice return that net native coin price in USDT
+	CachedCoinPrice() (interface{}, error) // CoinPrice return that net native coin price in USDT
 
 	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
 	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error)

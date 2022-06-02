@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_0x"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/kofalt/go-memoize"
 )
 
 var percentFromAmount = map[uint64]int64{
@@ -17,7 +18,7 @@ var percentFromAmount = map[uint64]int64{
 	100_000: 2 * 100, // 100_000...$ => 2%
 }
 
-func GetBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
+func GetBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, cache *memoize.Memoizer, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
 	// get token symbol and decimals
 	tokenSymbol, tokenDecimals, err := getTokenData(bridge, tokenAddress)
 	if err != nil {
@@ -25,7 +26,7 @@ func GetBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, to
 	}
 
 	// get token price
-	tokenToUsdtPrice, err := getTokenToUsdtPrice(tokenSymbol, tokenDecimals)
+	tokenToUsdtPrice, err := getTokenToUsdtPrice(tokenSymbol, tokenDecimals, cache)
 	if err != nil {
 		return nil, fmt.Errorf("get token price: %w", err)
 	}
@@ -61,13 +62,18 @@ func getTokenData(bridge networks.BridgeFeeApi, tokenAddress common.Address) (st
 	return tokenSymbol, tokenDecimals, nil
 }
 
-func getTokenToUsdtPrice(tokenSymbol string, tokenDecimals uint8) (tokenToUsdtPrice float64, err error) {
+func getTokenToUsdtPrice(tokenSymbol string, tokenDecimals uint8, cache *memoize.Memoizer) (tokenToUsdtPrice float64, err error) {
+	var res interface{}
 	if tokenSymbol == "SAMB" {
-		tokenToUsdtPrice, err = price.CoinToUsdt(price.Amb)
+		res, err, _ = cache.Memoize("SAMB", func() (interface{}, error) {
+			return price.CoinToUsdt(price.Amb)
+		})
 	} else {
-		tokenToUsdtPrice, err = price_0x.CoinToUSDT(tokenSymbol, tokenDecimals)
+		res, err, _ = cache.Memoize(tokenSymbol, func() (interface{}, error) {
+			return price_0x.CoinToUSDT(tokenSymbol, tokenDecimals)
+		})
 	}
-	return tokenToUsdtPrice, err
+	return res.(float64), err
 }
 
 func getFeePercent(amountInUsdt *big.Float) (percent int64) {

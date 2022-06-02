@@ -57,31 +57,36 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 	// if token address is native, then it's "wrapWithdraw" and we need to work with "wrapperAddress"
 	var tokenAddress = req.TokenAddress
 	if req.TokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
-		var err error
-		tokenAddress, err = bridge.GetWrapperAddress()
+		tokenAddressI, err, _ := p.cache.Memoize("wrapperAddress"+bridge.GetName(),
+			func() (interface{}, error) {
+				return bridge.GetWrapperAddress()
+			})
 		if err != nil {
 			return nil, NewAppError(nil, "error when getting wrapper address", err.Error())
 		}
+		tokenAddress = tokenAddressI.(common.Address)
 	}
 
 	// get coin prices of this and side bridges for reusing it below
-	thisCoinPrice, err := bridge.CoinPrice()
+	thisCoinPriceI, err, _ := p.cache.Memoize("coinPrice"+bridge.GetName(), bridge.CachedCoinPrice)
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting this bridge coin price", err.Error())
 	}
-	sideCoinPrice, err := sideBridge.CoinPrice()
+	sideCoinPriceI, err, _ := p.cache.Memoize("coinPrice"+sideBridge.GetName(), sideBridge.CachedCoinPrice)
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting side bridge coin price", err.Error())
 	}
+	thisCoinPrice := thisCoinPriceI.(float64)
+	sideCoinPrice := sideCoinPriceI.(float64)
 
 	// get the bridge fee
-	bridgeFee, err := GetBridgeFee(bridge, thisCoinPrice, tokenAddress, (*big.Int)(req.Amount))
+	bridgeFee, err := GetBridgeFee(bridge, thisCoinPrice, p.cache, tokenAddress, (*big.Int)(req.Amount))
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
 
 	// get the transfer fee
-	transferFee, err := bridge.GetTransferFee(thisCoinPrice, sideCoinPrice)
+	transferFee, err := bridge.GetTransferFee(thisCoinPrice, sideCoinPrice, p.cache)
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting transfer fee", err.Error())
 	}
