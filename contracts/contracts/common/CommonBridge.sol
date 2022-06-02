@@ -78,11 +78,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(msg.value > transferFee + bridgeFee, "Sent value <= fee");
 
-        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, msg.value - transferFee - bridgeFee);
+        uint amount = msg.value - transferFee - bridgeFee;
+        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, amount);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
-        uint amount = msg.value - transferFee - bridgeFee;
         IWrapper(wrapperAddress).deposit{value : amount}();
 
         //
