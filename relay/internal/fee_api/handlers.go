@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
@@ -46,9 +47,11 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
-	bridge := p.amb
-	if !req.IsAmb {
-		bridge = p.side
+	var bridge, sideBridge networks.BridgeFeeApi
+	if req.IsAmb {
+		bridge, sideBridge = p.amb, p.side
+	} else {
+		bridge, sideBridge = p.side, p.amb
 	}
 
 	// if token address is native, then it's "wrapWithdraw" and we need to work with "wrapperAddress"
@@ -61,14 +64,24 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 		}
 	}
 
+	// get coin prices of this and side bridges for reusing it below
+	thisCoinPrice, err := bridge.CoinPrice()
+	if err != nil {
+		return nil, NewAppError(nil, "error when getting this bridge coin price", err.Error())
+	}
+	sideCoinPrice, err := sideBridge.CoinPrice()
+	if err != nil {
+		return nil, NewAppError(nil, "error when getting side bridge coin price", err.Error())
+	}
+
 	// get the bridge fee
-	bridgeFee, err := GetBridgeFee(bridge, tokenAddress, (*big.Int)(req.Amount))
+	bridgeFee, err := GetBridgeFee(bridge, thisCoinPrice, tokenAddress, (*big.Int)(req.Amount))
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
 
 	// get the transfer fee
-	transferFee, err := bridge.GetTransferFee()
+	transferFee, err := bridge.GetTransferFee(thisCoinPrice, sideCoinPrice)
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting transfer fee", err.Error())
 	}

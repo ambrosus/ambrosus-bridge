@@ -64,7 +64,7 @@ type BridgeFeeApi interface {
 	Bridge
 	GetClient() ethclients.ClientInterface
 	Sign(digestHash []byte) ([]byte, error)
-	GetTransferFee() (*big.Int, error)
+	GetTransferFee(thisCoinPrice, sideCoinPrice float64) (*big.Int, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
 
 	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
