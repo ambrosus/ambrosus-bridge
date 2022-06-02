@@ -148,12 +148,11 @@ task("confirmUpgrade", "Confirms last transaction", async (args: TaskArguments, 
   const Factory = await hre.ethers.getContractFactory("MultiSigWallet");
   const proxy = await Factory.attach(contract.address);
 
-  let lastTransactionNum = await proxy.getTransactionCount(true, true);
-  if (lastTransactionNum === 0) {
+  let transactionCount = await proxy.getTransactionCount(true, true);
+  if (transactionCount === 0) {
     console.log("There is no transactions to confirm");
   } else {
-    // todo proxyAdmin isn't admin?
-    await (await proxy.connect(proxyAdminS).confirmTransaction(lastTransactionNum.toNumber())).wait();
+    await (await proxy.connect(proxyAdminS).confirmTransaction(transactionCount.toNumber() - 1)).wait();
   }
 }).addParam("bridgename");
 
