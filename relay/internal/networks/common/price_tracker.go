@@ -10,6 +10,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/price_tracker"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/errgroup"
 )
@@ -18,50 +19,37 @@ const (
 	eventsForGasCalc = 5
 )
 
-// PriceTrackerData is kinda memory DB for storing previous results and prev used event id
-type PriceTrackerData struct {
-	Bridge *CommonBridge
-
-	Submits   map[string]*contracts.BridgeTransferSubmit
-	Unlocks   map[string]*contracts.BridgeTransferFinish
-	Transfers map[string]*contracts.BridgeTransfer
-
-	PrevUsedUnlockEventId   *big.Int // id when "GasPerWithdraw" was called last time (by the user from api)
-	LastCaughtUnlockEventId *big.Int // id that was set by the watcher
-
-	TotalGasCost   *big.Int
-	WithdrawsCount int64
-}
-
-func (d *PriceTrackerData) Init() error {
-	sideBridge := d.Bridge.SideBridge.(networks.BridgeFeeApi)
+func (b *CommonBridge) InitPriceTrackerData(data *price_tracker.PriceTrackerData) error {
+	sideBridge := b.SideBridge.(networks.BridgeFeeApi)
 	// init data if needed
-	if d.TotalGasCost != nil {
+	if data.TotalGasCost != nil {
 		return nil
 	}
 
-	// get oldest locked event id from side net to get
+	// get oldest locked event id from side net
 	oldestLockedEvendId, err := sideBridge.GetOldestLockedEventId()
 	if err != nil {
 		return fmt.Errorf("get side oldest locked event id: %v", err)
 	}
-	// there's no unlocked events, so we can't get
+	// there's no unlocked events, so we can't get gas cost per withdraw
 	if oldestLockedEvendId.Cmp(big.NewInt(1)) == 0 {
 		return nil
 	}
 
-	//
+	// define start and end for finding events
 	oldestUnlockedEventId := new(big.Int).Sub(oldestLockedEvendId, big.NewInt(1))
 	oldestUnlockedStartEvendId := new(big.Int).Sub(oldestLockedEvendId, big.NewInt(eventsForGasCalc+1)) // +1 cuz oldestLockedEventId is for locked event but we need unlocked event
 	if oldestUnlockedStartEvendId.Cmp(big.NewInt(0)) < 0 {
 		oldestUnlockedStartEvendId = big.NewInt(1) // force set to 1 if it's < 0
 	}
 
+	// get events ids for getting submits, unlocks and transfers for "batch" requests
 	var eventIds []*big.Int
 	for i := oldestUnlockedStartEvendId; i.Cmp(oldestUnlockedEventId) <= 0; i = new(big.Int).Add(i, big.NewInt(1)) {
 		eventIds = append(eventIds, i)
 	}
 
+	// batch requests
 	submits, err := sideBridge.GetTransferSubmitsByIds(eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfer submits by ids: %v", err)
@@ -70,53 +58,31 @@ func (d *PriceTrackerData) Init() error {
 	if err != nil {
 		return fmt.Errorf("get transfer unlocks by ids: %v", err)
 	}
-	transfers, err := d.Bridge.GetEventsByIds(eventIds)
+	transfers, err := b.GetEventsByIds(eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfers by ids: %v", err)
 	}
 
-	d.Submits = make(map[string]*contracts.BridgeTransferSubmit)
-	d.Unlocks = make(map[string]*contracts.BridgeTransferFinish)
-	d.Transfers = make(map[string]*contracts.BridgeTransfer)
+	// init maps and save submits, unlocks and transfers
+	data.Submits = make(map[string]*contracts.BridgeTransferSubmit)
+	data.Unlocks = make(map[string]*contracts.BridgeTransferFinish)
+	data.Transfers = make(map[string]*contracts.BridgeTransfer)
 	for i, eventId := range eventIds {
-		d.Submits[eventId.String()] = submits[i]
-		d.Unlocks[eventId.String()] = unlocks[i]
-		d.Transfers[eventId.String()] = transfers[i]
+		data.Submits[eventId.String()] = submits[i]
+		data.Unlocks[eventId.String()] = unlocks[i]
+		data.Transfers[eventId.String()] = transfers[i]
 	}
 
-	d.PrevUsedUnlockEventId = oldestUnlockedStartEvendId.Sub(oldestUnlockedStartEvendId, big.NewInt(1)) //
-	d.LastCaughtUnlockEventId = oldestUnlockedEventId
-	d.TotalGasCost = big.NewInt(0)
+	// set the ena and start events ids
+	data.PrevUsedUnlockEventId = oldestUnlockedStartEvendId.Sub(oldestUnlockedStartEvendId, big.NewInt(1)) // -1 cuz in `GasPerWithdraw` we'll +1 to it
+	data.LastCaughtUnlockEventId = oldestUnlockedEventId
+	data.TotalGasCost = big.NewInt(0)
 	return nil
 }
 
-func (d *PriceTrackerData) processEvent(event *contracts.BridgeTransferFinish) error {
-	submit, err := d.Bridge.GetTransferSubmitById(event.EventId)
-	if err != nil {
-		return fmt.Errorf("get transfer submit event by id: %w", err)
-	}
-	transfer, err := d.Bridge.SideBridge.GetEventById(event.EventId)
-	if err != nil {
-		return fmt.Errorf("get transfer event by id: %w", err)
-	}
+// -------------------- watcher --------------------------
 
-	d.Unlocks[event.EventId.String()] = event
-	d.Submits[event.EventId.String()] = submit
-	d.Transfers[event.EventId.String()] = transfer
-	d.LastCaughtUnlockEventId = event.EventId
-	return nil
-}
-
-func (d *PriceTrackerData) save(unlockEventId *big.Int, totalGasCost *big.Int, withdrawsCount int64) {
-	d.PrevUsedUnlockEventId = unlockEventId
-
-	d.TotalGasCost.Add(d.TotalGasCost, totalGasCost)
-	d.WithdrawsCount += withdrawsCount
-}
-
-// ------------------------------------------------------------------------
-
-func (b *CommonBridge) WatchUnlocksLoop(sideData *PriceTrackerData) {
+func (b *CommonBridge) WatchUnlocksLoop(sideData *price_tracker.PriceTrackerData) {
 	b.shouldHavePk()
 	for {
 		b.EnsureContractUnpaused()
@@ -128,26 +94,26 @@ func (b *CommonBridge) WatchUnlocksLoop(sideData *PriceTrackerData) {
 	}
 }
 
-func (b *CommonBridge) checkOldUnlocks(sideData *PriceTrackerData) error {
+func (b *CommonBridge) checkOldUnlocks(sideData *price_tracker.PriceTrackerData) error {
 	b.Logger.Info().Msg("Checking old unlock events...")
 
 	for i := int64(1); ; i++ {
 		nextEventId := new(big.Int).Add(sideData.LastCaughtUnlockEventId, big.NewInt(i))
 		nextEvent, err := b.GetTransferUnlockById(nextEventId)
-		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
+		if errors.Is(err, networks.ErrTransferFinishNotFound) { // no more old events
 			return nil
 		} else if err != nil {
 			return fmt.Errorf("GetTransferUnlockById on id %v: %w", nextEventId.String(), err)
 		}
 
 		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old unlock event...")
-		if err := sideData.processEvent(nextEvent); err != nil {
+		if err := b.processUnlockEvent(nextEvent, sideData); err != nil {
 			return err
 		}
 	}
 }
 
-func (b *CommonBridge) watchUnlocks(sideData *PriceTrackerData) error {
+func (b *CommonBridge) watchUnlocks(sideData *price_tracker.PriceTrackerData) error {
 	if err := b.checkOldUnlocks(sideData); err != nil {
 		return fmt.Errorf("checkOldUnlocks: %w", err)
 	}
@@ -170,28 +136,48 @@ func (b *CommonBridge) watchUnlocks(sideData *PriceTrackerData) error {
 			}
 
 			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
-			if err := sideData.processEvent(event); err != nil {
+			if err := b.processUnlockEvent(event, sideData); err != nil {
 				return err
 			}
 		}
 	}
 }
 
-func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) {
+func (b *CommonBridge) processUnlockEvent(event *contracts.BridgeTransferFinish, sideData *price_tracker.PriceTrackerData) error {
+	submit, err := b.GetTransferSubmitById(event.EventId)
+	if err != nil {
+		return fmt.Errorf("get transfer submit event by id: %w", err)
+	}
+	transfer, err := b.SideBridge.GetEventById(event.EventId)
+	if err != nil {
+		return fmt.Errorf("get transfer event by id: %w", err)
+	}
+
+	sideData.Unlocks[event.EventId.String()] = event
+	sideData.Submits[event.EventId.String()] = submit
+	sideData.Transfers[event.EventId.String()] = transfer
+	sideData.LastCaughtUnlockEventId = event.EventId
+	return nil
+}
+
+// ------------------ main code -------------------
+
+func (b *CommonBridge) GasPerWithdraw(data *price_tracker.PriceTrackerData) (*big.Int, error) {
 	b.GasPerWithdrawLock.Lock()
 	defer b.GasPerWithdrawLock.Unlock()
 
 	// init data if needed
-	if err := data.Init(); err != nil {
+	if err := b.InitPriceTrackerData(data); err != nil {
 		return nil, fmt.Errorf("init price tracker data: %w", err)
 	}
 
-	// if we didn't find the pair, then we don't need to calculate anything, just return previous results from data
+	// if prev used and last caught unlock events ids are the same, then there's no new events, just return previous results from data
 	if data.PrevUsedUnlockEventId.Cmp(data.LastCaughtUnlockEventId) != 0 {
+		// collect correct submits, unlocks for "UsedGas" and transfers for "withdrawCount"
 		var submits []*contracts.BridgeTransferSubmit
 		var unlocks []*contracts.BridgeTransferFinish
 		var transfers []*contracts.BridgeTransfer
-		start := new(big.Int).Add(data.PrevUsedUnlockEventId, big.NewInt(1))
+		start := new(big.Int).Add(data.PrevUsedUnlockEventId, big.NewInt(1)) // +1 cuz we've already calculated the gas cost for that event
 		for i := start; i.Cmp(data.LastCaughtUnlockEventId) <= 0; i = new(big.Int).Add(i, big.NewInt(1)) {
 			submits = append(submits, data.Submits[i.String()])
 			unlocks = append(unlocks, data.Unlocks[i.String()])
@@ -205,10 +191,10 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 		}
 
 		// get withdraws count
-		withdrawsCount := b.withdrawCount(transfers)
+		withdrawsCount := withdrawCount(transfers)
 
 		b.Logger.Info().Msgf("withdraws count: %d, totalGas: %d, totalGasCost: %d", withdrawsCount, totalGas, totalGasCost)
-		data.save(data.Unlocks[data.LastCaughtUnlockEventId.String()].EventId, totalGasCost, withdrawsCount)
+		data.Save(data.Unlocks[data.LastCaughtUnlockEventId.String()].EventId, totalGasCost, withdrawsCount)
 	}
 
 	// if there's no transfers then return nil
@@ -220,7 +206,7 @@ func (b *CommonBridge) GasPerWithdraw(data *PriceTrackerData) (*big.Int, error) 
 	return new(big.Int).Div(data.TotalGasCost, big.NewInt(data.WithdrawsCount)), nil
 }
 
-func (b *CommonBridge) withdrawCount(transfers []*contracts.BridgeTransfer) int64 {
+func withdrawCount(transfers []*contracts.BridgeTransfer) int64 {
 	count := 0
 
 	for _, transfer := range transfers {
@@ -275,7 +261,7 @@ func (b *CommonBridge) UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, log
 	return totalGasCost, totalGas, nil
 }
 
-// ---------getters---------
+// --------------------- getters --------------------
 
 func (b *CommonBridge) GetOldestLockedEventId() (*big.Int, error) {
 	return b.Contract.OldestLockedEventId(nil)
@@ -322,6 +308,7 @@ func (b *CommonBridge) GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*
 	}
 	return submits, nil
 }
+
 func (b *CommonBridge) GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error) {
 	logUnlock, err := b.Contract.FilterTransferFinish(nil, eventIds)
 	if err != nil {

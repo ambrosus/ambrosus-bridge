@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/price_tracker"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/avast/retry-go"
@@ -43,7 +44,7 @@ type CommonBridge struct {
 	ContractCallLock *sync.Mutex
 
 	GasPerWithdrawLock *sync.Mutex
-	PriceTrackerData   *PriceTrackerData
+	PriceTrackerData   *price_tracker.PriceTrackerData
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -101,6 +102,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	b.MinBridgeFee = big.NewFloat(cfg.MinBridgeFee)
 	b.DefaultTransferFeeWei = big.NewInt(int64(cfg.DefaultTransferFee * 1e18))
 
+	b.PriceTrackerData = &price_tracker.PriceTrackerData{}
 	return b, nil
 
 }

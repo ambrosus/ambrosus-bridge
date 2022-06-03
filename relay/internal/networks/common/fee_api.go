@@ -1,11 +1,11 @@
 package common
 
 import (
-	"context"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/price_tracker"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
@@ -39,10 +39,6 @@ func (b *CommonBridge) GetTransferFee(thisCoinPrice, sideCoinPrice float64, cach
 	return gasCostInNative, nil
 }
 
-func (b *CommonBridge) GetLatestBlockNumber() (uint64, error) {
-	return b.Client.BlockNumber(context.Background())
-}
-
 func (b *CommonBridge) GetMinBridgeFee() *big.Float {
 	return b.MinBridgeFee
 }
@@ -59,6 +55,6 @@ func (b *CommonBridge) GetName() string {
 	return b.Name
 }
 
-func (b *CommonBridge) GetPriceTrackerData() *PriceTrackerData {
+func (b *CommonBridge) GetPriceTrackerData() *price_tracker.PriceTrackerData {
 	return b.PriceTrackerData
 }

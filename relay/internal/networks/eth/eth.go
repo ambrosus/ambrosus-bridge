@@ -36,9 +36,6 @@ func New(cfg *config.ETHConfig, externalLogger logger.Hook) (*Bridge, error) {
 		ethash:       ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs),
 	}
 	b.CommonBridge.Bridge = b
-	b.CommonBridge.PriceTrackerData = &nc.PriceTrackerData{
-		Bridge: &b.CommonBridge,
-	}
 	return b, nil
 }
 

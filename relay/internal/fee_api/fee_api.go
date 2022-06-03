@@ -38,10 +38,14 @@ func (p *FeeAPI) setupCORS() *cors.Cors {
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int) {
-	// p.amb.InitPriceTrackerData(p.amb.GetPriceTrackerData())
-	// p.side.InitPriceTrackerData(p.side.GetPriceTrackerData())
-	// go p.amb.WatchUnlocksLoop(p.side.GetPriceTrackerData())
-	// go p.side.WatchUnlocksLoop(p.amb.GetPriceTrackerData())
+	if err := p.amb.InitPriceTrackerData(p.amb.GetPriceTrackerData()); err != nil {
+		log.Fatal("error initialize price tracker data")
+	}
+	if err := p.side.InitPriceTrackerData(p.side.GetPriceTrackerData()); err != nil {
+		log.Fatal("error initialize price tracker data")
+	}
+	go p.amb.WatchUnlocksLoop(p.side.GetPriceTrackerData())
+	go p.side.WatchUnlocksLoop(p.amb.GetPriceTrackerData())
 
 	c := p.setupCORS()
 

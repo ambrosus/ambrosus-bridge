@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/price_tracker"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
@@ -84,6 +85,7 @@ type BridgeFeeApi interface {
 	// GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetMinBridgeFee() *big.Float
 
-	// WatchUnlocksLoop(sideData *nc.PriceTrackerData)
-	// GetPriceTrackerData() *nc.PriceTrackerData
+	WatchUnlocksLoop(sideData *price_tracker.PriceTrackerData)
+	InitPriceTrackerData(d *price_tracker.PriceTrackerData) error
+	GetPriceTrackerData() *price_tracker.PriceTrackerData
 }
