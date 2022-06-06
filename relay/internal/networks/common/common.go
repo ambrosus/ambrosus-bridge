@@ -33,7 +33,7 @@ type CommonBridge struct {
 	WsContract *contracts.Bridge
 	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
-	Logger     *zerolog.Logger
+	Logger     zerolog.Logger
 	Name       string
 	Pk         *ecdsa.PrivateKey
 
@@ -253,5 +253,5 @@ func (b *CommonBridge) GetWsContract() *contracts.Bridge {
 }
 
 func (b *CommonBridge) GetLogger() *zerolog.Logger {
-	return b.Logger
+	return &b.Logger
 }
