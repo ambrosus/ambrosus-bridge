@@ -45,9 +45,11 @@ func NewTransferFeeTracker(bridge networks.BridgeFeeApi, sideBridge networks.Tra
 }
 
 func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
-	// todo if no events yet
-	return p.bridge.GetDefaultTransferFeeWei()
-	// else
+	// if there's no transfers then return nil
+	if p.totalWithdrawCount.Cmp(big.NewInt(0)) == 0 {
+		return nil
+	}
+
 	return new(big.Int).Div(p.totalGas, p.totalWithdrawCount)
 }
 
@@ -57,18 +59,23 @@ func (p *transferFeeTracker) init() error {
 		return err
 	}
 
-	p.latestProcessedEvent = latestEventId.Uint64() - eventsForGasCalc
-	if latestEventId.Uint64() < eventsForGasCalc {
+	// there's no unlocked events, so we can't get gas cost per withdraw
+	if latestEventId.Cmp(big.NewInt(1)) == 0 {
+		return nil
+	}
+
+	p.latestProcessedEvent = latestEventId.Uint64() - eventsForGasCalc - 1 // -1 cuz in `processEvents` we'll +1 to it
+	if latestEventId.Uint64() <= 0 {
 		p.latestProcessedEvent = 1
 	}
 
-	return p.processEvents(latestEventId.Uint64())
+	return p.processEvents(latestEventId.Uint64() - 1) // -1 cuz we need latest unlocked instead of locked event id
 }
 
 func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	// get events ids for getting submits, unlocks and transfers for "batch" requests
 	var eventIds []*big.Int
-	for i := p.latestProcessedEvent; i <= newEventId; i++ {
+	for i := p.latestProcessedEvent + 1; i <= newEventId; i++ { // +1 cuz we've already calculated the gas cost for that event
 		eventIds = append(eventIds, big.NewInt(int64(i)))
 	}
 
@@ -97,7 +104,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// calc how much gas used in this txs
-	gas, _, err := usedGas(p.bridge.GetClient(), unique(relayTxHashes))
+	gas, _, err := usedGas(p.sideBridge.GetClient(), unique(relayTxHashes))
 	if err != nil {
 		return err
 	}
@@ -106,6 +113,10 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	var withdrawsCount int
 	for _, event := range transfers {
 		withdrawsCount += len(event.Queue)
+	}
+
+	if withdrawsCount == 0 {
+		return nil
 	}
 
 	p.totalGas = p.totalGas.Add(p.totalGas, gas)
@@ -156,7 +167,7 @@ func unique[T comparable](slice []T) []T {
 		mapSet[v] = true
 	}
 
-	sliceSet := make([]T, len(mapSet))
+	var sliceSet []T
 	for v := range mapSet {
 		sliceSet = append(sliceSet, v)
 	}

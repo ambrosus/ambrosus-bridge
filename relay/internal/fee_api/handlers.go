@@ -122,11 +122,17 @@ func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *
 
 func (p *FeeAPI) getTransferFee(bridge networks.BridgeFeeApi, bridgePT BridgePriceTracker, thisCoinPrice, sideCoinPrice float64) (*big.Int, error) {
 	// get gas cost per withdraw in side bridge currency
-	gasCostInSideI, _, _ := p.cache.Memoize("gasPerWithdraw"+bridge.GetName(), func() (interface{}, error) {
-		// todo default transfer fee
+	gasCostInSideI, err, _ := p.cache.Memoize("gasPerWithdraw"+bridge.GetName(), func() (interface{}, error) {
 		return bridgePT.GasPerWithdraw(), nil
 	})
+	if err != nil {
+		return nil, err
+	}
+
 	gasCostInSide := gasCostInSideI.(*big.Int)
+	if gasCostInSide == nil {
+		return bridge.GetDefaultTransferFeeWei(), nil
+	}
 
 	// convert it to native bridge currency
 	gasCostInUsd := Coin2Usd(gasCostInSide, sideCoinPrice, 18)

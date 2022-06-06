@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog/pkgerrors"
 )
 
-func NewSubLogger(bridge string, extLogger Hook) zerolog.Logger {
+func NewSubLogger(bridge string, extLogger Hook) *zerolog.Logger {
 	var writer io.Writer = os.Stderr
 
 	if extLogger != nil {
@@ -16,7 +16,7 @@ func NewSubLogger(bridge string, extLogger Hook) zerolog.Logger {
 	}
 
 	logger := zerolog.New(writer).With().Str("bridge", bridge).Logger()
-	return logger
+	return &logger
 }
 
 func init() {
