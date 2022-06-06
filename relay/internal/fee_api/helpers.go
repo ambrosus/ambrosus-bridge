@@ -31,3 +31,11 @@ func Coin2Usd(coinsWei *big.Int, coinPriceInUsd float64, coinDecimals uint8) *bi
 		),
 	)
 }
+
+// amount * bps / 10_000
+func calcBps(amount *big.Float, bps int64) *big.Float {
+	return new(big.Float).Quo(
+		new(big.Float).Mul(amount, big.NewFloat(float64(bps))),
+		big.NewFloat(10_000),
+	)
+}

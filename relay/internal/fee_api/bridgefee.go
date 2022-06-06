@@ -87,11 +87,3 @@ func getFeePercent(amountInUsdt *big.Float) (percent int64) {
 	}
 	return percent
 }
-
-// amount * bps / 10_000
-func calcBps(amount *big.Float, bps int64) *big.Float {
-	return new(big.Float).Quo(
-		new(big.Float).Mul(amount, big.NewFloat(float64(bps))),
-		big.NewFloat(10_000),
-	)
-}
