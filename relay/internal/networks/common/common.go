@@ -12,7 +12,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/price_tracker"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/avast/retry-go"
@@ -34,7 +33,7 @@ type CommonBridge struct {
 	WsContract *contracts.Bridge
 	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
-	Logger     zerolog.Logger
+	Logger     *zerolog.Logger
 	Name       string
 	Pk         *ecdsa.PrivateKey
 
@@ -42,9 +41,6 @@ type CommonBridge struct {
 	DefaultTransferFeeWei *big.Int
 
 	ContractCallLock *sync.Mutex
-
-	GasPerWithdrawLock *sync.Mutex
-	PriceTrackerData   *price_tracker.PriceTrackerData
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -97,12 +93,10 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	}
 
 	b.ContractCallLock = &sync.Mutex{}
-	b.GasPerWithdrawLock = &sync.Mutex{}
 
 	b.MinBridgeFee = big.NewFloat(cfg.MinBridgeFee)
 	b.DefaultTransferFeeWei = big.NewInt(int64(cfg.DefaultTransferFee * 1e18))
 
-	b.PriceTrackerData = &price_tracker.PriceTrackerData{}
 	return b, nil
 
 }
@@ -240,4 +234,24 @@ func (b *CommonBridge) waitMined(params networks.GetTxErrParams) (receipt *types
 		retry.LastErrorOnly(true),
 	)
 	return
+}
+
+func (b *CommonBridge) GetName() string {
+	return b.Name
+}
+
+func (b *CommonBridge) GetClient() ethclients.ClientInterface {
+	return b.Client
+}
+
+func (b *CommonBridge) GetContract() *contracts.Bridge {
+	return b.Contract
+}
+
+func (b *CommonBridge) GetWsContract() *contracts.Bridge {
+	return b.WsContract
+}
+
+func (b *CommonBridge) GetLogger() *zerolog.Logger {
+	return b.Logger
 }

@@ -5,18 +5,15 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/price_tracker"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/kofalt/go-memoize"
+	"github.com/rs/zerolog"
 )
 
 var (
-	ErrEventNotFound          = errors.New("error event not found")
-	ErrTransferSubmitNotFound = errors.New("error transfer submit not found")
-	ErrTransferFinishNotFound = errors.New("error transfer finish not found")
+	ErrEventNotFound = errors.New("error event not found")
 )
 
 type GetTxErrParams struct {
@@ -28,6 +25,11 @@ type GetTxErrParams struct {
 }
 
 type Bridge interface {
+	GetClient() ethclients.ClientInterface
+	GetContract() *contracts.Bridge
+	GetWsContract() *contracts.Bridge
+	GetLogger() *zerolog.Logger
+
 	Run()
 	ValidityWatchdog()
 
@@ -64,28 +66,24 @@ type BridgeReceivePoSA interface {
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }
 
+type TransferFeeCalc interface {
+	Bridge
+
+	GetOldestLockedEventId() (*big.Int, error)
+	GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error)
+	GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error)
+}
+
 type BridgeFeeApi interface {
 	Bridge
 	GetName() string
-	GetClient() ethclients.ClientInterface
+
 	Sign(digestHash []byte) ([]byte, error)
-	GetTransferFee(thisCoinPrice, sideCoinPrice float64, cache *memoize.Memoizer) (*big.Int, error)
-	CoinPrice() (float64, error)           // CoinPrice return that net native coin price in USDT
-	CachedCoinPrice() (interface{}, error) // CoinPrice return that net native coin price in USDT
 
-	// UsedGas returns total gas and total gas cost of `TransferSubmit` and `TransferFinish` events
-	UsedGas(logsSubmit []*contracts.BridgeTransferSubmit, logsUnlock []*contracts.BridgeTransferFinish) (*big.Int, *big.Int, error)
-
-	GetOldestLockedEventId() (*big.Int, error)
-	GetTransferSubmitById(eventId *big.Int) (*contracts.BridgeTransferSubmit, error)
-	GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error)
-	GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error)
 	GetWrapperAddress() (common.Address, error)
+	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
 
 	// GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetMinBridgeFee() *big.Float
-
-	WatchUnlocksLoop(sideData *price_tracker.PriceTrackerData)
-	InitPriceTrackerData(d *price_tracker.PriceTrackerData) error
-	GetPriceTrackerData() *price_tracker.PriceTrackerData
+	GetDefaultTransferFeeWei() *big.Int
 }
