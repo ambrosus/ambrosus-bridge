@@ -20,7 +20,9 @@ const signatureFeeTimestamp = 30 * 60 // 30 minutes
 type reqParams struct {
 	TokenAddress common.Address `json:"tokenAddress"`
 	IsAmb        bool           `json:"isAmb"`
-	Amount       *hexutil.Big   `json:"amount"`
+
+	Amount           *hexutil.Big `json:"amount"`
+	IsAmountWithFees bool         `json:"IsAmountWithFees"`
 }
 
 type result struct {
@@ -91,8 +93,17 @@ func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
 		return nil, NewAppError(nil, "error when getting transfer fee", err.Error())
 	}
 
+	amount := (*big.Int)(req.Amount)
+	// if amount contains fees, then we need to remove them
+	if req.IsAmountWithFees {
+		amount.Sub(amount, new(big.Int).Add(bridgeFee, transferFee))
+		if amount.Cmp(big.NewInt(0)) <= 0 {
+			return nil, ErrAmountIsTooSmall
+		}
+	}
+
 	// sign the price with private key
-	message := buildMessage(tokenAddress, transferFee, bridgeFee, (*big.Int)(req.Amount))
+	message := buildMessage(tokenAddress, transferFee, bridgeFee, amount)
 	signature, err := bridge.Sign(message)
 	if err != nil {
 		return nil, NewAppError(nil, "error when signing data", err.Error())

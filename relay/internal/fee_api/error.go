@@ -2,6 +2,10 @@ package fee_api
 
 import "encoding/json"
 
+var (
+	ErrAmountIsTooSmall = NewAppError(nil, "amount is too small", "")
+)
+
 type AppError struct {
 	Err              error  `json:"-"`
 	Message          string `json:"message,omitempty"`
