@@ -182,7 +182,7 @@ func (p *transferFeeTracker) WatchUnlocksLoop() {
 		p.bridge.EnsureContractUnpaused()
 
 		if err := p.watchUnlocks(); err != nil {
-			p.bridge.GetLogger().Error().Err(err).Msg("price tracker watchUnlocks error")
+			p.sideBridge.GetLogger().Error().Err(err).Msg("price tracker watchUnlocks error")
 		}
 		time.Sleep(failSleepTIme)
 	}
@@ -191,7 +191,7 @@ func (p *transferFeeTracker) WatchUnlocksLoop() {
 func (p *transferFeeTracker) watchUnlocks() error {
 
 	eventCh := make(chan *contracts.BridgeTransferFinish)
-	eventSub, err := p.bridge.GetWsContract().WatchTransferFinish(nil, eventCh, nil)
+	eventSub, err := p.sideBridge.GetWsContract().WatchTransferFinish(nil, eventCh, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransferFinish: %w", err)
 	}
@@ -207,7 +207,7 @@ func (p *transferFeeTracker) watchUnlocks() error {
 				continue
 			}
 
-			p.bridge.GetLogger().Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
+			p.sideBridge.GetLogger().Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
 			if err := p.processEvents(event.EventId.Uint64()); err != nil {
 				return err
 			}
