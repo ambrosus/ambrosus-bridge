@@ -42,7 +42,7 @@ export function readConfig(network: any): Config {
 
 
 export function networkName(network: any): string {
-  const r = ['amb', 'eth'].find(t => network.tags[t]);
+  const r = ['amb', 'eth', 'bsc'].find(t => network.tags[t]);
   if (!r) throw "Network missing networkName tag";
   return r
 }

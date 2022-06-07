@@ -36,14 +36,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         minSafetyBlocks: 10,
       },
       [
-        initialEpoch,
         initialValidators,
+        initialEpoch,
         chainId,
       ],
     )
   });
 
-  configFile.bridges.eth.amb = deployResult.address;
+  configFile.bridges.bsc.amb = deployResult.address;
   configFile.save()
 
   if (deployResult.newlyDeployed) {
@@ -64,7 +64,7 @@ async function getBscValidators(bscProvider: EthereumProvider): Promise<[number,
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(bscProvider))
   const {number: block} = await provider.getBlock('latest');
   const epoch = block / 200;
-  const epochStart = epoch * 200;
+  const epochStart = Math.floor(epoch * 200);
   const blockWithValidators = await provider.getBlock(epochStart);
 
   // todo get validators from blockWithValidators
@@ -75,4 +75,4 @@ async function getBscValidators(bscProvider: EthereumProvider): Promise<[number,
 
 
 export default func;
-func.tags = ["bridges_bnb"];
+func.tags = ["bridges_bsc"];

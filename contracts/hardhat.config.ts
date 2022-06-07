@@ -62,6 +62,7 @@ const config: HardhatUserConfig = {
       accounts: PK,
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
+      companionNetworks: {bsc: 'dev/bsc'},
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
@@ -80,6 +81,13 @@ const config: HardhatUserConfig = {
       accounts: ["0x80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446", "0x5b18f0adcca221f65373b20158f95313ecd51bde42b96a4c16f5eb851576bc06"],
       tags: ["amb", "integr"],
       hardfork: "byzantium",
+    },
+
+    "dev/bsc": {
+      url: "https://bsc.ambrosus-test.io",
+      accounts: PK,
+      tags: ["bsc", "devnet"],
+      companionNetworks: {amb: 'dev/amb'},
     },
   },
 
