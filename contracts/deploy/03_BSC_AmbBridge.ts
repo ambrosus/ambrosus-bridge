@@ -38,7 +38,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       [
         initialValidators,
         initialEpoch,
-        chainId,
+        parseInt(chainId),
       ],
     )
   });

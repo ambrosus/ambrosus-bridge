@@ -170,7 +170,7 @@ async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAb
 export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
   const vsAddress = "0x0000000000000000000000000000000000001000";
   const [validators, latestBlock] = await getValidatorsAndLatestBlock(bscNetwork, vsAddress, vsAbi);
-  const epoch = latestBlock.number / 200;
+  const epoch = Math.floor(latestBlock.number / 200);
 
   return [epoch, validators];
 }
