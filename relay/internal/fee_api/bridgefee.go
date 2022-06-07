@@ -8,7 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_0x"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
 )
@@ -26,7 +25,7 @@ func getBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, ca
 	}
 
 	// get token price
-	tokenToUsdtPrice, err := getTokenToUsdtPrice(tokenSymbol, tokenDecimals, cache)
+	tokenToUsdtPrice, err := getTokenToUsdtPrice(bridge, tokenSymbol, tokenDecimals, cache)
 	if err != nil {
 		return nil, fmt.Errorf("get token price: %w", err)
 	}
@@ -62,7 +61,7 @@ func getTokenData(bridge networks.BridgeFeeApi, tokenAddress common.Address) (st
 	return tokenSymbol, tokenDecimals, nil
 }
 
-func getTokenToUsdtPrice(tokenSymbol string, tokenDecimals uint8, cache *memoize.Memoizer) (tokenToUsdtPrice float64, err error) {
+func getTokenToUsdtPrice(bridge networks.BridgeFeeApi, tokenSymbol string, tokenDecimals uint8, cache *memoize.Memoizer) (tokenToUsdtPrice float64, err error) {
 	var res interface{}
 	if tokenSymbol == "SAMB" {
 		res, err, _ = cache.Memoize("SAMB", func() (interface{}, error) {
@@ -70,7 +69,7 @@ func getTokenToUsdtPrice(tokenSymbol string, tokenDecimals uint8, cache *memoize
 		})
 	} else {
 		res, err, _ = cache.Memoize(tokenSymbol, func() (interface{}, error) {
-			return price_0x.CoinToUSDT(tokenSymbol, tokenDecimals)
+			return bridge.TokenPrice(tokenSymbol, tokenDecimals)
 		})
 	}
 	return res.(float64), err

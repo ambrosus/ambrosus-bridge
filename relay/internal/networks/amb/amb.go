@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_0x"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -119,4 +120,8 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 
 func (b *Bridge) CoinPrice() (float64, error) {
 	return price.CoinToUsdt(price.Amb)
+}
+
+func (b *Bridge) TokenPrice(tokenSymbol string, tokenDecimals uint8) (float64, error) {
+	return price_0x.CoinToUSDT(price_0x.EthUrl, tokenSymbol, tokenDecimals)
 }

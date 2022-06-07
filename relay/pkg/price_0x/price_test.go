@@ -6,7 +6,7 @@ import (
 )
 
 func TestRequests(t *testing.T) {
-	e, err := CoinToUSDT("ETH", 18)
+	e, err := CoinToUSDT(EthUrl, "ETH", 18)
 	if err != nil {
 		t.Fatal(err)
 	}
