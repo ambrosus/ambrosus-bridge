@@ -5,18 +5,22 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x617F296c197266305904063CEFB07C9E3295D743",
+            "contractAddr": "0x1E712576FA72fa90C445bf1FcCCD8807FFA89467",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "privateKey": "in env"
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 1
         },
         "eth": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xAd6557e9793F119e4d8601Eb5cB1b79b26d89fDb",
+            "httpUrl": "https://nunki.htznr.fault.dev/rpc",
+            "wsUrl": "wss://nunki.htznr.fault.dev/ws",
+            "contractAddr": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 0
+            "ethashGenNextEpochs": 0,
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 0.01
         }
     },
     "externalLogger": {

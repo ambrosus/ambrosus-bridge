@@ -32,7 +32,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   });
 
 
-  configFile.bridges.eth.side = deployResult.address;
+  configFile.bridges.bsc.side = deployResult.address;
   configFile.save()
 
   if (deployResult.newlyDeployed) {
@@ -46,4 +46,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 export default func;
-func.tags = ["bridges_bnb"];
+func.tags = ["bridges_bsc"];

@@ -3,7 +3,7 @@ package fee_api
 import "encoding/json"
 
 var (
-	ErrTokenAddressNotPassed = NewAppError(nil, "token address is not passed", "")
+	ErrAmountIsTooSmall = NewAppError(nil, "amount is too small", "")
 )
 
 type AppError struct {

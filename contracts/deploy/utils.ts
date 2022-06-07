@@ -29,7 +29,7 @@ interface Config {
 
 
 export function readConfig(network: any): Config {
-  const tokenPath = path.resolve(__dirname, `../config-${networkType(network)}.json`)
+  const tokenPath = path.resolve(__dirname, `../configs/config-${networkType(network)}.json`)
   const config = require(tokenPath);
 
   config.save = () => fs.writeFileSync(tokenPath, JSON.stringify(config, null, 2));
@@ -41,7 +41,7 @@ export function readConfig(network: any): Config {
 
 
 export function networkName(network: any): string {
-  const r = ['amb', 'eth'].find(t => network.tags[t]);
+  const r = ['amb', 'eth', 'bsc'].find(t => network.tags[t]);
   if (!r) throw "Network missing networkName tag";
   return r
 }

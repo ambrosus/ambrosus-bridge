@@ -58,7 +58,10 @@ func main() {
 	}
 
 	if cfg.FeeApi.Enable {
-		feeApi := fee_api.NewFeeAPI(ambBridge, sideBridge.(networks.BridgeFeeApi))
+		feeApi, err := fee_api.NewFeeAPI(ambBridge, sideBridge.(networks.BridgeFeeApi))
+		if err != nil {
+			log.Fatal().Err(err).Msg("fee api not created")
+		}
 		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
 	}
 

@@ -2,7 +2,7 @@ import chai from "chai";
 import {ethers} from "hardhat";
 import 'mocha';
 import {Contract, providers} from "ethers";
-import config_c from "../config-integr.json";
+import config_c from "../configs/config-integr.json";
 import config_r from "../../relay/configs/integr.json";
 
 // websocket need for events subscribe

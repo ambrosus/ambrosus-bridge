@@ -186,10 +186,11 @@ hash(abi.encodePacked(
 #### Endpoint: /fees
 #### Method: POST
 
-#### Query params:
+#### Request body params:
 - `tokenAddress` - string, hex address of token in **from** network
 - `isAmb` - bool, is the **from** network is **AMB**
 - `amount` - string, amount of tokens in hex
+- `isAmountWithFees` - bool, is the amount includes fees (used with "set max" button on the frontend)
 
 #### Response params:
 - `bridgeFee` - string, bridge fee in hex
@@ -204,7 +205,8 @@ Request body:
 {
   "tokenAddress": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
   "isAmb": true,
-  "amount": "0xDE0B6B3A7640000"
+  "amount": "0xDE0B6B3A7640000",
+  "isAmountWithFees": false
 }
 ```
 
@@ -236,5 +238,14 @@ Request body:
   {
     "message": "error when getting bridge fee",
     "developerMessage": "якась помилка"
+  }
+  ```
+  
+- Failure request (when `isAmountWithFees` is true and `amount` is too small):
+    - **Status code**: 500
+    - **Result**:
+  ```json
+  {
+    "message": "amount is too small"
   }
   ```

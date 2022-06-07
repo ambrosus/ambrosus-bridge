@@ -6,8 +6,10 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/rs/zerolog"
 )
 
 var (
@@ -23,6 +25,11 @@ type GetTxErrParams struct {
 }
 
 type Bridge interface {
+	GetClient() ethclients.ClientInterface
+	GetContract() *contracts.Bridge
+	GetWsContract() *contracts.Bridge
+	GetLogger() *zerolog.Logger
+
 	Run()
 	ValidityWatchdog()
 
@@ -30,11 +37,9 @@ type Bridge interface {
 	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
 	GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error)
+	GetEventsByIds(eventIds []*big.Int) ([]*contracts.BridgeTransfer, error)
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
-
-	// WithdrawCount return count of `Withdraw` events emitted after given event
-	WithdrawCount(afterEventId *big.Int) (int, error)
 
 	// GetTxErr returns error of the transaction
 	GetTxErr(params GetTxErrParams) error
@@ -61,9 +66,24 @@ type BridgeReceivePoSA interface {
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }
 
+type TransferFeeCalc interface {
+	Bridge
+
+	GetOldestLockedEventId() (*big.Int, error)
+	GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error)
+	GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error)
+}
+
 type BridgeFeeApi interface {
 	Bridge
+	GetName() string
+
 	Sign(digestHash []byte) ([]byte, error)
-	GetTransferFee() (*big.Int, error)
+
+	GetWrapperAddress() (common.Address, error)
 	CoinPrice() (float64, error) // CoinPrice return that net native coin price in USDT
+
+	// GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetMinBridgeFee() *big.Float
+	GetDefaultTransferFeeWei() *big.Int
 }

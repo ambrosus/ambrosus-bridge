@@ -17,22 +17,19 @@ import (
 
 const signatureFeeTimestamp = 30 * 60 // 30 minutes
 
-var percentFromAmount = map[uint64]int64{
-	0:       5 * 100, // 0..100_000$ => 5%
-	100_000: 2 * 100, // 100_000...$ => 2%
+type reqParams struct {
+	TokenAddress common.Address `json:"tokenAddress"`
+	IsAmb        bool           `json:"isAmb"`
+
+	Amount           *hexutil.Big `json:"amount"`
+	IsAmountWithFees bool         `json:"IsAmountWithFees"`
 }
 
-/*
- * accepts a token address of this net, gets side token address from the contract (maybe accepts dev test or prod net and "amb" or "eth")
- * accepts an amount of tokens
- *
- * take the price from Uniswap
- * multiply that by the amount of tokens and by fee multiplier ("bridge fee")
- * get the average price for gas ("transfer fee")
- * sign that with time divided by some const
- *
- * respond the "bridge fee" and "transfer fee"
- */
+type result struct {
+	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
+	TransferFee *hexutil.Big  `json:"transferFee"`
+	Signature   hexutil.Bytes `json:"signature"`
+}
 
 func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 	var req reqParams
@@ -51,91 +48,73 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-type reqParams struct {
-	TokenAddress common.Address `json:"tokenAddress"`
-	IsAmb        bool           `json:"isAmb"`
-	Amount       *hexutil.Big   `json:"amount"`
-}
-
-type Result struct {
-	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
-	TransferFee *hexutil.Big  `json:"transferFee"`
-	Signature   hexutil.Bytes `json:"signature"`
-}
-
-func (p *FeeAPI) getFees(req reqParams) (*Result, *AppError) {
-	bridge := p.amb
-	if !req.IsAmb {
-		bridge = p.side
+func (p *FeeAPI) getFees(req reqParams) (*result, *AppError) {
+	var bridge, sideBridge networks.BridgeFeeApi
+	var bridgePT BridgePriceTracker
+	if req.IsAmb {
+		bridge, sideBridge = p.amb, p.side
+		bridgePT = p.ambPT
+	} else {
+		bridge, sideBridge = p.side, p.amb
+		bridgePT = p.sidePT
 	}
 
-	// get the bridge fee
-	bridgeFee, err := getBridgeFeeStub(bridge, req.TokenAddress, (*big.Int)(req.Amount)) // TODO: replace with `getBridgeFee`
+	// if token address is native, then it's "wrapWithdraw" and we need to work with "wrapperAddress"
+	var tokenAddress = req.TokenAddress
+	if req.TokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
+		var err error
+		tokenAddress, err = p.getWrapperToken(bridge)
+		if err != nil {
+			return nil, NewAppError(nil, "error when getting wrapper address", err.Error())
+		}
+	}
+
+	// get coin prices of this and side bridges for reusing it below
+	thisCoinPrice, err := p.getNativeCoinPrice(bridge)
+	if err != nil {
+		return nil, NewAppError(nil, "error when getting this bridge coin price", err.Error())
+	}
+	sideCoinPrice, err := p.getNativeCoinPrice(sideBridge)
+	if err != nil {
+		return nil, NewAppError(nil, "error when getting side bridge coin price", err.Error())
+	}
+
+	// get the bridge fee (% from amount)
+	bridgeFee, err := getBridgeFee(bridge, thisCoinPrice, p.cache, tokenAddress, (*big.Int)(req.Amount))
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting bridge fee", err.Error())
 	}
 
 	// get the transfer fee
-	transferFee, err := bridge.GetTransferFee()
+	transferFee, err := p.getTransferFee(bridge, bridgePT, thisCoinPrice, sideCoinPrice)
 	if err != nil {
 		return nil, NewAppError(nil, "error when getting transfer fee", err.Error())
 	}
 
+	amount := (*big.Int)(req.Amount)
+	// if amount contains fees, then we need to remove them
+	if req.IsAmountWithFees {
+		amount.Sub(amount, new(big.Int).Add(bridgeFee, transferFee))
+		if amount.Cmp(big.NewInt(0)) <= 0 {
+			return nil, ErrAmountIsTooSmall
+		}
+	}
+
 	// sign the price with private key
-	// signature, err := signData(pk, tokenPrice, tokenAddress)
-	message := buildMessage(req.TokenAddress, transferFee, bridgeFee)
+	message := buildMessage(tokenAddress, transferFee, bridgeFee, amount)
 	signature, err := bridge.Sign(message)
 	if err != nil {
 		return nil, NewAppError(nil, "error when signing data", err.Error())
 	}
 
-	return &Result{
+	return &result{
 		BridgeFee:   (*hexutil.Big)(bridgeFee),
 		TransferFee: (*hexutil.Big)(transferFee),
 		Signature:   signature,
 	}, nil
 }
 
-func getBridgeFeeStub(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	return big.NewInt(53000000000000000), nil // 0.053 ether
-}
-
-func getBridgeFee(bridge networks.BridgeFeeApi, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	// get token price
-	tokenToUsdtPrice := big.NewInt(0) // todo
-	tokensInUsdt := new(big.Int).Mul(amount, tokenToUsdtPrice)
-
-	// use lower percent for higher amount
-	var percent int64
-	for _, minUsdt := range helpers.SortedKeys(percentFromAmount) {
-		percent_ := percentFromAmount[minUsdt]
-		if tokensInUsdt.Uint64() < uint64(percent_) {
-			break
-		}
-		percent = percent_
-	}
-
-	// calc fee
-	usdtFee := calcBps(tokensInUsdt, percent)
-
-	// convert usdt to native token
-	nativeToUsdtPrice, err := bridge.CoinPrice()
-	if err != nil {
-		return nil, err
-	}
-
-	_, _ = usdtFee, nativeToUsdtPrice
-	nativeFee := new(big.Int) // todo nativeFee = usdtFee / nativeToUsdtPrice
-
-	return nativeFee, nil
-}
-
-func calcBps(amount *big.Int, bps int64) *big.Int {
-	// amount * bps / 10_000
-	return new(big.Int).Div(new(big.Int).Mul(amount, big.NewInt(bps)), big.NewInt(10_000))
-}
-
-func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *big.Int) []byte {
+func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *big.Int) []byte {
 	// tokenAddress + timestamp + transferFee + bridgeFee
 
 	var data bytes.Buffer
@@ -148,6 +127,47 @@ func buildMessage(tokenAddress common.Address, transferFee *big.Int, bridgeFee *
 
 	data.Write(transferFee.FillBytes(b32[:]))
 	data.Write(bridgeFee.FillBytes(b32[:]))
+	data.Write(amount.FillBytes(b32[:]))
 
 	return accounts.TextHash(crypto.Keccak256(data.Bytes()))
+}
+
+func (p *FeeAPI) getTransferFee(bridge networks.BridgeFeeApi, bridgePT BridgePriceTracker, thisCoinPrice, sideCoinPrice float64) (*big.Int, error) {
+	// get gas cost per withdraw in side bridge currency
+	gasCostInSideI, err, _ := p.cache.Memoize("gasPerWithdraw"+bridge.GetName(), func() (interface{}, error) {
+		return bridgePT.GasPerWithdraw(), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	gasCostInSide := gasCostInSideI.(*big.Int)
+	if gasCostInSide == nil {
+		return bridge.GetDefaultTransferFeeWei(), nil
+	}
+
+	// convert it to native bridge currency
+	gasCostInUsd := Coin2Usd(gasCostInSide, sideCoinPrice, 18)
+	gasCostInNative := Usd2Coin(gasCostInUsd, thisCoinPrice, 18)
+	return gasCostInNative, nil
+}
+
+func (p *FeeAPI) getNativeCoinPrice(bridge networks.BridgeFeeApi) (float64, error) {
+	coinPriceI, err, _ := p.cache.Memoize("coinPrice"+bridge.GetName(), func() (interface{}, error) {
+		return bridge.CoinPrice()
+	})
+	if err != nil {
+		return 0, err
+	}
+	return coinPriceI.(float64), nil
+}
+
+func (p *FeeAPI) getWrapperToken(bridge networks.BridgeFeeApi) (common.Address, error) {
+	tokenAddressI, err, _ := p.cache.Memoize("wrapperAddress"+bridge.GetName(), func() (interface{}, error) {
+		return bridge.GetWrapperAddress()
+	})
+	if err != nil {
+		return common.Address{}, err
+	}
+	return tokenAddressI.(common.Address), nil
 }

@@ -3,12 +3,10 @@ package price_0x
 import (
 	"fmt"
 	"testing"
-
-	"github.com/ethereum/go-ethereum/params"
 )
 
 func TestRequests(t *testing.T) {
-	e, err := CoinToUSDT("ETH", params.Ether)
+	e, err := CoinToUSDT("ETH", 18)
 	if err != nil {
 		t.Fatal(err)
 	}
