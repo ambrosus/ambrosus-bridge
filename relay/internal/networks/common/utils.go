@@ -18,7 +18,7 @@ import (
 )
 
 // failSleepTIme is how many seconds to sleep between iterations in infinity loops
-const failSleepTIme = time.Minute
+const failSleepTIme = time.Second * 30
 
 func (b *CommonBridge) EnsureContractUnpaused() {
 	for {
