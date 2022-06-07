@@ -18,7 +18,7 @@ var percentFromAmount = map[uint64]int64{
 	100_000: 2 * 100, // 100_000...$ => 2%
 }
 
-func GetBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, cache *memoize.Memoizer, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
+func getBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, cache *memoize.Memoizer, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
 	// get token symbol and decimals
 	tokenSymbol, tokenDecimals, err := getTokenData(bridge, tokenAddress)
 	if err != nil {
@@ -86,12 +86,4 @@ func getFeePercent(amountInUsdt *big.Float) (percent int64) {
 		percent = percent_
 	}
 	return percent
-}
-
-// amount * bps / 10_000
-func calcBps(amount *big.Float, bps int64) *big.Float {
-	return new(big.Float).Quo(
-		new(big.Float).Mul(amount, big.NewFloat(float64(bps))),
-		big.NewFloat(10_000),
-	)
 }
