@@ -212,7 +212,7 @@ func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) e
 		return nil
 	}
 
-	block, err := b.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
+	block, err := b.ParityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return fmt.Errorf("HeaderByNumber: %w", err)
 	}

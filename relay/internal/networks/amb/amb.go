@@ -16,7 +16,7 @@ const BridgeName = "ambrosus"
 
 type Bridge struct {
 	nc.CommonBridge
-	parityClient *parity.Client
+	ParityClient *parity.Client
 	vSContract   *bindings.Vs
 	sideBridge   networks.BridgeReceiveAura
 }
@@ -64,7 +64,7 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 
 	b := &Bridge{
 		CommonBridge: commonBridge,
-		parityClient: parityClient,
+		ParityClient: parityClient,
 		vSContract:   vsContract,
 	}
 	b.CommonBridge.Bridge = b
