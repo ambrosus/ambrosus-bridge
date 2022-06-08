@@ -1,4 +1,4 @@
-package price_0x
+package price
 
 import (
 	"encoding/json"

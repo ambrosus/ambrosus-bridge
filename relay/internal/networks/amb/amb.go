@@ -11,8 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_0x"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_amb"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -127,7 +126,7 @@ func (b *BridgeFee) TokenPrice(tokenAddress common.Address) (float64, error) {
 		return 0, err
 	}
 	if tokenSymbol == "SAMB" {
-		return price_amb.Get()
+		return price.AmbToUSD()
 	}
-	return price_0x.CoinToUSD(price_0x.EthUrl, tokenSymbol, tokenDecimals)
+	return price.CoinToUSD(price.EthUrl, tokenSymbol, tokenDecimals)
 }

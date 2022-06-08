@@ -11,7 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/fee"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_0x"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 )
@@ -89,5 +89,5 @@ func (b *BridgeFee) TokenPrice(tokenAddress common.Address) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return price_0x.CoinToUSD(price_0x.BscUrl, tokenSymbol, tokenDecimals)
+	return price.CoinToUSD(price.BscUrl, tokenSymbol, tokenDecimals)
 }
