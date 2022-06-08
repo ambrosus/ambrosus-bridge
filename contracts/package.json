@@ -16,7 +16,7 @@
     "sourcify": "hardhat sourcify --network 'test/eth'",
     "integr_deploy": "./deploy.sh eth integr",
     "integr_test": "hardhat test scripts/integration_tests.ts",
-    "deploy_menu": "hardhat run dialog.ts"
+    "deploy_menu": "hardhat run scripts/dialog.ts"
   },
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.4",

@@ -1,6 +1,6 @@
 import Dialog from "./dialog_model";
 import hardhat from "hardhat";
-import config from "./hardhat.config";
+import config from "../hardhat.config";
 import fs from "fs";
 import {execSync} from "child_process";
 
