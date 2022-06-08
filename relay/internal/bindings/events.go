@@ -1,4 +1,4 @@
-package contracts
+package bindings
 
 import (
 	"github.com/ethereum/go-ethereum/core/types"

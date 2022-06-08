@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
+func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBlockPoW, error) {
 	encodedBlock, err := splitBlock(header, isEventBlock)
 	if err != nil {
 		return nil, fmt.Errorf("split block: %w", err)
@@ -25,7 +25,7 @@ func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*contract
 	return encodedBlock, nil
 }
 
-func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlockPoW, error) {
+func splitBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBlockPoW, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash (for event block) / parentHash (for safety block)
 	// - Difficulty
@@ -72,7 +72,7 @@ func splitBlock(header *types.Header, isEventBlock bool) (*contracts.CheckPoWBlo
 		return nil, fmt.Errorf("split rlp header: %w", err)
 	}
 
-	return &contracts.CheckPoWBlockPoW{
+	return &bindings.CheckPoWBlockPoW{
 		P0WithNonce:    helpers.BytesToBytes3(p0WithNonce),
 		P0WithoutNonce: helpers.BytesToBytes3(p0WithoutNonce),
 

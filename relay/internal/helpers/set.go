@@ -3,12 +3,12 @@ package helpers
 import (
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 )
 
-func IntersectionSubmitsUnlocks(submits []*contracts.BridgeTransferSubmit, unlocks []*contracts.BridgeTransferFinish) (
-	[]*contracts.BridgeTransferSubmit,
-	[]*contracts.BridgeTransferFinish,
+func IntersectionSubmitsUnlocks(submits []*bindings.BridgeTransferSubmit, unlocks []*bindings.BridgeTransferFinish) (
+	[]*bindings.BridgeTransferSubmit,
+	[]*bindings.BridgeTransferFinish,
 ) {
 	var eventIds []*big.Int
 	hash := make(map[string]bool)
@@ -24,8 +24,8 @@ func IntersectionSubmitsUnlocks(submits []*contracts.BridgeTransferSubmit, unloc
 	}
 
 	// build submits and unlocks from intersection
-	var resSubmits []*contracts.BridgeTransferSubmit
-	var resUnlocks []*contracts.BridgeTransferFinish
+	var resSubmits []*bindings.BridgeTransferSubmit
+	var resUnlocks []*bindings.BridgeTransferFinish
 	startSubmits := 0
 	startUnlocks := 0
 

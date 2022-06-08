@@ -3,8 +3,8 @@ package amb
 import (
 	"fmt"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
@@ -18,7 +18,7 @@ type Bridge struct {
 	nc.CommonBridge
 	Client     *parity.Client
 	WsClient   *parity.Client
-	VSContract *contracts.Vs
+	VSContract *bindings.Vs
 	sideBridge networks.BridgeReceiveAura
 }
 
@@ -38,13 +38,13 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 	}
 
 	// Creating a new ambrosus VS contract instance.
-	vsContract, err := contracts.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
+	vsContract, err := bindings.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
 	if err != nil {
 		return nil, fmt.Errorf("create vs contract: %w", err)
 	}
 
 	// Creating a new bridge contract instance.
-	commonBridge.Contract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
+	commonBridge.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
 	if err != nil {
 		return nil, fmt.Errorf("create contract http: %w", err)
 	}
@@ -57,7 +57,7 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 
-		commonBridge.WsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
+		commonBridge.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
 		if err != nil {
 			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
@@ -86,7 +86,7 @@ func (b *Bridge) Run() {
 	b.SubmitTransfersLoop()
 }
 
-func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
+func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	auraProof, err := b.encodeAuraProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodeAuraProof: %w", err)

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -177,7 +177,7 @@ func (p *transferFeeTracker) WatchUnlocksLoop() {
 
 func (p *transferFeeTracker) watchUnlocks() error {
 
-	eventCh := make(chan *contracts.BridgeTransferFinish)
+	eventCh := make(chan *bindings.BridgeTransferFinish)
 	eventSub, err := p.sideBridge.GetWsContract().WatchTransferFinish(nil, eventCh, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransferFinish: %w", err)
@@ -204,11 +204,11 @@ func (p *transferFeeTracker) watchUnlocks() error {
 
 // --------------------- side bridge getters --------------------
 
-func getOldestLockedEventId(contract *contracts.Bridge) (*big.Int, error) {
+func getOldestLockedEventId(contract *bindings.Bridge) (*big.Int, error) {
 	return contract.OldestLockedEventId(nil)
 }
 
-func getTransferSubmitsByIds(contract *contracts.Bridge, eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error) {
+func getTransferSubmitsByIds(contract *bindings.Bridge, eventIds []*big.Int) (submits []*bindings.BridgeTransferSubmit, err error) {
 	logSubmit, err := contract.FilterTransferSubmit(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer submit: %w", err)
@@ -222,7 +222,7 @@ func getTransferSubmitsByIds(contract *contracts.Bridge, eventIds []*big.Int) (s
 	return submits, nil
 }
 
-func getTransferUnlocksByIds(contract *contracts.Bridge, eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error) {
+func getTransferUnlocksByIds(contract *bindings.Bridge, eventIds []*big.Int) (unlocks []*bindings.BridgeTransferFinish, err error) {
 	logUnlock, err := contract.FilterTransferFinish(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer finish: %w", err)

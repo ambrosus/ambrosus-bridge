@@ -6,7 +6,7 @@ import (
 	"math"
 	"math/big"
 
-	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 )
 

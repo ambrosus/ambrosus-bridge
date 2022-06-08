@@ -7,8 +7,8 @@ import (
 	"math/big"
 	"sync"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -22,8 +22,8 @@ type CommonBridge struct {
 	networks.Bridge
 	Client     ethclients.ClientInterface
 	WsClient   ethclients.ClientInterface
-	Contract   *contracts.Bridge
-	WsContract *contracts.Bridge
+	Contract   *bindings.Bridge
+	WsContract *bindings.Bridge
 	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
 	Logger     zerolog.Logger
@@ -42,7 +42,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	}
 
 	// Creating a new bridge contract instance.
-	b.Contract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
+	b.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
 	if err != nil {
 		return b, fmt.Errorf("create contract http: %w", err)
 	}
@@ -54,7 +54,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 			return b, fmt.Errorf("dial ws: %w", err)
 		}
 
-		b.WsContract, err = contracts.NewBridge(common.HexToAddress(cfg.ContractAddr), b.WsClient)
+		b.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.WsClient)
 		if err != nil {
 			return b, fmt.Errorf("create contract ws: %w", err)
 		}
@@ -93,7 +93,7 @@ func (b *CommonBridge) GetLastReceivedEventId() (*big.Int, error) {
 }
 
 // GetEventById get `Transfer` event (emitted by this contract) by id.
-func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer, error) {
+func (b *CommonBridge) GetEventById(eventId *big.Int) (*bindings.BridgeTransfer, error) {
 	logs, err := b.Contract.FilterTransfer(nil, []*big.Int{eventId})
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
@@ -107,7 +107,7 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 }
 
 // GetEventsByIds gets contract events by ids.
-func (b *CommonBridge) GetEventsByIds(eventIds []*big.Int) (transfers []*contracts.BridgeTransfer, err error) {
+func (b *CommonBridge) GetEventsByIds(eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
 	logTransfer, err := b.Contract.FilterTransfer(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
@@ -137,11 +137,11 @@ func (b *CommonBridge) GetClient() ethclients.ClientInterface {
 	return b.Client
 }
 
-func (b *CommonBridge) GetContract() *contracts.Bridge {
+func (b *CommonBridge) GetContract() *bindings.Bridge {
 	return b.Contract
 }
 
-func (b *CommonBridge) GetWsContract() *contracts.Bridge {
+func (b *CommonBridge) GetWsContract() *bindings.Bridge {
 	return b.WsContract
 }
 

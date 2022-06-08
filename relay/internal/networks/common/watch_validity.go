@@ -8,7 +8,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -63,7 +63,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 		return fmt.Errorf("checkOldLockedTransfers: %w", err)
 	}
 
-	eventCh := make(chan *contracts.BridgeTransferSubmit)
+	eventCh := make(chan *bindings.BridgeTransferSubmit)
 	eventSub, err := b.WsContract.WatchTransferSubmit(nil, eventCh, nil)
 	if err != nil {
 		return fmt.Errorf("WatchTransferSubmit: %w", err)
@@ -98,7 +98,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 	}
 }
 
-func (b *CommonBridge) checkValidity(lockedEventId *big.Int, lockedTransfer *contracts.CommonStructsLockedTransfers) error {
+func (b *CommonBridge) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
 	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
 	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("GetEventById: %w", err)
@@ -138,7 +138,7 @@ Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
 }
 
-func (b *CommonBridge) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer contracts.CommonStructsLockedTransfers, err error) {
+func (b *CommonBridge) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer bindings.CommonStructsLockedTransfers, err error) {
 	err = retry.Do(
 		func() error {
 			lockedTransfer, err = b.Contract.GetLockedTransfers(opts, eventId)
