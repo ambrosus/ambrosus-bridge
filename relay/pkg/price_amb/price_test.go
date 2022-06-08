@@ -1,4 +1,4 @@
-package price
+package price_amb
 
 import (
 	"fmt"
@@ -6,19 +6,19 @@ import (
 )
 
 func TestRequests(t *testing.T) {
-	a, err := CoinToUsdt(Amb)
+	a, err := Get(Amb)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println("Amb: ", a)
 
-	e, err := CoinToUsdt(Eth)
+	e, err := Get(Eth)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Println("Eth: ", e)
 
-	b, err := CoinToUsdt(Bnb)
+	b, err := Get(Bnb)
 	if err != nil {
 		t.Fatal(err)
 	}
