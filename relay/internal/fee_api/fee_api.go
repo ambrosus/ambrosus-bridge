@@ -8,44 +8,36 @@ import (
 	"os"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
 	"github.com/rs/cors"
 )
 
-type BridgePriceTracker interface {
-	GasPerWithdraw() *big.Int
+const (
+	signatureFeeTimestamp = 30 * 60 // 30 minutes
+	cacheExpiration       = time.Minute * 10
+)
+
+type BridgeFeeApi interface {
+	Sign(message []byte) ([]byte, error)
+	TokenPrice(tokenAddress common.Address) (float64, error) // TokenPrice returns token`s price in USD
+	GetTransferFee() *big.Int
+	GetWrapperAddress() common.Address
+	GetMinBridgeFee() *big.Float // GetMinBridgeFee returns the minimal bridge fee that can be used
 }
 
 type FeeAPI struct {
-	amb, side     networks.BridgeFeeApi
-	ambPT, sidePT BridgePriceTracker
+	amb, side BridgeFeeApi
 
 	cache *memoize.Memoizer
 }
 
-const (
-	cacheExpiration = time.Minute * 10
-)
-
-func NewFeeAPI(amb, side networks.BridgeFeeApi) (*FeeAPI, error) {
-	ambPT, err := common.NewTransferFeeTracker(amb, side.(networks.TransferFeeCalc))
-	if err != nil {
-		return nil, err
-	}
-	sidePT, err := common.NewTransferFeeTracker(side, amb.(networks.TransferFeeCalc))
-	if err != nil {
-		return nil, err
-	}
-
+func NewFeeAPI(amb, side BridgeFeeApi) *FeeAPI {
 	return &FeeAPI{
-		amb:    amb,
-		side:   side,
-		ambPT:  ambPT,
-		sidePT: sidePT,
-		cache:  memoize.NewMemoizer(cacheExpiration, time.Hour),
-	}, nil
+		amb:   amb,
+		side:  side,
+		cache: memoize.NewMemoizer(cacheExpiration, time.Hour),
+	}
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int) {

@@ -65,11 +65,3 @@ type BridgeReceivePoSA interface {
 	Bridge
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }
-
-type BridgeFeeApi interface {
-	Sign(message []byte) ([]byte, error)
-	TokenPrice(tokenAddress common.Address) (float64, error) // TokenPrice returns token`s price in USD
-	GetTransferFee() *big.Int
-	GetWrapperAddress() common.Address
-	GetMinBridgeFee() *big.Float // GetMinBridgeFee returns the minimal bridge fee that can be used
-}
