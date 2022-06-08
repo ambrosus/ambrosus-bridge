@@ -8,6 +8,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price_0x"
@@ -118,7 +119,9 @@ func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
 	return nil
 }
 
-func (b *Bridge) TokenPrice(tokenAddress common.Address) (float64, error) {
+type BridgeFee struct{ fee.BridgeFee }
+
+func (b *BridgeFee) TokenPrice(tokenAddress common.Address) (float64, error) {
 	tokenSymbol, tokenDecimals, err := b.GetTokenData(tokenAddress)
 	if err != nil {
 		return 0, err
