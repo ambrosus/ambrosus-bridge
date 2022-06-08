@@ -9,6 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/rs/zerolog/log"
 )
@@ -57,11 +58,17 @@ func main() {
 		go sideBridge.ValidityWatchdog()
 	}
 
-	if cfg.FeeApi.Enable {
-		feeApi, err := fee_api.NewFeeAPI(ambBridge, sideBridge.(networks.BridgeFeeApi))
+	if feeCfg := cfg.FeeApi; feeCfg.Enable {
+		feeAmb, err := fee.NewBridgeFee(ambBridge, sideBridge, feeCfg.Amb)
 		if err != nil {
-			log.Fatal().Err(err).Msg("fee api not created")
+			log.Fatal().Err(err).Msg("feeAmb not created")
 		}
+		feeSide, err := fee.NewBridgeFee(sideBridge, ambBridge, feeCfg.Side)
+		if err != nil {
+			log.Fatal().Err(err).Msg("feeSide not created")
+		}
+
+		feeApi := fee_api.NewFeeAPI(feeAmb, feeSide)
 		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
 	}
 

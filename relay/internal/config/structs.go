@@ -6,9 +6,6 @@ type (
 		WsURL        string `mapstructure:"wsUrl"`
 		ContractAddr string `mapstructure:"contractAddr"`
 		PrivateKey   string `mapstructure:"privateKey"`
-
-		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
-		DefaultTransferFee float64 `mapstructure:"defaultTransferFee"`
 	}
 
 	AMBConfig struct {
@@ -58,6 +55,14 @@ type (
 		Ip       string `mapstructure:"ip"`
 		Port     int    `mapstructure:"port"`
 		Endpoint string `mapstructure:"endpoint"`
+
+		Amb  FeeApiNetwork `mapstructure:"amb"`
+		Side FeeApiNetwork `mapstructure:"side"`
+	}
+	FeeApiNetwork struct {
+		PrivateKey         string  `mapstructure:"privateKey"`
+		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
+		DefaultTransferFee int64   `mapstructure:"defaultTransferFee"`
 	}
 
 	Prometheus struct {
