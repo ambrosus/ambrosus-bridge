@@ -79,7 +79,8 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
   const reallyCommonArgs = {
     adminAddress: admin,
     relayAddress: relay,
-    feeRecipient: owner,   // todo
+    transferFeeRecipient: owner, // todo
+    bridgeFeeRecipient: owner,  // todo
     tokenThisAddresses: Object.keys(tokenPairs),
     tokenSideAddresses: Object.values(tokenPairs),
   }
