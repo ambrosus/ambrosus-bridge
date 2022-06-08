@@ -1,4 +1,4 @@
-package common
+package fee
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
 	"golang.org/x/sync/errgroup"
 )
@@ -19,8 +20,8 @@ const (
 )
 
 type transferFeeTracker struct {
-	bridge     networks.BridgeFeeApi
-	sideBridge networks.TransferFeeCalc
+	bridge     networks.Bridge
+	sideBridge networks.Bridge
 
 	latestProcessedEvent uint64
 
@@ -28,7 +29,7 @@ type transferFeeTracker struct {
 	totalGas           *big.Int
 }
 
-func NewTransferFeeTracker(bridge networks.BridgeFeeApi, sideBridge networks.TransferFeeCalc) (*transferFeeTracker, error) {
+func newTransferFeeTracker(bridge, sideBridge networks.Bridge) (*transferFeeTracker, error) {
 	p := &transferFeeTracker{
 		bridge:             bridge,
 		sideBridge:         sideBridge,
@@ -54,7 +55,7 @@ func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
 }
 
 func (p *transferFeeTracker) init() error {
-	latestEventId, err := p.sideBridge.GetOldestLockedEventId()
+	latestEventId, err := getOldestLockedEventId(p.sideBridge.GetContract())
 	if err != nil {
 		return err
 	}
@@ -84,11 +85,11 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	if err != nil {
 		return fmt.Errorf("get transfers by ids: %v", err)
 	}
-	submits, err := p.sideBridge.GetTransferSubmitsByIds(eventIds)
+	submits, err := getTransferSubmitsByIds(p.sideBridge.GetContract(), eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfer submits by ids: %v", err)
 	}
-	unlocks, err := p.sideBridge.GetTransferUnlocksByIds(eventIds)
+	unlocks, err := getTransferUnlocksByIds(p.sideBridge.GetContract(), eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfer unlocks by ids: %v", err)
 	}
@@ -184,7 +185,7 @@ func (p *transferFeeTracker) WatchUnlocksLoop() {
 		if err := p.watchUnlocks(); err != nil {
 			p.sideBridge.GetLogger().Error().Err(err).Msg("price tracker watchUnlocks error")
 		}
-		time.Sleep(failSleepTIme)
+		time.Sleep(time.Minute)
 	}
 }
 
@@ -217,12 +218,12 @@ func (p *transferFeeTracker) watchUnlocks() error {
 
 // --------------------- side bridge getters --------------------
 
-func (b *CommonBridge) GetOldestLockedEventId() (*big.Int, error) {
-	return b.Contract.OldestLockedEventId(nil)
+func getOldestLockedEventId(contract *contracts.Bridge) (*big.Int, error) {
+	return contract.OldestLockedEventId(nil)
 }
 
-func (b *CommonBridge) GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error) {
-	logSubmit, err := b.GetContract().FilterTransferSubmit(nil, eventIds)
+func getTransferSubmitsByIds(contract *contracts.Bridge, eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error) {
+	logSubmit, err := contract.FilterTransferSubmit(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer submit: %w", err)
 	}
@@ -235,8 +236,8 @@ func (b *CommonBridge) GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*
 	return submits, nil
 }
 
-func (b *CommonBridge) GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error) {
-	logUnlock, err := b.GetContract().FilterTransferFinish(nil, eventIds)
+func getTransferUnlocksByIds(contract *contracts.Bridge, eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error) {
+	logUnlock, err := contract.FilterTransferFinish(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer finish: %w", err)
 	}

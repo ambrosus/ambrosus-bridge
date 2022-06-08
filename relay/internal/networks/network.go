@@ -66,24 +66,10 @@ type BridgeReceivePoSA interface {
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
 }
 
-type TransferFeeCalc interface {
-	Bridge
-
-	GetOldestLockedEventId() (*big.Int, error)
-	GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error)
-	GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error)
-}
-
 type BridgeFeeApi interface {
-	Bridge
-	GetName() string
-
-	Sign(digestHash []byte) ([]byte, error)
-
-	GetWrapperAddress() (common.Address, error)
+	Sign(message []byte) ([]byte, error)
 	TokenPrice(tokenAddress common.Address) (float64, error) // TokenPrice returns token`s price in USD
-
-	// GetMinBridgeFee returns the minimal bridge fee that can be used
-	GetMinBridgeFee() *big.Float
-	GetDefaultTransferFeeWei() *big.Int
+	GetTransferFee() *big.Int
+	GetWrapperAddress() common.Address
+	GetMinBridgeFee() *big.Float // GetMinBridgeFee returns the minimal bridge fee that can be used
 }
