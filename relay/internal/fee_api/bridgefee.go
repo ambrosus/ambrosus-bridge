@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/kofalt/go-memoize"
 )
 
 var percentFromAmount = map[uint64]int64{
@@ -17,62 +14,25 @@ var percentFromAmount = map[uint64]int64{
 	100_000: 2 * 100, // 100_000...$ => 2%
 }
 
-func getBridgeFee(bridge networks.BridgeFeeApi, nativeCoinPriceInUsd float64, cache *memoize.Memoizer, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	// get token symbol and decimals
-	tokenSymbol, tokenDecimals, err := getTokenData(bridge, tokenAddress)
-	if err != nil {
-		return nil, fmt.Errorf("get token data: %w", err)
-	}
-
+func (p *FeeAPI) getBridgeFee(bridge networks.BridgeFeeApi, nativeUsdPrice float64, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
 	// get token price
-	tokenToUsdtPrice, err := getTokenToUsdtPrice(bridge, tokenSymbol, tokenDecimals, cache)
+	tokenUsdPrice, err := p.getTokenPrice(bridge, tokenAddress)
 	if err != nil {
 		return nil, fmt.Errorf("get token price: %w", err)
 	}
 
-	// get fee in usdt
-	amountInUsdt := Coin2Usd(amount, tokenToUsdtPrice, tokenDecimals)
-	feePercent := getFeePercent(amountInUsdt)
-	feeUsdt := calcBps(amountInUsdt, feePercent)
+	// get fee in usd
+	amountUsd := Coin2Usd(amount, tokenUsdPrice)
+	feeUsd := calcBps(amountUsd, getFeePercent(amountUsd))
 
 	// if fee < minBridgeFee then use the minBridgeFee
-	if minBridgeFee := bridge.GetMinBridgeFee(); feeUsdt.Cmp(minBridgeFee) == -1 {
-		feeUsdt = minBridgeFee
+	if minBridgeFee := bridge.GetMinBridgeFee(); feeUsd.Cmp(minBridgeFee) == -1 {
+		feeUsd = minBridgeFee
 	}
 
 	// calc fee in native token
-	nativeFee := Usd2Coin(feeUsdt, nativeCoinPriceInUsd, 18)
-	return nativeFee, nil
-}
-
-func getTokenData(bridge networks.BridgeFeeApi, tokenAddress common.Address) (string, uint8, error) {
-	tokenContract, err := contracts.NewToken(tokenAddress, bridge.GetClient())
-	if err != nil {
-		return "", 0, fmt.Errorf("get token contract: %w", err)
-	}
-	tokenSymbol, err := tokenContract.Symbol(nil)
-	if err != nil {
-		return "", 0, fmt.Errorf("get token symbol: %w", err)
-	}
-	tokenDecimals, err := tokenContract.Decimals(nil)
-	if err != nil {
-		return "", 0, fmt.Errorf("get token decimals: %w", err)
-	}
-	return tokenSymbol, tokenDecimals, nil
-}
-
-func getTokenToUsdtPrice(bridge networks.BridgeFeeApi, tokenSymbol string, tokenDecimals uint8, cache *memoize.Memoizer) (tokenToUsdtPrice float64, err error) {
-	var res interface{}
-	if tokenSymbol == "SAMB" {
-		res, err, _ = cache.Memoize("SAMB", func() (interface{}, error) {
-			return price.CoinToUsdt(price.Amb)
-		})
-	} else {
-		res, err, _ = cache.Memoize(tokenSymbol, func() (interface{}, error) {
-			return bridge.TokenPrice(tokenSymbol, tokenDecimals)
-		})
-	}
-	return res.(float64), err
+	feeNative := Usd2Coin(feeUsd, nativeUsdPrice)
+	return feeNative, nil
 }
 
 func getFeePercent(amountInUsdt *big.Float) (percent int64) {
