@@ -4,6 +4,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
+// Transfer event
+
 func (te *BridgeTransfer) Log() *types.Log {
 	return &te.Raw
 }
