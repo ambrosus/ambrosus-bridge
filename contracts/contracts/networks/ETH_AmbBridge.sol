@@ -13,7 +13,6 @@ contract ETH_AmbBridge is CommonBridge, CheckPoW {
     ) public initializer {
         __CommonBridge_init(args);
         __CheckPoW_init(minimumDifficulty);
-        emit Transfer(0, queue); // used to sync validatorSet
     }
 
     function submitTransferPoW(PoWProof calldata powProof) public onlyRole(RELAY_ROLE) whenNotPaused {

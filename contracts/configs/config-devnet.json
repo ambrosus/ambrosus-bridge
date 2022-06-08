@@ -5,8 +5,8 @@
       "side": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95"
     },
     "bsc": {
-      "amb": "",
-      "side": ""
+      "amb": "0x2A26A38cbd830d51d07B7C29206d3B4dfd95a0D3",
+      "side": "0xCdC3C3E517E60BEEdeBddD32569a4581F26B2BD6"
     }
   },
   "tokens": {
@@ -19,7 +19,7 @@
       "addresses": {
         "amb": "0x7d163deAD74F23F819C0ec404F3e0805aCbBa21A",
         "eth": "0x500268485CB411696bd48629f78E8846C1929a43",
-        "bsc": ""
+        "bsc": "0xb16F35c0Ae2912430DAc15764477E179D9B9EbEa"
       },
       "nativeAnalog": "AMB"
     },
@@ -32,9 +32,22 @@
       "addresses": {
         "amb": "0x407852C895cee4eD12A6367c8427C1a14ecBdf69",
         "eth": "0xf531B8F309Be94191af87605CfBf600D71C2cFe0",
-        "bsc": ""
+        "bsc": "0x8feAb9749bb6d3F33619b6bf7236d160048beFCd"
       },
       "nativeAnalog": "ETH"
+    },
+    "WBNB": {
+      "name": "Wrapped BNB",
+      "symbol": "WBNB",
+      "denomination": 18,
+      "logo": "https://bscscan.com/token/images/binance_32.png",
+      "primaryNet": "bsc",
+      "addresses": {
+        "amb": "0x17429a725830792532493517d22F65d4E2E0681c",
+        "eth": "",
+        "bsc": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+      },
+      "nativeAnalog": "BNB"
     }
   }
 }
