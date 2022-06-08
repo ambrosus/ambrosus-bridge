@@ -81,8 +81,7 @@ type BridgeFeeApi interface {
 	Sign(digestHash []byte) ([]byte, error)
 
 	GetWrapperAddress() (common.Address, error)
-	CoinPrice() (float64, error)                                         // CoinPrice returns that net native coin price in USDT
-	TokenPrice(tokenSymbol string, tokenDecimals uint8) (float64, error) // TokenPrice returns token`s price in USD
+	TokenPrice(tokenAddress common.Address) (float64, error) // TokenPrice returns token`s price in USD
 
 	// GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetMinBridgeFee() *big.Float
