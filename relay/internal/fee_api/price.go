@@ -9,7 +9,7 @@ import (
 )
 
 func (p *FeeAPI) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (float64, error) {
-	tokenPriceI, err, _ := p.cache.Memoize(tokenAddress.Hex(), func() (interface{}, error) {
+	tokenPriceI, err, _ := p.cache.Memoize(bridge.GetName()+tokenAddress.Hex(), func() (interface{}, error) {
 		return tokenPrice(bridge, tokenAddress)
 	})
 	if err != nil {

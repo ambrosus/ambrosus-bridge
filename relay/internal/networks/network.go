@@ -29,6 +29,7 @@ type Bridge interface {
 	GetContract() *contracts.Bridge
 	GetWsContract() *contracts.Bridge
 	GetLogger() *zerolog.Logger
+	GetName() string
 
 	Run()
 	ValidityWatchdog()

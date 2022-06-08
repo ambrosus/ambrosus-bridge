@@ -12,7 +12,7 @@ import (
 )
 
 type BridgeFee struct {
-	bridge networks.Bridge
+	networks.Bridge
 
 	minBridgeFee       *big.Float
 	defaultTransferFee *big.Int
@@ -40,7 +40,7 @@ func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) 
 	}
 
 	return &BridgeFee{
-		bridge:             bridge,
+		Bridge:             bridge,
 		minBridgeFee:       big.NewFloat(cfg.MinBridgeFee),
 		defaultTransferFee: big.NewInt(cfg.DefaultTransferFee),
 		privateKey:         privateKey,
