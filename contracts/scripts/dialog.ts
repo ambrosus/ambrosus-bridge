@@ -1,146 +1,153 @@
-import Dialog from "./dialog_model";
-import hardhat from "hardhat";
-import config from "../hardhat.config";
-import fs from "fs";
+import inquirer from "inquirer";
+import {readConfig} from "../deploy/utils/config";
 import {execSync} from "child_process";
 
 
+// todo checkbox choose
+// todo redeploy
+
+const NETWORKS = ["eth", "bsc"]
+
 async function main() {
-    const actions = ["redeploy", "upgrade", "confirmTransaction", "exit"];
-    let action;
-    let fullRedeploy = false;
-
-    while (true) {
-        action = await Dialog.askToChooseFromArray(actions, "Choose action:");
-        if (action === "exit") return;
-
-        if (action === "redeploy") {
-            const msg = "Do you want a full redeploy? (Tokens will be redeployed):"
-            fullRedeploy = await Dialog.confirmation(msg);
-        }
-
-        const msg = `[${!fullRedeploy ? action : 'full_redeploy'}] Are you sure?`;
-        const confirm = await Dialog.confirmation(msg);
-        if (confirm) break;
-    }
-
-
-    let networks: any = {};
-    for (let net in config.networks) {
-        if (net.startsWith("hardhat")) continue;
-
-        const [type, side] = net.split("/");
-        if (networks[type] === undefined) {
-            networks[type] = [side];
-        } else {
-            networks[type].push(side);
-        }
-    }
-
-    const networkType = await Dialog.askToChooseFromArray(Object.keys(networks), "Choose network type:");
-
-    const bridgeTypes = ["eth", "bsc"];
-    const bridgeType = await Dialog.askToChooseFromArray(bridgeTypes, "Choose bridge type:");
-
-    if (action === "redeploy") {
-        const configPath = `./configs/${getConfigName(networkType)}`;
-        let obj = require(configPath);
-
-        obj.bridges[bridgeType]["amb"] = "";
-        obj.bridges[bridgeType]["side"] = "";
-
-        Dialog.output(`Beginning of the deploy process: ${new Date().toLocaleTimeString()}`);
-        Dialog.output(`If deploy is stuck at ${networkType}/${bridgeType} stage - continue with manual deploy\n`);
-
-        if (fullRedeploy) {
-            obj.tokens["SAMB"]["addresses"]["amb"]= "";
-            obj.tokens["SAMB"]["addresses"][bridgeType]= "";
-            obj.tokens["WETH"]["addresses"]["amb"]= "";
-            obj.tokens["WETH"]["addresses"][bridgeType]= "";
-            fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
-
-            for (let i in networks[networkType]) {
-                execSync(`rm -r ./deployments/${networkType}/${networks[networkType][i]}`);
-            }
-
-            execSync(`./deploy.sh ${bridgeType} ${networkType}`, {stdio: 'inherit'});
-
-        } else {
-            fs.writeFileSync(configPath, JSON.stringify(obj, null, 2));
-            const pattern = `${bridgeType.toUpperCase()}` + "_(.+)Bridge";
-
-            for (let i in networks[networkType]) {
-                const path = `./deployments/${networkType}/${networks[networkType][i]}`;
-                const files = fs.readdirSync(path);
-
-                for (let f in files) {
-                    const res = new RegExp(pattern).exec(files[f]);
-                    if (res !== null)
-                        execSync(`rm ${path}/${res.input}`);
-                }
-            }
-
-            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`, {stdio: 'inherit'});
-            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags bridges_${bridgeType}`, {stdio: 'inherit'});
-
-            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags bridges_${bridgeType}`, {stdio: 'inherit'});
-            Dialog.output(`sideBridgeAddress was set`);
-
-            execSync(`yarn hardhat deploy --network ${networkType}/amb --tags tokens_add_bridges`, {stdio: 'inherit'});
-            execSync(`yarn hardhat deploy --network ${networkType}/${bridgeType} --tags tokens_add_bridges`, {stdio: 'inherit'});
-            Dialog.output(`Tokens are successfully added`);
-
-        }
-
-        Dialog.output("Successfully redeployed!");
-        return;
-    }
-
-    const networkSide = await Dialog.askToChooseFromArray(networks[networkType], "Choose network side");
-
-    const path = `./deployments/${networkType}/${networkSide}`;
-    let bridgeName = "";
-
-    let bridgeDeploymentExists = false;
-    let deploymentsFiles: any;
-    if (fs.existsSync(path)) {
-        deploymentsFiles = fs.readdirSync(path);
-        const pattern = "(.+)_" +
-                        `${networkSide.charAt(0).toUpperCase() + networkSide.slice(1)}` +
-                        "Bridge\.json";
-
-        for (let i in deploymentsFiles) {
-            const res = new RegExp(pattern).exec(deploymentsFiles[i]);
-            if (res !== null) {
-                bridgeName = res[0].slice(0, -5);  // .json remove
-                bridgeDeploymentExists = true;
-            }
-        }
-    }
-
-    if (action === "upgrade") {
-        execSync(`yarn hardhat deploy --network ${networkType}/${networkSide} --tags bridges_${bridgeType}`, {stdio: 'inherit'});
-
-        // Can't pass arguments to script directly
-        fs.writeFileSync("./scripts/tmpBridgeName", bridgeName);
-        execSync(`yarn hardhat run scripts/confirm_upgrade.ts --network ${networkType}/${networkSide}`, {stdio: 'inherit'});
-        execSync("rm ./scripts/tmpBridgeName");
-        Dialog.output("Successfully upgraded!");
-    }
-
-    if (action === "confirmTransaction") {
-        // todo
-    }
+  await chooseStage()
 }
 
-const getConfigName = (networkType: string) => {
-    if (networkType === "integr")
-        return "config-integr.json"
-    else
-        return `config-${networkType}net.json`
+async function chooseStage() {
+  const stage = await choose(["dev", "test", "main", "integr"], "Choose stage:");
+  await chooseAction(stage);
 }
+
+async function chooseAction(stage: string) {
+  const action = await choose(["full deploy", "tokens", "bridges"], "Choose action:");
+  if (action == "full deploy") full_deploy(stage);
+  if (action == "tokens") await tokens(stage);
+  if (action == "bridges") await bridges(stage);
+}
+
+
+async function tokens(stage: string) {
+  const {tokens} = readConfig(stage);
+  for (const token of Object.values(tokens)) {
+    const deployedOn = Object.entries(token.addresses)
+      .map(([network, address]) => `\t ${network}  ${address || "Not deployed"}`)
+      .join("\n")
+    console.log(`${token.name} ${token.symbol} \n ${deployedOn}`);
+  }
+
+  const actions = [
+    ...NETWORKS.map((n) => ({name: "deploy " + n, value: n})),
+    new inquirer.Separator(),
+    {name: "deploy all", value: "all"}
+  ];
+
+  const network = await choose(actions, "Choose action:");
+  if (network == "all") NETWORKS.forEach((n) => deploy_tokens(stage, n))
+  else deploy_tokens(stage, network)
+
+}
+
+
+async function bridges(stage: string) {
+  const {bridges} = readConfig(stage);
+
+  for (const [pairName, addresses] of Object.entries(bridges))
+    console.log(`amb-${pairName} 
+\t amb  ${addresses.amb || "Not deployed"}
+\t ${pairName}  ${addresses.side || "Not deployed"}`);
+
+
+  const pairsToChoose = Object.keys(bridges).map((pairName) => ({name: `amb-${pairName}`, "value": pairName}))
+  const pair = await choose(pairsToChoose, "Choose pair:");
+  await bridge(stage, pair);
+
+}
+
+
+async function bridge(stage: string, pair: string) {
+  const {bridges} = readConfig(stage);
+  const bridge = bridges[pair];
+
+  if (!bridge.amb || !bridge.side) {
+    await choose(["deploy all"], "Choose action:");
+    deploy_bridges(stage, pair);
+    return
+  }
+
+  const action = await choose(["upgrade amb", "upgrade side"], "Choose action:");
+  if (action == "upgrade amb") upgrade_bridge(stage, pair, "amb")
+  if (action == "upgrade side") upgrade_bridge(stage, pair, pair)
+
+}
+
+
+// actions
+
+function full_deploy(stage: string) {
+  for (const network in NETWORKS) {
+    deploy_tokens(stage, network);
+    deploy_bridges(stage, network);
+  }
+}
+
+function deploy_tokens(stage: string, network: string) {
+  deploy(stage, "amb", "tokens");
+  deploy(stage, network, "tokens");
+}
+
+function deploy_bridges(stage: string, network: string) {
+  const bridgeTag = `bridges_${network}`
+
+  deploy(stage, "amb", bridgeTag);
+  deploy(stage, network, bridgeTag);
+
+  // setSideBridge to newly deployment
+  deploy(stage, "amb", bridgeTag);
+  // add bridges addresses to deployed tokens
+  add_bridges_to_tokens(stage, network);
+}
+
+
+function upgrade_bridge(stage: string, network: string, bridge: string) {
+  deploy(stage, network, bridge);
+  if (stage == "main") console.log("!! DON'T FORGET TO CONFIRM UPGRADE IN MULTISIG !!");
+}
+
+
+function add_bridges_to_tokens(stage: string, network: string) {
+  deploy(stage, "amb", "tokens_add_bridges");
+  deploy(stage, network, "tokens_add_bridges");
+}
+
+
+const deploy = (stage: string, network: string, tags: string) => exec(`yarn hardhat deploy --network ${stage}/${network} --tags ${tags}`);
+const exec = (cmd: string) => execSync(cmd, {stdio: 'inherit'});
+
+
+// dialog
+
+const confirm = async (message: string): Promise<boolean> =>
+  prompt({
+    type: 'list',
+    message: message,
+    choices: [
+      {name: "NO", value: false},
+      {name: "YES", value: true}
+    ]
+  });
+
+const choose = async (choices: Array<any>, message: string) => prompt({
+  type: 'list',
+  message: message,
+  choices: choices
+});
+
+const prompt = async (q: any) => (await inquirer.prompt([{...q, name: 'value'}])).value;
+
+
+// utils
+
 
 main().catch(reason => {
-    console.log(reason);
-    process.exitCode = -1;
+  console.log(reason);
+  process.exitCode = -1;
 });
