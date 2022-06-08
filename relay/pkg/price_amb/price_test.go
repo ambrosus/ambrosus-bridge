@@ -1,4 +1,4 @@
-package price_0x
+package price_amb
 
 import (
 	"fmt"
@@ -6,10 +6,9 @@ import (
 )
 
 func TestRequests(t *testing.T) {
-	e, err := CoinToUSD(EthUrl, "ETH", 18)
+	a, err := Get()
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("Eth to USDT: ", e)
-
+	fmt.Println("Amb: ", a)
 }
