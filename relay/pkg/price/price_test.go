@@ -3,10 +3,12 @@ package price
 import (
 	"fmt"
 	"testing"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
-func TestCoinToUSD(t *testing.T) {
-	e, err := CoinToUSD(EthUrl, "ETH", 18)
+func Test0x(t *testing.T) {
+	e, err := TokenToUSD(&TokenInfo{Symbol: "ETH", Decimals: 18, Address: common.Address{}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -14,7 +16,7 @@ func TestCoinToUSD(t *testing.T) {
 
 }
 func TestAmb(t *testing.T) {
-	a, err := AmbToUSD()
+	a, err := GetAmb()
 	if err != nil {
 		t.Fatal(err)
 	}

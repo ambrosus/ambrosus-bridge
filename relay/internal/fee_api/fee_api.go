@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
 	"github.com/rs/cors"
@@ -19,6 +20,7 @@ const (
 )
 
 type BridgeFeeApi interface {
+	networks.Bridge
 	Sign(message []byte) ([]byte, error)
 	TokenPrice(tokenAddress common.Address) (float64, error) // TokenPrice returns token`s price in USD
 	GetTransferFee() *big.Int

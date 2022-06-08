@@ -117,16 +117,6 @@ func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *b
 	return accounts.TextHash(crypto.Keccak256(data.Bytes()))
 }
 
-func (p *FeeAPI) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (float64, error) {
-	tokenPriceI, err, _ := p.cache.Memoize(tokenAddress.Hex(), func() (interface{}, error) {
-		return bridge.TokenPrice(tokenAddress)
-	})
-	if err != nil {
-		return 0, err
-	}
-	return tokenPriceI.(float64), nil
-}
-
 func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice float64) (*big.Int, error) {
 	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee", func() (interface{}, error) {
 		return bridge.GetTransferFee(), nil
