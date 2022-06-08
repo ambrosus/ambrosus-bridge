@@ -105,7 +105,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// calc how much gas used in this txs
-	gas, _, err := usedGas(p.sideBridge.GetClient(), unique(relayTxHashes))
+	gas, _, err := usedGas(p.sideBridge.GetClient(), helpers.Unique(relayTxHashes))
 	if err != nil {
 		return err
 	}
@@ -160,20 +160,6 @@ func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *b
 	}
 
 	return totalGasCost, totalGas, nil
-}
-
-func unique[T comparable](slice []T) []T {
-	mapSet := map[T]bool{}
-	for _, v := range slice {
-		mapSet[v] = true
-	}
-
-	var sliceSet []T
-	for v := range mapSet {
-		sliceSet = append(sliceSet, v)
-	}
-
-	return sliceSet
 }
 
 // -------------------- watcher --------------------------
