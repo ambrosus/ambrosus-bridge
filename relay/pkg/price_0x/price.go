@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	EthUrl = NetworkUrl("https://api.0x.org/swap/v1/price?sellToken=%s&buyToken=%s&sellAmount=%d")
-	BscUrl = NetworkUrl("https://bsc.api.0x.org/swap/v1/price?sellToken=%s&buyToken=%s&sellAmount=%d")
+	EthUrl = NetworkUrl("https://api.0x.org/swap/v1/price?sellToken=%s&buyToken=USDT&sellAmount=%d")
+	BscUrl = NetworkUrl("https://bsc.api.0x.org/swap/v1/price?sellToken=%s&buyToken=BUSD&sellAmount=%d")
 )
 
 type NetworkUrl string
@@ -21,42 +21,33 @@ type response struct {
 	Reason string `json:"reason"` // when error occurred
 }
 
-func CoinToUSDT(networkUrl NetworkUrl, symbol string, decimals uint8) (float64, error) {
-	r, err := doRequest(networkUrl, symbol, "USDT", decimals)
+// CoinToUSD return usd price for smallest token part (wei 1e-18 / satoshi 1e-9)
+func CoinToUSD(networkUrl NetworkUrl, symbol string, decimals uint8) (float64, error) {
+	amount := math.Pow10(int(decimals))
+	price, err := doRequest(networkUrl, symbol, uint(amount))
 	if err != nil {
 		return 0, err
 	}
-
-	return r.Price, nil
+	return price / amount, nil
 }
 
-func CoinToBUSD(networkUrl NetworkUrl, symbol string, decimals uint8) (float64, error) {
-	r, err := doRequest(networkUrl, symbol, "BUSD", decimals)
-	if err != nil {
-		return 0, err
-	}
-
-	return r.Price, nil
-}
-
-func doRequest(urlFormat NetworkUrl, sellToken, buyToken string, decimals uint8) (*response, error) {
-	amount := int(math.Pow10(int(decimals)))
-	url := fmt.Sprintf(string(urlFormat), sellToken, buyToken, amount)
+func doRequest(urlFormat NetworkUrl, sellToken string, amount uint) (float64, error) {
+	url := fmt.Sprintf(string(urlFormat), sellToken, amount)
 
 	resp, err := http.Get(url)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
 	defer resp.Body.Close()
 
 	var r response
 	if err := json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return nil, err
+		return 0, err
 	}
 
 	if r.Reason != "" {
-		return nil, errors.New(r.Reason)
+		return 0, errors.New(r.Reason)
 	}
 
-	return &r, nil
+	return r.Price, nil
 }
