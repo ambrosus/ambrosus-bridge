@@ -139,7 +139,7 @@ func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {
 	return nil
 }
 
-func (b *CommonBridge) GetFailureReason(tx *types.Transaction) error {
+func (b *CommonBridge) getFailureReason(tx *types.Transaction) error {
 	_, err := b.Client.CallContract(context.Background(), ethereum.CallMsg{
 		From:     b.Auth.From,
 		To:       tx.To(),

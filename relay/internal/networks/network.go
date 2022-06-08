@@ -41,9 +41,6 @@ type Bridge interface {
 
 	SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error
 
-	// GetTxErr returns error of the transaction
-	GetTxErr(params GetTxErrParams) error
-
 	EnsureContractUnpaused()
 }
 

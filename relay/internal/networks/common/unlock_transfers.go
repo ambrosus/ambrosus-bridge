@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 )
@@ -81,7 +80,7 @@ func (b *CommonBridge) unlockTransfers() error {
 	authNoSend := *b.Auth
 	authNoSend.NoSend = true
 	tx, err := b.Contract.UnlockTransfersBatch(&authNoSend)
-	if err = b.GetTxErr(networks.GetTxErrParams{Tx: tx, TxErr: err, MethodName: "unlockTransfersBatch"}); err != nil {
+	if err = b.getTxErr(err); err != nil {
 		return fmt.Errorf("NoSend: %w", err)
 	}
 
@@ -89,7 +88,7 @@ func (b *CommonBridge) unlockTransfers() error {
 	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multipler configurable
 	authCustomGas := *b.Auth
 	authCustomGas.GasLimit = customGas
-	return b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return b.ProcessTx("unlockTransfersBatch", func(opts *bind.TransactOpts) (*types.Transaction, error) {
 		return b.Contract.UnlockTransfersBatch(&authCustomGas)
-	}, networks.GetTxErrParams{MethodName: "unlockTransfersBatch"})
+	})
 }

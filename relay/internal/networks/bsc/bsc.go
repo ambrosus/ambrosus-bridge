@@ -10,7 +10,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const BridgeName = "binance"
@@ -64,17 +63,6 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64)
 	err = b.sideBridge.SubmitTransferPoSA(posaProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
-	}
-	return nil
-}
-
-func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
-	if params.TxErr != nil {
-		if params.TxErr.Error() == "execution reverted" {
-			dataErr := params.TxErr.(rpc.DataError)
-			return fmt.Errorf("contract runtime error: %s", dataErr.ErrorData())
-		}
-		return params.TxErr
 	}
 	return nil
 }

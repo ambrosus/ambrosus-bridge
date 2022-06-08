@@ -9,8 +9,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -98,20 +96,6 @@ func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64)
 	err = b.sideBridge.SubmitTransferAura(auraProof)
 	if err != nil {
 		return fmt.Errorf("SubmitTransferAura: %w", err)
-	}
-	return nil
-}
-
-func (b *Bridge) GetTxErr(params networks.GetTxErrParams) error {
-	if params.TxErr != nil {
-		// we've got here probably due to error at eth_estimateGas (e.g. revert(), require())
-		// openethereum doesn't give us a full error message at eth_estimateGas, so
-		// do eth_call method to get the full error message
-		err := b.Contract.Raw().Call(&bind.CallOpts{From: b.Auth.From}, nil, params.MethodName, params.TxParams...)
-		if err != nil {
-			return fmt.Errorf("getFailureReasonViaCall: %w", helpers.ParseError(err))
-		}
-		return params.TxErr
 	}
 	return nil
 }
