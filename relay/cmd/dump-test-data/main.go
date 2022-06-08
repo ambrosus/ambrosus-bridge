@@ -196,7 +196,7 @@ func encodePoABlock() error {
 		return err
 	}
 
-	header, err := bridge.Client.ParityHeaderByNumber(context.Background(), big.NewInt(int64(number)))
+	header, err := bridge.ParityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(number)))
 	if err != nil {
 		return err
 	}

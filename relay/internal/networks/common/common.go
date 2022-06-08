@@ -20,15 +20,15 @@ import (
 
 type CommonBridge struct {
 	networks.Bridge
-	Client     ethclients.ClientInterface
-	WsClient   ethclients.ClientInterface
-	Contract   *bindings.Bridge
-	WsContract *bindings.Bridge
-	Auth       *bind.TransactOpts
 	SideBridge networks.Bridge
-	Logger     zerolog.Logger
-	Name       string
-	Pk         *ecdsa.PrivateKey
+
+	Client, WsClient     ethclients.ClientInterface
+	Contract, WsContract *bindings.Bridge
+	Auth                 *bind.TransactOpts
+
+	Logger zerolog.Logger
+	Name   string
+	Pk     *ecdsa.PrivateKey
 
 	ContractCallLock *sync.Mutex
 }
