@@ -16,8 +16,6 @@ const BridgeName = "ambrosus"
 
 type Bridge struct {
 	nc.CommonBridge
-	Client     *parity.Client
-	WsClient   *parity.Client
 	VSContract *bindings.Vs
 	sideBridge networks.BridgeReceiveAura
 }
@@ -32,41 +30,38 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 
 	// ///////////////////
 
-	client, err := parity.Dial(cfg.HttpURL)
+	commonBridge.Client, err = parity.Dial(cfg.HttpURL)
 	if err != nil {
 		return nil, fmt.Errorf("dial http: %w", err)
 	}
 
-	// Creating a new ambrosus VS contract instance.
-	vsContract, err := bindings.NewVs(common.HexToAddress(cfg.VSContractAddr), client)
-	if err != nil {
-		return nil, fmt.Errorf("create vs contract: %w", err)
-	}
-
 	// Creating a new bridge contract instance.
-	commonBridge.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), client)
+	commonBridge.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.Client)
 	if err != nil {
 		return nil, fmt.Errorf("create contract http: %w", err)
 	}
 
 	// Create websocket instances if wsUrl provided
-	var wsClient *parity.Client
 	if cfg.WsURL != "" {
-		wsClient, err = parity.Dial(cfg.WsURL)
+		commonBridge.WsClient, err = parity.Dial(cfg.WsURL)
 		if err != nil {
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 
-		commonBridge.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), wsClient)
+		commonBridge.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.WsClient)
 		if err != nil {
 			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
 	}
 
+	// Creating a new ambrosus VS contract instance.
+	vsContract, err := bindings.NewVs(common.HexToAddress(cfg.VSContractAddr), commonBridge.Client)
+	if err != nil {
+		return nil, fmt.Errorf("create vs contract: %w", err)
+	}
+
 	b := &Bridge{
 		CommonBridge: commonBridge,
-		Client:       client,
-		WsClient:     wsClient,
 		VSContract:   vsContract,
 	}
 	b.CommonBridge.Bridge = b
