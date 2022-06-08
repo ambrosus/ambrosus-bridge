@@ -37,9 +37,6 @@ type CommonBridge struct {
 	Name       string
 	Pk         *ecdsa.PrivateKey
 
-	MinBridgeFee          *big.Float
-	DefaultTransferFeeWei *big.Int
-
 	ContractCallLock *sync.Mutex
 }
 
@@ -72,9 +69,9 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 
 	// create auth if privateKey provided
 	if cfg.PrivateKey != "" {
-		pk, err := parsePK(cfg.PrivateKey)
+		pk, err := helpers.ParsePK(cfg.PrivateKey)
 		if err != nil {
-			return b, fmt.Errorf("parse private key: %w", err)
+			return b, err
 		}
 		b.Pk = pk
 		chainId, err := b.Client.ChainID(context.Background())
@@ -93,10 +90,6 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	}
 
 	b.ContractCallLock = &sync.Mutex{}
-
-	b.MinBridgeFee = big.NewFloat(cfg.MinBridgeFee)
-	b.DefaultTransferFeeWei = big.NewInt(int64(cfg.DefaultTransferFee * 1e18))
-
 	return b, nil
 
 }

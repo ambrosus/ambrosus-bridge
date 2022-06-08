@@ -2,8 +2,6 @@ package common
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"time"
@@ -13,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/crypto"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -178,12 +175,4 @@ func (b *CommonBridge) shouldHavePk() {
 	if b.Auth == nil {
 		b.Logger.Fatal().Msg("Private key is required")
 	}
-}
-
-func parsePK(pk string) (*ecdsa.PrivateKey, error) {
-	b, err := hex.DecodeString(pk)
-	if err != nil {
-		return nil, err
-	}
-	return crypto.ToECDSA(b)
 }

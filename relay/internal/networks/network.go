@@ -29,6 +29,7 @@ type Bridge interface {
 	GetContract() *contracts.Bridge
 	GetWsContract() *contracts.Bridge
 	GetLogger() *zerolog.Logger
+	GetName() string
 
 	Run()
 	ValidityWatchdog()
@@ -64,26 +65,4 @@ type BridgeReceiveEthash interface {
 type BridgeReceivePoSA interface {
 	Bridge
 	SubmitTransferPoSA(proof *contracts.CheckPoSAPoSAProof) error
-}
-
-type TransferFeeCalc interface {
-	Bridge
-
-	GetOldestLockedEventId() (*big.Int, error)
-	GetTransferSubmitsByIds(eventIds []*big.Int) (submits []*contracts.BridgeTransferSubmit, err error)
-	GetTransferUnlocksByIds(eventIds []*big.Int) (unlocks []*contracts.BridgeTransferFinish, err error)
-}
-
-type BridgeFeeApi interface {
-	Bridge
-	GetName() string
-
-	Sign(digestHash []byte) ([]byte, error)
-
-	GetWrapperAddress() (common.Address, error)
-	TokenPrice(tokenAddress common.Address) (float64, error) // TokenPrice returns token`s price in USD
-
-	// GetMinBridgeFee returns the minimal bridge fee that can be used
-	GetMinBridgeFee() *big.Float
-	GetDefaultTransferFeeWei() *big.Int
 }

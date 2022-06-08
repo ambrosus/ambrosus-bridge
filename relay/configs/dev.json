@@ -34,7 +34,17 @@
         "enable": true,
         "ip": "",
         "port": "8080",
-        "endpoint": "/fees"
+        "endpoint": "/fees",
+        "amb": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 1
+        },
+        "side": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFee": 0.01
+        }
     },
     "prometheus": {
         "enable": true,

@@ -1,11 +1,13 @@
 package fee_api
 
 import (
+	"fmt"
 	"math/big"
+	"net/http"
 )
 
 // amountUsd / priceUsd
-func Usd2Coin(amountUsd *big.Float, priceUsd float64) *big.Int {
+func usd2Coin(amountUsd *big.Float, priceUsd float64) *big.Int {
 	resFloat := new(big.Float).Quo(
 		amountUsd,
 		big.NewFloat(priceUsd),
@@ -16,7 +18,7 @@ func Usd2Coin(amountUsd *big.Float, priceUsd float64) *big.Int {
 }
 
 // amountWei * priceUsd
-func Coin2Usd(amountWei *big.Int, priceUsd float64) *big.Float {
+func coin2Usd(amountWei *big.Int, priceUsd float64) *big.Float {
 	return new(big.Float).Mul(
 		new(big.Float).SetInt(amountWei),
 		big.NewFloat(priceUsd),
@@ -29,4 +31,11 @@ func calcBps(amount *big.Float, bps int64) *big.Float {
 		new(big.Float).Mul(amount, big.NewFloat(float64(bps))),
 		big.NewFloat(10_000),
 	)
+}
+
+func writeError(w http.ResponseWriter, code int, err error) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(code)
+	fmt.Fprintln(w, err.Error())
 }

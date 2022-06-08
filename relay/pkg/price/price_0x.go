@@ -1,4 +1,4 @@
-package price_0x
+package price
 
 import (
 	"encoding/json"
@@ -21,10 +21,10 @@ type response struct {
 	Reason string `json:"reason"` // when error occurred
 }
 
-// CoinToUSD return usd price for smallest token part (wei 1e-18 / satoshi 1e-9)
-func CoinToUSD(networkUrl NetworkUrl, symbol string, decimals uint8) (float64, error) {
-	amount := math.Pow10(int(decimals))
-	price, err := doRequest(networkUrl, symbol, uint(amount))
+// TokenToUSD return usd price for smallest token part (wei 1e-18 / satoshi 1e-9)
+func Get0x(token *TokenInfo) (float64, error) {
+	amount := math.Pow10(int(token.Decimals))
+	price, err := doRequest(EthUrl, token.Symbol, uint(amount))
 	if err != nil {
 		return 0, err
 	}

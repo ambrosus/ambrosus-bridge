@@ -1,4 +1,4 @@
-package price_amb
+package price
 
 import (
 	"encoding/json"
@@ -12,8 +12,8 @@ type ambResponse_ struct {
 	Price float64 `json:"total_price_usd"`
 }
 
-// Get return usd price for smallest token part (wei 1e-18)
-func Get() (float64, error) {
+// GetAmb return usd price for smallest token part (wei 1e-18)
+func GetAmb() (float64, error) {
 	resp, err := http.Get("https://token.ambrosus.io/price")
 	if err != nil {
 		return 0, err
