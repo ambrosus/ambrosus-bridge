@@ -8,7 +8,6 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
-	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/errgroup"
@@ -137,19 +136,6 @@ func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {
 		return fmt.Errorf("looks like the event has been removed")
 	}
 	return nil
-}
-
-func (b *CommonBridge) getFailureReason(tx *types.Transaction) error {
-	_, err := b.Client.CallContract(context.Background(), ethereum.CallMsg{
-		From:     b.Auth.From,
-		To:       tx.To(),
-		Gas:      tx.Gas(),
-		GasPrice: tx.GasPrice(),
-		Value:    tx.Value(),
-		Data:     tx.Data(),
-	}, nil)
-
-	return err
 }
 
 func (b *CommonBridge) GetLastProcessedBlockNum(currEventId *big.Int) (uint64, error) {
