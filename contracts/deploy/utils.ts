@@ -1,9 +1,10 @@
 import path from "path";
 import fs from "fs";
-import {EthereumProvider, HardhatRuntimeEnvironment} from "hardhat/types";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
 import vsAbi from "../abi/ValidatorSet.json";
+import {Block} from "@ethersproject/abstract-provider";
 
 
 interface Token {
@@ -20,12 +21,11 @@ interface Config {
   bridges: { [net: string]: { amb: string, side: string } };
 
   save(): void;
+
   getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }
+
   bridgesInNet(net: string): string[]
 }
-
-
-
 
 
 export function readConfig(network: any): Config {
@@ -40,9 +40,8 @@ export function readConfig(network: any): Config {
 }
 
 
-
 export function networkName(network: any): string {
-  const r = ['amb', 'eth'].find(t => network.tags[t]);
+  const r = ['amb', 'eth', 'bsc'].find(t => network.tags[t]);
   if (!r) throw "Network missing networkName tag";
   return r
 }
@@ -159,17 +158,29 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
   }
 }
 
+async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAbi: any): Promise<[string[], Block]> {
+  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi);
 
-
-export async function getAmbValidators(ambProvider: EthereumProvider): Promise<[string[], string, string]> {
-  const vsAddress = "0x0000000000000000000000000000000000000F00" // todo get from something?
-  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(ambProvider))
-
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi)
-  const block = await provider.getBlock('latest');  // todo block where Transfer event with eventId 0 emitted
-  const validators = await vsContract.connect(provider).getValidators({blockTag: block.number});
-  return [validators, vsAddress, block.hash];
+  const latestBlock = await provider.getBlock('latest');
+  const validators = await vsContract.connect(provider).getValidators({blockTag: "latest"});
+  return [validators, latestBlock];
 }
+
+export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
+  const vsAddress = "0x0000000000000000000000000000000000001000";
+  const [validators, latestBlock] = await getValidatorsAndLatestBlock(bscNetwork, vsAddress, vsAbi);
+  const epoch = Math.floor(latestBlock.number / 200);
+
+  return [epoch, validators];
+}
+
+export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
+  const vsAddress = "0x0000000000000000000000000000000000000F00";
+  const [validators, latestBlock] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
+  return [validators, vsAddress, latestBlock.hash]
+}
+
 
 // :(((
 export function urlFromHHProvider(provider: any): string {
