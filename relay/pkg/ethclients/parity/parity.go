@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/big"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -35,6 +36,17 @@ func NewClient(c *rpc.Client) (client *Client) {
 }
 
 // Blockchain Access
+
+// EstimateGas override coz openethereum doesn't give us a full error message at eth_estimateGas,
+// so do eth_call method to get the full error message
+func (ec *Client) EstimateGas(ctx context.Context, call ethereum.CallMsg) (uint64, error) {
+	gas, err := ec.Client.EstimateGas(ctx, call)
+	if err == nil {
+		return gas, nil
+	}
+	_, err = ec.Client.CallContract(ctx, call, nil)
+	return 0, helpers.ParseError(err)
+}
 
 // PendingNonceAt returns the account nonce of the given account in the pending state.
 // This is the nonce that should be used for the next transaction.

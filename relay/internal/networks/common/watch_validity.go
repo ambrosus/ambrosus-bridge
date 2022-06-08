@@ -127,9 +127,9 @@ this network locked transfers: %s \n
 side network transfer event: %s \n
 Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
-	if err := b.ProcessTx(func(opts *bind.TransactOpts) (*types.Transaction, error) {
+	if err := b.ProcessTx("pause", func(opts *bind.TransactOpts) (*types.Transaction, error) {
 		return b.Contract.Pause(b.Auth)
-	}, networks.GetTxErrParams{MethodName: "pause"}); err != nil {
+	}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
 

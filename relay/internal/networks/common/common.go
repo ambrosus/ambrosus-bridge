@@ -3,27 +3,20 @@ package common
 import (
 	"context"
 	"crypto/ecdsa"
-	"errors"
 	"fmt"
 	"math/big"
 	"sync"
-	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/rs/zerolog"
 )
-
-// ContractCallFn is a callback type for calling paid contract's method.
-type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
 
 type CommonBridge struct {
 	networks.Bridge
@@ -134,99 +127,6 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 		return 0, err
 	}
 	return safetyBlocks.Uint64(), nil
-}
-
-func (b *CommonBridge) ProcessTx(txCallback ContractCallFn, params networks.GetTxErrParams) error {
-	// if the transaction get stuck, then retry it with the higher gas price
-	var txOpts = b.Auth
-	var receipt *types.Receipt
-	err := retry.Do(
-		func() (err error) {
-			b.ContractCallLock.Lock()
-			params.Tx, params.TxErr = txCallback(txOpts)
-			if err := b.Bridge.GetTxErr(params); err != nil {
-				b.ContractCallLock.Unlock()
-				return err
-			}
-			b.ContractCallLock.Unlock()
-
-			b.IncTxCountMetric(params.MethodName)
-
-			b.Logger.Info().
-				Str("method", params.MethodName).
-				Str("tx_hash", params.Tx.Hash().Hex()).
-				Interface("full_tx", params.Tx).
-				Interface("tx_params", params.TxParams).
-				Msgf("Wait the tx to be mined...")
-
-			receipt, err = b.waitMined(params)
-			if err != nil {
-				return fmt.Errorf("wait mined: %w", err)
-			}
-			return nil
-		},
-
-		retry.RetryIf(func(err error) bool {
-			return errors.Is(err, context.DeadlineExceeded)
-		}),
-		retry.OnRetry(func(n uint, err error) {
-			b.Logger.Warn().
-				Str("method", params.MethodName).
-				Str("tx_hash", params.Tx.Hash().Hex()).
-				Msgf("Seems the transaction get stuck, making new tx with higher gas price and the same nonce to replace the old one... (%d/%d)", n+1, 2)
-
-			// set gas price higher by 30%
-			txOpts.GasPrice, _ = new(big.Float).Mul(
-				new(big.Float).SetInt(params.Tx.GasPrice()),
-				big.NewFloat(1.30),
-			).Int(nil)
-			txOpts.Nonce = big.NewInt(int64(params.Tx.Nonce()))
-		}),
-		retry.Attempts(2),
-		retry.LastErrorOnly(true),
-	)
-	if err != nil {
-		return err
-	}
-
-	b.SetUsedGasMetric(params.MethodName, receipt.GasUsed, params.Tx.GasPrice())
-
-	if receipt.Status != types.ReceiptStatusSuccessful {
-		b.IncFailedTxCountMetric(params.MethodName)
-		err = b.GetFailureReason(params.Tx)
-		if err != nil {
-			return fmt.Errorf("tx %s failed: %w", params.Tx.Hash().Hex(), helpers.ParseError(err))
-		}
-		b.Logger.Debug().Err(err).Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined but failed :(")
-	}
-	b.Logger.Debug().Str("tx_hash", params.Tx.Hash().Hex()).Msg("Tx has been mined successfully!")
-
-	return nil
-}
-
-func (b *CommonBridge) waitMined(params networks.GetTxErrParams) (receipt *types.Receipt, err error) {
-	err = retry.Do(
-		func() (err error) {
-			ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
-			defer cancel()
-
-			receipt, err = bind.WaitMined(ctx, b.Client, params.Tx)
-			return err
-		},
-
-		retry.RetryIf(func(err error) bool {
-			return errors.Is(err, context.DeadlineExceeded)
-		}),
-		retry.OnRetry(func(n uint, err error) {
-			b.Logger.Warn().
-				Str("method", params.MethodName).
-				Str("tx_hash", params.Tx.Hash().Hex()).
-				Msgf("Timeout waiting for tx to be mined, trying again... (%d/%d)", n+1, 2)
-		}),
-		retry.Attempts(2),
-		retry.LastErrorOnly(true),
-	)
-	return
 }
 
 func (b *CommonBridge) GetName() string {
