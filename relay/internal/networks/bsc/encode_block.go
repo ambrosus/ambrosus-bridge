@@ -3,13 +3,13 @@ package bsc
 import (
 	"fmt"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func (b *Bridge) EncodeBlock(header *types.Header) (*contracts.CheckPoSABlockPoSA, error) {
+func (b *Bridge) EncodeBlock(header *types.Header) (*bindings.CheckPoSABlockPoSA, error) {
 	signedHeader, err := rlp.EncodeToBytes(header)
 	if err != nil {
 		return nil, fmt.Errorf("encode signed header: %w", err)
@@ -35,7 +35,7 @@ func (b *Bridge) EncodeBlock(header *types.Header) (*contracts.CheckPoSABlockPoS
 		return nil, fmt.Errorf("split rlp header: %w", err)
 	}
 
-	return &contracts.CheckPoSABlockPoSA{
+	return &bindings.CheckPoSABlockPoSA{
 		P0Signed:   helpers.BytesToBytes3(p0Signed),
 		P0Unsigned: helpers.BytesToBytes3(p0Unsigned),
 

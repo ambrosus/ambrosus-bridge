@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 )
 
-func (b *Bridge) encodePoWProof(transferEvent *contracts.BridgeTransfer, safetyBlocks uint64) (*contracts.CheckPoWPoWProof, error) {
-	blocks := make([]contracts.CheckPoWBlockPoW, 0, safetyBlocks+1)
+func (b *Bridge) encodePoWProof(transferEvent *bindings.BridgeTransfer, safetyBlocks uint64) (*bindings.CheckPoWPoWProof, error) {
+	blocks := make([]bindings.CheckPoWBlockPoW, 0, safetyBlocks+1)
 
 	transfer, err := b.encodeTransferEvent(transferEvent)
 	if err != nil {
@@ -32,19 +32,19 @@ func (b *Bridge) encodePoWProof(transferEvent *contracts.BridgeTransfer, safetyB
 		blocks = append(blocks, *encodedBlock)
 	}
 
-	return &contracts.CheckPoWPoWProof{
+	return &bindings.CheckPoWPoWProof{
 		Blocks:   blocks,
 		Transfer: *transfer,
 	}, nil
 }
 
-func (b *Bridge) encodeTransferEvent(event *contracts.BridgeTransfer) (*contracts.CommonStructsTransferProof, error) {
+func (b *Bridge) encodeTransferEvent(event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
 	proof, err := b.GetProof(event)
 	if err != nil {
 		return nil, fmt.Errorf("GetProof: %w", err)
 	}
 
-	return &contracts.CommonStructsTransferProof{
+	return &bindings.CommonStructsTransferProof{
 		ReceiptProof: proof,
 		EventId:      event.EventId,
 		Transfers:    event.Queue,

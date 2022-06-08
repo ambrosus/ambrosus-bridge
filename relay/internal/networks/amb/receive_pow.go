@@ -3,13 +3,13 @@ package amb
 import (
 	"math/big"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (b *Bridge) SubmitTransferPoW(proof *contracts.CheckPoWPoWProof) error {
+func (b *Bridge) SubmitTransferPoW(proof *bindings.CheckPoWPoWProof) error {
 	defer b.SetRelayBalanceMetric()
 
 	return b.ProcessTx("submitTransferPoW", func(opts *bind.TransactOpts) (*types.Transaction, error) {

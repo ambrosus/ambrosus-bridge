@@ -3,7 +3,7 @@ package fee_api
 import (
 	"fmt"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -23,7 +23,7 @@ func tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (float64, erro
 		tokenAddress = bridge.GetWrapperAddress()
 	}
 
-	tokenContract, err := contracts.NewToken(tokenAddress, bridge.GetClient())
+	tokenContract, err := bindings.NewToken(tokenAddress, bridge.GetClient())
 	if err != nil {
 		return 0, fmt.Errorf("get token contract: %w", err)
 	}

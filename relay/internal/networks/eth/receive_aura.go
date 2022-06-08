@@ -1,13 +1,13 @@
 package eth
 
 import (
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (b *Bridge) SubmitTransferAura(proof *contracts.CheckAuraAuraProof) error {
+func (b *Bridge) SubmitTransferAura(proof *bindings.CheckAuraAuraProof) error {
 	// Metric
 	defer b.SetRelayBalanceMetric()
 

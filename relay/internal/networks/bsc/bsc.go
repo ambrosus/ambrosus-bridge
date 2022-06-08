@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
@@ -53,7 +53,7 @@ func (b *Bridge) Run() {
 	b.SubmitTransfersLoop()
 }
 
-func (b *Bridge) SendEvent(event *contracts.BridgeTransfer, safetyBlocks uint64) error {
+func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	posaProof, err := b.encodePoSAProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodePoSAProof: %w", err)

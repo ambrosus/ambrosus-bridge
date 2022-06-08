@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -37,7 +37,7 @@ func (b *CommonBridge) waitForUnpauseContract() error {
 		return nil
 	}
 
-	eventCh := make(chan *contracts.BridgeUnpaused)
+	eventCh := make(chan *bindings.BridgeUnpaused)
 	eventSub, err := b.WsContract.WatchUnpaused(nil, eventCh)
 	if err != nil {
 		return fmt.Errorf("WatchUnpaused: %w", err)
@@ -125,7 +125,7 @@ func (b *CommonBridge) GetProof(event receipts_proof.ProofEvent) ([][]byte, erro
 	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
-func (b *CommonBridge) IsEventRemoved(event *contracts.BridgeTransfer) error {
+func (b *CommonBridge) IsEventRemoved(event *bindings.BridgeTransfer) error {
 	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
 
 	newEvent, err := b.GetEventById(event.EventId)

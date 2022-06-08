@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
-	c "github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"

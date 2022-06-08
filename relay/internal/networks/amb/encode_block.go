@@ -3,12 +3,12 @@ package amb
 import (
 	"fmt"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 )
 
-func EncodeBlock(header *parity.Header) (*contracts.CheckAuraBlockAura, error) {
+func EncodeBlock(header *parity.Header) (*bindings.CheckAuraBlockAura, error) {
 	// split rlp encoded header (bytes) by
 	// - receiptHash, parentHash
 	// - Step, Signature (for AURA)
@@ -38,7 +38,7 @@ func EncodeBlock(header *parity.Header) (*contracts.CheckAuraBlockAura, error) {
 		return nil, fmt.Errorf("split rlp header: %w", err)
 	}
 
-	return &contracts.CheckAuraBlockAura{
+	return &bindings.CheckAuraBlockAura{
 		P0Bare: helpers.BytesToBytes3(p0Bare),
 		P0Seal: helpers.BytesToBytes3(p0Seal),
 

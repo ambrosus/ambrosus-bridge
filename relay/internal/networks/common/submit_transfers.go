@@ -6,7 +6,7 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/contracts"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 )
 
@@ -54,7 +54,7 @@ func (b *CommonBridge) watchTransfers() error {
 	b.Logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
-	eventCh := make(chan *contracts.BridgeTransfer)
+	eventCh := make(chan *bindings.BridgeTransfer)
 	eventSub, err := b.WsContract.WatchTransfer(nil, eventCh, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransfer: %w", err)
@@ -78,7 +78,7 @@ func (b *CommonBridge) watchTransfers() error {
 	}
 }
 
-func (b *CommonBridge) processEvent(event *contracts.BridgeTransfer) error {
+func (b *CommonBridge) processEvent(event *bindings.BridgeTransfer) error {
 	safetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)

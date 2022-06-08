@@ -1,4 +1,4 @@
-package contracts
+package bindings
 
 import (
 	"encoding/json"
