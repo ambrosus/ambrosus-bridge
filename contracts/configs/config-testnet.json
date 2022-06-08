@@ -35,6 +35,19 @@
         "bsc": ""
       },
       "nativeAnalog": "ETH"
+    },
+    "WBNB": {
+      "name": "Wrapped BNB",
+      "symbol": "WBNB",
+      "denomination": 18,
+      "logo": "https://bscscan.com/token/images/binance_32.png",
+      "primaryNet": "bsc",
+      "addresses": {
+        "amb": "",
+        "eth": "",
+        "bsc": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+      },
+      "nativeAnalog": "BNB"
     }
   }
 }

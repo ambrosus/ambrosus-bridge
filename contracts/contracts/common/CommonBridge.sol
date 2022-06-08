@@ -70,6 +70,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         outputEventId = 1;
 
         signatureFeeCheckNumber = 3;
+
+        lastTimeframe = block.timestamp / timeframeSeconds;
     }
 
     function wrapWithdraw(address toAddress, bytes calldata signature, uint transferFee, uint bridgeFee) public payable {
@@ -78,11 +80,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(msg.value > transferFee + bridgeFee, "Sent value <= fee");
 
-        feeCheck(wrapperAddress, signature, transferFee, bridgeFee);
+        uint amount = msg.value - transferFee - bridgeFee;
+        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, amount);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
-        uint amount = msg.value - transferFee - bridgeFee;
         IWrapper(wrapperAddress).deposit{value : amount}();
 
         //
@@ -114,7 +116,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(amount > 0, "Cannot withdraw 0");
 
-        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee);
+        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee, amount);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
@@ -131,7 +133,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         address token,
         bytes calldata signature,
         uint transferFee,
-        uint bridgeFee
+        uint bridgeFee,
+        uint amount
     ) internal {
         bytes32 messageHash;
         address signer;
@@ -144,7 +147,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
                         token,
                         timestampEpoch,
                         transferFee,
-                        bridgeFee
+                        bridgeFee,
+                        amount
                     ))
                 ));
 
@@ -264,6 +268,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     function changeTimeframeSeconds(uint timeframeSeconds_) public onlyRole(ADMIN_ROLE) {
+        lastTimeframe = (lastTimeframe * timeframeSeconds) / timeframeSeconds_;
         timeframeSeconds = timeframeSeconds_;
     }
 

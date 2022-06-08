@@ -5,8 +5,6 @@ import {readConfig} from "./utils";
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && !hre.network.tags["amb"]) return;
 
-  const {owner} = await hre.getNamedAccounts();
-
   let configFile = readConfig(hre.network);
 
   const samb = configFile.tokens.SAMB;
@@ -14,6 +12,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("sAMB already deployed");
     return;
   }
+
+  const {owner} = await hre.getNamedAccounts();
 
   const deployResult = await hre.deployments.deploy(samb.symbol, {
     contract: "sAMB",

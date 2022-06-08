@@ -41,9 +41,6 @@ type CommonBridge struct {
 	DefaultTransferFeeWei *big.Int
 
 	ContractCallLock *sync.Mutex
-
-	GasPerWithdrawLock *sync.Mutex
-	PriceTrackerData   PriceTrackerData
 }
 
 func New(cfg config.Network, name string) (b CommonBridge, err error) {
@@ -96,7 +93,6 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 	}
 
 	b.ContractCallLock = &sync.Mutex{}
-	b.GasPerWithdrawLock = &sync.Mutex{}
 
 	b.MinBridgeFee = big.NewFloat(cfg.MinBridgeFee)
 	b.DefaultTransferFeeWei = big.NewInt(int64(cfg.DefaultTransferFee * 1e18))
@@ -122,6 +118,21 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*contracts.BridgeTransfer
 		}
 	}
 	return nil, networks.ErrEventNotFound
+}
+
+// GetEventsByIds gets contract events by ids.
+func (b *CommonBridge) GetEventsByIds(eventIds []*big.Int) (transfers []*contracts.BridgeTransfer, err error) {
+	logTransfer, err := b.Contract.FilterTransfer(nil, eventIds)
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer: %w", err)
+	}
+
+	for logTransfer.Next() {
+		if !logTransfer.Event.Raw.Removed {
+			transfers = append(transfers, logTransfer.Event)
+		}
+	}
+	return transfers, nil
 }
 
 func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
@@ -223,4 +234,24 @@ func (b *CommonBridge) waitMined(params networks.GetTxErrParams) (receipt *types
 		retry.LastErrorOnly(true),
 	)
 	return
+}
+
+func (b *CommonBridge) GetName() string {
+	return b.Name
+}
+
+func (b *CommonBridge) GetClient() ethclients.ClientInterface {
+	return b.Client
+}
+
+func (b *CommonBridge) GetContract() *contracts.Bridge {
+	return b.Contract
+}
+
+func (b *CommonBridge) GetWsContract() *contracts.Bridge {
+	return b.WsContract
+}
+
+func (b *CommonBridge) GetLogger() *zerolog.Logger {
+	return &b.Logger
 }

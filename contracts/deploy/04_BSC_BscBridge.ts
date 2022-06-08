@@ -13,13 +13,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const tokenPairs = configFile.getTokenPairs("bsc", "amb")
 
   const ambNet = hre.companionNetworks['amb']
-  const {address: sideBridgeAddress} = await ambNet.deployments.get('BSC_AmbBridge');
+  const ambBridge = await ambNet.deployments.get('BSC_AmbBridge');
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
     contract: BRIDGE_NAME,
     ...await options(hre, tokenPairs,
       {
-        sideBridgeAddress: sideBridgeAddress,
+        sideBridgeAddress: ambBridge.address,
         wrappingTokenAddress: configFile.tokens.WBNB?.addresses.eth || ethers.constants.AddressZero,
         transferFeeRecipient: ethers.constants.AddressZero,
         bridgeFeeRecipient: ethers.constants.AddressZero,
@@ -27,12 +27,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: isMainNet ? 10 : 2,
       },
-      await getAmbValidators(ambNet.provider),
+      await getAmbValidators(ambNet),
     )
   });
 
 
-  configFile.bridges.eth.side = deployResult.address;
+  configFile.bridges.bsc.side = deployResult.address;
   configFile.save()
 
   if (deployResult.newlyDeployed) {
@@ -46,4 +46,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
 export default func;
-func.tags = ["bridges_bnb"];
+func.tags = ["bridges_bsc"];
