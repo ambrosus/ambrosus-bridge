@@ -143,7 +143,7 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 		Context: context.Background(),
 	}
 
-	logs, err := b.VSContract.FilterInitiateChange(opts, nil)
+	logs, err := b.vSContract.FilterInitiateChange(opts, nil)
 	if err != nil {
 		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
@@ -212,7 +212,7 @@ func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) e
 		return nil
 	}
 
-	block, err := b.Client.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
+	block, err := b.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
