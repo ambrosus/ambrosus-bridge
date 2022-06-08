@@ -1,15 +1,14 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
-import {addNewTokensToBridge, networkType, options, readConfig, setSideBridgeAddress} from "./utils";
+import {addNewTokensToBridge, options, parseNet, readConfig_, setSideBridgeAddress} from "./utils/utils";
 
 const BRIDGE_NAME = "ETH_AmbBridge";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  if (hre.network.live && !hre.network.tags["amb"]) return;
-  const isMainNet = networkType(hre.network) === 'mainnet'
+  const isMainNet = parseNet(hre.network).stage === 'main'
 
-  let configFile = readConfig(hre.network);
+  let configFile = readConfig_(hre.network);
   const tokenPairs = configFile.getTokenPairs("amb", "eth")
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
@@ -48,3 +47,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ["bridges_eth"];
+func.skip = async (hre: HardhatRuntimeEnvironment) => !hre.network.tags["amb"]; // only amb

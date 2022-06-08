@@ -1,86 +1,22 @@
-import path from "path";
-import fs from "fs";
-import {HardhatRuntimeEnvironment} from "hardhat/types";
+
+import {HardhatRuntimeEnvironment, Network} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
-import vsAbi from "../abi/ValidatorSet.json";
+import vsAbi from "../../abi/ValidatorSet.json";
 import {Block} from "@ethersproject/abstract-provider";
+import {Config, readConfig} from "./config";
 
 
-interface Token {
-  name: string;
-  symbol: string;
-  denomination: number;
-  addresses: { [net: string]: string }
-  primaryNet: string;
-  nativeAnalog: string | null;
+export function readConfig_(network: Network): Config {
+  return readConfig(parseNet(network).stage);
 }
 
-interface Config {
-  tokens: { [symb: string]: Token };
-  bridges: { [net: string]: { amb: string, side: string } };
-
-  save(): void;
-
-  getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }
-
-  bridgesInNet(net: string): string[]
+export function parseNet(network: Network): { stage: string; name: string } {
+  if (network.name == "hardhat")
+    throw "Hardhat network not supported"
+  const [stage, name] = network.name.split('/')
+  return {stage, name};
 }
-
-
-export function readConfig(network: any): Config {
-  const tokenPath = path.resolve(__dirname, `../configs/config-${networkType(network)}.json`)
-  const config = require(tokenPath);
-
-  config.save = () => fs.writeFileSync(tokenPath, JSON.stringify(config, null, 2));
-  config.getTokenPairs = (thisNet: string, sideNet: string) => getTokenPairs(thisNet, sideNet, config)
-  config.bridgesInNet = (net: string) => bridgesInNet(net, config)
-
-  return config;
-}
-
-
-export function networkName(network: any): string {
-  const r = ['amb', 'eth', 'bsc'].find(t => network.tags[t]);
-  if (!r) throw "Network missing networkName tag";
-  return r
-}
-
-export function networkType(network: any): string {
-  const r = ['devnet', 'testnet', 'mainnet', 'integr'].find(t => network.tags[t]);
-  if (!r) throw "Network missing networkType tag";
-  return r
-}
-
-
-function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
-  const tokenPair: { [k: string]: string } = {};
-
-  for (const token of Object.values(configFile.tokens)) {
-
-    if (token.addresses[thisNet] && token.addresses[sideNet])
-      tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
-
-    if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
-      tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];
-
-  }
-
-  return tokenPair;
-}
-
-
-// get all deployed bridges in `net` network;
-// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
-// for other networks is array of one address
-function bridgesInNet(net: string, configFile: Config): string[] {
-  const bridges = (net == "amb") ?
-    Object.values(configFile.bridges).map(i => i.amb) :
-    [configFile.bridges[net].side];
-  return bridges.filter(i => !!i);  // filter out empty strings
-}
-
-
 
 
 export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },

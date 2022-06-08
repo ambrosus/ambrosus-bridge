@@ -1,11 +1,9 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {readConfig} from "./utils";
+import {readConfig_} from "./utils/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  if (hre.network.live && !hre.network.tags["amb"]) return;
-
-  let configFile = readConfig(hre.network);
+  let configFile = readConfig_(hre.network);
 
   const samb = configFile.tokens.SAMB;
   if (!!samb.addresses.amb) {
@@ -29,3 +27,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ["wAMB", "tokens"];
+func.skip = async (hre: HardhatRuntimeEnvironment) => !hre.network.tags["amb"]; // only amb

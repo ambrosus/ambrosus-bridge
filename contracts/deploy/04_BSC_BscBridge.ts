@@ -1,15 +1,14 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "ethers";
-import {addNewTokensToBridge, getAmbValidators, networkType, options, readConfig} from "./utils";
+import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "./utils/utils";
 
 const BRIDGE_NAME = "BSC_BscBridge";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  if (hre.network.live && !hre.network.tags["bsc"]) return;
-  const isMainNet = networkType(hre.network) === 'mainnet'
+  const isMainNet = parseNet(hre.network).stage === 'main'
 
-  let configFile = readConfig(hre.network);
+  let configFile = readConfig_(hre.network);
   const tokenPairs = configFile.getTokenPairs("bsc", "amb")
 
   const ambNet = hre.companionNetworks['amb']
@@ -47,3 +46,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ["bridges_bsc"];
+func.skip = async (hre: HardhatRuntimeEnvironment) => !hre.network.tags["bsc"]; // only bsc
