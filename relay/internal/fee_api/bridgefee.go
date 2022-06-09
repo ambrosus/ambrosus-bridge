@@ -1,11 +1,9 @@
 package fee_api
 
 import (
-	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 var percentFromAmount = map[uint64]int64{
@@ -13,13 +11,7 @@ var percentFromAmount = map[uint64]int64{
 	100_000: 2 * 100, // 100_000...$ => 2%
 }
 
-func (p *FeeAPI) getBridgeFee(bridge BridgeFeeApi, nativeUsdPrice float64, tokenAddress common.Address, amount *big.Int) (*big.Int, error) {
-	// get token price
-	tokenUsdPrice, err := p.getTokenPrice(bridge, tokenAddress)
-	if err != nil {
-		return nil, fmt.Errorf("get token price: %w", err)
-	}
-
+func (p *FeeAPI) getBridgeFee(bridge BridgeFeeApi, nativeUsdPrice, tokenUsdPrice float64, amount *big.Int) (*big.Int, error) {
 	// get fee in usd
 	amountUsd := coin2Usd(amount, tokenUsdPrice)
 	feeUsd := calcBps(amountUsd, getFeePercent(amountUsd))

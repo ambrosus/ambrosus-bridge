@@ -195,6 +195,7 @@ hash(abi.encodePacked(
 #### Response params:
 - `bridgeFee` - string, bridge fee in hex
 - `transferFee` - string, transfer fee in hex
+- `amount` - string, used amount in calculation fees (useful when param `isAmountWithFees` has used)
 - `signature` - string, signature of the data
 
 #### Examples:
@@ -217,6 +218,7 @@ Request body:
   {
     "bridgeFee": "0xbc4b381d188000",
     "transferFee": "0xe8d4a51000",
+    "amount": "0xDE0B6B3A7640000",
     "signature": "0x6105ca999d43b1f1182d4955f5706e8bf27097b8cb80da35c04016238e2adff91e38f275d640911a46b208d0bb7239d83d5e427b7b93b0cd7390034d724bdb0500"
   }
   ```
