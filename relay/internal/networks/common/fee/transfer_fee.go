@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	eventsForGasCalc = 5
+	eventsForGasCalc = 20
 )
 
 type transferFeeTracker struct {
