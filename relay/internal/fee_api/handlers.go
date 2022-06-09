@@ -25,6 +25,7 @@ type reqParams struct {
 type result struct {
 	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
 	TransferFee *hexutil.Big  `json:"transferFee"`
+	Amount      *hexutil.Big  `json:"amount"`
 	Signature   hexutil.Bytes `json:"signature"`
 }
 
@@ -67,28 +68,32 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error when getting side bridge coin price: %w", err)
 	}
-
-	// get fees
-	bridgeFee, err := p.getBridgeFee(bridge, thisCoinPrice, req.TokenAddress, (*big.Int)(req.Amount))
+	// get token price
+	tokenUsdPrice, err := p.getTokenPrice(bridge, req.TokenAddress)
 	if err != nil {
-		return nil, fmt.Errorf("error when getting bridge fee: %w", err)
+		return nil, fmt.Errorf("get token price: %w", err)
 	}
+
+	// get transfer fee
 	transferFee, err := p.getTransferFee(bridge, thisCoinPrice, sideCoinPrice)
 	if err != nil {
 		return nil, fmt.Errorf("error when getting transfer fee: %w", err)
 	}
 
-	amount := (*big.Int)(req.Amount)
-	// if amount contains fees, then we need to remove them (when transfer *max* native coins)
+	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
+	amount := new(big.Int).Set((*big.Int)(req.Amount))
 	if req.IsAmountWithFees {
-		amount.Sub(amount, new(big.Int).Add(bridgeFee, transferFee))
-		if amount.Cmp(big.NewInt(0)) <= 0 {
-			return nil, fmt.Errorf("amount is too small")
-		}
+		possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice)
+	}
+
+	// get bridge fee
+	bridgeFee, err := p.getBridgeFee(bridge, thisCoinPrice, tokenUsdPrice, amount)
+	if err != nil {
+		return nil, fmt.Errorf("error when getting bridge fee: %w", err)
 	}
 
 	// sign the price with private key
-	message := buildMessage(req.TokenAddress, transferFee, bridgeFee, (*big.Int)(req.Amount))
+	message := buildMessage(req.TokenAddress, transferFee, bridgeFee, amount)
 	signature, err := bridge.Sign(message)
 	if err != nil {
 		err = fmt.Errorf("error when signing data: %w", err)
@@ -97,8 +102,22 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	return &result{
 		BridgeFee:   (*hexutil.Big)(bridgeFee),
 		TransferFee: (*hexutil.Big)(transferFee),
+		Amount:      (*hexutil.Big)(amount),
 		Signature:   signature,
 	}, err
+}
+
+func possibleAmountWithoutFees(amount *big.Int, tokenUsdPrice float64, transferFee *big.Int, thisCoinPrice float64) {
+	amountUsd := coin2Usd(amount, tokenUsdPrice)
+	feePercent := getFeePercent(amountUsd)
+
+	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
+
+	// (amountUsd - transferFeeUsd) / %
+	amountUsd = new(big.Float).Set(amountUsd).Sub(amountUsd, transferFeeUsd)
+	amountUsd.Quo(amountUsd, big.NewFloat(float64(feePercent+10_000)/10_000))
+
+	amount.Set(usd2Coin(amountUsd, tokenUsdPrice))
 }
 
 func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *big.Int) []byte {
