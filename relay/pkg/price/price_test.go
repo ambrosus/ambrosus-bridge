@@ -12,9 +12,17 @@ func Test0x(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Println("Eth to USDT: ", e)
-
+	fmt.Println("Eth to USD: ", e)
 }
+
+func Test0xBNB(t *testing.T) {
+	e, err := TokenToUSD(&TokenInfo{Symbol: "WBNB", Decimals: 18, Address: common.Address{}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("WBNB to USD: ", e)
+}
+
 func TestAmb(t *testing.T) {
 	a, err := GetAmb()
 	if err != nil {
