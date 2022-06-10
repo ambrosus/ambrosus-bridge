@@ -93,12 +93,13 @@ func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epo
 }
 
 func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint64) ([]uint64, error) {
-	start, err := b.GetLastProcessedBlockNum(event.EventId)
+	lastProcessedBlockNum, err := b.sideBridge.GetLastProcessedBlockNum()
 	if err != nil {
-		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
+		return nil, fmt.Errorf("GetLastProcessedBlockNum: %w", err)
 	}
-	start = uint64(math.Ceil(float64(start)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
-	end := event.Raw.BlockNumber + safetyBlocks - 1                     // no need to change epoch for last block (it will be changed in next event processing)
+
+	start := uint64(math.Ceil(float64(lastProcessedBlockNum.Uint64()+1)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
+	end := event.Raw.BlockNumber + safetyBlocks - 1                                                 // no need to change epoch for last block (it will be changed in next event processing)
 
 	var epochChanges []uint64
 	for blockNum := start; blockNum < end; blockNum += epochLength {

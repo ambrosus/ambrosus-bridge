@@ -14,8 +14,8 @@ contract CheckPoSA is Initializable {
     uint256 private constant EPOCH_LENGTH = 200;
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
 
-    mapping(uint => mapping(address => bool)) private allValidators;
-    uint currentValidatorSet;
+    mapping(uint => mapping(address => bool)) internal allValidators;
+    uint public currentEpoch;
     uint currentValidatorSetSize;
 
     bytes1 chainId;
@@ -54,11 +54,11 @@ contract CheckPoSA is Initializable {
         require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
 
         chainId = _chainId;
-        currentValidatorSet = _initialEpoch;
+        currentEpoch = _initialEpoch;
         currentValidatorSetSize = _initialValidators.length;
 
         for (uint i = 0; i < _initialValidators.length; i++) {
-            allValidators[currentValidatorSet][_initialValidators[i]] = true;
+            allValidators[currentEpoch][_initialValidators[i]] = true;
         }
     }
 
@@ -81,13 +81,13 @@ contract CheckPoSA is Initializable {
             uint blockNumber = bytesToUint(block_.number);
 
             if (blockNumber % EPOCH_LENGTH == 0) {
-                require(blockNumber / EPOCH_LENGTH == currentValidatorSet + 1, "invalid epoch");
+                require(blockNumber / EPOCH_LENGTH == currentEpoch + 1, "invalid epoch");
 
                 nextVsSize = newValidatorSet(block_.extraData);
                 finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
             }
             else if (blockNumber == finalizeVsBlock) {
-                currentValidatorSet++;
+                currentEpoch++;
                 currentValidatorSetSize = nextVsSize;
             }
 
@@ -118,7 +118,7 @@ contract CheckPoSA is Initializable {
     }
 
     function newValidatorSet(bytes calldata extraData) private returns(uint) {
-        uint nextValidatorSet = currentValidatorSet + 1;
+        uint nextValidatorSet = currentEpoch + 1;
         uint endPos = extraData.length - EXTRA_SEAL_LENGTH;
 
         uint nextValidatorSetSize;
@@ -133,7 +133,7 @@ contract CheckPoSA is Initializable {
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
         address signer = ecdsaRecover(hash, signature);
-        return allValidators[currentValidatorSet][signer];
+        return allValidators[currentEpoch][signer];
     }
 
     function bytesToUint(bytes memory b) private pure returns (uint){
