@@ -51,6 +51,7 @@ func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
 		return nil
 	}
 
+	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.totalGas, p.totalWithdrawCount)
 	return new(big.Int).Div(p.totalGas, p.totalWithdrawCount)
 }
 
@@ -123,6 +124,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	p.totalGas = p.totalGas.Add(p.totalGas, gas)
 	p.totalWithdrawCount = p.totalWithdrawCount.Add(p.totalWithdrawCount, big.NewInt(int64(withdrawsCount)))
 	p.latestProcessedEvent = newEventId
+	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalGas: %d, totalWithdrawsCount: %d", gas, withdrawsCount, p.totalGas, p.totalWithdrawCount)
 
 	return nil
 }
