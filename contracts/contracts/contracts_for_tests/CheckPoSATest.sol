@@ -13,7 +13,7 @@ contract CheckPoSATest is CheckPoSA {
         __CheckPoSA_init(initialValidators, initialEpoch, chainId);
     }
 
-    function checkPoSATest(PoSAProof calldata posaProof, address sideBridgeAddress,
+    function checkPoSATest(PoSAProof calldata posaProof, uint minSafetyBlocks, address sideBridgeAddress,
         address[] memory _initialValidators, uint _initialEpoch, bytes1 _chainId) public {
         // TODO: we can't use the `__CheckPoSA_init` twice, but copy-paste is also not good
         chainId = _chainId;
@@ -24,7 +24,7 @@ contract CheckPoSATest is CheckPoSA {
             allValidators[currentEpoch][_initialValidators[i]] = true;
         }
 
-        checkPoSA_(posaProof, sideBridgeAddress);
+        checkPoSA_(posaProof, minSafetyBlocks, sideBridgeAddress);
     }
 
     function blockHashTest(BlockPoSA calldata block_) public view returns (bytes32, bytes32) {

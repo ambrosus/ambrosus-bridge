@@ -5,6 +5,7 @@ import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
+import "hardhat/console.sol";
 
 
 contract CheckPoSA is Initializable {
@@ -62,14 +63,14 @@ contract CheckPoSA is Initializable {
         }
     }
 
-    function checkPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
+    function checkPoSA_(PoSAProof calldata posaProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
         bytes32 bareHash;
-        bytes32 sealHash;
+        bytes32 parentHash;
         uint finalizeVsBlock;
         uint nextVsSize;
 
         // posaProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
-        if (auraProof.transferEventBlock != 0) {
+        if (posaProof.transferEventBlock != 0) {
             bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
             require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
             require(posaProof.blocks.length - posaProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
@@ -77,10 +78,20 @@ contract CheckPoSA is Initializable {
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
             BlockPoSA calldata block_ = posaProof.blocks[i];
-            (bareHash, sealHash) = calcBlockHash(block_);
+
+            if (parentHash != bytes32(0))
+            if (block_.parentHash != parentHash) {
+                console.log(i);
+                console.logBytes32(block_.parentHash);
+                console.logBytes32(parentHash);
+                require(block_.parentHash == parentHash, "Wrong parent hash");
+            }
+
+            (bareHash, parentHash) = calcBlockHash(block_);
 
             require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
 
+            // change validator set
 
             uint blockNumber = bytesToUint(block_.number);
 
@@ -92,17 +103,16 @@ contract CheckPoSA is Initializable {
             } else if (blockNumber == finalizeVsBlock) {
                 currentEpoch++;
                 currentValidatorSetSize = nextVsSize;
+
+                // after finalizing vs change, next block in posaProof.blocks can have any parentHash (skipping some blocks)
+                // but only if it's not the safety blocks for transfer event
+                console.log("vs changed");
+                console.log(i);
+                if (i < posaProof.transferEventBlock)
+                    parentHash = bytes32(0);
+                else
+                console.log("else");
             }
-
-            if (parentHash != bytes32(0))
-                require(block_.parentHash == parentHash, "Wrong parent hash");
-
-            parentHash = checkBlock(block_);
-
-            // after finalizing vs change, next block in posaProof.blocks can have any parentHash (skipping some blocks)
-            // but only if it's not the safety blocks for transfer event
-            if (blockNumber == finalizeVsBlock && i < auraProof.transferEventBlock)
-                parentHash = bytes32(0);
         }
     }
 

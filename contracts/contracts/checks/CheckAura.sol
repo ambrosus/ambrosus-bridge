@@ -66,6 +66,7 @@ contract CheckAura is Initializable {
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         bytes32 parentHash;
+        bytes32 receiptHash;
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
         if (auraProof.transferEventBlock != 0) {
