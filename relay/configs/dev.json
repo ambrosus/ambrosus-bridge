@@ -12,8 +12,8 @@
             "defaultTransferFee": 1
         },
         "eth": {
-            "httpUrl": "https://nunki.htznr.fault.dev/rpc",
-            "wsUrl": "wss://nunki.htznr.fault.dev/ws",
+            "httpUrl": "http://167.99.136.151:80",
+            "wsUrl": "ws://167.99.136.151:80/ws",
             "contractAddr": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",

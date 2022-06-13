@@ -34,7 +34,7 @@ const config: HardhatUserConfig = {
     },
 
     "dev/eth": {
-      url: "https://nunki.htznr.fault.dev/rpc",
+      url: "http://167.99.136.151:80",
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
