@@ -2,6 +2,7 @@ package bsc
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"math"
 	"math/big"
@@ -54,6 +55,23 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 		Transfer:           *transfer,
 		TransferEventBlock: transferEventIndex,
 	}, nil
+}
+
+// if proof too long we need to split it into smaller parts
+func (b *Bridge) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAProof {
+	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("PoSA proof too long")
+	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
+	// todo maybe keep ~3000 blocks instead of half
+
+	// last block should be vsFinalize (just before new epoch block)
+	for i := len(blocks); i > 0; i-- {
+		if binary.BigEndian.Uint64(blocks[i].Number)%200 == 0 {
+			blocks = blocks[:i]
+		}
+	}
+	return &c.CheckPoSAPoSAProof{
+		Blocks: blocks,
+	}
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
