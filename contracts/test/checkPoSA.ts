@@ -63,7 +63,7 @@ describe("Check PoSA", () => {
                 "0x980a75ecd1309ea12fa2ed87a8744fbfc9b863d5",
                 "0xa2959d3f95eae5dc7d70144ce1b73b403b7eb6e0",
                 "0xb71b214cb885500844365e95cd9942c7276e7fd8",
-                "0xf474cf03cceff28abc65c9cbae594f725c80e12d"], 100778, 97);
+                "0xf474cf03cceff28abc65c9cbae594f725c80e12d"], 100782, 97, {gasLimit: 40000000});
     });
 
     it("Test blockHash", async () => {
