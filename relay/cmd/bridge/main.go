@@ -5,6 +5,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram/middlewares"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
@@ -23,7 +24,7 @@ func main() {
 
 	var tgLogger logger.Hook
 	if tg := cfg.ExtLoggers.Telegram; tg.Enable {
-		tgLogger = telegram.NewLogger(tg.Token, tg.ChatId, nil)
+		tgLogger = middlewares.NewAntiDoubleMiddleware(telegram.NewLogger(tg.Token, tg.ChatId, nil))
 	}
 
 	// Creating a new ambrosus bridge.
