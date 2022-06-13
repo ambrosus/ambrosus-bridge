@@ -5,7 +5,6 @@ import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
-//import "hardhat/console.sol";
 
 
 contract CheckPoSA is Initializable {
@@ -69,16 +68,16 @@ contract CheckPoSA is Initializable {
         uint finalizeVsBlock;
         uint nextVsSize;
 
-        bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
-        require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+        // posaProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
+        if (auraProof.transferEventBlock != 0) {
+            bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
+            require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+            require(posaProof.blocks.length - posaProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
+        }
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
             BlockPoSA calldata block_ = posaProof.blocks[i];
             (bareHash, sealHash) = calcBlockHash(block_);
-//            console.log(i);
-//            console.logBytes32(bareHash);
-//            console.logBytes32(sealHash);
-//            console.logBytes32(block_.parentHash);
 
             require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
 
@@ -90,38 +89,22 @@ contract CheckPoSA is Initializable {
 
                 nextVsSize = newValidatorSet(block_.extraData);
                 finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
-            }
-            else if (blockNumber == finalizeVsBlock) {
+            } else if (blockNumber == finalizeVsBlock) {
                 currentEpoch++;
                 currentValidatorSetSize = nextVsSize;
             }
 
-            if (i + 1 != posaProof.blocks.length && i+1 != posaProof.transferEventBlock && (bytesToUint(posaProof.blocks[i+1].number) % EPOCH_LENGTH != 0)) {
-                require(sealHash == posaProof.blocks[i + 1].parentHash, "wrong parent hash");
-            }
+            if (parentHash != bytes32(0))
+                require(block_.parentHash == parentHash, "Wrong parent hash");
+
+            parentHash = checkBlock(block_);
+
+            // after finalizing vs change, next block in posaProof.blocks can have any parentHash (skipping some blocks)
+            // but only if it's not the safety blocks for transfer event
+            if (blockNumber == finalizeVsBlock && i < auraProof.transferEventBlock)
+                parentHash = bytes32(0);
         }
     }
-//
-//    function loadEpochs(BlockPoSA[] blocks) public {
-//        uint finalizeVsBlock;
-//        uint nextVsSize;
-//
-//        for (uint i = 0; i < blocks.length; i++) {
-//            BlockPoSA calldata block_ = blocks[i];
-//            uint blockNumber = bytesToUint(block_.number);
-//
-//            if (blockNumber % EPOCH_LENGTH == 0) {
-//                require(blockNumber / EPOCH_LENGTH == currentEpoch + 1, "invalid epoch");
-//
-//                uint nextVsSize = newValidatorSet(block_.extraData);
-//                uint finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
-//            }
-//            else if (blockNumber == finalizeVsBlock) {
-//                currentEpoch++;
-//                currentValidatorSetSize = nextVsSize;
-//            }
-//        }
-//    }
 
 
     function calcBlockHash(BlockPoSA calldata block_) internal view returns (bytes32, bytes32) {
@@ -143,7 +126,7 @@ contract CheckPoSA is Initializable {
         return extraData[0 : extraData.length - EXTRA_SEAL_LENGTH];
     }
 
-    function newValidatorSet(bytes calldata extraData) private returns(uint) {
+    function newValidatorSet(bytes calldata extraData) private returns (uint) {
         uint nextValidatorSet = currentEpoch + 1;
         uint endPos = extraData.length - EXTRA_SEAL_LENGTH;
 
