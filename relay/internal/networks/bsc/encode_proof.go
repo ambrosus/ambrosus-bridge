@@ -103,7 +103,7 @@ func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epo
 		vsLength := getVSLength(epochChangeBlock)
 
 		// start from +1 cuz the epoch change block is already saved
-		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength); err != nil {
+		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength/2); err != nil {
 			return err
 		}
 	}

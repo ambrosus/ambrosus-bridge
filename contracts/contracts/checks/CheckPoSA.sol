@@ -5,7 +5,6 @@ import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
-import "hardhat/console.sol";
 
 
 contract CheckPoSA is Initializable {
@@ -80,12 +79,7 @@ contract CheckPoSA is Initializable {
             BlockPoSA calldata block_ = posaProof.blocks[i];
 
             if (parentHash != bytes32(0))
-            if (block_.parentHash != parentHash) {
-                console.log(i);
-                console.logBytes32(block_.parentHash);
-                console.logBytes32(parentHash);
                 require(block_.parentHash == parentHash, "Wrong parent hash");
-            }
 
             (bareHash, parentHash) = calcBlockHash(block_);
 
@@ -106,12 +100,8 @@ contract CheckPoSA is Initializable {
 
                 // after finalizing vs change, next block in posaProof.blocks can have any parentHash (skipping some blocks)
                 // but only if it's not the safety blocks for transfer event
-                console.log("vs changed");
-                console.log(i);
                 if (i < posaProof.transferEventBlock)
                     parentHash = bytes32(0);
-                else
-                console.log("else");
             }
         }
     }

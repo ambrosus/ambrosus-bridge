@@ -30,7 +30,7 @@ describe("Check PoSA", () => {
 
     it("Test CheckPoSA (no changes in VS)", async () => {
         const proof = require("./fixtures/posaProof-staticEpoch.json");
-        await bscBridge.checkPoSATest(proof, "0x944867B67cB2C28302C26df12B8aA01cb32F53Dc",
+        await bscBridge.checkPoSATest(proof, 10, "0x944867B67cB2C28302C26df12B8aA01cb32F53Dc",
             ["0x049153b8dae0a232ac90d20c78f1a5d1de7b7dc5",
             "0x1284214b9b9c85549ab3d2b972df0deef66ac2c9",
             "0x35552c16704d214347f29fa77f77da6d75d7c752",
@@ -42,7 +42,7 @@ describe("Check PoSA", () => {
 
     it("Test CheckPoSA (one change in VS)", async () => {
         const proof = require("./fixtures/posaproof-oneEpochChange.json");
-        await bscBridge.checkPoSATest(proof, "0x0953C80f775d36DC7CfbF32E6e2905FF040A354c",
+        await bscBridge.checkPoSATest(proof, 10, "0x0953C80f775d36DC7CfbF32E6e2905FF040A354c",
             ["0x049153b8dae0a232ac90d20c78f1a5d1de7b7dc5",
                 "0x1284214b9b9c85549ab3d2b972df0deef66ac2c9",
                 "0x35552c16704d214347f29fa77f77da6d75d7c752",
@@ -55,7 +55,7 @@ describe("Check PoSA", () => {
 
     it("Test CheckPoSA (many changes in VS)", async () => {
         const proof = require("./fixtures/posaproof-manyEpochChanges.json");
-        await bscBridge.checkPoSATest(proof, "0x905D371a767024d485ecAb0c79871fbf9a14487d",
+        await bscBridge.checkPoSATest(proof, 10, "0x905D371a767024d485ecAb0c79871fbf9a14487d",
             ["0x049153b8dae0a232ac90d20c78f1a5d1de7b7dc5",
                 "0x1284214b9b9c85549ab3d2b972df0deef66ac2c9",
                 "0x35552c16704d214347f29fa77f77da6d75d7c752",
