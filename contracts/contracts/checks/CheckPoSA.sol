@@ -5,6 +5,7 @@ import "../common/CommonStructs.sol";
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
+//import "hardhat/console.sol";
 
 
 contract CheckPoSA is Initializable {
@@ -74,6 +75,10 @@ contract CheckPoSA is Initializable {
         for (uint i = 0; i < posaProof.blocks.length; i++) {
             BlockPoSA calldata block_ = posaProof.blocks[i];
             (bareHash, sealHash) = calcBlockHash(block_);
+//            console.log(i);
+//            console.logBytes32(bareHash);
+//            console.logBytes32(sealHash);
+//            console.logBytes32(block_.parentHash);
 
             require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
 
@@ -91,11 +96,32 @@ contract CheckPoSA is Initializable {
                 currentValidatorSetSize = nextVsSize;
             }
 
-            if (i + 1 != posaProof.blocks.length) {
+            if (i + 1 != posaProof.blocks.length && i+1 != posaProof.transferEventBlock && (bytesToUint(posaProof.blocks[i+1].number) % EPOCH_LENGTH != 0)) {
                 require(sealHash == posaProof.blocks[i + 1].parentHash, "wrong parent hash");
             }
         }
     }
+//
+//    function loadEpochs(BlockPoSA[] blocks) public {
+//        uint finalizeVsBlock;
+//        uint nextVsSize;
+//
+//        for (uint i = 0; i < blocks.length; i++) {
+//            BlockPoSA calldata block_ = blocks[i];
+//            uint blockNumber = bytesToUint(block_.number);
+//
+//            if (blockNumber % EPOCH_LENGTH == 0) {
+//                require(blockNumber / EPOCH_LENGTH == currentEpoch + 1, "invalid epoch");
+//
+//                uint nextVsSize = newValidatorSet(block_.extraData);
+//                uint finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
+//            }
+//            else if (blockNumber == finalizeVsBlock) {
+//                currentEpoch++;
+//                currentValidatorSetSize = nextVsSize;
+//            }
+//        }
+//    }
 
 
     function calcBlockHash(BlockPoSA calldata block_) internal view returns (bytes32, bytes32) {
