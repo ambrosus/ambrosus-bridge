@@ -112,11 +112,25 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	}, err
 }
 
-func possibleAmountWithoutFees(amount *big.Int, tokenUsdPrice float64, transferFee *big.Int, thisCoinPrice float64) {
+func possibleAmountWithoutFees(
+	amount *big.Int,
+	tokenUsdPrice float64,
+	transferFee *big.Int,
+	thisCoinPrice float64,
+	minBridgeFee *big.Float,
+) {
+	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
+
 	amountUsd := coin2Usd(amount, tokenUsdPrice)
 	feePercent := getFeePercent(amountUsd)
 
-	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
+	// if fee < minBridgeFee then use the minBridgeFee
+	if calcBps(amountUsd, feePercent).Cmp(minBridgeFee) == -1 {
+		// amountUsd = amountUsd - transferFeeUsd - minBridgeFee
+		amountUsd.Sub(amountUsd, minBridgeFee).Sub(amountUsd, transferFeeUsd)
+		amount.Set(usd2Coin(amountUsd, tokenUsdPrice))
+		return
+	}
 
 	// (amountUsd - transferFeeUsd) / %
 	amountUsd = new(big.Float).Set(amountUsd).Sub(amountUsd, transferFeeUsd)
