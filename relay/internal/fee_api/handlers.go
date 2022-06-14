@@ -83,7 +83,12 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
 	amount := new(big.Int).Set((*big.Int)(req.Amount))
 	if req.IsAmountWithFees {
-		possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice)
+		possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, bridge.GetMinBridgeFee())
+
+		if amount.Cmp(big.NewInt(0)) <= 0 {
+			return nil, fmt.Errorf("amount is too small")
+		}
+
 	}
 
 	// get bridge fee
