@@ -34,14 +34,14 @@ const config: HardhatUserConfig = {
     },
 
     "dev/eth": {
-      url: "http://167.99.136.151:80",
+      url: "https://sepolia.ambrosus-test.io/",
       accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
       gasPrice: 9000000000
     },
     "test/eth": {
-      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
+      url: "https://sepolia.ambrosus-test.io/",
       accounts: PK,
       tags: ["eth", "testnet"],
       companionNetworks: {amb: 'test/amb'},
