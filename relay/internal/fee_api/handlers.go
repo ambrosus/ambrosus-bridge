@@ -97,6 +97,14 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 		return nil, fmt.Errorf("error when getting bridge fee: %w", err)
 	}
 
+	// check if the result amount > reqAmount and if true, then make the result amount lower
+	if req.IsAmountWithFees {
+		reqAmount := (*big.Int)(req.Amount)
+		if new(big.Int).Add(amount, new(big.Int).Add(bridgeFee, transferFee)).Cmp(reqAmount) > 0 {
+			amount = new(big.Int).Sub(reqAmount, new(big.Int).Add(bridgeFee, transferFee))
+		}
+	}
+
 	// sign the price with private key
 	message := buildMessage(req.TokenAddress, transferFee, bridgeFee, amount)
 	signature, err := bridge.Sign(message)
