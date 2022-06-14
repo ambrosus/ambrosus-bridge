@@ -83,13 +83,26 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
 	amount := new(big.Int).Set((*big.Int)(req.Amount))
 	if req.IsAmountWithFees {
-		possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice)
+		possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, bridge.GetMinBridgeFee())
+
+		if amount.Cmp(big.NewInt(0)) <= 0 {
+			return nil, fmt.Errorf("amount is too small")
+		}
+
 	}
 
 	// get bridge fee
 	bridgeFee, err := p.getBridgeFee(bridge, thisCoinPrice, tokenUsdPrice, amount)
 	if err != nil {
 		return nil, fmt.Errorf("error when getting bridge fee: %w", err)
+	}
+
+	// check if the result amount > reqAmount and if true, then make the result amount lower
+	if req.IsAmountWithFees {
+		reqAmount := (*big.Int)(req.Amount)
+		if new(big.Int).Add(amount, new(big.Int).Add(bridgeFee, transferFee)).Cmp(reqAmount) > 0 {
+			amount = new(big.Int).Sub(reqAmount, new(big.Int).Add(bridgeFee, transferFee))
+		}
 	}
 
 	// sign the price with private key
@@ -107,11 +120,25 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	}, err
 }
 
-func possibleAmountWithoutFees(amount *big.Int, tokenUsdPrice float64, transferFee *big.Int, thisCoinPrice float64) {
+func possibleAmountWithoutFees(
+	amount *big.Int,
+	tokenUsdPrice float64,
+	transferFee *big.Int,
+	thisCoinPrice float64,
+	minBridgeFee *big.Float,
+) {
+	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
+
 	amountUsd := coin2Usd(amount, tokenUsdPrice)
 	feePercent := getFeePercent(amountUsd)
 
-	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
+	// if fee < minBridgeFee then use the minBridgeFee
+	if calcBps(amountUsd, feePercent).Cmp(minBridgeFee) == -1 {
+		// amountUsd = amountUsd - transferFeeUsd - minBridgeFee
+		amountUsd.Sub(amountUsd, minBridgeFee).Sub(amountUsd, transferFeeUsd)
+		amount.Set(usd2Coin(amountUsd, tokenUsdPrice))
+		return
+	}
 
 	// (amountUsd - transferFeeUsd) / %
 	amountUsd = new(big.Float).Set(amountUsd).Sub(amountUsd, transferFeeUsd)
