@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
 	"github.com/rs/cors"
+	"github.com/shopspring/decimal"
 )
 
 const (
@@ -24,7 +25,7 @@ type BridgeFeeApi interface {
 	Sign(message []byte) ([]byte, error)
 	GetTransferFee() *big.Int
 	GetWrapperAddress() common.Address
-	GetMinBridgeFee() *big.Float // GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
 }
 
 type FeeAPI struct {

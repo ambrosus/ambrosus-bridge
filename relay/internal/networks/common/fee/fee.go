@@ -9,12 +9,13 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/shopspring/decimal"
 )
 
 type BridgeFee struct {
 	networks.Bridge
 
-	minBridgeFee       *big.Float
+	minBridgeFee       decimal.Decimal
 	defaultTransferFee *big.Int
 
 	wrapperAddress common.Address
@@ -41,7 +42,7 @@ func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) 
 
 	return &BridgeFee{
 		Bridge:             bridge,
-		minBridgeFee:       big.NewFloat(cfg.MinBridgeFee),
+		minBridgeFee:       decimal.NewFromFloat(cfg.MinBridgeFee),
 		defaultTransferFee: big.NewInt(cfg.DefaultTransferFee),
 		privateKey:         privateKey,
 		wrapperAddress:     wrapperAddress,
@@ -65,6 +66,6 @@ func (b *BridgeFee) GetWrapperAddress() common.Address {
 	return b.wrapperAddress
 }
 
-func (b *BridgeFee) GetMinBridgeFee() *big.Float {
+func (b *BridgeFee) GetMinBridgeFee() decimal.Decimal {
 	return b.minBridgeFee
 }

@@ -1,9 +1,8 @@
 package fee_api
 
 import (
-	"math/big"
-
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/shopspring/decimal"
 )
 
 var percentFromAmount = map[uint64]int64{
@@ -11,13 +10,13 @@ var percentFromAmount = map[uint64]int64{
 	100_000: 2 * 100, // 100_000...$ => 2%
 }
 
-func (p *FeeAPI) getBridgeFee(bridge BridgeFeeApi, nativeUsdPrice, tokenUsdPrice float64, amount *big.Int) (*big.Int, error) {
+func getBridgeFee(nativeUsdPrice, tokenUsdPrice, amount, minBridgeFee decimal.Decimal) (decimal.Decimal, error) {
 	// get fee in usd
 	amountUsd := coin2Usd(amount, tokenUsdPrice)
 	feeUsd := calcBps(amountUsd, getFeePercent(amountUsd))
 
 	// if fee < minBridgeFee then use the minBridgeFee
-	if minBridgeFee := bridge.GetMinBridgeFee(); feeUsd.Cmp(minBridgeFee) == -1 {
+	if feeUsd.Cmp(minBridgeFee) == -1 {
 		feeUsd = minBridgeFee
 	}
 
@@ -26,11 +25,11 @@ func (p *FeeAPI) getBridgeFee(bridge BridgeFeeApi, nativeUsdPrice, tokenUsdPrice
 	return feeNative, nil
 }
 
-func getFeePercent(amountInUsdt *big.Float) (percent int64) {
+func getFeePercent(amountInUsdt decimal.Decimal) (percent int64) {
 	// use lower percent for higher amount
 	for _, minUsdt := range helpers.SortedKeys(percentFromAmount) {
 		percent_ := percentFromAmount[minUsdt]
-		if amountInUsdt.Cmp(new(big.Float).SetUint64(minUsdt)) == -1 {
+		if amountInUsdt.Cmp(decimal.NewFromInt(int64(minUsdt))) == -1 {
 			break
 		}
 		percent = percent_

@@ -12,6 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/shopspring/decimal"
 )
 
 type reqParams struct {
@@ -80,53 +81,74 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 		return nil, fmt.Errorf("error when getting transfer fee: %w", err)
 	}
 
-	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
-	amount := new(big.Int).Set((*big.Int)(req.Amount))
-	if req.IsAmountWithFees {
-		possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, bridge.GetMinBridgeFee())
-
-		if amount.Cmp(big.NewInt(0)) <= 0 {
-			return nil, fmt.Errorf("amount is too small")
-		}
-
-	}
-
-	// get bridge fee
-	bridgeFee, err := p.getBridgeFee(bridge, thisCoinPrice, tokenUsdPrice, amount)
+	bridgeFee, amount, err := getBridgeFeeAndAmount(
+		decimal.NewFromBigInt((*big.Int)(req.Amount), 0),
+		req.IsAmountWithFees,
+		tokenUsdPrice,
+		thisCoinPrice,
+		transferFee,
+		bridge.GetMinBridgeFee(),
+	)
 	if err != nil {
-		return nil, fmt.Errorf("error when getting bridge fee: %w", err)
+		return nil, err
 	}
 
-	// check if the result amount > reqAmount and if true, then make the result amount lower
-	if req.IsAmountWithFees {
-		reqAmount := (*big.Int)(req.Amount)
-		if new(big.Int).Add(amount, new(big.Int).Add(bridgeFee, transferFee)).Cmp(reqAmount) > 0 {
-			amount = new(big.Int).Sub(reqAmount, new(big.Int).Add(bridgeFee, transferFee))
-		}
-	}
+	// make the fees as big int (throw away the decimal part)
+	bridgeFeeBigInt := bridgeFee.BigInt()
+	transferFeeBigInt := transferFee.BigInt()
+	amountBigInt := amount.BigInt()
 
 	// sign the price with private key
-	message := buildMessage(req.TokenAddress, transferFee, bridgeFee, amount)
+	message := buildMessage(req.TokenAddress, transferFeeBigInt, bridgeFeeBigInt, amountBigInt)
 	signature, err := bridge.Sign(message)
 	if err != nil {
 		err = fmt.Errorf("error when signing data: %w", err)
 	}
 
 	return &result{
-		BridgeFee:   (*hexutil.Big)(bridgeFee),
-		TransferFee: (*hexutil.Big)(transferFee),
-		Amount:      (*hexutil.Big)(amount),
+		BridgeFee:   (*hexutil.Big)(bridgeFeeBigInt),
+		TransferFee: (*hexutil.Big)(transferFeeBigInt),
+		Amount:      (*hexutil.Big)(amountBigInt),
 		Signature:   signature,
 	}, err
 }
 
+func getBridgeFeeAndAmount(
+	reqAmount decimal.Decimal,
+	isAmountWithFees bool,
+	tokenUsdPrice decimal.Decimal,
+	thisCoinPrice decimal.Decimal,
+	transferFee decimal.Decimal,
+	minBridgeFee decimal.Decimal,
+) (decimal.Decimal, decimal.Decimal, error) {
+	amount := reqAmount.Copy()
+
+	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
+	if isAmountWithFees {
+		amount = possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, minBridgeFee)
+
+		if amount.Cmp(decimal.New(0, 0)) <= 0 {
+			return decimal.Decimal{}, decimal.Decimal{}, fmt.Errorf("amount is too small")
+		}
+
+	}
+
+	// get bridge fee
+	bridgeFee, err := getBridgeFee(thisCoinPrice, tokenUsdPrice, amount, minBridgeFee)
+	if err != nil {
+		return decimal.Decimal{}, decimal.Decimal{}, fmt.Errorf("error when getting bridge fee: %w", err)
+	}
+
+	return bridgeFee, amount, nil
+}
+
 func possibleAmountWithoutFees(
-	amount *big.Int,
-	tokenUsdPrice float64,
-	transferFee *big.Int,
-	thisCoinPrice float64,
-	minBridgeFee *big.Float,
-) {
+	amount,
+	tokenUsdPrice,
+	transferFee,
+	thisCoinPrice,
+	minBridgeFee decimal.Decimal,
+) decimal.Decimal {
 	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
 
 	amountUsd := coin2Usd(amount, tokenUsdPrice)
@@ -134,17 +156,21 @@ func possibleAmountWithoutFees(
 
 	// if fee < minBridgeFee then use the minBridgeFee
 	if calcBps(amountUsd, feePercent).Cmp(minBridgeFee) == -1 {
-		// amountUsd = amountUsd - transferFeeUsd - minBridgeFee
-		amountUsd.Sub(amountUsd, minBridgeFee).Sub(amountUsd, transferFeeUsd)
-		amount.Set(usd2Coin(amountUsd, tokenUsdPrice))
-		return
+		// amountUsd - (transferFeeUsd + minBridgeFee)
+		amountUsd = amountUsd.Sub(minBridgeFee.Add(transferFeeUsd))
+		return usd2Coin(amountUsd, tokenUsdPrice)
 	}
 
 	// (amountUsd - transferFeeUsd) / %
-	amountUsd = new(big.Float).Set(amountUsd).Sub(amountUsd, transferFeeUsd)
-	amountUsd.Quo(amountUsd, big.NewFloat(float64(feePercent+10_000)/10_000))
+	newAmountUsd := amountUsd.Div(decimal.NewFromFloat(float64(feePercent+10_000) / 10_000))
 
-	amount.Set(usd2Coin(amountUsd, tokenUsdPrice))
+	// if fee percent of new amount if different from the old one, then recalculate with the new one
+	if newFeePercent := getFeePercent(newAmountUsd); newFeePercent != feePercent {
+		newAmountUsd = amountUsd.Div(decimal.NewFromFloat(float64(newFeePercent+10_000) / 10_000))
+	}
+
+	newAmountUsd = newAmountUsd.Sub(transferFeeUsd)
+	return usd2Coin(newAmountUsd, tokenUsdPrice)
 }
 
 func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *big.Int) []byte {
@@ -163,17 +189,17 @@ func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *b
 	return accounts.TextHash(crypto.Keccak256(data.Bytes()))
 }
 
-func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice float64) (*big.Int, error) {
+func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice decimal.Decimal) (decimal.Decimal, error) {
 	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee", func() (interface{}, error) {
 		return bridge.GetTransferFee(), nil
 	})
 	if err != nil {
-		return nil, err // todo
+		return decimal.Decimal{}, err // todo
 	}
 	feeSideNative := feeSideNativeI.(*big.Int)
 
 	// convert it to native bridge currency
-	feeUsd := coin2Usd(feeSideNative, sideCoinPrice)
+	feeUsd := coin2Usd(decimal.NewFromBigInt(feeSideNative, 0), sideCoinPrice)
 	feeThisNative := usd2Coin(feeUsd, thisCoinPrice)
 	return feeThisNative, nil
 }
