@@ -26,6 +26,9 @@ func NewAntiDoubleMiddleware(tgLogger *telegram.TgLogger) *AntiDoubleMiddleware 
 
 func (f *AntiDoubleMiddleware) Log(l *logger.ExtLog) {
 	msg := telegram.BuildMessage(l)
+	if msg == "" {
+		return
+	}
 
 	// if msg == last sent message, add the counter to the end
 	if msg == f.lastLogMsg {
