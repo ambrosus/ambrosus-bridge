@@ -10,8 +10,8 @@ export const expect = chai.expect;
 describe("MultiSig test", () => {
     let ownerS: Signer;
     let owner: string;
-    let proxyAdminS: Signer;
-    let proxyAdmin: string;
+    let adminS: Signer;
+    let admin: string;
     let user: string;
     let userS: Signer;
 
@@ -21,9 +21,9 @@ describe("MultiSig test", () => {
 
 
     before(async () => {
-        ({owner, user, proxyAdmin} = await getNamedAccounts());
+        ({owner, user, admin} = await getNamedAccounts());
         ownerS = await ethers.getSigner(owner);
-        proxyAdminS = await ethers.getSigner(proxyAdmin);
+        adminS = await ethers.getSigner(admin);
         userS = await ethers.getSigner(user);
 
         proxy = await ethers.getContract("ProxyMultiSig", ownerS);
@@ -38,7 +38,7 @@ describe("MultiSig test", () => {
     it("upgradeTo", async () => {
         await proxy.upgradeTo(implementation.address);
 
-        await expect(proxy.connect(proxyAdminS).confirmTransaction(0)).
+        await expect(proxy.connect(adminS).confirmTransaction(0)).
             to.emit(proxy, "Upgraded")
             .withArgs(implementation.address);
 
@@ -52,7 +52,7 @@ describe("MultiSig test", () => {
             callData
         );
 
-        await expect(proxy.connect(proxyAdminS).confirmTransaction(1))
+        await expect(proxy.connect(adminS).confirmTransaction(1))
             .to.emit(proxy, "Execution")
             .withArgs(1);
 
@@ -67,7 +67,7 @@ describe("MultiSig test", () => {
 
         await proxy.upgradeToAndCall(implementation.address, callData);
 
-        await expect(proxy.connect(proxyAdminS).confirmTransaction(0)).
+        await expect(proxy.connect(adminS).confirmTransaction(0)).
         to.emit(proxy, "Upgraded")
             .withArgs(implementation.address);
 
@@ -79,7 +79,7 @@ describe("MultiSig test", () => {
         await mockERC20.mint(proxy.address, 1000);
 
         const callData = mockERC20.interface.encodeFunctionData(
-            mockERC20.interface.functions["transfer(address,uint256)"], [proxyAdmin, 500]
+            mockERC20.interface.functions["transfer(address,uint256)"], [admin, 500]
         );
 
         await proxy.submitTransaction(
@@ -88,8 +88,8 @@ describe("MultiSig test", () => {
             callData
         );
 
-        await expect(() => proxy.connect(proxyAdminS).confirmTransaction(0))
-            .to.changeTokenBalance(mockERC20, proxyAdminS, 500);
+        await expect(() => proxy.connect(adminS).confirmTransaction(0))
+            .to.changeTokenBalance(mockERC20, adminS, 500);
     });
 
     it ("Non admin submitTransaction Call", async () => {

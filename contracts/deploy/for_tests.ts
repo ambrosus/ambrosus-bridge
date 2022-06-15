@@ -4,7 +4,7 @@ import {ethers} from "hardhat";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name !== "hardhat") return;
-  const {owner, proxyAdmin} = await hre.getNamedAccounts();
+  const {owner, admin} = await hre.getNamedAccounts();
 
   const {address: mockAddr} = await hre.deployments.deploy("BridgeERC20Test", {
     contract: "BridgeERC20Test",
@@ -95,7 +95,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     args: [
       mockAddr,
       "0x",
-      [owner, proxyAdmin],
+      [owner, admin],
       2
     ],
   });

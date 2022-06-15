@@ -9,10 +9,10 @@ import {ethers} from "ethers";
 
 
 dotenv.config();
-// todo add other roles
 const PK = [
-  process.env.PRIVATEKEY || ethers.constants.HashZero,
-  process.env.SECONDPRIVATEKEY || ethers.constants.HashZero,
+  process.env.PRIVATEKEY_OWNER || ethers.constants.HashZero,
+  process.env.PRIVATEKEY_ADMIN || ethers.constants.HashZero,
+  process.env.PRIVATEKEY_RELAY || ethers.constants.HashZero,
 ];
 
 const config: HardhatUserConfig = {
@@ -95,11 +95,10 @@ const config: HardhatUserConfig = {
 
   namedAccounts: {
     owner: 0,
-    proxyAdmin: 1,
-    admin: 2,
-    relay: 3,
-    bridge: 4,
-    user: 5,
+    admin: 1,
+    relay: 2,
+    bridge: 3,
+    user: 4,
   },
 
   verify: {
