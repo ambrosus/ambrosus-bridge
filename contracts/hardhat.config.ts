@@ -86,7 +86,7 @@ const config: HardhatUserConfig = {
     },
 
     "dev/bsc": {
-      url: "https://bsc.ambrosus-test.io",
+      url: "http://bsc.ambrosus-test.io",
       accounts: PK,
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
