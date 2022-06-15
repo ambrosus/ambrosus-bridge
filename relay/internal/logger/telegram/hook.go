@@ -11,7 +11,16 @@ import (
 
 const fieldsFormat = "<b>%s</b>: %s\n"
 
-func (t *tgLogger) Log(l *logger.ExtLog) {
+func (t *TgLogger) Log(l *logger.ExtLog) {
+	msg := BuildMessage(l)
+	if msg == "" {
+		return
+	}
+
+	_, _, _ = t.Send(msg)
+}
+
+func BuildMessage(l *logger.ExtLog) string {
 	var msg string
 
 	msg += fmt.Sprintf("[<b>%s</b>] ", strings.ToUpper(l.Bridge))
@@ -22,7 +31,7 @@ func (t *tgLogger) Log(l *logger.ExtLog) {
 	case zerolog.LevelWarnValue:
 		msg += fmt.Sprintf("<b>%s</b>\n", "Warning!")
 	default:
-		return
+		return ""
 	}
 
 	var fields = make([]string, 0, len(l.Rest))
@@ -44,5 +53,5 @@ func (t *tgLogger) Log(l *logger.ExtLog) {
 		msg += fmt.Sprintf("\n%s", replacer.Replace(l.Message))
 	}
 
-	_ = t.send(msg)
+	return msg
 }

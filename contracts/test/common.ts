@@ -23,11 +23,10 @@ describe("Common tests", () => {
   let ownerS: Signer;
   let relayS: Signer;
   let userS: Signer;
-  let proxyAdminS: Signer;
+  let adminS: Signer;
   let owner: string;
   let relay: string;
   let user: string;
-  let proxyAdmin: string;
 
 
   let commonBridge: Contract;
@@ -37,11 +36,10 @@ describe("Common tests", () => {
 
   before(async () => {
     await deployments.fixture(["for_tests"]);
-    ({owner, relay, user, proxyAdmin} = await getNamedAccounts());
+    ({owner, relay, user} = await getNamedAccounts());
     ownerS = await ethers.getSigner(owner);
     relayS = await ethers.getSigner(relay);
     userS = await ethers.getSigner(user);
-    proxyAdminS = await ethers.getSigner(proxyAdmin);
 
     commonBridge = await ethers.getContract("CommonBridgeTest", ownerS);
     mockERC20 = await ethers.getContract("BridgeERC20Test", ownerS);

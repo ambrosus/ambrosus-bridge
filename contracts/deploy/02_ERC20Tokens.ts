@@ -21,7 +21,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (token.primaryNet == netName) continue;  // it's not bridgeErc20
 
     const {address} = await hre.deployments.deploy(token.symbol, {
-      contract: "BridgeERC20Test", // todo remove `Test` on prod
+      contract: "BridgeERC20",
       from: owner,
       args: [token.name, token.symbol, token.denomination, bridgesInThisNetwork],
       log: true,

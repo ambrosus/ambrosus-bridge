@@ -6,7 +6,6 @@ import vsAbi from "../../abi/ValidatorSet.json";
 import {Block} from "@ethersproject/abstract-provider";
 import {Config, readConfig} from "./config";
 
-
 export function readConfig_(network: Network): Config {
   return readConfig(parseNet(network).stage);
 }
@@ -18,6 +17,7 @@ export function parseNet(network: Network): { stage: string; name: string } {
   return {stage, name};
 }
 
+// actions
 
 export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
                                            hre: HardhatRuntimeEnvironment,
@@ -57,20 +57,30 @@ export async function setSideBridgeAddress(deploymentName: string, sideAddress: 
   }
 }
 
+//
 
 export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: string]: string },
                               commonArgs: any, args: any[]): Promise<DeployOptions> {
 
-  const {owner, proxyAdmin} = await hre.getNamedAccounts();
-  // todo get admin and relay from getNamedAccounts
-  const admin = owner;
-  const relay = owner;
+  let {owner, admin, relay} = await hre.getNamedAccounts();
+
+  // multisig admins and threshold
+  let msAdmins = process.env.MULTISIG_ADDRESSES!.split(',');
+  let msThresh = +process.env.MULTISIG_THRESHOLD!;
+
+  // on testnets use only 1 account for all roles;
+  // multisig threshold == 1, so no upgrade confirmations needed
+  if (parseNet(hre.network).stage != "main") {
+    [admin, relay] = [owner, owner];
+    [msAdmins, msThresh] = [[owner], 1];
+  }
 
   // add this args to user args
   const reallyCommonArgs = {
     adminAddress: admin,
     relayAddress: relay,
-    feeRecipient: owner,   // todo
+    transferFeeRecipient: owner, // todo
+    bridgeFeeRecipient: owner,  // todo
     tokenThisAddresses: Object.keys(tokenPairs),
     tokenSideAddresses: Object.values(tokenPairs),
   }
@@ -81,7 +91,7 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
     from: owner,
     proxy: {
       owner: owner,
-      proxyArgs: ["{implementation}", "{data}", [owner, proxyAdmin], 2],
+      proxyArgs: ["{implementation}", "{data}", msAdmins, msThresh],
       proxyContract: "ProxyMultiSig",
       execute: {
         init: {
@@ -93,6 +103,8 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
     log: true
   }
 }
+
+// valildators
 
 async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAbi: any): Promise<[string[], Block]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));

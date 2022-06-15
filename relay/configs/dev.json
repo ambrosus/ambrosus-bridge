@@ -12,8 +12,8 @@
             "defaultTransferFee": 1
         },
         "eth": {
-            "httpUrl": "https://nunki.htznr.fault.dev/rpc",
-            "wsUrl": "wss://nunki.htznr.fault.dev/ws",
+            "httpUrl": "https://sepolia.ambrosus-test.io/",
+            "wsUrl": "wss://sepolia.ambrosus-test.io/ws",
             "contractAddr": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
