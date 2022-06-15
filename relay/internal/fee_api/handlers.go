@@ -164,6 +164,12 @@ func possibleAmountWithoutFees(
 	// (amountUsd - transferFeeUsd) / %
 	newAmountUsd := amountUsd.Div(decimal.NewFromFloat(float64(feePercent+10_000) / 10_000))
 
+	// if fee < minBridgeFee then use the minBridgeFee
+	if calcBps(newAmountUsd, getFeePercent(newAmountUsd)).Cmp(minBridgeFee) == -1 {
+		// amountUsd - (transferFeeUsd + minBridgeFee)
+		newAmountUsd = amountUsd.Sub(minBridgeFee.Add(transferFeeUsd))
+		return usd2Coin(newAmountUsd, tokenUsdPrice)
+	}
 	// if fee percent of new amount if different from the old one, then recalculate with the new one
 	if newFeePercent := getFeePercent(newAmountUsd); newFeePercent != feePercent {
 		newAmountUsd = amountUsd.Div(decimal.NewFromFloat(float64(newFeePercent+10_000) / 10_000))
