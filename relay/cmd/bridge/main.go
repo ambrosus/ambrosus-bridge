@@ -38,16 +38,19 @@ func main() {
 	switch {
 	case cfg.Networks.ETH != nil:
 		sideBridge, err = eth.New(cfg.Networks.ETH, tgLogger)
+		if err != nil {
+			log.Fatal().Err(err).Msg("eth bridge not created")
+		}
 		sideBridge.(*eth.Bridge).SetSideBridge(ambBridge)
 
 	case cfg.Networks.BSC != nil:
 		sideBridge, err = bsc.New(cfg.Networks.BSC, tgLogger)
+		if err != nil {
+			log.Fatal().Err(err).Msg("bsc bridge not created")
+		}
 		sideBridge.(*bsc.Bridge).SetSideBridge(ambBridge)
+	}
 
-	}
-	if err != nil {
-		log.Fatal().Err(err).Msg("side bridge not created")
-	}
 	ambBridge.SetSideBridge(sideBridge)
 
 	if cfg.IsRelay {
