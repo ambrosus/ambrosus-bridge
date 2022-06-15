@@ -1,7 +1,7 @@
 {
     "isRelay": true,
     "isWatchdog": true,
-    "network": {
+    "networks": {
         "amb": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",

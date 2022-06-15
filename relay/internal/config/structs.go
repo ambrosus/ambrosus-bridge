@@ -27,7 +27,7 @@ type (
 
 type (
 	Config struct {
-		Networks   Networks        `mapstructure:"network"`
+		Networks   Networks        `mapstructure:"networks"`
 		ExtLoggers ExternalLoggers `mapstructure:"externalLogger"`
 		Prometheus Prometheus      `mapstructure:"prometheus"`
 		FeeApi     FeeApi          `mapstructure:"feeApi"`
