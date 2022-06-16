@@ -2,6 +2,7 @@ package fee
 
 import (
 	"crypto/ecdsa"
+	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
@@ -15,8 +16,8 @@ import (
 type BridgeFee struct {
 	networks.Bridge
 
-	minBridgeFee       decimal.Decimal
-	defaultTransferFee *big.Int
+	minBridgeFee           decimal.Decimal
+	sideDefaultTransferFee *big.Int
 
 	wrapperAddress common.Address
 	privateKey     *ecdsa.PrivateKey
@@ -24,7 +25,7 @@ type BridgeFee struct {
 	transferFeeTracker *transferFeeTracker
 }
 
-func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) (*BridgeFee, error) {
+func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork, sideCfg config.FeeApiNetwork) (*BridgeFee, error) {
 	wrapperAddress, err := bridge.GetContract().WrapperAddress(nil)
 	if err != nil {
 		return nil, err
@@ -40,13 +41,18 @@ func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) 
 		return nil, err
 	}
 
+	sideDefaultTransferFee, ok := new(big.Int).SetString(sideCfg.DefaultTransferFee, 10)
+	if !ok {
+		return nil, fmt.Errorf("failed to parse sideDefaultTransferFee (%s)", cfg.DefaultTransferFee)
+	}
+
 	return &BridgeFee{
-		Bridge:             bridge,
-		minBridgeFee:       decimal.NewFromFloat(cfg.MinBridgeFee),
-		defaultTransferFee: big.NewInt(cfg.DefaultTransferFee),
-		privateKey:         privateKey,
-		wrapperAddress:     wrapperAddress,
-		transferFeeTracker: transferFee,
+		Bridge:                 bridge,
+		minBridgeFee:           decimal.NewFromFloat(cfg.MinBridgeFee),
+		sideDefaultTransferFee: sideDefaultTransferFee,
+		privateKey:             privateKey,
+		wrapperAddress:         wrapperAddress,
+		transferFeeTracker:     transferFee,
 	}, nil
 }
 
@@ -57,7 +63,7 @@ func (b *BridgeFee) Sign(digestHash []byte) ([]byte, error) {
 func (b *BridgeFee) GetTransferFee() *big.Int {
 	feeSideNative := b.transferFeeTracker.GasPerWithdraw()
 	if feeSideNative == nil {
-		feeSideNative = b.defaultTransferFee
+		feeSideNative = b.sideDefaultTransferFee
 	}
 	return feeSideNative
 }

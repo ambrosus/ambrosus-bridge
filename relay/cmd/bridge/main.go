@@ -50,21 +50,21 @@ func main() {
 	}
 	ambBridge.SetSideBridge(sideBridge)
 
-	if cfg.IsRelay {
-		go ambBridge.Run()
-		go sideBridge.Run()
-	}
-	if cfg.IsWatchdog {
-		go ambBridge.ValidityWatchdog()
-		go sideBridge.ValidityWatchdog()
-	}
+	// if cfg.IsRelay {
+	// 	go ambBridge.Run()
+	// 	go sideBridge.Run()
+	// }
+	// if cfg.IsWatchdog {
+	// 	go ambBridge.ValidityWatchdog()
+	// 	go sideBridge.ValidityWatchdog()
+	// }
 
 	if feeCfg := cfg.FeeApi; feeCfg.Enable {
-		feeAmb, err := fee.NewBridgeFee(ambBridge, sideBridge, feeCfg.Amb)
+		feeAmb, err := fee.NewBridgeFee(ambBridge, sideBridge, feeCfg.Amb, feeCfg.Side)
 		if err != nil {
 			log.Fatal().Err(err).Msg("feeAmb not created")
 		}
-		feeSide, err := fee.NewBridgeFee(sideBridge, ambBridge, feeCfg.Side)
+		feeSide, err := fee.NewBridgeFee(sideBridge, ambBridge, feeCfg.Side, feeCfg.Amb)
 		if err != nil {
 			log.Fatal().Err(err).Msg("feeSide not created")
 		}
