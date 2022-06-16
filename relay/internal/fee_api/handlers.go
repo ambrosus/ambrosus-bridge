@@ -200,7 +200,7 @@ func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *b
 }
 
 func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice decimal.Decimal) (decimal.Decimal, error) {
-	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee", func() (interface{}, error) {
+	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee"+bridge.GetName(), func() (interface{}, error) {
 		return bridge.GetTransferFee(), nil
 	})
 	if err != nil {
