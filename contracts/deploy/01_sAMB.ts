@@ -1,14 +1,16 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {readConfig_} from "./utils/utils";
+import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig_(hre.network);
 
   const samb = configFile.tokens.SAMB;
-  if (!!samb.addresses.amb) {
-    console.log("sAMB already deployed");
-    return;
+
+  if (isAddress(samb.addresses.amb)) {
+      console.log("sAMB already deployed");
+      return;
   }
 
   const {owner} = await hre.getNamedAccounts();
