@@ -46,12 +46,12 @@ func newTransferFeeTracker(bridge, sideBridge networks.Bridge) (*transferFeeTrac
 }
 
 func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
+	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.totalGas, p.totalWithdrawCount)
 	// if there's no transfers then return nil
 	if p.totalWithdrawCount.Cmp(big.NewInt(0)) == 0 {
 		return nil
 	}
 
-	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.totalGas, p.totalWithdrawCount)
 	return new(big.Int).Div(p.totalGas, p.totalWithdrawCount)
 }
 
