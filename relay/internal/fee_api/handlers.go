@@ -74,12 +74,14 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get token price: %w", err)
 	}
+	bridge.GetLogger().Debug().Msgf("thisCoinPrice: %d, sideCoinPrice: %d, tokenUsdPrice: %d", thisCoinPrice, sideCoinPrice, tokenUsdPrice)
 
 	// get transfer fee
 	transferFee, err := p.getTransferFee(bridge, thisCoinPrice, sideCoinPrice)
 	if err != nil {
 		return nil, fmt.Errorf("error when getting transfer fee: %w", err)
 	}
+	bridge.GetLogger().Debug().Msgf("transferFee: %d", transferFee)
 
 	bridgeFee, amount, err := getBridgeFeeAndAmount(
 		decimal.NewFromBigInt((*big.Int)(req.Amount), 0),

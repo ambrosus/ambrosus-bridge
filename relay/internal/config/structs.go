@@ -62,7 +62,7 @@ type (
 	FeeApiNetwork struct {
 		PrivateKey         string  `mapstructure:"privateKey"`
 		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
-		DefaultTransferFee int64   `mapstructure:"defaultTransferFee"`
+		DefaultTransferFee string  `mapstructure:"defaultTransferFeeWei"`
 	}
 
 	Prometheus struct {
