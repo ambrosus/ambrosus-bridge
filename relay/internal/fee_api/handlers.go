@@ -74,14 +74,14 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	if err != nil {
 		return nil, fmt.Errorf("get token price: %w", err)
 	}
-	bridge.GetLogger().Debug().Msgf("thisCoinPrice: %d, sideCoinPrice: %d, tokenUsdPrice: %d", thisCoinPrice, sideCoinPrice, tokenUsdPrice)
+	bridge.GetLogger().Debug().Msgf("thisCoinPrice: %s, sideCoinPrice: %s, tokenUsdPrice: %s", thisCoinPrice.String(), sideCoinPrice.String(), tokenUsdPrice.String())
 
 	// get transfer fee
 	transferFee, err := p.getTransferFee(bridge, thisCoinPrice, sideCoinPrice)
 	if err != nil {
 		return nil, fmt.Errorf("error when getting transfer fee: %w", err)
 	}
-	bridge.GetLogger().Debug().Msgf("transferFee: %d", transferFee)
+	bridge.GetLogger().Debug().Msgf("transferFee: %s", transferFee.String())
 
 	bridgeFee, amount, err := getBridgeFeeAndAmount(
 		decimal.NewFromBigInt((*big.Int)(req.Amount), 0),
@@ -99,6 +99,8 @@ func (p *FeeAPI) getFees(req reqParams) (*result, error) {
 	bridgeFeeBigInt := bridgeFee.BigInt()
 	transferFeeBigInt := transferFee.BigInt()
 	amountBigInt := amount.BigInt()
+	bridge.GetLogger().Debug().Msgf("bridgeFeeBigInt: %s, transferFeeBigInt: %s, amountBigInt: %s", bridgeFeeBigInt.String(), transferFeeBigInt.String(), amountBigInt.String())
+	bridge.GetLogger().Debug().Msgf("bridgeFeeHex: %s, transferFeeHex: %s, amountHex: %s", (*hexutil.Big)(bridgeFeeBigInt).String(), (*hexutil.Big)(transferFeeBigInt).String(), (*hexutil.Big)(amountBigInt).String())
 
 	// sign the price with private key
 	message := buildMessage(req.TokenAddress, transferFeeBigInt, bridgeFeeBigInt, amountBigInt)
