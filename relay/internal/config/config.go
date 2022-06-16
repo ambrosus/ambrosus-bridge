@@ -15,13 +15,7 @@ const defaultConfigPath string = "configs/main"
 func LoadConfig() (*Config, error) {
 	log.Debug().Msg("Loading config...")
 
-	configPath := os.Getenv("CONFIG_PATH")
-	if configPath == "" {
-		log.Info().Msgf("`CONFIG_PATH` env var not set, using default config path: %v", defaultConfigPath)
-		configPath = defaultConfigPath
-	}
-	dir, file := filepath.Split(configPath)
-
+	dir, file := filepath.Split(getConfigPath())
 	viper.AddConfigPath(dir)
 	viper.SetConfigName(file)
 	viper.SetConfigType("json")
@@ -40,4 +34,21 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+func getConfigPath() string {
+	stage := os.Getenv("STAGE")     // dev / test / main / ...
+	network := os.Getenv("NETWORK") // eth / bsc / ...
+
+	if stage != "" && network != "" {
+		configPath := fmt.Sprintf("configs/%s-%s", stage, network)
+		log.Info().Msgf("`STAGE` and `NETWORK` env var set, using config path: %v", configPath)
+		return configPath
+	} else if configPath := os.Getenv("CONFIG_PATH"); configPath != "" {
+		log.Info().Msgf("`STAGE` or `NETWORK` env var not set, using `CONFIG_PATH` env var: %v", configPath)
+		return configPath
+	} else {
+		log.Info().Msgf("(`STAGE` or `NETWORK`) and `CONFIG_PATH` env var not set, using default config path: %v", defaultConfigPath)
+		return defaultConfigPath
+	}
 }

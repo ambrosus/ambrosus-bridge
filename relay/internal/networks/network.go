@@ -62,4 +62,5 @@ type BridgeReceiveEthash interface {
 type BridgeReceivePoSA interface {
 	Bridge
 	SubmitTransferPoSA(proof *bindings.CheckPoSAPoSAProof) error
+	GetLastProcessedBlockNum() (*big.Int, error)
 }

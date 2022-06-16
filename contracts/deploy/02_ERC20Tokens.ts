@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {owner} = await hre.getNamedAccounts();
 
   for (const token of Object.values(configFile.tokens)) {
-    if (token.addresses[netName]) continue;  // already deployed
+    if (token.addresses[netName] != "DEPLOY") continue;  // already deployed or shouldn't be deployed
     if (token.primaryNet == netName) continue;  // it's not bridgeErc20
 
     const {address} = await hre.deployments.deploy(token.symbol, {

@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import {ethers} from "ethers";
+import { isAddress } from "ethers/lib/utils";
 
 
 
@@ -43,9 +44,11 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
   const tokenPair: { [k: string]: string } = {};
 
   for (const token of Object.values(configFile.tokens)) {
+    // token must be deployed on both sides
+    if (!isAddress(token.addresses[thisNet]) || !isAddress(token.addresses[sideNet]))
+      continue
 
-    if (token.addresses[thisNet] && token.addresses[sideNet])
-      tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
+    tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
 
     if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
       tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];

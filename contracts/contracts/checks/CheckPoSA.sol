@@ -14,8 +14,8 @@ contract CheckPoSA is Initializable {
     uint256 private constant EPOCH_LENGTH = 200;
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
 
-    mapping(uint => mapping(address => bool)) private allValidators;
-    uint currentValidatorSet;
+    mapping(uint => mapping(address => bool)) internal allValidators;
+    uint public currentEpoch;
     uint currentValidatorSetSize;
 
     bytes1 chainId;
@@ -54,45 +54,54 @@ contract CheckPoSA is Initializable {
         require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
 
         chainId = _chainId;
-        currentValidatorSet = _initialEpoch;
+        currentEpoch = _initialEpoch;
         currentValidatorSetSize = _initialValidators.length;
 
         for (uint i = 0; i < _initialValidators.length; i++) {
-            allValidators[currentValidatorSet][_initialValidators[i]] = true;
+            allValidators[currentEpoch][_initialValidators[i]] = true;
         }
     }
 
-    function checkPoSA_(PoSAProof calldata posaProof, address sideBridgeAddress) internal {
+    function checkPoSA_(PoSAProof calldata posaProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
         bytes32 bareHash;
-        bytes32 sealHash;
+        bytes32 parentHash;
         uint finalizeVsBlock;
         uint nextVsSize;
 
-        bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
-        require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+        // posaProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
+        if (posaProof.transferEventBlock != 0) {
+            bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
+            require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+            require(posaProof.blocks.length - posaProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
+        }
 
         for (uint i = 0; i < posaProof.blocks.length; i++) {
             BlockPoSA calldata block_ = posaProof.blocks[i];
-            (bareHash, sealHash) = calcBlockHash(block_);
+
+            if (parentHash != bytes32(0))
+                require(block_.parentHash == parentHash, "Wrong parent hash");
+
+            (bareHash, parentHash) = calcBlockHash(block_);
 
             require(verifySignature(bareHash, getSignature(block_.extraData)), "invalid signature");
 
+            // change validator set
 
             uint blockNumber = bytesToUint(block_.number);
 
             if (blockNumber % EPOCH_LENGTH == 0) {
-                require(blockNumber / EPOCH_LENGTH == currentValidatorSet + 1, "invalid epoch");
+                require(blockNumber / EPOCH_LENGTH == currentEpoch + 1, "invalid epoch");
 
                 nextVsSize = newValidatorSet(block_.extraData);
                 finalizeVsBlock = blockNumber + currentValidatorSetSize / 2;
-            }
-            else if (blockNumber == finalizeVsBlock) {
-                currentValidatorSet++;
+            } else if (blockNumber == finalizeVsBlock) {
+                currentEpoch++;
                 currentValidatorSetSize = nextVsSize;
-            }
 
-            if (i + 1 != posaProof.blocks.length) {
-                require(sealHash == posaProof.blocks[i + 1].parentHash, "wrong parent hash");
+                // after finalizing vs change, next block in posaProof.blocks can have any parentHash (skipping some blocks)
+                // but only if it's not the safety blocks for transfer event
+                if (i < posaProof.transferEventBlock)
+                    parentHash = bytes32(0);
             }
         }
     }
@@ -117,8 +126,8 @@ contract CheckPoSA is Initializable {
         return extraData[0 : extraData.length - EXTRA_SEAL_LENGTH];
     }
 
-    function newValidatorSet(bytes calldata extraData) private returns(uint) {
-        uint nextValidatorSet = currentValidatorSet + 1;
+    function newValidatorSet(bytes calldata extraData) private returns (uint) {
+        uint nextValidatorSet = currentEpoch + 1;
         uint endPos = extraData.length - EXTRA_SEAL_LENGTH;
 
         uint nextValidatorSetSize;
@@ -133,7 +142,7 @@ contract CheckPoSA is Initializable {
 
     function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
         address signer = ecdsaRecover(hash, signature);
-        return allValidators[currentValidatorSet][signer];
+        return allValidators[currentEpoch][signer];
     }
 
     function bytesToUint(bytes memory b) private pure returns (uint){

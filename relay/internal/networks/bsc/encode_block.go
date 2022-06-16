@@ -24,10 +24,13 @@ func (b *Bridge) EncodeBlock(header *types.Header) (*bindings.CheckPoSABlockPoSA
 	p0Signed := signedHeader[:3]
 	p0Unsigned := unsignedHeader[:3]
 
+	p4Signed := helpers.RlpPrefix(len(header.Extra))
+
 	splitEls := [][]byte{
 		header.ParentHash.Bytes(),
 		header.ReceiptHash.Bytes(),
 		header.Number.Bytes(),
+		p4Signed,
 		header.Extra,
 	}
 	rlpParts, err := helpers.BytesSplit(signedHeader, splitEls)
@@ -40,17 +43,17 @@ func (b *Bridge) EncodeBlock(header *types.Header) (*bindings.CheckPoSABlockPoSA
 		P0Unsigned: helpers.BytesToBytes3(p0Unsigned),
 
 		ParentHash:  helpers.BytesToBytes32(header.ParentHash.Bytes()),
-		P1:          rlpParts[0],
+		P1:          rlpParts[1],
 		ReceiptHash: helpers.BytesToBytes32(header.ReceiptHash.Bytes()),
-		P2:          rlpParts[1],
+		P2:          rlpParts[2],
 		Number:      header.Number.Bytes(),
-		P3:          rlpParts[2],
+		P3:          rlpParts[3],
 
-		P4Signed:   helpers.RlpPrefix(len(header.Extra)),
+		P4Signed:   p4Signed,
 		P4Unsigned: helpers.RlpPrefix(len(header.Extra) - 65),
 		ExtraData:  header.Extra,
 
-		P5: rlpParts[4],
+		P5: rlpParts[5],
 	}, nil
 }
 

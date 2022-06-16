@@ -1,24 +1,24 @@
 {
     "isRelay": true,
     "isWatchdog": true,
-    "network": {
+    "networks": {
         "amb": {
-            "httpUrl": "https://network.ambrosus-test.io",
-            "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0xFd3894B24494D5bf15949cEb33BC4645820Cdf60",
+            "httpUrl": "https://network.ambrosus-dev.io",
+            "wsUrl": "wss://network.ambrosus-dev.io/ws",
+            "contractAddr": "",
             "privateKey": "in env",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "minBridgeFeeUSD": 5,
             "defaultTransferFee": 1
         },
         "eth": {
-            "httpUrl": "https://sepolia.ambrosus-test.io/",
-            "wsUrl": "wss://sepolia.ambrosus-test.io/ws",
-            "contractAddr": "0x91b054b82D3DE9DC9Fa771A07aC1355BDD86aE00",
+            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "privateKey": "in env",
+            "contractAddr": "",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 0,
+            "ethashGenNextEpochs": 1,
             "minBridgeFeeUSD": 5,
             "defaultTransferFee": 0.01
         }
@@ -47,8 +47,8 @@
         }
     },
     "prometheus": {
-        "enable": false,
+        "enable": true,
         "ip": "localhost",
-        "port": "9090"
+        "port": "9091"
     }
 }

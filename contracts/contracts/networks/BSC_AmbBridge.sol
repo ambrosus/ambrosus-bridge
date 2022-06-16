@@ -20,7 +20,7 @@ contract BSC_AmbBridge is CommonBridge, CheckPoSA {
     function submitTransferPoSA(PoSAProof calldata posaProof) public onlyRole(RELAY_ROLE) whenNotPaused {
         emit TransferSubmit(posaProof.transfer.eventId);
         checkEventId(posaProof.transfer.eventId);
-        checkPoSA_(posaProof, sideBridgeAddress);
+        checkPoSA_(posaProof, minSafetyBlocks, sideBridgeAddress);
         lockTransfers(posaProof.transfer.transfers, posaProof.transfer.eventId);
     }
 

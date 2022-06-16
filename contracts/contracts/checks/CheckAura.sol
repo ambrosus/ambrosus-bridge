@@ -6,7 +6,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
 
 
-
 contract CheckAura is Initializable {
     bytes1 constant PARENT_HASH_PREFIX = 0xA0;
     bytes1 constant STEP_PREFIX = 0x84;
@@ -67,11 +66,14 @@ contract CheckAura is Initializable {
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         bytes32 parentHash;
+        bytes32 receiptHash;
 
-        bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
-        require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
-        require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
-
+        // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
+        if (auraProof.transferEventBlock != 0) {
+            bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
+            require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
+            require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
+        }
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura calldata block_ = auraProof.blocks[i];
@@ -100,8 +102,8 @@ contract CheckAura is Initializable {
 
             parentHash = checkBlock(block_);
 
-            // after proceed vs change event next block in auraProof.blocks can have any parentHash
-            // (skipping some blocks) but only if it's not the safety blocks for transfer event
+            // after finalizing vs change, next block in auraProof.blocks can have any parentHash (skipping some blocks)
+            // but only if it's not the safety blocks for transfer event
             if (block_.finalizedVs != 0 && i < auraProof.transferEventBlock)
                 parentHash = bytes32(0);
 

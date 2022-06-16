@@ -2,6 +2,7 @@ package bsc
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"math"
 	"math/big"
@@ -56,6 +57,23 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}, nil
 }
 
+// if proof too long we need to split it into smaller parts
+func (b *Bridge) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAProof {
+	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("PoSA proof too long")
+	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
+	// todo maybe keep ~3000 blocks instead of half
+
+	// last block should be vsFinalize (just before new epoch block)
+	for i := len(blocks); i > 0; i-- {
+		if binary.BigEndian.Uint64(blocks[i].Number)%200 == 0 {
+			blocks = blocks[:i]
+		}
+	}
+	return &c.CheckPoSAPoSAProof{
+		Blocks: blocks,
+	}
+}
+
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
 	proof, err := b.GetProof(event)
 	if err != nil {
@@ -85,7 +103,7 @@ func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epo
 		vsLength := getVSLength(epochChangeBlock)
 
 		// start from +1 cuz the epoch change block is already saved
-		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength); err != nil {
+		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength/2); err != nil {
 			return err
 		}
 	}
@@ -93,12 +111,13 @@ func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epo
 }
 
 func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint64) ([]uint64, error) {
-	start, err := b.GetLastProcessedBlockNum(event.EventId)
+	lastProcessedBlockNum, err := b.sideBridge.GetLastProcessedBlockNum()
 	if err != nil {
-		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
+		return nil, fmt.Errorf("GetLastProcessedBlockNum: %w", err)
 	}
-	start = uint64(math.Ceil(float64(start)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
-	end := event.Raw.BlockNumber + safetyBlocks - 1                     // no need to change epoch for last block (it will be changed in next event processing)
+
+	start := uint64(math.Ceil(float64(lastProcessedBlockNum.Uint64()+1)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
+	end := event.Raw.BlockNumber + safetyBlocks - 1                                                 // no need to change epoch for last block (it will be changed in next event processing)
 
 	var epochChanges []uint64
 	for blockNum := start; blockNum < end; blockNum += epochLength {

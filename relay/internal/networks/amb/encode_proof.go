@@ -76,6 +76,27 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}, nil
 }
 
+// if proof too long we need to split it into smaller parts
+func (b *Bridge) splitVsChanges(proof *c.CheckAuraAuraProof) *c.CheckAuraAuraProof {
+	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("Aura proof too long")
+	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
+	// todo maybe keep ~3000 blocks instead of half
+
+	// last block should be vsFinalize
+	var vsChanges []c.CheckAuraValidatorSetProof
+	for i := uint64(len(blocks)); i > 0; i-- {
+		if blocks[i].FinalizedVs == 0 {
+			blocks = blocks[:i+1]
+			vsChanges = proof.VsChanges[:blocks[i].FinalizedVs+1]
+		}
+	}
+
+	return &c.CheckAuraAuraProof{
+		Blocks:    blocks,
+		VsChanges: vsChanges,
+	}
+}
+
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
 	proof, err := b.GetProof(event)
 	if err != nil {

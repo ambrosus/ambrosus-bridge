@@ -1,33 +1,30 @@
 {
     "isRelay": true,
     "isWatchdog": true,
-    "network": {
+    "networks": {
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "",
-            "privateKey": "in env",
+            "contractAddr": "0x6B6EA49252E0C82492d1967Af5c96D10be8A30bB",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "defaultTransferFee": 1
         },
-        "eth": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+        "bsc": {
+            "httpUrl": "http://bsc.ambrosus-test.io",
+            "wsUrl": "ws://bsc.ambrosus-test.io/ws",
+            "contractAddr": "0x57a4fB30df9f64bc8D03f227D782D594595E9260",
             "privateKey": "in env",
-            "contractAddr": "",
-            "ethashDir": "/root/ethash",
-            "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 1,
             "minBridgeFeeUSD": 5,
             "defaultTransferFee": 0.01
         }
     },
     "externalLogger": {
         "telegram": {
-            "enable": true,
+            "enable": false,
             "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
-            "chatId": "-1001744413670"
+            "chatId": "-1001732781392"
         }
     },
     "feeApi":  {
@@ -48,7 +45,7 @@
     },
     "prometheus": {
         "enable": true,
-        "ip": "localhost",
-        "port": "9091"
+        "ip": "",
+        "port": "9090"
     }
 }

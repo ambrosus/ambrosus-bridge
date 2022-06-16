@@ -6,8 +6,7 @@ Pair (amb and side) of bridge contract addresses for each network
 
 List of tokens used by bridge  
 
-Tokens with empty addresses will be deployed when calling the deployment script.   
-**Be careful**, this can lead to problems
+**Only** tokens with addresses == `DEPLOY` will be deployed when calling the deployment script.
 
 #### Our token: _`SAMB`_
 - **amb** will be deployed as `SAMB` contract
