@@ -5,11 +5,12 @@ import "../common/CommonBridge.sol";
 import "../checks/CheckReceiptsProof.sol";
 
 contract CommonBridgeTest is CommonBridge {
-    constructor(
-        CommonStructs.ConstructorArgs memory args
-    ) {
+
+    // normal constructor can't have calldata args
+    function constructor_(CommonStructs.ConstructorArgs calldata args) public {
         __CommonBridge_init(args);
 
+        // used for signature check
         _setupRole(RELAY_ROLE, address(0x295C2707319ad4BecA6b5bb4086617fD6F240CfE));
     }
 
@@ -21,7 +22,7 @@ contract CommonBridgeTest is CommonBridge {
         lockTransfers(events, eventId);
     }
 
-    function getOutputEventId() public view returns(uint) {
+    function getOutputEventId() public view returns (uint) {
         return outputEventId;
     }
 
@@ -44,7 +45,7 @@ contract CommonBridgeTest is CommonBridge {
         feeCheck(token, signature, fee1, fee2, msg.value);
     }
 
-    function getSignatureFeeCheckNumber() public view returns(uint) {
+    function getSignatureFeeCheckNumber() public view returns (uint) {
         return signatureFeeCheckNumber;
     }
 }

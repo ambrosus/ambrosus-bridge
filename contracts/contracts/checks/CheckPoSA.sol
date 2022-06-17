@@ -47,7 +47,7 @@ contract CheckPoSA is Initializable {
 
 
     function __CheckPoSA_init(
-        address[] memory initialValidators_,
+        address[] calldata initialValidators_,
         uint initialEpoch_,
         bytes1 chainId_
     ) internal initializer {

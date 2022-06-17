@@ -8,7 +8,7 @@ import "../checks/CheckPoW.sol";
 contract ETH_AmbBridge is CommonBridge, CheckPoW {
 
     function initialize(
-        CommonStructs.ConstructorArgs memory args,
+        CommonStructs.ConstructorArgs calldata args,
         uint minimumDifficulty
     ) public initializer {
         __CommonBridge_init(args);

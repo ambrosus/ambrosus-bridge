@@ -56,7 +56,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
 
-    function __CommonBridge_init(CommonStructs.ConstructorArgs memory args) internal initializer {
+    function __CommonBridge_init(CommonStructs.ConstructorArgs calldata args) internal initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
         _setupRole(ADMIN_ROLE, args.adminAddress);

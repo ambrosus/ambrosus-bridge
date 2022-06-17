@@ -51,7 +51,7 @@ contract CheckAura is Initializable {
 
 
     function __CheckAura_init(
-        address[] memory initialValidators_,
+        address[] calldata initialValidators_,
         address validatorSetAddress_,
         bytes32 lastProcessedBlock_
     ) internal initializer {
