@@ -62,14 +62,6 @@ describe("Check Aura", () => {
     await ethBridge.blockHashTestPaid(block);
   });
 
-  it('CheckSignature', async () => {
-    const hash = "0x74dfc2c4994f9393f823773a399849e0241c8f4c549f7e019960bd64b938b6ae"
-    const signature = "0x44c08b83a120ad90f645f645f3fe1bc49dd88e703fce665de1f941c0cede65d81968ac2ad0b5bb9db7cb32a23064c199c0ab5378957f99b1c361fc3ed3b209eb00";
-    const needAddress = "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0"
-    expect(ethers.utils.recoverAddress(ethers.utils.arrayify(hash), signature)).eq(needAddress);
-    expect(await ethBridge.checkSignatureTest(hash, signature)).eq(needAddress);
-  });
-
   it('Test bytesToUintTest', async () => {
     expect(await ethBridge.bytesToUintTest("0xdeadbeef")).to.be.equal(3735928559);
   });

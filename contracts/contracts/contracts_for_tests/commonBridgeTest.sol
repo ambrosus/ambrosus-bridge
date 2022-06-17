@@ -31,8 +31,12 @@ contract CommonBridgeTest is CommonBridge {
 
     // checkReceiptsProof
 
-    function calcTransferReceiptsHashTest(CommonStructs.TransferProof memory p, address eventContractAddress) public pure returns (bytes32) {
+    function calcTransferReceiptsHashTest(CommonStructs.TransferProof calldata p, address eventContractAddress) public pure returns (bytes32) {
         return calcTransferReceiptsHash(p, eventContractAddress);
+    }
+
+    function checkSignatureTest(bytes32 hash, bytes memory signature) public view returns(address) {
+        return ecdsaRecover(hash, signature);
     }
 
 
