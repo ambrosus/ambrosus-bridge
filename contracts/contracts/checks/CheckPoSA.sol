@@ -47,18 +47,18 @@ contract CheckPoSA is Initializable {
 
 
     function __CheckPoSA_init(
-        address[] memory _initialValidators,
-        uint _initialEpoch,
-        bytes1 _chainId
+        address[] memory initialValidators_,
+        uint initialEpoch_,
+        bytes1 chainId_
     ) internal initializer {
-        require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
+        require(initialValidators_.length > 0, "Length of _initialValidators must be bigger than 0");
 
-        chainId = _chainId;
-        currentEpoch = _initialEpoch;
-        currentValidatorSetSize = _initialValidators.length;
+        chainId = chainId_;
+        currentEpoch = initialEpoch_;
+        currentValidatorSetSize = initialValidators_.length;
 
-        for (uint i = 0; i < _initialValidators.length; i++) {
-            allValidators[currentEpoch][_initialValidators[i]] = true;
+        for (uint i = 0; i < initialValidators_.length; i++) {
+            allValidators[currentEpoch][initialValidators_[i]] = true;
         }
     }
 
