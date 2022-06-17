@@ -18,7 +18,7 @@
       "primaryNet": "amb",
       "addresses": {
         "amb": "0xcee40F987FC4F24d28547107FaBd33C519B43Fe6",
-        "eth": "",
+        "eth": "0x500268485CB411696bd48629f78E8846C1929a43",
         "bsc": "0x18951A2D6527A01C089D5Ad595Ae4f0B5d749786"
       },
       "nativeAnalog": "AMB"
@@ -31,7 +31,7 @@
       "primaryNet": "eth",
       "addresses": {
         "amb": "0x7e1B07dEaf4619C3937A63E5A6f57B9095E3A8f7",
-        "eth": "",
+        "eth": "0xf531B8F309Be94191af87605CfBf600D71C2cFe0",
         "bsc": "0x3Ed6b39Ad815e08d9e7FF111FBbe975E7F778c64"
       },
       "nativeAnalog": "ETH"
