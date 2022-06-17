@@ -250,18 +250,18 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         delete tokenAddresses[tokenThisAddress];
     }
 
-    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
+    function tokensAddBatch(address[] calldata tokenThisAddresses, address[] calldata tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
         _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
     }
 
-    function _tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) private {
+    function _tokensAddBatch(address[] calldata tokenThisAddresses, address[] calldata tokenSideAddresses) private {
         require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
         uint arrayLength = tokenThisAddresses.length;
         for (uint i = 0; i < arrayLength; i++)
             tokenAddresses[tokenThisAddresses[i]] = tokenSideAddresses[i];
     }
 
-    function tokensRemoveBatch(address[] memory tokenThisAddresses) public onlyRole(ADMIN_ROLE) {
+    function tokensRemoveBatch(address[] calldata tokenThisAddresses) public onlyRole(ADMIN_ROLE) {
         uint arrayLength = tokenThisAddresses.length;
         for (uint i = 0; i < arrayLength; i++)
             delete tokenAddresses[tokenThisAddresses[i]];
@@ -280,7 +280,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     // internal
 
     // submitted transfers saves in `lockedTransfers` for `lockTime` period
-    function lockTransfers(CommonStructs.Transfer[] memory events, uint eventId) internal {
+    function lockTransfers(CommonStructs.Transfer[] calldata events, uint eventId) internal {
         lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
         for (uint i = 0; i < events.length; i++)
             lockedTransfers[eventId].transfers.push(events[i]);
