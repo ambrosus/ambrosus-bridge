@@ -80,7 +80,7 @@ contract CheckAura is Initializable {
 
             if (block_.finalizedVs != 0) {// 0 means no events should be finalized, so indexes are shifted by 1
                 // vs changes in that block
-                ValidatorSetProof memory vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
+                ValidatorSetProof calldata vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
 
                 // how many block after event validatorSet should be finalized
                 uint txsBeforeFinalize = validatorSet.length / 2 + 1;
@@ -116,7 +116,7 @@ contract CheckAura is Initializable {
         return validatorSet;
     }
 
-    function applyVsChange(ValidatorSetChange memory vsEvent) internal {
+    function applyVsChange(ValidatorSetChange calldata vsEvent) internal {
         if (vsEvent.deltaIndex < 0) {
             uint index = uint(int(vsEvent.deltaIndex * (- 1) - 1));
             validatorSet[index] = validatorSet[validatorSet.length - 1];
@@ -154,7 +154,7 @@ contract CheckAura is Initializable {
     }
 
 
-    function calcValidatorSetReceiptHash(bytes[] memory receipt_proof, address validatorSetAddress, address[] memory vSet) private pure returns (bytes32) {
+    function calcValidatorSetReceiptHash(bytes[] calldata receipt_proof, address validatorSetAddress, address[] storage vSet) private pure returns (bytes32) {
         bytes32 el = keccak256(abi.encodePacked(
                 receipt_proof[0],
                 validatorSetAddress,

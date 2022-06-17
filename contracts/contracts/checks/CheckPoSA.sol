@@ -117,7 +117,7 @@ contract CheckPoSA is Initializable {
         );
     }
 
-    function getSignature(bytes calldata extraData) private pure returns (bytes memory) {
+    function getSignature(bytes calldata extraData) private pure returns (bytes calldata) {
         uint start = extraData.length - EXTRA_SEAL_LENGTH;
         return extraData[start : start + EXTRA_SEAL_LENGTH];
     }
@@ -140,12 +140,12 @@ contract CheckPoSA is Initializable {
         return nextValidatorSetSize;
     }
 
-    function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
+    function verifySignature(bytes32 hash, bytes calldata signature) private view returns (bool) {
         address signer = ecdsaRecover(hash, signature);
         return allValidators[currentEpoch][signer];
     }
 
-    function bytesToUint(bytes memory b) private pure returns (uint){
+    function bytesToUint(bytes calldata b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 }

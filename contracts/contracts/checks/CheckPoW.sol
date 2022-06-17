@@ -106,7 +106,7 @@ contract CheckPoW is Initializable, Ethash {
     }
 
 
-    function bytesToUint(bytes memory b) private pure returns (uint){
+    function bytesToUint(bytes calldata b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 
