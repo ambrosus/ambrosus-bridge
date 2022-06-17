@@ -63,6 +63,26 @@ contract CheckAura is Initializable {
 
     }
 
+
+
+    /*
+     AuraProof.blocks contains:
+      - blocks for validate validatorSet change event, in that order:
+        - block with `InitiateChange` events (contains list of all validators)
+        - some blocks, that need for validation (the amount depends on the length of the current validator set)
+        - block, when validators finalize; have `finalizedVs` != 0
+        * repeated for each vs change event; all events must go in order, without omissions *
+
+      - block with transfer event;
+      - safety blocks for transfer event
+
+      AuraProof.vsChanges contains changes in validator set and receiptProof for validation.
+      block.finalizedVs-1 is index in AuraProof.vsChanges array
+
+      Function will check all blocks, processing vs change events if needed.
+      Each block parentHash must be equal to the seal hash of the previous block, except for gaps between vsChange events
+      If there are no errors, the transfer is considered valid
+    */
     function checkAura_(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
 
         bytes32 parentHash;

@@ -39,6 +39,15 @@ contract CheckPoW is Initializable, Ethash {
         minimumDifficulty = minimumDifficulty_;
     }
 
+    /*
+     PoWProof.blocks contains:
+      - block with transfer event;
+      - safety blocks for transfer event
+
+      Function will check all blocks, checking it pow hash.
+      Each block parentHash must be equal to the hash of the previous block.
+      If there are no errors, the transfer is considered valid
+    */
     function checkPoW_(PoWProof calldata powProof, address sideBridgeAddress) internal view
     {
         bytes32 hash = calcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);

@@ -62,6 +62,21 @@ contract CheckPoSA is Initializable {
         }
     }
 
+    /*
+     PoSAProof.blocks contains:
+      - blocks for validate validatorSet changes, in that order:
+        - first block in epoch (blockNum % 200 == 0)
+        - some blocks, that need for validation (the amount depends on the length of the current validator set)
+        - block, when validators finalize
+        * repeated for each new epoch, all epochs must go in order, without omissions *
+
+      - block with transfer event;
+      - safety blocks for transfer event
+
+      Function will check all blocks, processing vs change events if needed.
+      Each block parentHash must be equal to the seal hash of the previous block, except for gaps between epochs
+      If there are no errors, the transfer is considered valid
+    */
     function checkPoSA_(PoSAProof calldata posaProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
         bytes32 bareHash;
         bytes32 parentHash;
