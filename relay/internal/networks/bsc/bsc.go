@@ -54,13 +54,48 @@ func (b *Bridge) Run() {
 }
 
 func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
-	posaProof, err := b.encodePoSAProof(event, safetyBlocks)
+	// posaProof, err := b.encodePoSAProof(event, safetyBlocks)
+	// if err != nil {
+	// 	return fmt.Errorf("encodePoSAProof: %w", err)
+	// }
+	f, err := ioutil.ReadFile("posaproof.json")
 	if err != nil {
-		return fmt.Errorf("encodePoSAProof: %w", err)
+		return err
+	}
+	var posaProof *bindings.CheckPoSAPoSAProof
+	err = json.Unmarshal(f, &posaProof)
+	if err != nil {
+		return err
 	}
 
 	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer PoSA...")
 	err = b.sideBridge.SubmitTransferPoSA(posaProof)
+
+	if castedErr, ok := err.(rpc.HTTPError); ok {
+		if castedErr.StatusCode == http.StatusRequestEntityTooLarge {
+			b.Logger.Info().Msg("The proof is big, so split it")
+
+			a, err := b.sideBridge.GetLastProcessedBlockNum()
+			if err != nil {
+				return fmt.Errorf("get last processed block num: %w", err)
+			}
+			changes := splitVsChanges(posaProof, a.Uint64()/200)
+
+			for i := 0; i < len(changes)-2; i++ {
+				b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit validator set change...")
+				err = b.sideBridge.SubmitValidatorSetChanges(changes[i])
+				if err != nil {
+					return fmt.Errorf("SubmitValidatorSetChanges: %w", err)
+				}
+			}
+
+			err = b.sideBridge.SubmitTransferPoSA(changes[len(changes)-1])
+			if err != nil {
+				return fmt.Errorf("SubmitTransferPoSA: %w", err)
+			}
+		}
+	}
+
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
 	}

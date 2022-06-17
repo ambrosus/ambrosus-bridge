@@ -2,7 +2,6 @@ package bsc
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"math"
 	"math/big"
@@ -58,20 +57,60 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 // if proof too long we need to split it into smaller parts
-func (b *Bridge) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAProof {
-	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("PoSA proof too long")
-	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
-	// todo maybe keep ~3000 blocks instead of half
+func splitVsChanges(proof *c.CheckPoSAPoSAProof, currentEpoch uint64) []*c.CheckPoSAPoSAProof {
+	var res []*c.CheckPoSAPoSAProof
+	var limit = 500
+	var blocks = proof.Blocks
+	if len(blocks) < limit {
+		return nil
+	}
 
-	// last block should be vsFinalize (just before new epoch block)
-	for i := len(blocks); i > 0; i-- {
-		if binary.BigEndian.Uint64(blocks[i].Number)%200 == 0 {
-			blocks = blocks[:i]
+	for i := 0; i < len(blocks); i += limit {
+		number := new(big.Int).SetBytes(blocks[i].Number)
+		if number.Cmp(big.NewInt(int64(currentEpoch*epochLength))) <= 0 {
+			continue
 		}
+
+		if len(blocks)-i < limit {
+			res = append(res, &c.CheckPoSAPoSAProof{
+				Blocks:             blocks[i:],
+				Transfer:           proof.Transfer,
+				TransferEventBlock: proof.TransferEventBlock,
+			})
+			break
+		}
+
+		end := i + limit
+		if end >= len(blocks) {
+			end = len(blocks) - 1
+		}
+
+		for j := end; j >= i; j-- {
+			number := new(big.Int).SetBytes(blocks[j].Number)
+			if number.Mod(number, big.NewInt(epochLength)).Cmp(big.NewInt(0)) == 0 {
+				end = j
+				break
+			}
+		}
+
+		// if i == end {
+		// 	res = append(res, &c.CheckPoSAPoSAProof{})
+		// 	break
+		// }
+
+		res = append(res, &c.CheckPoSAPoSAProof{
+			Blocks: blocks[i:end],
+			Transfer: c.CommonStructsTransferProof{
+				ReceiptProof: [][]byte{},
+				EventId:      big.NewInt(0),
+				Transfers:    []c.CommonStructsTransfer{},
+			},
+			TransferEventBlock: 0,
+		})
+		i = end - limit
 	}
-	return &c.CheckPoSAPoSAProof{
-		Blocks: blocks,
-	}
+
+	return res
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {

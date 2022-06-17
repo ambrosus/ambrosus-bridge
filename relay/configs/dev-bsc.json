@@ -5,7 +5,7 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0xfeD6298165fA4Bd5c854184FFD54576095cD96e5",
+            "contractAddr": "0x0F5fcda0e1F9519E6136D10bE99eA3e957fe2FEF",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
@@ -14,7 +14,7 @@
         "bsc": {
             "httpUrl": "http://bsc.ambrosus-test.io",
             "wsUrl": "ws://bsc.ambrosus-test.io/ws",
-            "contractAddr": "0x67374E81da10Af874664fEc38bACd9137774f58E",
+            "contractAddr": "0x3C53AE7334854aA1c4601253d30f0D4e21C99b48",
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "defaultTransferFee": 0.01

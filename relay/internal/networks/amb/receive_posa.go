@@ -17,6 +17,12 @@ func (b *Bridge) SubmitTransferPoSA(proof *bindings.CheckPoSAPoSAProof) error {
 	})
 }
 
+func (b *Bridge) SubmitValidatorSetChanges(proof *bindings.CheckPoSAPoSAProof) error {
+	return b.ProcessTx("submitValidatorSetChangesPoSA", func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.SubmitValidatorSetChangesPoSA(b.Auth, *proof)
+	})
+}
+
 func (b *Bridge) GetLastProcessedBlockNum() (*big.Int, error) {
 	blockNum, err := b.Contract.CurrentEpoch(nil)
 	if err != nil {
