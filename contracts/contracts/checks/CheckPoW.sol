@@ -86,7 +86,7 @@ contract CheckPoW is Initializable, Ethash {
     }
 
     function blockHashWithoutNonce(BlockPoW calldata block_) internal pure returns (bytes32) {
-        bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
+        return keccak256(abi.encodePacked(
             abi.encodePacked(
                 block_.p0WithoutNonce,
                 block_.p1,
@@ -100,9 +100,7 @@ contract CheckPoW is Initializable, Ethash {
                 block_.p4,
                 block_.p6
             )
-        );
-
-        return keccak256(rlpHeaderHashWithoutNonce);
+        ));
     }
 
 
