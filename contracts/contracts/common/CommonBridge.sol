@@ -128,40 +128,6 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         withdrawFinish();
     }
 
-
-    function feeCheck(
-        address token,
-        bytes calldata signature,
-        uint transferFee,
-        uint bridgeFee,
-        uint amount
-    ) internal {
-        bytes32 messageHash;
-        address signer;
-        uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
-
-        for (uint i = 0; i < signatureFeeCheckNumber; i++) {
-            messageHash = keccak256(abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    keccak256(abi.encodePacked(
-                        token,
-                        timestampEpoch,
-                        transferFee,
-                        bridgeFee,
-                        amount
-                    ))
-                ));
-
-            signer = ecdsaRecover(messageHash, signature);
-            if (hasRole(RELAY_ROLE, signer)) {
-                return;
-            } else {
-                timestampEpoch--;
-            }
-        }
-        revert("Signature check failed");
-    }
-
     function triggerTransfers() public {
         require(queue.length != 0, "Queue is empty");
 
@@ -318,6 +284,25 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     // internal
+
+    function feeCheck(address token, bytes calldata signature, uint transferFee, uint bridgeFee, uint amount) internal {
+        bytes32 messageHash;
+        address signer;
+        uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
+
+        for (uint i = 0; i < signatureFeeCheckNumber; i++) {
+            messageHash = keccak256(abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    keccak256(abi.encodePacked(token, timestampEpoch, transferFee, bridgeFee, amount))
+                ));
+
+            signer = ecdsaRecover(messageHash, signature);
+            if (hasRole(RELAY_ROLE, signer))
+                return;
+            timestampEpoch--;
+        }
+        revert("Signature check failed");
+    }
 
     function checkEventId(uint eventId) internal {
         require(eventId == ++inputEventId, "EventId out of order");
