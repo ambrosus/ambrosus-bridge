@@ -62,6 +62,7 @@ func (p *FeeAPI) Run(endpoint string, ip string, port int) {
 	// apply middlewares
 	handler := corsMiddleware(mux)
 	handler = loggingMiddleware(handler)
+	handler = middlewares.MetricsMiddleware(handler)
 
 	p.logger.Fatal().Err(http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), handler)).Msg("")
 }
