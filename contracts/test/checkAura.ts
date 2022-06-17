@@ -29,12 +29,16 @@ describe("Check Aura", () => {
 
   it("Test CheckAura (no changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-staticVs.json");
-    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B");
+    await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B", [
+      "0x4c9785451bb2CA3E91B350C06bcB5f974cA33F79",
+      "0x90B2Ce3741188bCFCe25822113e93983ecacfcA0",
+      "0xAccdb7a2268BC4Af0a1898e725138888ba1Ca6Fc"
+    ]);
   });
 
   it("Test CheckAura (changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-changeVs.json");
-    await ethBridge.checkAuraTestVS(proof, 5, "0x48d5cE2A10438559a14D399ca510F4235315dc6e", [
+    await ethBridge.checkAuraTest(proof, 5, "0x48d5cE2A10438559a14D399ca510F4235315dc6e", [
         '0x45a9645fcd727C2CeE29b5945aB49D92564Af199',
         '0x4fE180D06096A1216d3ec97ceAcE28d9c255B348',
         '0xf46BA733b57Da081F27309496CD618cdaB4E12B0',

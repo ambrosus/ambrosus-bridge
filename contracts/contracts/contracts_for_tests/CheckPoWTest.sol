@@ -6,21 +6,21 @@ import "../checks/CheckPoW.sol";
 contract CheckPoWTest is CheckPoW {
 
     constructor(
-        uint minimumDifficulty
+        uint minimumDifficulty_
     ) {
-        __CheckPoW_init(minimumDifficulty);
+        minimumDifficulty = minimumDifficulty_;
     }
 
-    function blockHashTest(BlockPoW calldata block_) public pure returns (bytes32) {
-        return blockHash(block_);
+    function checkPoWTest(PoWProof calldata powProof, address sideBridgeAddress) public {
+        checkPoW_(powProof, sideBridgeAddress);
     }
 
     function verifyEthashTest(BlockPoW calldata block_) public view {
         verifyEthash(block_);
     }
 
-    function checkPoWTest(PoWProof calldata powProof, address sideBridgeAddress) public {
-        checkPoW_(powProof, sideBridgeAddress);
+    function blockHashTest(BlockPoW calldata block_) public pure returns (bytes32) {
+        return blockHash(block_);
     }
 
 }
