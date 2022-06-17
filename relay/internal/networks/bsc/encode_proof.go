@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
-	"math"
 	"math/big"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -29,11 +28,8 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	}
 
 	// encode vsChange blocks to blocksMap
-	epochChangesNums, err := b.findEpochChangeNums(transferEvent, safetyBlocks)
-	if err != nil {
-		return nil, fmt.Errorf("findEpochChangeNums: %w", err)
-	}
-	err = b.encodeEpochChanges(blocksMap, epochChangesNums)
+	epochChangesLastBlock := transferEvent.Raw.BlockNumber + safetyBlocks - 1 // no need to change epoch for last block (it will be changed in next event processing)
+	err = b.encodeEpochChanges(blocksMap, epochChangesLastBlock)
 	if err != nil {
 		return nil, fmt.Errorf("encodeEpochChanges: %w", err)
 	}
@@ -92,38 +88,33 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, ev
 	}, nil
 }
 
-func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, epochChanges []uint64) error {
-	// save blocks into blocks
-	for _, epochChange := range epochChanges {
+func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, end uint64) error {
+	currentEpoch, err := b.sideBridge.GetCurrentEpoch()
+	if err != nil {
+		return fmt.Errorf("GetCurrentEpoch: %w", err)
+	}
+	epochChangeBlock, err := b.saveBlock(map[uint64]*c.CheckPoSABlockPoSA{}, currentEpoch*epochLength)
+	if err != nil {
+		return fmt.Errorf("saveBlock: %w", err)
+	}
+	prevVsLen := getVSLength(epochChangeBlock) // use to determine how many blocks need to save in next epoch
+
+	// save blocks into blocks (without current epoch)
+	for epochBlock := (currentEpoch + 1) * epochLength; epochBlock < end; epochBlock += epochLength {
 		// save epoch change block and get VS length
-		epochChangeBlock, err := b.saveBlock(blocks, epochChange)
+		epochChangeBlock, err = b.saveBlock(blocks, epochBlock)
 		if err != nil {
 			return fmt.Errorf("save epoch change block: %w", err)
 		}
-		vsLength := getVSLength(epochChangeBlock)
 
 		// start from +1 cuz the epoch change block is already saved
-		if err := b.saveBlocksRange(blocks, epochChange+1, epochChange+vsLength/2); err != nil {
+		if err = b.saveBlocksRange(blocks, epochBlock+1, epochBlock+prevVsLen/2); err != nil {
 			return err
 		}
+
+		prevVsLen = getVSLength(epochChangeBlock)
 	}
 	return nil
-}
-
-func (b *Bridge) findEpochChangeNums(event *c.BridgeTransfer, safetyBlocks uint64) ([]uint64, error) {
-	lastProcessedBlockNum, err := b.sideBridge.GetLastProcessedBlockNum()
-	if err != nil {
-		return nil, fmt.Errorf("GetLastProcessedBlockNum: %w", err)
-	}
-
-	start := uint64(math.Ceil(float64(lastProcessedBlockNum.Uint64()+1)/epochLength) * epochLength) // first epoch change after last processed block (or this block itself)
-	end := event.Raw.BlockNumber + safetyBlocks - 1                                                 // no need to change epoch for last block (it will be changed in next event processing)
-
-	var epochChanges []uint64
-	for blockNum := start; blockNum < end; blockNum += epochLength {
-		epochChanges = append(epochChanges, blockNum)
-	}
-	return epochChanges, nil
 }
 
 func getVSLength(epochChangeBlock *c.CheckPoSABlockPoSA) uint64 {
