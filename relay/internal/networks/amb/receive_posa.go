@@ -2,7 +2,6 @@ package amb
 
 import (
 	"fmt"
-	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -23,11 +22,10 @@ func (b *Bridge) SubmitValidatorSetChanges(proof *bindings.CheckPoSAPoSAProof) e
 	})
 }
 
-func (b *Bridge) GetLastProcessedBlockNum() (*big.Int, error) {
-	blockNum, err := b.Contract.CurrentEpoch(nil)
+func (b *Bridge) GetCurrentEpoch() (uint64, error) {
+	epoch, err := b.Contract.CurrentEpoch(nil)
 	if err != nil {
-		return nil, fmt.Errorf("CurrentEpoch: %w", err)
+		return 0, fmt.Errorf("CurrentEpoch: %w", err)
 	}
-
-	return blockNum.Mul(blockNum, big.NewInt(200)), nil
+	return epoch.Uint64(), nil
 }
