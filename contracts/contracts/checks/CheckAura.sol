@@ -15,6 +15,9 @@ contract CheckAura is Initializable {
     address validatorSetAddress;
     bytes32 public lastProcessedBlock;
 
+    // todo editable
+    uint minSafetyBlocksValidators;
+
 
     struct BlockAura {
         bytes3 p0Seal;
@@ -40,6 +43,7 @@ contract CheckAura is Initializable {
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
+        uint eventBlock;  // todo add in relay
     }
 
     struct AuraProof {
@@ -82,9 +86,6 @@ contract CheckAura is Initializable {
                 // vs changes in that block
                 ValidatorSetProof memory vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
 
-                // how many block after event validatorSet should be finalized
-                uint txsBeforeFinalize = validatorSet.length / 2 + 1;
-
                 // apply vs changes
                 for (uint k = 0; k < vsProof.changes.length; k++)
                     applyVsChange(vsProof.changes[k]);
@@ -92,17 +93,25 @@ contract CheckAura is Initializable {
                 // check proof
                 receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
 
-                // event_block = finalized_block - txsBeforeFinalize
-                require(auraProof.blocks[i - txsBeforeFinalize].receiptHash == receiptHash, "Wrong VS receipt hash");
+                // eventBlockNum = finalizedBlockNum - validatorSet.length / 2 - 1
+                // eventBlockIndex = finalizedBlockIndex - minSafetyBlocksValidators
+                require(vsProof.eventBlock - i > minSafetyBlocksValidators, "Few safety blocks validators");
+                        require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
 
+
+                // there is gap BEFORE finalizing block, so disable parentHash check for it
+                // but only if it's not the safety blocks for transfer event
+                if (i < auraProof.transferEventBlock)
+                    parentHash = bytes32(0);
             }
 
+            // don't check parentHash for first block and for block after finalizing vs
             if (parentHash != bytes32(0))
                 require(block_.parentHash == parentHash, "Wrong parent hash");
 
             parentHash = checkBlock(block_);
 
-            // after finalizing vs change, next block in auraProof.blocks can have any parentHash (skipping some blocks)
+            // there is gap AFTER finalizing block, so disable parentHash check for it
             // but only if it's not the safety blocks for transfer event
             if (block_.finalizedVs != 0 && i < auraProof.transferEventBlock)
                 parentHash = bytes32(0);
