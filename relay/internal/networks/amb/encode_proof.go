@@ -121,6 +121,8 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		return fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
+    minSafetyBlocksValidators := 0 // todo
+
 	var lastBlock uint64
 	var txsBeforeFinalize uint64
 	for _, event := range events {
@@ -135,13 +137,17 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 			lastBlock = event.Raw.BlockNumber
 		}
 		finalizedBlockNum := event.Raw.BlockNumber + txsBeforeFinalize
+		safetyEndBlockNum := event.Raw.BlockNumber + minSafetyBlocksValidators
 
 		// save blocks up to finalized block
-		if err = b.saveBlocksRange(blocks, event.Raw.BlockNumber, finalizedBlockNum); err != nil {
+		if err = b.saveBlocksRange(blocks, event.Raw.BlockNumber, safetyEndBlockNum); err != nil {
 			return err
 		}
 
 		// block in which VS will be finalized
+		if err := b.saveBlock(blocks, finalizedBlockNum); err != nil {
+			return err
+		}
 		blockWhenFinalize := blocks[finalizedBlockNum]
 		blockWhenFinalize.finalizedVsEvents = append(blockWhenFinalize.finalizedVsEvents, vsChange)
 		blockWhenFinalize.lastEvent = event
