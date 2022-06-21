@@ -7,8 +7,7 @@
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
             "contractAddr": "0x1E712576FA72fa90C445bf1FcCCD8807FFA89467",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "privateKey": "in env",
-            "minBridgeFeeUSD": 5
+            "privateKey": "in env"
         },
         "eth": {
             "httpUrl": "https://sepolia.ambrosus-test.io/",
@@ -17,8 +16,7 @@
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 0,
-            "minBridgeFeeUSD": 5
+            "ethashGenNextEpochs": 0
         }
     },
     "externalLogger": {

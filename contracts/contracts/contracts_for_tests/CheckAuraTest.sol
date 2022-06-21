@@ -4,25 +4,13 @@ pragma solidity 0.8.6;
 import "../checks/CheckAura.sol";
 
 contract CheckAuraTest is CheckAura {
-    constructor(
-        address[] memory initialValidators_,
-        address validatorSetAddress_,
-        bytes32 lastProcessedBlock
-    ) {
-        __CheckAura_init(initialValidators_, validatorSetAddress_, lastProcessedBlock);
+    constructor(address validatorSetAddress_) {
+        validatorSetAddress = validatorSetAddress_;
     }
 
-    function checkAuraTest(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress) public {
-        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
-    }
-
-    function checkAuraTestVS(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress, address[] memory initialValidators_) public {
+    function checkAuraTest(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress, address[] memory initialValidators_) public {
         validatorSet = initialValidators_;
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
-    }
-
-    function checkSignatureTest(bytes32 message, bytes memory signature) public pure returns(address){
-        return ecdsaRecover(message, signature);
     }
 
     function blockHashTest(BlockAura calldata block_) public pure returns (bytes32, bytes32) {

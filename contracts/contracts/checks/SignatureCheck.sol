@@ -1,4 +1,4 @@
-pragma solidity ^0.8.0;
+pragma solidity 0.8.6;
 
 function ecdsaRecover(bytes32 messageHash, bytes memory signature) pure returns(address) {
     bytes32 r;

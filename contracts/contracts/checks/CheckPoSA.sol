@@ -47,21 +47,36 @@ contract CheckPoSA is Initializable {
 
 
     function __CheckPoSA_init(
-        address[] memory _initialValidators,
-        uint _initialEpoch,
-        bytes1 _chainId
+        address[] calldata initialValidators_,
+        uint initialEpoch_,
+        bytes1 chainId_
     ) internal initializer {
-        require(_initialValidators.length > 0, "Length of _initialValidators must be bigger than 0");
+        require(initialValidators_.length > 0, "Length of _initialValidators must be bigger than 0");
 
-        chainId = _chainId;
-        currentEpoch = _initialEpoch;
-        currentValidatorSetSize = _initialValidators.length;
+        chainId = chainId_;
+        currentEpoch = initialEpoch_;
+        currentValidatorSetSize = initialValidators_.length;
 
-        for (uint i = 0; i < _initialValidators.length; i++) {
-            allValidators[currentEpoch][_initialValidators[i]] = true;
+        for (uint i = 0; i < initialValidators_.length; i++) {
+            allValidators[currentEpoch][initialValidators_[i]] = true;
         }
     }
 
+    /*
+     PoSAProof.blocks contains:
+      - blocks for validate validatorSet changes, in that order:
+        - first block in epoch (blockNum % 200 == 0)
+        - some blocks, that need for validation (the amount depends on the length of the current validator set)
+        - block, when validators finalize
+        * repeated for each new epoch, all epochs must go in order, without omissions *
+
+      - block with transfer event;
+      - safety blocks for transfer event
+
+      Function will check all blocks, processing vs change events if needed.
+      Each block parentHash must be equal to the seal hash of the previous block, except for gaps between epochs
+      If there are no errors, the transfer is considered valid
+    */
     function checkPoSA_(PoSAProof calldata posaProof, uint minSafetyBlocks, address sideBridgeAddress) internal {
         bytes32 bareHash;
         bytes32 parentHash;
@@ -117,7 +132,7 @@ contract CheckPoSA is Initializable {
         );
     }
 
-    function getSignature(bytes calldata extraData) private pure returns (bytes memory) {
+    function getSignature(bytes calldata extraData) private pure returns (bytes calldata) {
         uint start = extraData.length - EXTRA_SEAL_LENGTH;
         return extraData[start : start + EXTRA_SEAL_LENGTH];
     }
@@ -140,12 +155,12 @@ contract CheckPoSA is Initializable {
         return nextValidatorSetSize;
     }
 
-    function verifySignature(bytes32 hash, bytes memory signature) private view returns (bool) {
+    function verifySignature(bytes32 hash, bytes calldata signature) private view returns (bool) {
         address signer = ecdsaRecover(hash, signature);
         return allValidators[currentEpoch][signer];
     }
 
-    function bytesToUint(bytes memory b) private pure returns (uint){
+    function bytesToUint(bytes calldata b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 }

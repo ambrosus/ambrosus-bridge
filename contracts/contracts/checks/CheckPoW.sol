@@ -39,6 +39,15 @@ contract CheckPoW is Initializable, Ethash {
         minimumDifficulty = minimumDifficulty_;
     }
 
+    /*
+     PoWProof.blocks contains:
+      - block with transfer event;
+      - safety blocks for transfer event
+
+      Function will check all blocks, checking it pow hash.
+      Each block parentHash must be equal to the hash of the previous block.
+      If there are no errors, the transfer is considered valid
+    */
     function checkPoW_(PoWProof calldata powProof, address sideBridgeAddress) internal view
     {
         bytes32 hash = calcTransferReceiptsHash(powProof.transfer, sideBridgeAddress);
@@ -86,7 +95,7 @@ contract CheckPoW is Initializable, Ethash {
     }
 
     function blockHashWithoutNonce(BlockPoW calldata block_) internal pure returns (bytes32) {
-        bytes memory rlpHeaderHashWithoutNonce = abi.encodePacked(
+        return keccak256(abi.encodePacked(
             abi.encodePacked(
                 block_.p0WithoutNonce,
                 block_.p1,
@@ -100,13 +109,11 @@ contract CheckPoW is Initializable, Ethash {
                 block_.p4,
                 block_.p6
             )
-        );
-
-        return keccak256(rlpHeaderHashWithoutNonce);
+        ));
     }
 
 
-    function bytesToUint(bytes memory b) private pure returns (uint){
+    function bytesToUint(bytes calldata b) private pure returns (uint){
         return uint(bytes32(b)) >> (256 - b.length * 8);
     }
 

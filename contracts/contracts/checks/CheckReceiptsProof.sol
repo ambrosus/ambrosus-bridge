@@ -5,7 +5,7 @@ import "../common/CommonStructs.sol";
 
 
 // check readme for focs
-function calcReceiptsHash(bytes[] memory proof, bytes32 el, uint proofStart) pure returns (bytes32) {
+function calcReceiptsHash(bytes[] calldata proof, bytes32 el, uint proofStart) pure returns (bytes32) {
     bytes memory s;
 
     for (uint i = proofStart; i < proof.length; i += 2) {
@@ -17,7 +17,7 @@ function calcReceiptsHash(bytes[] memory proof, bytes32 el, uint proofStart) pur
 }
 
 
-function calcTransferReceiptsHash(CommonStructs.TransferProof memory p, address eventContractAddress) pure returns (bytes32) {
+function calcTransferReceiptsHash(CommonStructs.TransferProof calldata p, address eventContractAddress) pure returns (bytes32) {
     bytes32 el = keccak256(abi.encodePacked(
             p.receiptProof[0],
             eventContractAddress,
