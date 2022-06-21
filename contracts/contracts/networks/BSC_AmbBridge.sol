@@ -24,6 +24,11 @@ contract BSC_AmbBridge is CommonBridge, CheckPoSA {
         lockTransfers(posaProof.transfer.transfers, posaProof.transfer.eventId);
     }
 
+    function submitValidatorSetChangesPoSA(PoSAProof calldata posaProof) public onlyRole(RELAY_ROLE) whenNotPaused {
+        require(posaProof.transfer.eventId == 0, "Event id must be 0");
+        checkPoSA_(posaProof, minSafetyBlocks, sideBridgeAddress);
+    }
+
     function setSideBridge(address _sideBridgeAddress) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(sideBridgeAddress == address(0), "sideBridgeAddress already set");
         sideBridgeAddress = _sideBridgeAddress;

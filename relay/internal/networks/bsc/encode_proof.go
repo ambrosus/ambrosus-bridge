@@ -14,6 +14,7 @@ const (
 	extraVanityLength = 32
 	extraSealLength   = 65
 	epochLength       = 200
+	splitLimit        = 200
 )
 
 func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckPoSAPoSAProof, error) {
@@ -54,56 +55,64 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 
 // if proof too long we need to split it into smaller parts
 func splitVsChanges(proof *c.CheckPoSAPoSAProof, currentEpoch uint64) []*c.CheckPoSAPoSAProof {
-	var res []*c.CheckPoSAPoSAProof
-	var limit = 500
-	var blocks = proof.Blocks
-	if len(blocks) < limit {
+	if len(proof.Blocks) < splitLimit {
 		return nil
 	}
 
-	for i := 0; i < len(blocks); i += limit {
+	var res []*c.CheckPoSAPoSAProof
+	var blocks = proof.Blocks
+	var currentEpochBlockNumBig = big.NewInt(int64(currentEpoch * epochLength))
+	var epochLengthBig = big.NewInt(int64(epochLength))
+
+	for i := 0; i < len(blocks); i += splitLimit {
+		// skip unnecessary blocks
 		number := new(big.Int).SetBytes(blocks[i].Number)
-		if number.Cmp(big.NewInt(int64(currentEpoch*epochLength))) <= 0 {
+		if number.Cmp(currentEpochBlockNumBig) <= 0 {
 			continue
 		}
 
-		if len(blocks)-i < limit {
+		// exit point from loop
+		if len(blocks)-i < splitLimit {
 			res = append(res, &c.CheckPoSAPoSAProof{
 				Blocks:             blocks[i:],
 				Transfer:           proof.Transfer,
-				TransferEventBlock: proof.TransferEventBlock,
+				TransferEventBlock: proof.TransferEventBlock - uint64(i),
 			})
 			break
 		}
 
-		end := i + limit
+		// end must not be >= transfer event block or length of blocks
+		end := i + splitLimit
+		if end >= int(proof.TransferEventBlock) {
+			end = int(proof.TransferEventBlock)
+		}
 		if end >= len(blocks) {
 			end = len(blocks) - 1
 		}
 
+		// find first epoch change block from the end of the part
 		for j := end; j >= i; j-- {
-			number := new(big.Int).SetBytes(blocks[j].Number)
-			if number.Mod(number, big.NewInt(epochLength)).Cmp(big.NewInt(0)) == 0 {
+			number := number.SetBytes(blocks[j].Number)
+			if number.Mod(number, epochLengthBig).Cmp(big.NewInt(0)) == 0 {
 				end = j
 				break
 			}
 		}
 
-		// if i == end {
-		// 	res = append(res, &c.CheckPoSAPoSAProof{})
-		// 	break
-		// }
-
+		// save the part with zero event id
+		resBlocks := blocks[i:end]
 		res = append(res, &c.CheckPoSAPoSAProof{
-			Blocks: blocks[i:end],
+			Blocks: resBlocks,
 			Transfer: c.CommonStructsTransferProof{
 				ReceiptProof: [][]byte{},
 				EventId:      big.NewInt(0),
 				Transfers:    []c.CommonStructsTransfer{},
 			},
-			TransferEventBlock: 0,
+			TransferEventBlock: uint64(len(resBlocks)), // required for contract to work correctly
 		})
-		i = end - limit
+
+		// set the counter to the `end` var
+		i = end - splitLimit
 	}
 
 	return res

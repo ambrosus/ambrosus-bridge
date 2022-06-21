@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"math/big"
+	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const BridgeName = "binance"
@@ -54,50 +56,54 @@ func (b *Bridge) Run() {
 }
 
 func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
-	// posaProof, err := b.encodePoSAProof(event, safetyBlocks)
-	// if err != nil {
-	// 	return fmt.Errorf("encodePoSAProof: %w", err)
-	// }
-	f, err := ioutil.ReadFile("posaproof.json")
+	posaProof, err := b.encodePoSAProof(event, safetyBlocks)
 	if err != nil {
-		return err
-	}
-	var posaProof *bindings.CheckPoSAPoSAProof
-	err = json.Unmarshal(f, &posaProof)
-	if err != nil {
-		return err
+		return fmt.Errorf("encodePoSAProof: %w", err)
 	}
 
 	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer PoSA...")
 	err = b.sideBridge.SubmitTransferPoSA(posaProof)
 
-	if castedErr, ok := err.(rpc.HTTPError); ok {
-		if castedErr.StatusCode == http.StatusRequestEntityTooLarge {
-			b.Logger.Info().Msg("The proof is big, so split it")
+	if isRequestIsTooBig(err) {
+		b.Logger.Info().Msg("The proof is big, so split it")
 
-			a, err := b.sideBridge.GetLastProcessedBlockNum()
+		currentEpoch, err := b.sideBridge.GetCurrentEpoch()
+		if err != nil {
+			return fmt.Errorf("get current epoch: %w", err)
+		}
+		changes := splitVsChanges(posaProof, currentEpoch)
+
+		for i := 0; i < len(changes)-1; i++ {
+			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit validator set change...")
+			err = b.sideBridge.SubmitValidatorSetChanges(changes[i])
 			if err != nil {
-				return fmt.Errorf("get last processed block num: %w", err)
-			}
-			changes := splitVsChanges(posaProof, a.Uint64()/200)
-
-			for i := 0; i < len(changes)-2; i++ {
-				b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit validator set change...")
-				err = b.sideBridge.SubmitValidatorSetChanges(changes[i])
-				if err != nil {
-					return fmt.Errorf("SubmitValidatorSetChanges: %w", err)
-				}
-			}
-
-			err = b.sideBridge.SubmitTransferPoSA(changes[len(changes)-1])
-			if err != nil {
-				return fmt.Errorf("SubmitTransferPoSA: %w", err)
+				return fmt.Errorf("SubmitValidatorSetChanges: %w", err)
 			}
 		}
+
+		err = b.sideBridge.SubmitTransferPoSA(changes[len(changes)-1])
 	}
 
 	if err != nil {
-		return fmt.Errorf("SubmitTransferPoW: %w", err)
+		return fmt.Errorf("SubmitTransferPoSA: %w", err)
 	}
 	return nil
+}
+
+func isRequestIsTooBig(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if err.Error() == "Transaction is too big, see chain specification for the limit." {
+		return true
+	}
+
+	if castedErr, ok := err.(rpc.HTTPError); ok {
+		if ok && castedErr.StatusCode == http.StatusRequestEntityTooLarge {
+			return true
+		}
+	}
+
+	return false
 }

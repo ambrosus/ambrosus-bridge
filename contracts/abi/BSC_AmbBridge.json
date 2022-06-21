@@ -856,6 +856,132 @@
   {
     "inputs": [
       {
+        "components": [
+          {
+            "components": [
+              {
+                "internalType": "bytes3",
+                "name": "p0Signed",
+                "type": "bytes3"
+              },
+              {
+                "internalType": "bytes3",
+                "name": "p0Unsigned",
+                "type": "bytes3"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "parentHash",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p1",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "receiptHash",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p2",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "number",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p3",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p4Signed",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p4Unsigned",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "extraData",
+                "type": "bytes"
+              },
+              {
+                "internalType": "bytes",
+                "name": "p5",
+                "type": "bytes"
+              }
+            ],
+            "internalType": "struct CheckPoSA.BlockPoSA[]",
+            "name": "blocks",
+            "type": "tuple[]"
+          },
+          {
+            "components": [
+              {
+                "internalType": "bytes[]",
+                "name": "receiptProof",
+                "type": "bytes[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "eventId",
+                "type": "uint256"
+              },
+              {
+                "components": [
+                  {
+                    "internalType": "address",
+                    "name": "tokenAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "address",
+                    "name": "toAddress",
+                    "type": "address"
+                  },
+                  {
+                    "internalType": "uint256",
+                    "name": "amount",
+                    "type": "uint256"
+                  }
+                ],
+                "internalType": "struct CommonStructs.Transfer[]",
+                "name": "transfers",
+                "type": "tuple[]"
+              }
+            ],
+            "internalType": "struct CommonStructs.TransferProof",
+            "name": "transfer",
+            "type": "tuple"
+          },
+          {
+            "internalType": "uint64",
+            "name": "transferEventBlock",
+            "type": "uint64"
+          }
+        ],
+        "internalType": "struct CheckPoSA.PoSAProof",
+        "name": "posaProof",
+        "type": "tuple"
+      }
+    ],
+    "name": "submitValidatorSetChangesPoSA",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
