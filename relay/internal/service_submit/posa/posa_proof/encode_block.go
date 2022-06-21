@@ -30,7 +30,6 @@ func (e *PoSAEncoder) EncodeBlock(header *types.Header) (*bindings.CheckPoSABloc
 		header.ParentHash.Bytes(),
 		header.ReceiptHash.Bytes(),
 		header.Number.Bytes(),
-		p4Signed,
 		header.Extra,
 	}
 	rlpParts, err := helpers.BytesSplit(signedHeader, splitEls)
@@ -47,13 +46,13 @@ func (e *PoSAEncoder) EncodeBlock(header *types.Header) (*bindings.CheckPoSABloc
 		ReceiptHash: helpers.BytesToBytes32(header.ReceiptHash.Bytes()),
 		P2:          rlpParts[2],
 		Number:      header.Number.Bytes(),
-		P3:          rlpParts[3],
+		P3:          rlpParts[3][:len(rlpParts[3])-len(p4Signed)],
 
 		P4Signed:   p4Signed,
 		P4Unsigned: helpers.RlpPrefix(len(header.Extra) - 65),
 		ExtraData:  header.Extra,
 
-		P5: rlpParts[5],
+		P5: rlpParts[4],
 	}, nil
 }
 
