@@ -6,11 +6,9 @@ import "../checks/CheckPoSA.sol";
 
 contract CheckPoSATest is CheckPoSA {
     constructor(
-        address[] memory initialValidators,
-        uint initialEpoch,
-        bytes1 chainId
+        bytes1 chainId_
     ) {
-        __CheckPoSA_init(initialValidators, initialEpoch, chainId);
+        chainId = chainId_;
     }
 
     function checkPoSATest(PoSAProof calldata posaProof, uint minSafetyBlocks, address sideBridgeAddress,
@@ -35,7 +33,4 @@ contract CheckPoSATest is CheckPoSA {
         return calcBlockHash(block_);
     }
 
-    function checkSignatureTest(bytes32 hash, bytes memory signature) public view returns(address) {
-        return ecdsaRecover(hash, signature);
-    }
 }
