@@ -95,8 +95,20 @@ const config: HardhatUserConfig = {
 
   namedAccounts: {
     owner: 0,
-    admin: 1,
-    relay: 2,
+
+    // admin and relay can be just addresses for prod, not private key
+    admin: {
+      default: 1,
+      "main/amb": process.env.ADDRESS_ADMIN_AMB || ethers.constants.HashZero,
+      "main/eth": process.env.ADDRESS_ADMIN_ETH || ethers.constants.HashZero,
+      "main/bsc": process.env.ADDRESS_ADMIN_BSC || ethers.constants.HashZero,
+    },
+    relay: {
+      default: 2,
+      "main/amb": process.env.ADDRESS_RELAY_AMB || ethers.constants.HashZero,
+      "main/eth": process.env.ADDRESS_RELAY_ETH || ethers.constants.HashZero,
+      "main/bsc": process.env.ADDRESS_RELAY_BSC || ethers.constants.HashZero,
+    },
     bridge: 3,
     user: 4,
   },
