@@ -319,7 +319,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     // encode message with received values and current timestamp;
     // check that signature is same message signed by address with RELAY_ROLE;
     // make `signatureFeeCheckNumber` attempts, each time decrementing timestampEpoch (workaround for old signature)
-    function feeCheck(address token, bytes calldata signature, uint transferFee, uint bridgeFee, uint amount) internal {
+    function feeCheck(address token, bytes calldata signature, uint transferFee, uint bridgeFee, uint amount) internal view {
         bytes32 messageHash;
         address signer;
         uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
