@@ -64,7 +64,7 @@ func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) 
 	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer PoSA...")
 	err = b.sideBridge.SubmitTransferPoSA(posaProof)
 
-	if isRequestIsTooBig(err) {
+	if isRequestTooBig(err) {
 		b.Logger.Info().Msg("The proof is big, so split it")
 
 		currentEpoch, err := b.sideBridge.GetCurrentEpoch()
@@ -90,7 +90,7 @@ func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) 
 	return nil
 }
 
-func isRequestIsTooBig(err error) bool {
+func isRequestTooBig(err error) bool {
 	if err == nil {
 		return false
 	}
