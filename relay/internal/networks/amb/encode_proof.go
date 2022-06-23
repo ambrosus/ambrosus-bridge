@@ -121,7 +121,10 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		return fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
-    minSafetyBlocksValidators := 0 // todo
+	minSafetyBlocksValidators, err := b.sideBridge.GetMinSafetyBlocksValidators()
+	if err != nil {
+		return fmt.Errorf("GetMinSafetyBlocksValidators: %w", err)
+	}
 
 	var lastBlock uint64
 	var txsBeforeFinalize uint64
