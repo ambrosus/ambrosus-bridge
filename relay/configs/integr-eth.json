@@ -7,9 +7,7 @@
             "wsUrl": "ws://127.0.0.1:8546",
             "contractAddr": "will be set by deploy script",
             "privateKey": "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5",
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "minBridgeFeeUSD": 5,
-            "defaultTransferFee": 1
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
         },
         "eth": {
             "httpUrl": "http://127.0.0.1:8502",
@@ -18,9 +16,7 @@
             "privateKey": "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5",
             "ethashDir": "/tmp/ethash",
             "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 1,
-            "minBridgeFeeUSD": 5,
-            "defaultTransferFee": 0.01
+            "ethashGenNextEpochs": 1
         }
     },
     "externalLogger": {

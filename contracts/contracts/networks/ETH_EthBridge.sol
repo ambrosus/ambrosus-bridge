@@ -8,8 +8,8 @@ import "../checks/CheckAura.sol";
 contract ETH_EthBridge is CommonBridge, CheckAura {
 
     function initialize(
-        CommonStructs.ConstructorArgs memory args,
-        address[] memory initialValidators,
+        CommonStructs.ConstructorArgs calldata args,
+        address[] calldata initialValidators,
         address validatorSetAddress,
         bytes32 lastProcessedBlock
     ) public initializer {

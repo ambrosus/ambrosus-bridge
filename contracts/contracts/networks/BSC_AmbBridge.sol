@@ -8,8 +8,8 @@ import "../checks/CheckPoSA.sol";
 contract BSC_AmbBridge is CommonBridge, CheckPoSA {
 
     function initialize(
-        CommonStructs.ConstructorArgs memory args,
-        address[] memory initialValidators,
+        CommonStructs.ConstructorArgs calldata args,
+        address[] calldata initialValidators,
         uint initialEpoch,
         bytes1 chainId
     ) public initializer {

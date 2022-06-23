@@ -787,7 +787,7 @@
       },
       {
         "internalType": "bytes",
-        "name": "signature",
+        "name": "feeSignature",
         "type": "bytes"
       },
       {
@@ -815,7 +815,7 @@
       },
       {
         "internalType": "bytes",
-        "name": "signature",
+        "name": "feeSignature",
         "type": "bytes"
       },
       {

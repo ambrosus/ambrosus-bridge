@@ -15,42 +15,48 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
 
+    // Signature contains timestamp divided by SIGNATURE_FEE_TIMESTAMP; SIGNATURE_FEE_TIMESTAMP should be the same on relay;
     uint private constant SIGNATURE_FEE_TIMESTAMP = 1800;  // 30 min
+    // Signature will be valid for `SIGNATURE_FEE_TIMESTAMP` * `signatureFeeCheckNumber` seconds after creation
+    uint internal signatureFeeCheckNumber;
 
-    // queue to be pushed in another network
+
+    // queue of Transfers to be pushed in another network
     CommonStructs.Transfer[] queue;
 
     // locked transfers from another network
     mapping(uint => CommonStructs.LockedTransfers) public lockedTransfers;
-    uint public oldestLockedEventId;  // head index of lockedTransfers 'queue' mapping
+    // head index of lockedTransfers 'queue' mapping
+    uint public oldestLockedEventId;
 
 
     // this network to side network token addresses mapping
     mapping(address => address) public tokenAddresses;
+    // token that implement `IWrapper` interface and used to wrap native coin
     address public wrapperAddress;
 
+    // addresses that will receive fees
     address payable transferFeeRecipient;
     address payable bridgeFeeRecipient;
 
-    address public sideBridgeAddress;
-    uint public minSafetyBlocks;
-    uint public timeframeSeconds;
-    uint public lockTime;
+    address public sideBridgeAddress;  // transfer events from side networks must be created by this address
+    uint public minSafetyBlocks;  // proof must contains at least `minSafetyBlocks` blocks after block with transfer
+    uint public timeframeSeconds;  // `withdrawFinish` func will be produce Transfer event no more often than `timeframeSeconds`
+    uint public lockTime;  // transfers received from side networks can be unlocked after `lockTime` seconds
 
     uint public inputEventId; // last processed event from side network
     uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
-    uint public lastTimeframe; // timestamp / timeframeSeconds of latest withdraw
+    uint public lastTimeframe; // timestamp / `timeframeSeconds` of latest withdraw
 
-    uint internal signatureFeeCheckNumber;
 
     event Withdraw(address indexed from, uint eventId, address tokenFrom, address tokenTo, uint amount,
-                   uint transferFeeAmount, uint bridgeFeeAmount);
+        uint transferFeeAmount, uint bridgeFeeAmount);
     event Transfer(uint indexed eventId, CommonStructs.Transfer[] queue);
     event TransferSubmit(uint indexed eventId);
     event TransferFinish(uint indexed eventId);
 
-    function __CommonBridge_init(CommonStructs.ConstructorArgs memory args) internal initializer {
+    function __CommonBridge_init(CommonStructs.ConstructorArgs calldata args) internal initializer {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
         _setupRole(ADMIN_ROLE, args.adminAddress);
@@ -66,6 +72,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         timeframeSeconds = args.timeframeSeconds;
         lockTime = args.lockTime;
 
+        // 1, coz eventId 0 considered already processed
         oldestLockedEventId = 1;
         outputEventId = 1;
 
@@ -74,14 +81,24 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         lastTimeframe = block.timestamp / timeframeSeconds;
     }
 
-    function wrapWithdraw(address toAddress, bytes calldata signature, uint transferFee, uint bridgeFee) public payable {
+
+    // `wrapWithdraw` function used for wrap some amount of native coins and send it to side network;
+    /// @dev Amount to wrap is calculated by subtracting fees from msg.value; Use `wrapperAddress` token to wrap;
+
+    /// @param toAddress Address in side network that will receive the tokens
+    /// @param transferFee Amount (in native coins), payed to compensate gas fees in side network
+    /// @param bridgeFee Amount (in native coins), payed as bridge earnings
+    /// @param feeSignature Signature signed by relay that confirms that the fee values are valid
+    function wrapWithdraw(address toAddress,
+        bytes calldata feeSignature, uint transferFee, uint bridgeFee
+    ) public payable {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
         require(msg.value > transferFee + bridgeFee, "Sent value <= fee");
 
         uint amount = msg.value - transferFee - bridgeFee;
-        feeCheck(wrapperAddress, signature, transferFee, bridgeFee, amount);
+        feeCheck(wrapperAddress, feeSignature, transferFee, bridgeFee, amount);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
@@ -94,14 +111,20 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         withdrawFinish();
     }
 
+    // `withdraw` function used for sending tokens from this network to side network;
+    /// @param tokenThisAddress Address of token [that will be transferred] in current network
+    /// @param toAddress Address in side network that will receive the tokens
+    /// @param amount Amount of tokens to be sent
+    /** @param unwrapSide If true, user on side network will receive native network coin instead of ERC20 token.
+     Transferred token MUST be wrapper of side network native coin (ex: WETH, if side net is Ethereum)
+     `tokenAddresses[0x0] == tokenThisAddress` means that `tokenThisAddress` is thisNet analogue of wrapper token in sideNet
+    */
+    /// @param transferFee Amount (in native coins), payed to compensate gas fees in side network
+    /// @param bridgeFee Amount (in native coins), payed as bridge earnings
+    /// @param feeSignature Signature signed by relay that confirms that the fee values are valid
     function withdraw(
-        address tokenThisAddress,
-        address toAddress,
-        uint amount,
-        bool unwrapSide,
-        bytes calldata signature,
-        uint transferFee,
-        uint bridgeFee
+        address tokenThisAddress, address toAddress, uint amount, bool unwrapSide,
+        bytes calldata feeSignature, uint transferFee, uint bridgeFee
     ) payable public {
         address tokenSideAddress;
         if (unwrapSide) {
@@ -116,7 +139,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         require(amount > 0, "Cannot withdraw 0");
 
-        feeCheck(tokenThisAddress, signature, transferFee, bridgeFee, amount);
+        feeCheck(tokenThisAddress, feeSignature, transferFee, bridgeFee, amount);
         transferFeeRecipient.transfer(transferFee);
         bridgeFeeRecipient.transfer(bridgeFee);
 
@@ -128,40 +151,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         withdrawFinish();
     }
 
-
-    function feeCheck(
-        address token,
-        bytes calldata signature,
-        uint transferFee,
-        uint bridgeFee,
-        uint amount
-    ) internal {
-        bytes32 messageHash;
-        address signer;
-        uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
-
-        for (uint i = 0; i < signatureFeeCheckNumber; i++) {
-            messageHash = keccak256(abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
-                    keccak256(abi.encodePacked(
-                        token,
-                        timestampEpoch,
-                        transferFee,
-                        bridgeFee,
-                        amount
-                    ))
-                ));
-
-            signer = ecdsaRecover(messageHash, signature);
-            if (hasRole(RELAY_ROLE, signer)) {
-                return;
-            } else {
-                timestampEpoch--;
-            }
-        }
-        revert("Signature check failed");
-    }
-
+    // can be called to force emit `Transfer` event, without waiting for withdraw in next timeframe
     function triggerTransfers() public {
         require(queue.length != 0, "Queue is empty");
 
@@ -169,47 +159,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         delete queue;
     }
 
-    function withdrawFinish() internal {
-        uint nowTimeframe = block.timestamp / timeframeSeconds;
-        if (nowTimeframe != lastTimeframe) {
-            emit Transfer(outputEventId++, queue);
-            delete queue;
 
-            lastTimeframe = nowTimeframe;
-        }
-    }
-
-
-    // locked transfers from another network
-    function getLockedTransfers(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
-        return lockedTransfers[eventId];
-    }
-
-
-    function proceedTransfers(CommonStructs.Transfer[] memory transfers) internal {
-        for (uint i = 0; i < transfers.length; i++) {
-
-            if (transfers[i].tokenAddress == address(0)) {// native token
-                IWrapper(wrapperAddress).withdraw(transfers[i].amount);
-                payable(transfers[i].toAddress).transfer(transfers[i].amount);
-            } else {// ERC20 token
-                require(
-                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
-                    "Fail transfer coins");
-            }
-
-        }
-    }
-
-
-    // submitted transfers save here for `lockTime` period
-    function lockTransfers(CommonStructs.Transfer[] memory events, uint eventId) internal {
-        lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
-        for (uint i = 0; i < events.length; i++)
-            lockedTransfers[eventId].transfers.push(events[i]);
-    }
-
-    // after `lockTime` period, transfers can  be unlocked
+    // after `lockTime` period, transfers can be unlocked
     function unlockTransfers(uint eventId) public whenNotPaused {
         require(eventId == oldestLockedEventId, "can unlock only oldest event");
 
@@ -245,8 +196,17 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
-        inputEventId = eventId-1; // pretend like we don't receive that event
+        inputEventId = eventId - 1;
+        // pretend like we don't receive that event
     }
+
+    // views
+
+    // returns locked transfers from another network
+    function getLockedTransfers(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
+        return lockedTransfers[eventId];
+    }
+
 
     function isQueueEmpty() public view returns (bool) {
         return queue.length == 0;
@@ -290,18 +250,18 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         delete tokenAddresses[tokenThisAddress];
     }
 
-    function tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
+    function tokensAddBatch(address[] calldata tokenThisAddresses, address[] calldata tokenSideAddresses) public onlyRole(ADMIN_ROLE) {
         _tokensAddBatch(tokenThisAddresses, tokenSideAddresses);
     }
 
-    function _tokensAddBatch(address[] memory tokenThisAddresses, address[] memory tokenSideAddresses) private {
+    function _tokensAddBatch(address[] calldata tokenThisAddresses, address[] calldata tokenSideAddresses) private {
         require(tokenThisAddresses.length == tokenSideAddresses.length, "sizes of tokenThisAddresses and tokenSideAddresses must be same");
         uint arrayLength = tokenThisAddresses.length;
         for (uint i = 0; i < arrayLength; i++)
             tokenAddresses[tokenThisAddresses[i]] = tokenSideAddresses[i];
     }
 
-    function tokensRemoveBatch(address[] memory tokenThisAddresses) public onlyRole(ADMIN_ROLE) {
+    function tokensRemoveBatch(address[] calldata tokenThisAddresses) public onlyRole(ADMIN_ROLE) {
         uint arrayLength = tokenThisAddresses.length;
         for (uint i = 0; i < arrayLength; i++)
             delete tokenAddresses[tokenThisAddresses[i]];
@@ -318,6 +278,65 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     // internal
+
+    // submitted transfers saves in `lockedTransfers` for `lockTime` period
+    function lockTransfers(CommonStructs.Transfer[] calldata events, uint eventId) internal {
+        lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
+        for (uint i = 0; i < events.length; i++)
+            lockedTransfers[eventId].transfers.push(events[i]);
+    }
+
+
+    // sends money according to the information in the Transfer structure
+    // if transfer.tokenAddress == 0x0, then it's transfer of `wrapperAddress` token with auto-unwrap to native coin
+    function proceedTransfers(CommonStructs.Transfer[] memory transfers) internal {
+        for (uint i = 0; i < transfers.length; i++) {
+
+            if (transfers[i].tokenAddress == address(0)) {// native token
+                IWrapper(wrapperAddress).withdraw(transfers[i].amount);
+                payable(transfers[i].toAddress).transfer(transfers[i].amount);
+            } else {// ERC20 token
+                require(
+                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
+                    "Fail transfer coins");
+            }
+
+        }
+    }
+
+    // used by `withdraw` and `wrapWithdraw` functions;
+    // emit `Transfer` event with current queue if timeframe was changed;
+    function withdrawFinish() internal {
+        uint nowTimeframe = block.timestamp / timeframeSeconds;
+        if (nowTimeframe != lastTimeframe) {
+            emit Transfer(outputEventId++, queue);
+            delete queue;
+
+            lastTimeframe = nowTimeframe;
+        }
+    }
+
+    // encode message with received values and current timestamp;
+    // check that signature is same message signed by address with RELAY_ROLE;
+    // make `signatureFeeCheckNumber` attempts, each time decrementing timestampEpoch (workaround for old signature)
+    function feeCheck(address token, bytes calldata signature, uint transferFee, uint bridgeFee, uint amount) internal {
+        bytes32 messageHash;
+        address signer;
+        uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
+
+        for (uint i = 0; i < signatureFeeCheckNumber; i++) {
+            messageHash = keccak256(abi.encodePacked(
+                    "\x19Ethereum Signed Message:\n32",
+                    keccak256(abi.encodePacked(token, timestampEpoch, transferFee, bridgeFee, amount))
+                ));
+
+            signer = ecdsaRecover(messageHash, signature);
+            if (hasRole(RELAY_ROLE, signer))
+                return;
+            timestampEpoch--;
+        }
+        revert("Signature check failed");
+    }
 
     function checkEventId(uint eventId) internal {
         require(eventId == ++inputEventId, "EventId out of order");

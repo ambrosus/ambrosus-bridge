@@ -1586,178 +1586,44 @@ func (_Bridge *BridgeTransactorSession) Unpause() (*types.Transaction, error) {
 
 // Withdraw is a paid mutator transaction binding the contract method 0xf8b74433.
 //
-// Solidity: function withdraw(address tokenThisAddress, address toAddress, uint256 amount, bool unwrapSide, bytes signature, uint256 transferFee, uint256 bridgeFee) payable returns()
-func (_Bridge *BridgeTransactor) Withdraw(opts *bind.TransactOpts, tokenThisAddress common.Address, toAddress common.Address, amount *big.Int, unwrapSide bool, signature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "withdraw", tokenThisAddress, toAddress, amount, unwrapSide, signature, transferFee, bridgeFee)
+// Solidity: function withdraw(address tokenThisAddress, address toAddress, uint256 amount, bool unwrapSide, bytes feeSignature, uint256 transferFee, uint256 bridgeFee) payable returns()
+func (_Bridge *BridgeTransactor) Withdraw(opts *bind.TransactOpts, tokenThisAddress common.Address, toAddress common.Address, amount *big.Int, unwrapSide bool, feeSignature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "withdraw", tokenThisAddress, toAddress, amount, unwrapSide, feeSignature, transferFee, bridgeFee)
 }
 
 // Withdraw is a paid mutator transaction binding the contract method 0xf8b74433.
 //
-// Solidity: function withdraw(address tokenThisAddress, address toAddress, uint256 amount, bool unwrapSide, bytes signature, uint256 transferFee, uint256 bridgeFee) payable returns()
-func (_Bridge *BridgeSession) Withdraw(tokenThisAddress common.Address, toAddress common.Address, amount *big.Int, unwrapSide bool, signature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.Withdraw(&_Bridge.TransactOpts, tokenThisAddress, toAddress, amount, unwrapSide, signature, transferFee, bridgeFee)
+// Solidity: function withdraw(address tokenThisAddress, address toAddress, uint256 amount, bool unwrapSide, bytes feeSignature, uint256 transferFee, uint256 bridgeFee) payable returns()
+func (_Bridge *BridgeSession) Withdraw(tokenThisAddress common.Address, toAddress common.Address, amount *big.Int, unwrapSide bool, feeSignature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.Withdraw(&_Bridge.TransactOpts, tokenThisAddress, toAddress, amount, unwrapSide, feeSignature, transferFee, bridgeFee)
 }
 
 // Withdraw is a paid mutator transaction binding the contract method 0xf8b74433.
 //
-// Solidity: function withdraw(address tokenThisAddress, address toAddress, uint256 amount, bool unwrapSide, bytes signature, uint256 transferFee, uint256 bridgeFee) payable returns()
-func (_Bridge *BridgeTransactorSession) Withdraw(tokenThisAddress common.Address, toAddress common.Address, amount *big.Int, unwrapSide bool, signature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.Withdraw(&_Bridge.TransactOpts, tokenThisAddress, toAddress, amount, unwrapSide, signature, transferFee, bridgeFee)
+// Solidity: function withdraw(address tokenThisAddress, address toAddress, uint256 amount, bool unwrapSide, bytes feeSignature, uint256 transferFee, uint256 bridgeFee) payable returns()
+func (_Bridge *BridgeTransactorSession) Withdraw(tokenThisAddress common.Address, toAddress common.Address, amount *big.Int, unwrapSide bool, feeSignature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.Withdraw(&_Bridge.TransactOpts, tokenThisAddress, toAddress, amount, unwrapSide, feeSignature, transferFee, bridgeFee)
 }
 
 // WrapWithdraw is a paid mutator transaction binding the contract method 0x91c5bc0a.
 //
-// Solidity: function wrapWithdraw(address toAddress, bytes signature, uint256 transferFee, uint256 bridgeFee) payable returns()
-func (_Bridge *BridgeTransactor) WrapWithdraw(opts *bind.TransactOpts, toAddress common.Address, signature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
-	return _Bridge.contract.Transact(opts, "wrapWithdraw", toAddress, signature, transferFee, bridgeFee)
+// Solidity: function wrapWithdraw(address toAddress, bytes feeSignature, uint256 transferFee, uint256 bridgeFee) payable returns()
+func (_Bridge *BridgeTransactor) WrapWithdraw(opts *bind.TransactOpts, toAddress common.Address, feeSignature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
+	return _Bridge.contract.Transact(opts, "wrapWithdraw", toAddress, feeSignature, transferFee, bridgeFee)
 }
 
 // WrapWithdraw is a paid mutator transaction binding the contract method 0x91c5bc0a.
 //
-// Solidity: function wrapWithdraw(address toAddress, bytes signature, uint256 transferFee, uint256 bridgeFee) payable returns()
-func (_Bridge *BridgeSession) WrapWithdraw(toAddress common.Address, signature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.WrapWithdraw(&_Bridge.TransactOpts, toAddress, signature, transferFee, bridgeFee)
+// Solidity: function wrapWithdraw(address toAddress, bytes feeSignature, uint256 transferFee, uint256 bridgeFee) payable returns()
+func (_Bridge *BridgeSession) WrapWithdraw(toAddress common.Address, feeSignature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.WrapWithdraw(&_Bridge.TransactOpts, toAddress, feeSignature, transferFee, bridgeFee)
 }
 
 // WrapWithdraw is a paid mutator transaction binding the contract method 0x91c5bc0a.
 //
-// Solidity: function wrapWithdraw(address toAddress, bytes signature, uint256 transferFee, uint256 bridgeFee) payable returns()
-func (_Bridge *BridgeTransactorSession) WrapWithdraw(toAddress common.Address, signature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
-	return _Bridge.Contract.WrapWithdraw(&_Bridge.TransactOpts, toAddress, signature, transferFee, bridgeFee)
-}
-
-// BridgePausedIterator is returned from FilterPaused and is used to iterate over the raw logs and unpacked data for Paused events raised by the Bridge contract.
-type BridgePausedIterator struct {
-	Event *BridgePaused // Event containing the contract specifics and raw log
-
-	contract *bind.BoundContract // Generic contract to use for unpacking event data
-	event    string              // Event name to use for unpacking event data
-
-	logs chan types.Log        // Log channel receiving the found contract events
-	sub  ethereum.Subscription // Subscription for errors, completion and termination
-	done bool                  // Whether the subscription completed delivering logs
-	fail error                 // Occurred error to stop iteration
-}
-
-// Next advances the iterator to the subsequent event, returning whether there
-// are any more events found. In case of a retrieval or parsing error, false is
-// returned and Error() can be queried for the exact failure.
-func (it *BridgePausedIterator) Next() bool {
-	// If the iterator failed, stop iterating
-	if it.fail != nil {
-		return false
-	}
-	// If the iterator completed, deliver directly whatever's available
-	if it.done {
-		select {
-		case log := <-it.logs:
-			it.Event = new(BridgePaused)
-			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-				it.fail = err
-				return false
-			}
-			it.Event.Raw = log
-			return true
-
-		default:
-			return false
-		}
-	}
-	// Iterator still in progress, wait for either a data or an error event
-	select {
-	case log := <-it.logs:
-		it.Event = new(BridgePaused)
-		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
-			it.fail = err
-			return false
-		}
-		it.Event.Raw = log
-		return true
-
-	case err := <-it.sub.Err():
-		it.done = true
-		it.fail = err
-		return it.Next()
-	}
-}
-
-// Error returns any retrieval or parsing error occurred during filtering.
-func (it *BridgePausedIterator) Error() error {
-	return it.fail
-}
-
-// Close terminates the iteration process, releasing any pending underlying
-// resources.
-func (it *BridgePausedIterator) Close() error {
-	it.sub.Unsubscribe()
-	return nil
-}
-
-// BridgePaused represents a Paused event raised by the Bridge contract.
-type BridgePaused struct {
-	Account common.Address
-	Raw     types.Log // Blockchain specific contextual infos
-}
-
-// FilterPaused is a free log retrieval operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
-//
-// Solidity: event Paused(address account)
-func (_Bridge *BridgeFilterer) FilterPaused(opts *bind.FilterOpts) (*BridgePausedIterator, error) {
-
-	logs, sub, err := _Bridge.contract.FilterLogs(opts, "Paused")
-	if err != nil {
-		return nil, err
-	}
-	return &BridgePausedIterator{contract: _Bridge.contract, event: "Paused", logs: logs, sub: sub}, nil
-}
-
-// WatchPaused is a free log subscription operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
-//
-// Solidity: event Paused(address account)
-func (_Bridge *BridgeFilterer) WatchPaused(opts *bind.WatchOpts, sink chan<- *BridgePaused) (event.Subscription, error) {
-
-	logs, sub, err := _Bridge.contract.WatchLogs(opts, "Paused")
-	if err != nil {
-		return nil, err
-	}
-	return event.NewSubscription(func(quit <-chan struct{}) error {
-		defer sub.Unsubscribe()
-		for {
-			select {
-			case log := <-logs:
-				// New log arrived, parse the event and forward to the user
-				event := new(BridgePaused)
-				if err := _Bridge.contract.UnpackLog(event, "Paused", log); err != nil {
-					return err
-				}
-				event.Raw = log
-
-				select {
-				case sink <- event:
-				case err := <-sub.Err():
-					return err
-				case <-quit:
-					return nil
-				}
-			case err := <-sub.Err():
-				return err
-			case <-quit:
-				return nil
-			}
-		}
-	}), nil
-}
-
-// ParsePaused is a log parse operation binding the contract event 0x62e78cea01bee320cd4e420270b5ea74000d11b0c9f74754ebdbfc544b05a258.
-//
-// Solidity: event Paused(address account)
-func (_Bridge *BridgeFilterer) ParsePaused(log types.Log) (*BridgePaused, error) {
-	event := new(BridgePaused)
-	if err := _Bridge.contract.UnpackLog(event, "Paused", log); err != nil {
-		return nil, err
-	}
-	event.Raw = log
-	return event, nil
+// Solidity: function wrapWithdraw(address toAddress, bytes feeSignature, uint256 transferFee, uint256 bridgeFee) payable returns()
+func (_Bridge *BridgeTransactorSession) WrapWithdraw(toAddress common.Address, feeSignature []byte, transferFee *big.Int, bridgeFee *big.Int) (*types.Transaction, error) {
+	return _Bridge.Contract.WrapWithdraw(&_Bridge.TransactOpts, toAddress, feeSignature, transferFee, bridgeFee)
 }
 
 // BridgeRoleAdminChangedIterator is returned from FilterRoleAdminChanged and is used to iterate over the raw logs and unpacked data for RoleAdminChanged events raised by the Bridge contract.
