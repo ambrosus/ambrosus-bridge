@@ -18,10 +18,17 @@ async function chooseStage() {
 }
 
 async function chooseAction(stage: string) {
-  const action = await choose(["full deploy", "tokens", "bridges"], "Choose action:");
-  if (action == "full deploy") full_deploy(stage);
+  const actions = [
+    "full deploy all networks",
+    ...NETWORKS.map((n) => ({name: `full deploy ${n}-amb`, value: n})),
+    "tokens", "bridges",
+  ]
+  const action = await choose(actions, "Choose action:");
+
   if (action == "tokens") await tokens(stage);
-  if (action == "bridges") await bridges(stage);
+  else if (action == "bridges") await bridges(stage);
+  else if (action == "full deploy all networks") full_deploy_all_networks(stage);
+  else full_deploy(stage, action)  // action == network name (eth/bsc/...)
 }
 
 
@@ -82,11 +89,14 @@ async function bridge(stage: string, pair: string) {
 
 // actions
 
-function full_deploy(stage: string) {
-  for (const network in NETWORKS) {
+function full_deploy_all_networks(stage: string) {
+  for (const network of NETWORKS)
+    full_deploy(stage, network);
+}
+
+function full_deploy(stage: string, network: string) {
     deploy_tokens(stage, network);
     deploy_bridges(stage, network);
-  }
 }
 
 function deploy_tokens(stage: string, network: string) {
