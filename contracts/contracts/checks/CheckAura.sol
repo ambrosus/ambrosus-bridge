@@ -93,7 +93,7 @@ contract CheckAura is Initializable {
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
         if (auraProof.transferEventBlock != 0) {
-            bytes32 receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
+            receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
             require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
             require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
         }
@@ -151,9 +151,8 @@ contract CheckAura is Initializable {
             validatorSet.pop();
         }
         else {
-            uint index = uint(int((vsEvent.deltaIndex)));
-
             // logic if validatorSet contract will be updated
+            // uint index = uint(int((vsEvent.deltaIndex)));
             // validatorSet.push(validatorSet[index]);
             // validatorSet[index] = vsEvent.deltaAddress;
 
@@ -182,15 +181,15 @@ contract CheckAura is Initializable {
     }
 
 
-    function calcValidatorSetReceiptHash(bytes[] calldata receipt_proof, address validatorSetAddress, address[] storage vSet) private pure returns (bytes32) {
+    function calcValidatorSetReceiptHash(bytes[] calldata receiptProof, address validatorSetAddress_, address[] storage vSet) private pure returns (bytes32) {
         bytes32 el = keccak256(abi.encodePacked(
-                receipt_proof[0],
-                validatorSetAddress,
-                receipt_proof[1],
+                receiptProof[0],
+                validatorSetAddress_,
+                receiptProof[1],
                 abi.encode(vSet),
-                receipt_proof[2]
+                receiptProof[2]
             ));
-        return calcReceiptsHash(receipt_proof, el, 3);
+        return calcReceiptsHash(receiptProof, el, 3);
     }
 
     function bytesToUint(bytes4 b) internal pure returns (uint){
