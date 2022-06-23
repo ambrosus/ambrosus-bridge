@@ -14,9 +14,7 @@ contract CheckAura is Initializable {
     address[] public validatorSet;
     address validatorSetAddress;
     bytes32 public lastProcessedBlock;
-
-    // todo editable
-    uint minSafetyBlocksValidators;
+    uint public minSafetyBlocksValidators;
 
 
     struct BlockAura {
@@ -43,7 +41,7 @@ contract CheckAura is Initializable {
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
-        uint eventBlock;  // todo add in relay
+        uint eventBlock;
     }
 
     struct AuraProof {
@@ -57,14 +55,15 @@ contract CheckAura is Initializable {
     function __CheckAura_init(
         address[] calldata initialValidators_,
         address validatorSetAddress_,
-        bytes32 lastProcessedBlock_
+        bytes32 lastProcessedBlock_,
+        uint minSafetyBlocksValidators_
     ) internal initializer {
         require(initialValidators_.length > 0, "Length of _initialValidators must be bigger than 0");
 
         validatorSet = initialValidators_;
         validatorSetAddress = validatorSetAddress_;
         lastProcessedBlock = lastProcessedBlock_;
-
+        minSafetyBlocksValidators = minSafetyBlocksValidators_;
     }
 
 
