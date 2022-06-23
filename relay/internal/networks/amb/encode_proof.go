@@ -43,8 +43,11 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	var blocks []c.CheckAuraBlockAura
 	var vsChanges []c.CheckAuraValidatorSetProof
 	var transferEventIndex uint64
+	blocksToIndex := make(map[uint64]uint64) // need for `EventBlock` in vsChange
 
 	for i, blockNum := range indexToBlockNum {
+		blocksToIndex[blockNum] = uint64(i)
+
 		// fill up 'blocks'
 		blocks = append(blocks, *blocksMap[blockNum].block)
 
@@ -57,6 +60,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 			vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
 				ReceiptProof: proof,
 				Changes:      blocksMap[blockNum].finalizedVsEvents,
+				EventBlock:   big.NewInt(int64(blocksToIndex[blocksMap[blockNum].lastEvent.Raw.BlockNumber])),
 			})
 
 			// in this block contract should finalize all events in vsChanges array up to `FinalizedVs` index

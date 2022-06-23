@@ -114,8 +114,8 @@ contract CheckAura is Initializable {
 
                 // eventBlockNum = finalizedBlockNum - validatorSet.length / 2 - 1
                 // eventBlockIndex = finalizedBlockIndex - minSafetyBlocksValidators
-                require(vsProof.eventBlock - i > minSafetyBlocksValidators, "Few safety blocks validators");
-                        require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
+                require(i - vsProof.eventBlock >= minSafetyBlocksValidators, "Few safety blocks validators");
+                require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
 
 
                 // there is gap BEFORE finalizing block, so disable parentHash check for it
