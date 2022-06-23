@@ -34,8 +34,8 @@ contract ProxyMultiSig is Proxy, MultiSigWallet {
     }
 
 
-    function implementation() external returns (address implementation_) {
-        implementation_ = _implementation();
+    function implementation() external view returns (address) {
+        return _implementation();
     }
 
     function upgradeTo(address newImplementation) external payable ownerExists(msg.sender) {
