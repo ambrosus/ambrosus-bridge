@@ -12,6 +12,12 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+const (
+	// TODO: for different networks there may be different value
+	// TODO: find out the right value.
+	splitLimit = 200
+)
+
 type blockExt struct {
 	block             *c.CheckAuraBlockAura
 	finalizedVsEvents []c.CheckAuraValidatorSetChange
@@ -77,24 +83,82 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 // if proof too long we need to split it into smaller parts
-func (b *Bridge) splitVsChanges(proof *c.CheckAuraAuraProof) *c.CheckAuraAuraProof {
-	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("Aura proof too long")
-	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
-	// todo maybe keep ~3000 blocks instead of half
+func splitVsChanges(proof *c.CheckAuraAuraProof) []*c.CheckAuraAuraProof {
+	if len(proof.Blocks) < splitLimit {
+		return nil
+	}
 
-	// last block should be vsFinalize
-	var vsChanges []c.CheckAuraValidatorSetProof
-	for i := uint64(len(blocks)); i > 0; i-- {
-		if blocks[i].FinalizedVs == 0 {
-			blocks = blocks[:i+1]
-			vsChanges = proof.VsChanges[:blocks[i].FinalizedVs+1]
+	var res []*c.CheckAuraAuraProof
+	var blocks = proof.Blocks
+	// var currentEpochBlockNumBig = big.NewInt(int64(currentEpoch * epochLength))
+
+	var startVsChanges uint64
+	var endVsChanges uint64
+
+	for i := 0; i < len(blocks); i += splitLimit {
+		// exit point from loop
+		if len(blocks)-i < splitLimit {
+			res = append(res, &c.CheckAuraAuraProof{
+				Blocks:             setCorrectFinalizedVs(blocks[i:]),
+				Transfer:           proof.Transfer,
+				VsChanges:          proof.VsChanges[startVsChanges:],
+				TransferEventBlock: proof.TransferEventBlock - uint64(i),
+			})
+			break
+		}
+
+		// end must not be >= transfer event block or length of blocks
+		end := i + splitLimit - 1
+		if end >= int(proof.TransferEventBlock) {
+			end = int(proof.TransferEventBlock)
+		}
+		if end >= len(blocks) {
+			end = len(blocks) - 1
+		}
+
+		// find first vs change block from the end of the part
+		for j := end; j >= i; j-- {
+			if blocks[j].FinalizedVs != 0 {
+				end = j + 1
+				endVsChanges = blocks[j].FinalizedVs
+				break
+			}
+		}
+
+		// save the part with zero event id
+		resBlocks := blocks[i:end]
+		if startVsChanges != 0 {
+			resBlocks = setCorrectFinalizedVs(resBlocks)
+		}
+		res = append(res, &c.CheckAuraAuraProof{
+			Blocks: resBlocks,
+			Transfer: c.CommonStructsTransferProof{
+				ReceiptProof: [][]byte{},
+				EventId:      big.NewInt(0),
+				Transfers:    []c.CommonStructsTransfer{},
+			},
+			VsChanges:          proof.VsChanges[startVsChanges:endVsChanges],
+			TransferEventBlock: uint64(len(resBlocks)), // required for contract to work correctly
+		})
+
+		// set the counter to the `end` var
+		i = end - splitLimit
+		startVsChanges = endVsChanges
+	}
+
+	return res
+}
+
+func setCorrectFinalizedVs(resBlocks []c.CheckAuraBlockAura) []c.CheckAuraBlockAura {
+	var correctFinalizedVs = uint64(1)
+	for k := 0; k < len(resBlocks); k++ {
+		if resBlocks[k].FinalizedVs != 0 {
+			resBlocks[k].FinalizedVs = correctFinalizedVs
+			correctFinalizedVs++
 		}
 	}
 
-	return &c.CheckAuraAuraProof{
-		Blocks:    blocks,
-		VsChanges: vsChanges,
-	}
+	return resBlocks
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {

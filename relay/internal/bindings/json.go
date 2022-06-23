@@ -2,6 +2,7 @@ package bindings
 
 import (
 	"encoding/json"
+	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
@@ -19,6 +20,25 @@ func (t *CommonStructsTransfer) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tm)
 }
 
+func (t *CommonStructsTransfer) UnmarshalJSON(b []byte) error {
+	type Transfer struct {
+		TokenAddress common.Address `json:"tokenAddress"`
+		ToAddress    common.Address `json:"toAddress"`
+		Amount       *hexutil.Big   `json:"amount"`
+	}
+	var tm Transfer
+	err := json.Unmarshal(b, &tm)
+	if err != nil {
+		return err
+	}
+
+	t.TokenAddress = tm.TokenAddress
+	t.ToAddress = tm.ToAddress
+	t.Amount = (*big.Int)(tm.Amount)
+
+	return nil
+}
+
 func (t *CommonStructsTransferProof) MarshalJSON() ([]byte, error) {
 	type TransferProof struct {
 		ReceiptProof []hexutil.Bytes         `json:"receiptProof"`
@@ -31,6 +51,30 @@ func (t *CommonStructsTransferProof) MarshalJSON() ([]byte, error) {
 	}
 	tm := TransferProof{rp, (*hexutil.Big)(t.EventId), t.Transfers}
 	return json.Marshal(&tm)
+}
+
+func (t *CommonStructsTransferProof) UnmarshalJSON(b []byte) error {
+	type TransferProof struct {
+		ReceiptProof []hexutil.Bytes         `json:"receiptProof"`
+		EventId      *hexutil.Big            `json:"eventId"`
+		Transfers    []CommonStructsTransfer `json:"transfers"`
+	}
+	var tm TransferProof
+	err := json.Unmarshal(b, &tm)
+	if err != nil {
+		return err
+	}
+
+	rp := make([][]byte, len(tm.ReceiptProof))
+	for i, v := range tm.ReceiptProof {
+		rp[i] = v
+	}
+
+	t.ReceiptProof = rp
+	t.EventId = (*big.Int)(tm.EventId)
+	t.Transfers = tm.Transfers
+
+	return nil
 }
 
 // AURA
@@ -72,6 +116,64 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&tm)
 }
 
+func (t *CheckAuraAuraProof) UnmarshalJSON(data []byte) error {
+	type CheckAuraAuraProof struct {
+		Blocks             []CheckAuraBlockAura         `json:"blocks"`
+		Transfer           CommonStructsTransferProof   `json:"transfer"`
+		VsChanges          []CheckAuraValidatorSetProof `json:"vsChanges"`
+		TransferEventBlock uint64                       `json:"transferEventBlock"`
+	}
+
+	var tm CheckAuraAuraProof
+	err := json.Unmarshal(data, &tm)
+	if err != nil {
+		return err
+	}
+
+	t.Blocks = tm.Blocks
+	t.Transfer = tm.Transfer
+	t.VsChanges = tm.VsChanges
+	t.TransferEventBlock = tm.TransferEventBlock
+	return nil
+}
+
+func (t *CheckAuraBlockAura) UnmarshalJSON(data []byte) error {
+	type AuraBlockAura struct {
+		P0Seal hexutil.Bytes `json:"p0Seal"`
+		P0Bare hexutil.Bytes `json:"p0Bare"`
+
+		// common (for bare and seal headers) part
+		ParentHash  hexutil.Bytes `json:"parentHash"`
+		P2          hexutil.Bytes `json:"p2"`
+		ReceiptHash hexutil.Bytes `json:"receiptHash"`
+		P3          hexutil.Bytes `json:"p3"`
+
+		// seal part
+		Step      hexutil.Bytes `json:"step"`
+		Signature hexutil.Bytes `json:"signature"`
+
+		FinalizedVs uint64 `json:"finalizedVs"`
+	}
+
+	var tm AuraBlockAura
+	err := json.Unmarshal(data, &tm)
+	if err != nil {
+		return err
+
+	}
+
+	copy(t.P0Seal[:], tm.P0Seal)
+	copy(t.P0Bare[:], tm.P0Bare)
+	copy(t.ParentHash[:], tm.ParentHash)
+	t.P2 = tm.P2
+	copy(t.ReceiptHash[:], tm.ReceiptHash)
+	t.P3 = tm.P3
+	copy(t.Step[:], tm.Step)
+	t.Signature = tm.Signature
+	t.FinalizedVs = tm.FinalizedVs
+	return nil
+}
+
 func (t *CheckAuraValidatorSetChange) MarshalJSON() ([]byte, error) {
 	type CheckAuraValidatorSetChange struct {
 		DeltaAddress common.Address `json:"deltaAddress"`
@@ -79,6 +181,23 @@ func (t *CheckAuraValidatorSetChange) MarshalJSON() ([]byte, error) {
 	}
 	tm := CheckAuraValidatorSetChange{t.DeltaAddress, t.DeltaIndex}
 	return json.Marshal(&tm)
+}
+
+func (t *CheckAuraValidatorSetChange) UnmarshalJSON(data []byte) error {
+	type CheckAuraValidatorSetChange struct {
+		DeltaAddress common.Address `json:"deltaAddress"`
+		DeltaIndex   int64          `json:"deltaIndex"`
+	}
+
+	var tm CheckAuraValidatorSetChange
+	err := json.Unmarshal(data, &tm)
+	if err != nil {
+		return err
+	}
+
+	t.DeltaAddress = tm.DeltaAddress
+	t.DeltaIndex = tm.DeltaIndex
+	return nil
 }
 
 func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
@@ -92,6 +211,28 @@ func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
 	}
 	tm := ValidatorSetProof{rp, t.Changes}
 	return json.Marshal(&tm)
+}
+
+func (t *CheckAuraValidatorSetProof) UnmarshalJSON(data []byte) error {
+	type ValidatorSetProof struct {
+		ReceiptProof []hexutil.Bytes               `json:"receiptProof"`
+		Changes      []CheckAuraValidatorSetChange `json:"changes"`
+	}
+
+	var tm ValidatorSetProof
+	err := json.Unmarshal(data, &tm)
+	if err != nil {
+		return err
+	}
+
+	rp := make([][]byte, len(tm.ReceiptProof))
+	for i, v := range tm.ReceiptProof {
+		rp[i] = v
+	}
+
+	t.ReceiptProof = rp
+	t.Changes = tm.Changes
+	return nil
 }
 
 // POW
@@ -185,4 +326,62 @@ func (t *CheckPoSABlockPoSA) MarshalJSON() ([]byte, error) {
 		t.P5,
 	}
 	return json.Marshal(&tm)
+}
+
+func (t *CheckPoSAPoSAProof) UnmarshalJSON(data []byte) error {
+	type PoSAPoSAProof struct {
+		Blocks             []CheckPoSABlockPoSA       `json:"blocks"`
+		Transfer           CommonStructsTransferProof `json:"transfer"`
+		TransferEventBlock uint64                     `json:"transferEventBlock"`
+	}
+	var tm PoSAPoSAProof
+	err := json.Unmarshal(data, &tm)
+	if err != nil {
+		return err
+	}
+
+	t.Blocks = tm.Blocks
+	t.Transfer = tm.Transfer
+	t.TransferEventBlock = tm.TransferEventBlock
+	return nil
+}
+
+func (t *CheckPoSABlockPoSA) UnmarshalJSON(data []byte) error {
+	type PoSABlockPoSA struct {
+		P0Signed   hexutil.Bytes `json:"p0Signed"`
+		P0Unsigned hexutil.Bytes `json:"p0Unsigned"`
+
+		ParentHash  hexutil.Bytes `json:"parentHash"`
+		P1          hexutil.Bytes `json:"p1"`
+		ReceiptHash hexutil.Bytes `json:"receiptHash"`
+		P2          hexutil.Bytes `json:"p2"`
+		Number      hexutil.Bytes `json:"number"`
+		P3          hexutil.Bytes `json:"p3"`
+
+		P4Signed   hexutil.Bytes `json:"p4Signed"`
+		P4Unsigned hexutil.Bytes `json:"p4Unsigned"`
+		ExtraData  hexutil.Bytes `json:"extraData"`
+
+		P5 hexutil.Bytes `json:"p5"`
+	}
+	var tm PoSABlockPoSA
+	err := json.Unmarshal(data, &tm)
+	if err != nil {
+		return err
+
+	}
+
+	copy(t.P0Signed[:], tm.P0Signed)
+	copy(t.P0Unsigned[:], tm.P0Unsigned)
+	copy(t.ParentHash[:], tm.ParentHash)
+	t.P1 = tm.P1
+	copy(t.ReceiptHash[:], tm.ReceiptHash)
+	t.P2 = tm.P2
+	t.Number = tm.Number
+	t.P3 = tm.P3
+	t.P4Signed = tm.P4Signed
+	t.P4Unsigned = tm.P4Unsigned
+	t.ExtraData = tm.ExtraData
+	t.P5 = tm.P5
+	return nil
 }

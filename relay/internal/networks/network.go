@@ -48,6 +48,7 @@ type Bridge interface {
 type BridgeReceiveAura interface {
 	Bridge
 	SubmitTransferAura(*bindings.CheckAuraAuraProof) error
+	SubmitValidatorSetChanges(proof *bindings.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
 	GetLastProcessedBlockHash() (*common.Hash, error)
 }

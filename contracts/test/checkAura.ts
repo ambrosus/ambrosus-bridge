@@ -50,6 +50,18 @@ describe("Check Aura", () => {
   });
 
 
+  it("Test submitValidatorSetChangesAura", async () => {
+      const proof = require("./fixtures/auraProof-partChangeVs.json");
+      await ethBridge.checkAuraTest(proof, 0, ethers.constants.AddressZero, [
+              '0xF4Fc27eBDf978BC19f0E1cBdDC6875494b305AC4',
+              '0x7eC889B72C145d0Ae82AAA1b816fe611b9Cf16B7',
+              '0x7138bb1131C12e8e6687Cd29a1993F8E97991829',
+              '0x271CE3a4c3778557A49c15152B2eB5151eD6eA0D',
+          ], {gasLimit: 40000000}
+      );
+  });
+
+
   // it("Test CheckAura (changes in VS NEW)", async () => {
   //   const proof = require("./fixtures/auraProof-changeVs-NEW.json");
   //   await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B");

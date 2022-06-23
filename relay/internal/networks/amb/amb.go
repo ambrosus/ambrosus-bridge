@@ -2,6 +2,7 @@ package amb
 
 import (
 	"fmt"
+	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
@@ -10,6 +11,7 @@ import (
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const BridgeName = "ambrosus"
@@ -92,8 +94,44 @@ func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) 
 
 	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 	err = b.sideBridge.SubmitTransferAura(auraProof)
+
+	if isRequestTooBig(err) {
+		b.Logger.Info().Str("event_id", event.EventId.String()).Msg("The proof is big, so split it")
+
+		changes := splitVsChanges(auraProof)
+
+		for i := 0; i < len(changes)-1; i++ {
+			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit validator set change...")
+			err = b.sideBridge.SubmitValidatorSetChanges(changes[i])
+			if err != nil {
+				return fmt.Errorf("SubmitValidatorSetChanges: %w", err)
+			}
+		}
+
+		err = b.sideBridge.SubmitTransferAura(changes[len(changes)-1])
+	}
+
 	if err != nil {
-		return fmt.Errorf("SubmitTransferAura: %w", err)
+		return fmt.Errorf("SubmitTransferPoSA: %w", err)
 	}
 	return nil
+}
+
+func isRequestTooBig(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	// TODO: we don't know is there this error in eth and bsc networks
+	// if err.Error() == "Transaction is too big, see chain specification for the limit." {
+	// 	return true
+	// }
+
+	if castedErr, ok := err.(rpc.HTTPError); ok {
+		if ok && castedErr.StatusCode == http.StatusRequestEntityTooLarge {
+			return true
+		}
+	}
+
+	return false
 }

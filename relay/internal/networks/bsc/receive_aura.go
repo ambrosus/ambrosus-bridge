@@ -16,6 +16,12 @@ func (b *Bridge) SubmitTransferAura(proof *bindings.CheckAuraAuraProof) error {
 	})
 }
 
+func (b *Bridge) SubmitValidatorSetChanges(proof *bindings.CheckAuraAuraProof) error {
+	return b.ProcessTx("submitValidatorSetChangesAura", func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.Contract.SubmitValidatorSetChangesAura(b.Auth, *proof)
+	})
+}
+
 func (b *Bridge) GetValidatorSet() ([]common.Address, error) {
 	return b.Contract.GetValidatorSet(nil)
 }
