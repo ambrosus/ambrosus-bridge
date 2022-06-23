@@ -9,10 +9,14 @@ import {ethers} from "ethers";
 
 
 dotenv.config();
+// 0x295C2707319ad4BecA6b5bb4086617fD6F240CfE, used instead of empty PK
+const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
+
+dotenv.config();
 const PK = [
-  process.env.PRIVATEKEY_OWNER || ethers.constants.HashZero,
-  process.env.PRIVATEKEY_ADMIN || ethers.constants.HashZero,
-  process.env.PRIVATEKEY_RELAY || ethers.constants.HashZero,
+  process.env.PRIVATEKEY_OWNER || devPK,
+  process.env.PRIVATEKEY_ADMIN || devPK,
+  process.env.PRIVATEKEY_RELAY || devPK,
 ];
 
 const config: HardhatUserConfig = {
@@ -99,15 +103,15 @@ const config: HardhatUserConfig = {
     // admin and relay can be just addresses for prod, not private key
     admin: {
       default: 1,
-      "main/amb": process.env.ADDRESS_ADMIN_AMB || ethers.constants.HashZero,
-      "main/eth": process.env.ADDRESS_ADMIN_ETH || ethers.constants.HashZero,
-      "main/bsc": process.env.ADDRESS_ADMIN_BSC || ethers.constants.HashZero,
+      "main/amb": process.env.ADDRESS_ADMIN_AMB || ethers.constants.AddressZero,
+      "main/eth": process.env.ADDRESS_ADMIN_ETH || ethers.constants.AddressZero,
+      "main/bsc": process.env.ADDRESS_ADMIN_BSC || ethers.constants.AddressZero,
     },
     relay: {
       default: 2,
-      "main/amb": process.env.ADDRESS_RELAY_AMB || ethers.constants.HashZero,
-      "main/eth": process.env.ADDRESS_RELAY_ETH || ethers.constants.HashZero,
-      "main/bsc": process.env.ADDRESS_RELAY_BSC || ethers.constants.HashZero,
+      "main/amb": process.env.ADDRESS_RELAY_AMB || ethers.constants.AddressZero,
+      "main/eth": process.env.ADDRESS_RELAY_ETH || ethers.constants.AddressZero,
+      "main/bsc": process.env.ADDRESS_RELAY_BSC || ethers.constants.AddressZero,
     },
     bridge: 3,
     user: 4,
