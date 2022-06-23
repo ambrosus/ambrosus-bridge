@@ -5,8 +5,8 @@
       "side": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95"
     },
     "bsc": {
-      "amb": "0xfeD6298165fA4Bd5c854184FFD54576095cD96e5",
-      "side": "0x67374E81da10Af874664fEc38bACd9137774f58E"
+      "amb": "0x6B6EA49252E0C82492d1967Af5c96D10be8A30bB",
+      "side": "0x57a4fB30df9f64bc8D03f227D782D594595E9260"
     }
   },
   "tokens": {
@@ -18,8 +18,8 @@
       "primaryNet": "amb",
       "addresses": {
         "amb": "0xcee40F987FC4F24d28547107FaBd33C519B43Fe6",
-        "eth": "0x500268485CB411696bd48629f78E8846C1929a43",
-        "bsc": "0x04778CdF6821aB4231737ccD092411E7dcE33430"
+        "eth": "",
+        "bsc": "0x18951A2D6527A01C089D5Ad595Ae4f0B5d749786"
       },
       "nativeAnalog": "AMB"
     },
@@ -31,8 +31,8 @@
       "primaryNet": "eth",
       "addresses": {
         "amb": "0x7e1B07dEaf4619C3937A63E5A6f57B9095E3A8f7",
-        "eth": "0xf531B8F309Be94191af87605CfBf600D71C2cFe0",
-        "bsc": "0xC17BFBD119E1B2ADDE4cccF64a5F2a6C35cE6802"
+        "eth": "",
+        "bsc": "0x3Ed6b39Ad815e08d9e7FF111FBbe975E7F778c64"
       },
       "nativeAnalog": "ETH"
     },
@@ -44,7 +44,7 @@
       "primaryNet": "bsc",
       "addresses": {
         "amb": "0x0d728C951BFC4701256Ca7C4975F85229D9885c8",
-        "eth": "DEPLOY",
+        "eth": "",
         "bsc": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
       },
       "nativeAnalog": "BNB"
