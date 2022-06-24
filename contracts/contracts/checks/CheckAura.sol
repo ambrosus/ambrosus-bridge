@@ -92,7 +92,7 @@ contract CheckAura is Initializable {
         bytes32 receiptHash;
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
-        if (auraProof.transferEventBlock != 0) {
+        if (auraProof.transfer.eventId != 0) {
             receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
             require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
             require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
@@ -125,16 +125,17 @@ contract CheckAura is Initializable {
             }
 
             // don't check parentHash for first block and for block after finalizing vs
-            if (parentHash != bytes32(0))
+            if (parentHash != bytes32(0)){
                 require(block_.parentHash == parentHash, "Wrong parent hash");
+            }
 
             parentHash = checkBlock(block_);
 
             // there is gap AFTER finalizing block, so disable parentHash check for it
             // but only if it's not the safety blocks for transfer event
-            if (block_.finalizedVs != 0 && i < auraProof.transferEventBlock)
+            if (block_.finalizedVs != 0 && i < auraProof.transferEventBlock) {
                 parentHash = bytes32(0);
-
+            }
         }
 
         lastProcessedBlock = parentHash;
