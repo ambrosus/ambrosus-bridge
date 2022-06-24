@@ -49,8 +49,11 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 	var blocks []c.CheckAuraBlockAura
 	var vsChanges []c.CheckAuraValidatorSetProof
 	var transferEventIndex uint64
+	blocksToIndex := make(map[uint64]uint64) // need for `EventBlock` in vsChange
 
 	for i, blockNum := range indexToBlockNum {
+		blocksToIndex[blockNum] = uint64(i)
+
 		// fill up 'blocks'
 		blocks = append(blocks, *blocksMap[blockNum].block)
 
@@ -63,6 +66,7 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 			vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
 				ReceiptProof: proof,
 				Changes:      blocksMap[blockNum].finalizedVsEvents,
+				EventBlock:   big.NewInt(int64(blocksToIndex[blocksMap[blockNum].lastEvent.Raw.BlockNumber])),
 			})
 
 			// in this block contract should finalize all events in vsChanges array up to `FinalizedVs` index
@@ -185,6 +189,11 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 		return fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
+	minSafetyBlocksValidators, err := b.sideBridge.GetMinSafetyBlocksValidators()
+	if err != nil {
+		return fmt.Errorf("GetMinSafetyBlocksValidators: %w", err)
+	}
+
 	var lastBlock uint64
 	var txsBeforeFinalize uint64
 	for _, event := range events {
@@ -199,13 +208,17 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 			lastBlock = event.Raw.BlockNumber
 		}
 		finalizedBlockNum := event.Raw.BlockNumber + txsBeforeFinalize
+		safetyEndBlockNum := event.Raw.BlockNumber + minSafetyBlocksValidators
 
 		// save blocks up to finalized block
-		if err = b.saveBlocksRange(blocks, event.Raw.BlockNumber, finalizedBlockNum); err != nil {
+		if err = b.saveBlocksRange(blocks, event.Raw.BlockNumber, safetyEndBlockNum); err != nil {
 			return err
 		}
 
 		// block in which VS will be finalized
+		if err := b.saveBlock(blocks, finalizedBlockNum); err != nil {
+			return err
+		}
 		blockWhenFinalize := blocks[finalizedBlockNum]
 		blockWhenFinalize.finalizedVsEvents = append(blockWhenFinalize.finalizedVsEvents, vsChange)
 		blockWhenFinalize.lastEvent = event

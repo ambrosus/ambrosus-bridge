@@ -51,6 +51,7 @@ type BridgeReceiveAura interface {
 	SubmitValidatorSetChanges(proof *bindings.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
 	GetLastProcessedBlockHash() (*common.Hash, error)
+	GetMinSafetyBlocksValidators() (uint64, error)
 }
 
 type BridgeReceiveEthash interface {

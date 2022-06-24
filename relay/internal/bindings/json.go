@@ -204,12 +204,13 @@ func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
 	type ValidatorSetProof struct {
 		ReceiptProof []hexutil.Bytes               `json:"receiptProof"`
 		Changes      []CheckAuraValidatorSetChange `json:"changes"`
+		EventBlock   *hexutil.Big                  `json:"eventBlock"`
 	}
 	rp := make([]hexutil.Bytes, len(t.ReceiptProof))
 	for i, v := range t.ReceiptProof {
 		rp[i] = v
 	}
-	tm := ValidatorSetProof{rp, t.Changes}
+	tm := ValidatorSetProof{rp, t.Changes, (*hexutil.Big)(t.EventBlock)}
 	return json.Marshal(&tm)
 }
 

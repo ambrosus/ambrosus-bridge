@@ -34,3 +34,12 @@ func (b *Bridge) GetLastProcessedBlockHash() (*common.Hash, error) {
 
 	return (*common.Hash)(&blockHash), nil
 }
+
+func (b *Bridge) GetMinSafetyBlocksValidators() (uint64, error) {
+	v, err := b.Contract.MinSafetyBlocksValidators(nil)
+	if err != nil {
+		return 0, err
+	}
+
+	return v.Uint64(), nil
+}
