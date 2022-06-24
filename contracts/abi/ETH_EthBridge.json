@@ -1021,6 +1021,11 @@
                 "internalType": "struct CheckAura.ValidatorSetChange[]",
                 "name": "changes",
                 "type": "tuple[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "eventBlock",
+                "type": "uint256"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",

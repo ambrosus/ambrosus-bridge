@@ -105,7 +105,7 @@ func splitVsChanges(proof *c.CheckAuraAuraProof) []*c.CheckAuraAuraProof {
 			res = append(res, &c.CheckAuraAuraProof{
 				Blocks:             setCorrectFinalizedVs(blocks[i:]),
 				Transfer:           proof.Transfer,
-				VsChanges:          proof.VsChanges[startVsChanges:],
+				VsChanges:          setCorrectVsChangesEventBlock(proof.VsChanges[startVsChanges:], i),
 				TransferEventBlock: proof.TransferEventBlock - uint64(i),
 			})
 			break
@@ -134,6 +134,10 @@ func splitVsChanges(proof *c.CheckAuraAuraProof) []*c.CheckAuraAuraProof {
 		if startVsChanges != 0 {
 			resBlocks = setCorrectFinalizedVs(resBlocks)
 		}
+		resVsChanges := proof.VsChanges[startVsChanges:endVsChanges]
+		if i != 0 {
+			resVsChanges = setCorrectVsChangesEventBlock(resVsChanges, i)
+		}
 		res = append(res, &c.CheckAuraAuraProof{
 			Blocks: resBlocks,
 			Transfer: c.CommonStructsTransferProof{
@@ -141,7 +145,7 @@ func splitVsChanges(proof *c.CheckAuraAuraProof) []*c.CheckAuraAuraProof {
 				EventId:      big.NewInt(0),
 				Transfers:    []c.CommonStructsTransfer{},
 			},
-			VsChanges:          proof.VsChanges[startVsChanges:endVsChanges],
+			VsChanges:          resVsChanges,
 			TransferEventBlock: uint64(len(resBlocks)), // required for contract to work correctly
 		})
 
@@ -163,6 +167,14 @@ func setCorrectFinalizedVs(resBlocks []c.CheckAuraBlockAura) []c.CheckAuraBlockA
 	}
 
 	return resBlocks
+}
+
+func setCorrectVsChangesEventBlock(vsChanges []c.CheckAuraValidatorSetProof, blockCounter int) []c.CheckAuraValidatorSetProof {
+	for i := 0; i < len(vsChanges); i++ {
+		vsChanges[i].EventBlock.Sub(vsChanges[i].EventBlock, big.NewInt(int64(blockCounter)))
+	}
+
+	return vsChanges
 }
 
 func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {

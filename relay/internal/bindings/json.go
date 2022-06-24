@@ -218,6 +218,7 @@ func (t *CheckAuraValidatorSetProof) UnmarshalJSON(data []byte) error {
 	type ValidatorSetProof struct {
 		ReceiptProof []hexutil.Bytes               `json:"receiptProof"`
 		Changes      []CheckAuraValidatorSetChange `json:"changes"`
+		EventBlock   *hexutil.Big                  `json:"eventBlock"`
 	}
 
 	var tm ValidatorSetProof
@@ -233,6 +234,7 @@ func (t *CheckAuraValidatorSetProof) UnmarshalJSON(data []byte) error {
 
 	t.ReceiptProof = rp
 	t.Changes = tm.Changes
+	t.EventBlock = (*big.Int)(tm.EventBlock)
 	return nil
 }
 
