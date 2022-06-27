@@ -3,6 +3,7 @@
 Smart contracts structure
 
 
+
 ## Flow
 
 ![uml](./docs/output/flow.png)
@@ -11,15 +12,15 @@ Smart contracts structure
 
 1. юзер заходит на фронт
 2. фронт берет список всех токенов, их иконки и т.д.  
-(avax берет отсюда https://raw.githubusercontent.com/ava-labs/avalanche-bridge-resources/main/token_list.json)
-3. фронт делает запросы на смарт контракты бриджей, проверяя что токен по адресу существует и не выключен
-4. юзер вызывает `withdraw(tokenAddress, toAddress, amount, {value: fee})` у контракта бриджа в сети, из которой он хочет вывести деньги
+3. фронт делает запросы на релей что бы узнать transfer fee и bridge fee
+4. юзер вызывает функцию `withdraw` у контракта бриджа в сети, из которой он хочет вывести деньги
 
 ### bridge withdraw
 
-`withdraw(address tokenAmbAddress, address toAddress, uint amount)`
+`withdraw(address tokenThisAddress, address toAddress, uint amount, bool unwrapSide,
+bytes calldata feeSignature, uint transferFee, uint bridgeFee)`
 
-1. `require(msg.value == fee)`
+1. проверяются входные данные
 
 2. информация о выводе добавляется в очередь `Transfer[] withdraw_queue`
     ```
