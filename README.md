@@ -11,6 +11,55 @@ They also monitor how much and from which network funds came and do not allow to
 
 ## Bridge
 
+
+### Contracts
+The bridge consists of 2 contracts, one for each network and a relay - software that monitors these contracts and sends them user transfers.  
+We currently have 2 networks we work with: AMB-**ETH** and AMB-**BSC**.  
+
+So, we have 4 contracts:
+- `Eth_AmbBridge` - deployed on AMB, receive transfers from ETH
+- `Eth_EthBridge` - deployed on ETH, receive transfers from AMB
+- `Bsc_AmbBridge` - deployed on AMB, receive transfers from BSC
+- `Bsc_BscBridge` - deployed on ETH, receive transfers from AMB
+
+
+Each contract is inherited from `CommonBridge` and `CheckXxXxX`
+
+`CommonBridge` is a contract that has all the code common to all contracts, such as:
+- `withdraw` and `wrapWithdraw` functions - called by users to transfer tokens from this network to another.
+- locking, unlocking functionality - all received transfers firstly locked for some time to avoid fraud.
+- administration - functions for changing variables, roles, etc.
+- verification and distribution of the fees
+- and so on
+
+`CheckXxXxX`, which can mean `CheckAura`, `CheckPoW`, `CheckPoSA`, - is contracts, that verify that `Transfer` event happened in other (side) network.  
+
+In general, these contracts do the same thing:
+they check that there is a `Transfer` event in a certain block with the same information that the relay sent,
+and also checks ~ 10 (`minSafetyBlocks` param) next blocks.
+
+But the principle of checking blocks is different for different networks:
+
+- `CheckAura` (for blocks from Ambrosus) - check author of each block, it must be specific validator from Validator Set.       
+  `assert block.author == block.step % validatorSet.length`  
+   Need to sync ValidatorSet from contract (`0x0000000000000000000000000000000000000F00`) into receiver network.
+
+
+- `CheckPoSA` (for blocks from Binance Smart Chain) -  check author of each block, it must be validator from Validator Set.  
+  `assert validatorSet[block.author]`  
+   Need to sync ValidatorSet from each epoch start block (`block.number % 200 == 0`) into receiver network.
+
+  
+- `CheckPoW` (for blocks from Ethereum 1.0) - check PoW hash for each block, it must be suitable with network difficulty.
+
+
+For each checker relay prepare proof (`PoWProof`, `PoSAProof`, `AuraProof`) - struct, that contains necessary information, like blocks, user transfers, etc... 
+
+
+
+
+
+
 ![uml](./docs/output/classes.png)
 Smart contracts structure
 
