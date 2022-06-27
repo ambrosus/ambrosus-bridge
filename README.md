@@ -1,4 +1,16 @@
 
+## Tokens
+Inside the bridge there is a division into types of tokens: primary and synthetic.
+
+**Primary** tokens are those that already exist in a network and we plan to make it possible to transport them by bridge.
+
+**Synthetics** tokens are the ones we create as a pair to primary ones.   
+They know about the existence of the bridge and its address and **allow it to mint and burn** tokens.  
+They also monitor how much and from which network funds came and do not allow to withdraw to this network more than came from it.
+
+
+## Bridge
+
 ![uml](./docs/output/classes.png)
 Smart contracts structure
 
