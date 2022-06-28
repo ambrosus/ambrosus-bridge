@@ -10,10 +10,32 @@ They also monitor how much and from which network funds came and do not allow to
 
 
 ## Bridge
+The bridge consists of **2 contracts**, one for each network and a **relay** - software that monitors these contracts and sends them user transfers.
+
+in a nutshell, the bridge works as follows:
+1. the user calls the `withdraw` function in the contract `A`; he's tokens locks on bridge contract
+2. this contract emits an `Transfer` event
+3. relay find new event, prepare a proof and call `submit` function on contract `B` (another network) 
+4. contract `B` checks (using proof) that `Transfer` event happened in first network by contract `A` 
+5. if check successful, contract `B` mint synthetic analog of primary token to user
+
+
+Since for withdrawal of funds contract B independently checks that contract A actually created the Transfer event,  
+and the relay is needed only to send public information,  
+**the bridge can be called trustless** and therefore protected from burglary relay
+
+
+### Fees
+
+Bridge collects 2 types of commissions from the user:
+- Transfer fee - covering the cost of the relay performing transactions in side network
+- Bridge fee - percentage of the amount of tokens sent  
+Fees are converted into the native currency of the network
+
 
 
 ### Contracts
-The bridge consists of 2 contracts, one for each network and a relay - software that monitors these contracts and sends them user transfers.  
+ 
 We currently have 2 networks we work with: AMB-**ETH** and AMB-**BSC**.  
 
 So, we have 4 contracts:
@@ -45,7 +67,7 @@ But the principle of checking blocks is different for different networks:
    Need to sync ValidatorSet from contract (`0x0000000000000000000000000000000000000F00`) into receiver network.
 
 
-- `CheckPoSA` (for blocks from Binance Smart Chain) -  check author of each block, it must be validator from Validator Set.  
+- `CheckPoSA` (for blocks from Binance Smart Chain) - check author of each block, it must be validator from Validator Set.  
   `assert validatorSet[block.author]`  
    Need to sync ValidatorSet from each epoch start block (`block.number % 200 == 0`) into receiver network.
 
