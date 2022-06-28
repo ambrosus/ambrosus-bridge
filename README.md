@@ -16,7 +16,7 @@ in a nutshell, the bridge works as follows:
 1. the user calls the `withdraw` function in the contract `A`; he's tokens locks on bridge contract
 2. this contract emits an `Transfer` event
 3. relay find new event, prepare a proof and call `submit` function on contract `B` (another network) 
-4. contract `B` checks (using proof) that `Transfer` event happened in first network by contract `A` 
+4. contract `B` checks (using proof) that `Transfer` event really emitted in first network by contract `A` 
 5. if check successful, contract `B` mint synthetic analog of primary token to user
 
 
