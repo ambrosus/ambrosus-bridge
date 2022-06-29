@@ -110,7 +110,9 @@ But the principle of checking blocks is different for different networks:
 
 For each checker relay prepare proof (`PoWProof`, `PoSAProof`, `AuraProof`) - struct, that contains necessary information, like blocks, user transfers, etc...
 
-![uml](docs/output/classes.png) Smart contracts structure
+Smart contracts structure:
+
+<img src="docs/output/classes.png" alt="uml" data-size="original">&#x20;
 
 ### Flow
 
