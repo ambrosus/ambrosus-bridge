@@ -26,15 +26,54 @@ Since for withdrawal of funds contract B independently checks that contract A ac
 and the relay is needed only to send public information,\
 **the bridge can be called trustless** and therefore protected from burglary relay
 
-#### Fees
+### Fees
 
 Bridge collects 2 types of commissions from the user:
 
-* Transfer fee - covering the cost of the relay performing transactions in side network
-* Bridge fee - percentage of the amount of tokens sent\
+* _Transfer fee_ - covering the cost of the relay performing transactions in side network
+* _Bridge fee_ - percentage of the amount of tokens sent\
   Fees are converted into the native currency of the network
 
-#### Contracts
+
+
+_**Transfer fees**_ - are processed in the following way:&#x20;
+
+The user pays all transfer fees. When the user wants to make a transfer from the first network to the second, he will pay the transfer fee. Transfer Fee is the actual commission of the second network converted to the actual time of the first network at the time of the transaction / transfer. Example #1:
+
+* I as a user want to transfer AMB from AMB-NET (first network) to Ethereum (second network).
+* Assume that the current transaction value is the equivalent of $1 for AMB-NET and $20 for ETH. This means that the user has to pay $21 for the transfer fee
+* 21$ we will convert into the native coin of the first network (AMB-NET in this case) and calculate that it will be 2800 AMB
+* We charge the user transfer fee of 2800 AMB and put it on a separate wallet. Thus, we have some AMB accumulated in this wallet, but at the same time we need ETH for final transactions into ETH network.&#x20;
+* For transactions in Ethereum network, we need ETH. In the beginning (when we launch our bridge in PROD), we need to allocate ETH from the project budget, but further we need a constant process of converting the received AMB as a transfer fee (2800 AMB) into ETH. We will need to keep track of the balances of several wallets, to have enough AMB and ETH on them to process transactions, otherwise, the bridge will stop working. I see this process as - in 1 day/week a certain amount of AMB is accumulated, we take it away and somehow (through CEX or DEX) convert it to ETH.
+
+In the case of transfers from ETH (first network) to AMB-NET (second network), everything is the opposite, only in this case transfer fee, we start collecting in ETH as native Ethereum network.
+
+_**Bridge fee**_ - are processed in the following way:&#x20;
+
+* The bridge fee is the profit the gateway product charges users for using it. Bridge fee is set as a `% of the total transaction volume`, as well as we have a `minimum value` of commission below which it is forbidden to go.
+* All values, both for limits and for the minimum values of the _commission are given to the $ equivalent_, in order to be able to set the commission for all coins which will be supported by the bridge at the stage of launch and after it.
+* To `set % of total transaction volume`, set a threshold value, for example, $10000, and set % for volume up (_2% for example, and we need finalize value for PROD_) to $10k and separately set % for volume over $10k (_1% for example, and we need finalize value for PROD_). We can also use tenths of a percent, like 0.1% or 0.5%
+* We also set the `minimum value`, for example, the equivalent of $ 5 (_this value we also need to change for PROD_), and then even with the volume of transactions/transfers of $ 10, we will still charge the user a commission of the equivalent of $ 5.
+* The bridge fee is charged from the user, in the currency of the first network from which the user makes the transfer and is stored in separate wallets, not related to the transfer fee.
+
+**Example:**&#x20;
+
+1. We transfer 1M AMB from AMB-NET to ETH. In this case, user will pay (all values only for example):&#x20;
+   1. Transfer fee from AMB net (let's think about 1$) + ETH network commission (let's think about 10$). It will be 135.13AMB for AMB-NET for  + 1351.3AMB for ETH net.&#x20;
+   2. Bridge fee: 1M AMB = 7400$, it is less than $10k and we will charge 2% from the transfer amount, but not less than 5$ equivalent. 2% = 20000AMB or 148$ and we will charge this amount of fee.&#x20;
+   3. Total commissions which user will pay = 135.13 + 1351.3 + 20000  = 21486,43 AMB
+2. We transfer 10k AMB from AMB-NET to ETH
+   1. Transfer fee from AMB net (let's think about 1$) + ETH network commission (let's think about 10$). It will be 135.13AMB for AMB-NET for  + 1351.3AMB for ETH net.&#x20;
+   2. Bridge fee: 10k AMB = 74$, it is less than $10k and we will charge 2% from the transfer amount, but not less than 5$ equivalent. 2% = 200AMB or 1.48$, it less than 5$, we will charge from user 5$ or 675.67 AMB
+   3. Total commissions which user will pay = 135.13 + 1351.3 + 675.67 = 2162.1 AMB&#x20;
+3. We transfer 1 ETH from ETH-net to AMB-NET
+   1. Transfer fee from ETH-net (let's think about 10$) it is about 0,0083 ETH + AMB network commission (let's think about 1$) \~ 0,00083 ETH. It will be 0,0083 ETH for ETH-NET for  + 0,00083 ETH for AMB-net.&#x20;
+   2. Bridge fee: 1 ETH = 1200$, it is less than $10k and we will charge 2% from the transfer amount, but not less than 5$ equivalent. 2% = 0.02 Eth or 24$, it is more than 5$, we will charge from user 0.02 Eth.
+   3. Total commissions which user will pay = 0,0083 + 0,00083 + 0.02 = 0,02913 ETH&#x20;
+
+
+
+
 
 We currently have 2 networks we work with: AMB-**ETH** and AMB-**BSC**.
 
