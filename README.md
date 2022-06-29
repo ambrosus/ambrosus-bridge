@@ -56,7 +56,7 @@ _**Bridge fee**_ - are processed in the following way:&#x20;
 * We also set the `minimum value`, for example, the equivalent of $ 5 (_this value we also need to change for PROD_), and then even with the volume of transactions/transfers of $ 10, we will still charge the user a commission of the equivalent of $ 5.
 * The bridge fee is charged from the user, in the currency of the first network from which the user makes the transfer and is stored in separate wallets, not related to the transfer fee.
 
-**Example:**&#x20;
+**Fees example:**&#x20;
 
 1. We transfer 1M AMB from AMB-NET to ETH. In this case, user will pay (all values only for example):&#x20;
    1. Transfer fee from AMB net (let's think about 1$) + ETH network commission (let's think about 10$). It will be 135.13AMB for AMB-NET for  + 1351.3AMB for ETH net.&#x20;
