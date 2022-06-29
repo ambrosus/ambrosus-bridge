@@ -7,21 +7,21 @@ Smart contracts structure
 
 ![uml](./docs/output/flow.png)
 
-### frontend
+### Frontend
 
-1. юзер заходит на фронт
-2. фронт берет список всех токенов, их иконки и т.д.  
+1. The user goes to the frontend
+2. The front-end takes a list of all tokens, their icons, etc. 
 (avax берет отсюда https://raw.githubusercontent.com/ava-labs/avalanche-bridge-resources/main/token_list.json)
-3. фронт делает запросы на смарт контракты бриджей, проверяя что токен по адресу существует и не выключен
-4. юзер вызывает `withdraw(tokenAddress, toAddress, amount, {value: fee})` у контракта бриджа в сети, из которой он хочет вывести деньги
+3. The front-end makes queries to bridge smart contracts, checking that the token at the address exists and is not disabled
+4. the user calls `withdraw(tokenAddress, toAddress, amount, {value: fee})` the bridge contract in the network from which he wants to withdraw money
 
-### bridge withdraw
+### Bridge withdraw
 
 `withdraw(address tokenAmbAddress, address toAddress, uint amount)`
 
 1. `require(msg.value == fee)`
 
-2. информация о выводе добавляется в очередь `Transfer[] withdraw_queue`
+2. the output information is added to the queue `Transfer[] withdraw_queue`
     ```
     struct Transfer {
         address tokenAddress;
@@ -30,26 +30,26 @@ Smart contracts structure
     }
     ```
 
-3. пока вызовы `withdraw` происходят в одном таймфрейме - трансферы просто добавляются в очередь.  
-как только очередной вызов `withdraw` происходит в новом таймфрейме:
-   - создается эвент `Transfer(event_id, withdraw_queue)`
-   - withdraw_queue очищается
-   - event_id инкрементируется на 1
+3. As long as `withdraw` calls occur in one timeframe - transfers are simply added to the queue.  
+As soon as the next call of `withdraw` occurs in a new timeframe:
+   - Event creation `Transfer(event_id, withdraw_queue)`
+   - withdraw_queue cleared
+   - event_id incremented by 1
 
-    _таймфрейм = block.timestamp / timeframe_
+    _timeframe = block.timestamp / timeframe_
 
 
-### relay
+### Relay
 
-1. relay получает ивент `Transfer(event_id, withdraw_queue)` c AmbBridge
-2. сверяет что `event_id == EthBridge.inputEventId + 1`, иначе ищет Transfer c подходящим event_id
-3. ждет N следующих блоков (safety blocks)
-4. создает receipts proof (см ниже)
-5. кодирует блоки (блок с эвентом и safety) в зависимости от консенсуса сети: BlockPoA или BlockPoW (см ниже)
-6. вызывает у EthBridge метод `submitTransfers`
+1. Relay get event `Transfer(event_id, withdraw_queue)` from AmbBridge
+2. checks that `event_id == EthBridge.inputEventId + 1`, otherwise look for Transfer with a matching event_id
+3. waits for N next safety blocks
+4. creates receipts proof (see below)
+5. encodes the blocks (event and safety block) depending on the network consensus: BlockPoA or BlockPoW (see below)
+6. calls `submitTransfers` method of EthBridge
     
 
-### bridge submitTransfers
+### Bridge submitTransfers
 ```
 submitTransfers(
     uint event_id,
@@ -59,24 +59,24 @@ submitTransfers(
 )
 ```
 
-1. `require(event_id == inputEventId + 1);` - проверка что эвенты приходят последовательно, без пропусков.  
+1. `require(event_id == inputEventId + 1);` - check that the events come consistently, without skipping.  
 `inputEventId++;`
 
-2. считается receiptsRoot, в следующей функции проверяется что блок с таким receiptsRoot валидный 
+2. is considered receiptsRoot, the next function checks that the block with this receiptsRoot is valid  
 
-3. вызывается _CheckPoW или _CheckPoA в зависимости от консенсуса сети с которой пришли блоки:
-   - для PoA проверяется что подписан именно этот блок и подпись сделана правильным адресом (определяется по полю step) 
-   - PoW проверяется с использованием ethash (_coming soon_)
+3. is called _CheckPoW or _CheckPoA, depending on the consensus of the network from which the blocks came:
+   - for PoA, it checks that this particular block is signed and that the signature is made with the correct address (determined by the step field)
+   - PoW is checked using ethash (_coming soon_)
    
-    неявно проверяется что `hash(blocks[i]) == blocks[i+1].prev_hash`
+    it is implicitly checked that `hash(blocks[i]) == blocks[i+1].prev_hash`
 
-4. трансферы сохраняются в пул залоченных транзакций
+4. transfers are saved to the pool of blocked transactions
 
-### bridge unlockTransfers
+### Bridge unlockTransfers
 
-1. достает из пула залоченных транзакций те, которые сохранены раньше чем `block.timestamp - lockTime`
-2. переводит токены
-3. удаляет из пула выполненные транзакции
+1. retrieves from the pool of blocked transactions those saved before `block.timestamp - lockTime`.
+2. transfers tokens
+3. deletes executed transactions from the pool
 
 
 ## Extra
@@ -84,7 +84,7 @@ submitTransfers(
 
 ### Block pre-encoding
 
-Что бы доказать что блок правильный нужно считать его хеш.
+To prove that the block is correct, you need to read its hash.
 
 ```
 blockHeader = {
@@ -98,16 +98,16 @@ blockHash = keccak256(rlpEncode(blockHeader))
 assert blockHash == needHash
 ```
 
-Хешируемое значение почти всегда сначала кодируется в RLP (Recursive Length Prefix).   
-Эта кодировка только добавляет к входному значению префикс, а значит входное значение с каким то смещением содержится в выходном.  
-=> `rlpEncode(value) = rlpPrefix(value) + value`, где + означает конкатенацию байт.
+The hashed value is almost always encoded in RLP (Recursive Length Prefix) first.   
+This encoding only adds a prefix to the input value, which means that the input value with some offset is contained in the output value.  
+=> `rlpEncode(value) = rlpPrefix(value) + value`, where + means concatenation of bytes.
 
 
-Для экономии газа relay будет подготавливать блоки для смарт контракта таким образом, 
-что бы вместо `rlpEncode` использовать конкатенацию (`abi.encodePacked`).
+To save gas, relay will prepare blocks for a smart contract in this way, 
+to use concatenation (`abi.encodePacked`) instead of `rlpEncode`.
 
-Например, relay может разбить `rlpEncode(header)` по разделителю `receiptRoot`  
-`rlpParts := bytes.Split(rlpHeader, receiptRoot)`, тогда  
+For example, relay can split `rlpEncode(header)` by the delimiter `receiptRoot`  
+`rlpParts := bytes.Split(rlpHeader, receiptRoot)`, then  
 `keccak256(abi.encodePacked(rlpParts[0], receiptRoot, rlpParts[1]) == needHash`
 
 
