@@ -10,8 +10,8 @@
             "privateKey": "in env"
         },
         "bsc": {
-            "httpUrl": "http://bsc.ambrosus-test.io",
-            "wsUrl": "ws://bsc.ambrosus-test.io/ws",
+            "httpUrl": "https://bsc.ambrosus-test.io",
+            "wsUrl": "wss://bsc.ambrosus-test.io/ws",
             "contractAddr": "0x9177b3b395a108753026FbCD76BB841Dd6d7262C",
             "privateKey": "in env"
         }
