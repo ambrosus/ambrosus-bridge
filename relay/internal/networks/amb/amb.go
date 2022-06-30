@@ -1,7 +1,9 @@
 package amb
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -92,6 +94,12 @@ func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) 
 		return fmt.Errorf("encodeAuraProof: %w", err)
 	}
 
+	proofJson, err := json.MarshalIndent(auraProof, "", "  ")
+	if err != nil {
+		return err
+	}
+	ioutil.WriteFile("auraproofdevnet.json", proofJson, 0644)
+
 	b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
 	err = b.sideBridge.SubmitTransferAura(auraProof)
 
@@ -112,7 +120,7 @@ func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) 
 	}
 
 	if err != nil {
-		return fmt.Errorf("SubmitTransferPoSA: %w", err)
+		return fmt.Errorf("SubmitTransferAura: %w", err)
 	}
 	return nil
 }

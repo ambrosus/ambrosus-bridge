@@ -4,6 +4,7 @@ pragma solidity 0.8.6;
 import "./CheckReceiptsProof.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./SignatureCheck.sol";
+import "hardhat/console.sol";
 
 
 contract CheckAura is Initializable {
@@ -99,11 +100,14 @@ contract CheckAura is Initializable {
         }
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
+            console.logUint(i);
             BlockAura calldata block_ = auraProof.blocks[i];
 
             if (block_.finalizedVs != 0) {// 0 means no events should be finalized, so indexes are shifted by 1
                 // vs changes in that block
                 ValidatorSetProof calldata vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
+                console.logUint(vsProof.eventBlock);
+                console.logUint(minSafetyBlocksValidators);
 
                 // apply vs changes
                 for (uint k = 0; k < vsProof.changes.length; k++)
@@ -165,7 +169,14 @@ contract CheckAura is Initializable {
     function checkBlock(BlockAura calldata block_) internal view returns (bytes32) {
         (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
 
+        for (uint i = 0; i < validatorSet.length; i++) {
+            console.logAddress(validatorSet[i]);
+        }
+
         address validator = validatorSet[bytesToUint(block_.step) % validatorSet.length];
+        console.log();
+        console.logAddress(validator);
+        console.logAddress(ecdsaRecover(bareHash, block_.signature));
         require(ecdsaRecover(bareHash, block_.signature) == validator, "Failed to verify sign");
 
         return sealHash;

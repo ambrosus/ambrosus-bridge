@@ -38,14 +38,23 @@ describe("Check Aura", () => {
 
   it("Test CheckAura (changes in VS)", async () => {
     const proof = require("./fixtures/auraProof-changeVs.json");
-    await ethBridge.checkAuraTest(proof, 5, "0x48d5cE2A10438559a14D399ca510F4235315dc6e", [
-        '0x45a9645fcd727C2CeE29b5945aB49D92564Af199',
-        '0x4fE180D06096A1216d3ec97ceAcE28d9c255B348',
-        '0xf46BA733b57Da081F27309496CD618cdaB4E12B0',
-        '0xfCf23c040142999e1c9894b421544aaA5805a21B',
-        '0x4940b222D0Ec0c737F1b4f84caeaC60c3021a256',
-        '0xe3746c9406FF78C3854aECAF36769826a22F1C89'
-      ], {gasLimit: 40000000}
+    await ethBridge.checkAuraTest(proof, 2, "0xA7CB71C94f3fC5Ee2232f8E449461177bc23527B", [
+          "0xdecA85befcC43ed1891758E37c35053aFF935AC1",
+          "0x427933454115d6D55E8e24821d430F944d3eD936",
+          "0x87a3d2CcacDe32f366Bd01bcbeB202643cD38A4E",
+          "0x4682b2553F68a6C6d0182ac83425A1D0A0547337",
+          "0xa45899BD58c4dE692883B3430B2e4a4CCE087c07",
+          "0xA1c203F8B88F902b92cc96817382EC0b5dDAA77C",
+          "0x716963005bf5b517cC7ACb4c8D99d7Dc1dC9A7c8",
+          "0xaD5caf4A4B68eD66C2CD3A7d730Aee5747f31DFe",
+          "0x6DD23d8c5c42c98194771218fB2aD465a8CFd55d",
+          "0xf4B075fDF227219fF2f72fE87641aDCdFDc019BC",
+          "0xc1E639642a242396C420C4880ABB3599Fb69d242",
+          "0x4137e5c2D3a17E931F96Ef4eAe7F34985d4e6FED",
+          "0x7B10BAEfA1bF7eDF72e1705b1e52dc66926a3bd8",
+          "0xe58647A6dB76F3e7eaA6c2dB86239E73e99ebE03",
+          "0x38A1835e04befEd507F3eF6b25D61f3E4BfbF9a1",
+        ], {gasLimit: 40000000}
     );
   });
 
