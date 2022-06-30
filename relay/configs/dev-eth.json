@@ -5,14 +5,14 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x1E712576FA72fa90C445bf1FcCCD8807FFA89467",
+            "contractAddr": "0x9AB69478E26197eb41544ACe827A46E4e61710aa",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "eth": {
             "httpUrl": "https://sepolia.ambrosus-test.io/",
             "wsUrl": "wss://sepolia.ambrosus-test.io/ws",
-            "contractAddr": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95",
+            "contractAddr": "0x50251e066ff0AEF13636CE85e29715f45EE96A2e",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
