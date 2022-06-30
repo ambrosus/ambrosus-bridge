@@ -31,12 +31,12 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFee": 1
+            "defaultTransferFeeWei": "1000000000000000000"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFee": 0.01
+            "defaultTransferFeeWei": "1000000000000000000"
         }
     },
     "prometheus": {
