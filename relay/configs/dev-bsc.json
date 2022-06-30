@@ -5,14 +5,14 @@
         "amb": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x6B6EA49252E0C82492d1967Af5c96D10be8A30bB",
+            "contractAddr": "0x29086EBFb3f25b7fB10775e593b67ED6732017c0",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "bsc": {
             "httpUrl": "http://bsc.ambrosus-test.io",
             "wsUrl": "ws://bsc.ambrosus-test.io/ws",
-            "contractAddr": "0x57a4fB30df9f64bc8D03f227D782D594595E9260",
+            "contractAddr": "0x9177b3b395a108753026FbCD76BB841Dd6d7262C",
             "privateKey": "in env"
         }
     },
