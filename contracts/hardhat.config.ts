@@ -9,11 +9,8 @@ import {ethers} from "ethers";
 
 
 dotenv.config();
-const PK = [
-  process.env.PRIVATEKEY_OWNER || ethers.constants.HashZero,
-  process.env.PRIVATEKEY_ADMIN || ethers.constants.HashZero,
-  process.env.PRIVATEKEY_RELAY || ethers.constants.HashZero,
-];
+// 0x295C2707319ad4BecA6b5bb4086617fD6F240CfE, used instead of empty PK
+const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
 
 const config: HardhatUserConfig = {
 
@@ -35,20 +32,17 @@ const config: HardhatUserConfig = {
 
     "dev/eth": {
       url: "https://sepolia.ambrosus-test.io/",
-      accounts: PK,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
       gasPrice: 9000000000
     },
     "test/eth": {
       url: "https://sepolia.ambrosus-test.io/",
-      accounts: PK,
       tags: ["eth", "testnet"],
       companionNetworks: {amb: 'test/amb'},
     },
     "main/eth": {
       url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
-      accounts: PK,
       tags: ["eth", "mainnet"],
       companionNetworks: {amb: 'main/amb'},
     },
@@ -61,20 +55,17 @@ const config: HardhatUserConfig = {
 
     "dev/amb": {
       url: "https://network.ambrosus-dev.io",
-      accounts: PK,
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
       companionNetworks: {bsc: 'dev/bsc'},
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
-      accounts: PK,
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
     },
     "main/amb": {
       url: "https://network.ambrosus.io",
-      accounts: PK,
       tags: ["amb", "mainnet"],
       hardfork: "byzantium",
     },
@@ -87,27 +78,36 @@ const config: HardhatUserConfig = {
 
     "dev/bsc": {
       url: "https://bsc.ambrosus-test.io",
-      accounts: PK,
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
     },
   },
 
+  // random pk for hardhat network
+  // dev pk for test networks
+  // env vars pk or address for main network
   namedAccounts: {
-    owner: 0,
-
+    owner: {
+      default: "privatekey://" + devPK,
+      "main/amb": "privatekey://" + process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero,
+      "main/eth": "privatekey://" + process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero,
+      "main/bsc": "privatekey://" + process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero,
+      hardhat: 0,
+    },
     // admin and relay can be just addresses for prod, not private key
     admin: {
-      default: 1,
-      "main/amb": process.env.ADDRESS_ADMIN_AMB || ethers.constants.HashZero,
-      "main/eth": process.env.ADDRESS_ADMIN_ETH || ethers.constants.HashZero,
-      "main/bsc": process.env.ADDRESS_ADMIN_BSC || ethers.constants.HashZero,
+      default: "privatekey://" + devPK,
+      "main/amb": process.env.ADDRESS_ADMIN_AMB || ethers.constants.AddressZero,
+      "main/eth": process.env.ADDRESS_ADMIN_ETH || ethers.constants.AddressZero,
+      "main/bsc": process.env.ADDRESS_ADMIN_BSC || ethers.constants.AddressZero,
+      hardhat: 1,
     },
     relay: {
-      default: 2,
-      "main/amb": process.env.ADDRESS_RELAY_AMB || ethers.constants.HashZero,
-      "main/eth": process.env.ADDRESS_RELAY_ETH || ethers.constants.HashZero,
-      "main/bsc": process.env.ADDRESS_RELAY_BSC || ethers.constants.HashZero,
+      default: "privatekey://" + devPK,
+      "main/amb": process.env.ADDRESS_RELAY_AMB || ethers.constants.AddressZero,
+      "main/eth": process.env.ADDRESS_RELAY_ETH || ethers.constants.AddressZero,
+      "main/bsc": process.env.ADDRESS_RELAY_BSC || ethers.constants.AddressZero,
+      hardhat: 2,
     },
     bridge: 3,
     user: 4,

@@ -3,7 +3,7 @@
 
 
 class Bsc_AmbBridge {
-    +SubmitTransferClique(CliqueProof proof)
+    +SubmitTransferPoSA(PoSAProof proof)
 }
 class Bsc_BscBridge {
     +SubmitTransferAura(AuraProof proof)
@@ -25,25 +25,46 @@ abstract class CheckAura {
     -CheckAura(AuraProof proof)
 }
 
-abstract class CheckClique {
-    -CheckClique(CliqueProof proof)
+abstract class CheckPoSA {
+    -CheckPoSA(PoSAProof proof)
 }
 
 
 entity BlockPoW {
-    +bytes p1;
-    +bytes32 prevHashOrReceiptRoot;
-    +bytes p2;
-    +bytes difficulty;
-    +bytes p3;
+        +bytes3 p0WithNonce;
+        +bytes3 p0WithoutNonce;
+
+        +bytes p1;
+        +bytes32 parentOrReceiptHash;
+        +bytes p2;
+        +bytes difficulty;
+        +bytes p3;
+        +bytes number;
+        +bytes p4;
+        +bytes p5;
+        +bytes nonce;
+        +bytes p6;
+
+        +uint[] dataSetLookup;
+        +uint[] witnessForLookup;
 }
 
-entity BlockClique {
-    +bytes p1;
-    +bytes32 prevHashOrReceiptRoot;
-    +bytes p2;
-    +bytes difficulty;
-    +bytes p3;
+entity BlockPoSA {
+       +bytes3 p0Signed;
+       +bytes3 p0Unsigned;
+
+        +bytes32 parentHash;
+        +bytes p1;
+        +bytes32 receiptHash;
+        +bytes p2;
+        +bytes number;
+        +bytes p3;
+
+        +bytes p4Signed;
+        +bytes p4Unsigned;
+        +bytes extraData;
+
+        +bytes p5;
 }
 
 entity BlockAura {
@@ -66,6 +87,7 @@ entity BlockAura {
 abstract class CommonBridge {
     +mapping(address=>address) tokenAddresses
     +address sideBridgeAddress
+    +address feeRecipient
     +uint fee
     +uint lockTime
     +uint timeframe
@@ -79,7 +101,6 @@ abstract class CommonBridge {
     +wrapWithdraw(toAddress)
     --admin--
     +tokenAddresses update methods ()
-    +setFee()
     +setTimeframe()
     +setLockTime()
     +pause() / unpause()
@@ -97,14 +118,14 @@ Eth_AmbBridge --> CheckPoW
 Eth_EthBridge --> CheckAura
 
 Bsc_BscBridge --> CheckAura
-Bsc_AmbBridge --> CheckClique
+Bsc_AmbBridge --> CheckPoSA
 
 CheckPoW --> BlockPoW
-CheckClique --> BlockClique
+CheckPoSA --> BlockPoSA
 CheckAura --> BlockAura
 
 CheckPoW --> Transfer
-CheckClique --> Transfer
+CheckPoSA --> Transfer
 CheckAura --> Transfer
 
 Eth_AmbBridge --> CommonBridge
