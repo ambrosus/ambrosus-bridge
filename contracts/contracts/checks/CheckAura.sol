@@ -100,18 +100,22 @@ contract CheckAura is Initializable {
         }
 
         for (uint i = 0; i < auraProof.blocks.length; i++) {
-            console.logUint(i);
+            console.log("block", i);
             BlockAura calldata block_ = auraProof.blocks[i];
 
             if (block_.finalizedVs != 0) {// 0 means no events should be finalized, so indexes are shifted by 1
                 // vs changes in that block
                 ValidatorSetProof calldata vsProof = auraProof.vsChanges[block_.finalizedVs - 1];
-                console.logUint(vsProof.eventBlock);
-                console.logUint(minSafetyBlocksValidators);
+                console.log("finalizedVs", block_.finalizedVs);
+                console.log("event block", vsProof.eventBlock);
 
                 // apply vs changes
                 for (uint k = 0; k < vsProof.changes.length; k++)
                     applyVsChange(vsProof.changes[k]);
+
+                console.log("new validator set", validatorSet.length);
+                for (uint k = 0; k < validatorSet.length; k++)
+                    console.log("  ", k, validatorSet[k]);
 
                 // check proof
                 receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
@@ -119,7 +123,11 @@ contract CheckAura is Initializable {
                 // eventBlockNum = finalizedBlockNum - validatorSet.length / 2 - 1
                 // eventBlockIndex = finalizedBlockIndex - minSafetyBlocksValidators
                 require(i - vsProof.eventBlock >= minSafetyBlocksValidators, "Few safety blocks validators");
-                require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
+                if (auraProof.blocks[vsProof.eventBlock].receiptHash != receiptHash) {
+                    console.log("expect receiptHash");
+                    console.logBytes32(receiptHash);
+                }
+//                require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
 
 
                 // there is gap BEFORE finalizing block, so disable parentHash check for it
@@ -129,7 +137,7 @@ contract CheckAura is Initializable {
             }
 
             // don't check parentHash for first block and for block after finalizing vs
-            if (parentHash != bytes32(0)){
+            if (parentHash != bytes32(0)) {
                 require(block_.parentHash == parentHash, "Wrong parent hash");
             }
 
@@ -169,15 +177,13 @@ contract CheckAura is Initializable {
     function checkBlock(BlockAura calldata block_) internal view returns (bytes32) {
         (bytes32 bareHash, bytes32 sealHash) = calcBlockHash(block_);
 
-        for (uint i = 0; i < validatorSet.length; i++) {
-            console.logAddress(validatorSet[i]);
-        }
-
         address validator = validatorSet[bytesToUint(block_.step) % validatorSet.length];
-        console.log();
-        console.logAddress(validator);
-        console.logAddress(ecdsaRecover(bareHash, block_.signature));
-        require(ecdsaRecover(bareHash, block_.signature) == validator, "Failed to verify sign");
+        if (ecdsaRecover(bareHash, block_.signature) != validator) {
+            console.log("step", bytesToUint(block_.step));
+            console.log("expected signer", validator);
+            console.log("actual signer", ecdsaRecover(bareHash, block_.signature));
+            require(ecdsaRecover(bareHash, block_.signature) == validator, "Failed to verify sign");
+        }
 
         return sealHash;
     }
