@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -206,11 +207,11 @@ func (p *transferFeeTracker) watchUnlocks() error {
 
 // --------------------- side bridge getters --------------------
 
-func getOldestLockedEventId(contract *bindings.Bridge) (*big.Int, error) {
+func getOldestLockedEventId(contract interfaces.BridgeContract) (*big.Int, error) {
 	return contract.OldestLockedEventId(nil)
 }
 
-func getTransfersByIds(contract *bindings.Bridge, eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
+func getTransfersByIds(contract interfaces.BridgeContract, eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
 	logTransfer, err := contract.FilterTransfer(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
@@ -224,7 +225,7 @@ func getTransfersByIds(contract *bindings.Bridge, eventIds []*big.Int) (transfer
 	return transfers, nil
 }
 
-func getTransferSubmitsByIds(contract *bindings.Bridge, eventIds []*big.Int) (submits []*bindings.BridgeTransferSubmit, err error) {
+func getTransferSubmitsByIds(contract interfaces.BridgeContract, eventIds []*big.Int) (submits []*bindings.BridgeTransferSubmit, err error) {
 	logSubmit, err := contract.FilterTransferSubmit(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer submit: %w", err)
@@ -238,7 +239,7 @@ func getTransferSubmitsByIds(contract *bindings.Bridge, eventIds []*big.Int) (su
 	return submits, nil
 }
 
-func getTransferUnlocksByIds(contract *bindings.Bridge, eventIds []*big.Int) (unlocks []*bindings.BridgeTransferFinish, err error) {
+func getTransferUnlocksByIds(contract interfaces.BridgeContract, eventIds []*big.Int) (unlocks []*bindings.BridgeTransferFinish, err error) {
 	logUnlock, err := contract.FilterTransferFinish(nil, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer finish: %w", err)

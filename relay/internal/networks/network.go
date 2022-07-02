@@ -5,12 +5,16 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 )
+
+//go:generate mockgen -source=network.go -destination=mocks/mock.go
 
 var (
 	ErrEventNotFound = errors.New("error event not found")
@@ -24,16 +28,19 @@ type GetTxErrParams struct {
 	TxParams   []interface{}
 }
 
+// ContractCallFn is a callback type for calling paid contract's method.
+type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
+
 type Bridge interface {
 	GetClient() ethclients.ClientInterface
 	GetWsClient() ethclients.ClientInterface
 
-	GetContract() *bindings.Bridge
-	GetWsContract() *bindings.Bridge
-
+	GetContract() interfaces.BridgeContract
+	GetWsContract() interfaces.BridgeContract
 	GetLogger() *zerolog.Logger
 	GetName() string
 
+	ProcessTx(methodName string, txCallback ContractCallFn) error
 	ShouldHavePk()
 	EnsureContractUnpaused()
 }

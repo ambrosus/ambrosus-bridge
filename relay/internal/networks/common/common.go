@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -24,7 +25,7 @@ type CommonBridge struct {
 	SideBridge networks.Bridge
 
 	Client, WsClient     ethclients.ClientInterface
-	Contract, WsContract *bindings.Bridge
+	Contract, WsContract interfaces.BridgeContract
 	Auth                 *bind.TransactOpts
 
 	Logger zerolog.Logger
@@ -42,7 +43,7 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 		return b, fmt.Errorf("dial http: %w", err)
 	}
 
-	// Creating a new submitter contract instance.
+	// Creating a new bridge contract instance.
 	b.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
 	if err != nil {
 		return b, fmt.Errorf("create contract http: %w", err)
@@ -127,11 +128,11 @@ func (b *CommonBridge) GetWsClient() ethclients.ClientInterface {
 	return b.WsClient
 }
 
-func (b *CommonBridge) GetContract() *bindings.Bridge {
+func (b *CommonBridge) GetContract() interfaces.BridgeContract {
 	return b.Contract
 }
 
-func (b *CommonBridge) GetWsContract() *bindings.Bridge {
+func (b *CommonBridge) GetWsContract() interfaces.BridgeContract {
 	return b.WsContract
 }
 

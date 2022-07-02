@@ -9,6 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
+//go:generate mockgen -source=interface.go -destination=mocks/mock.go
+
 type ClientInterface interface {
 	ethereum.ChainReader
 	ethereum.TransactionReader

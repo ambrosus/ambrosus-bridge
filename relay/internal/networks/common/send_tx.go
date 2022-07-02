@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
@@ -15,10 +16,7 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
-// ContractCallFn is a callback type for calling paid contract's method.
-type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
-
-func (b *CommonBridge) ProcessTx(methodName string, txCallback ContractCallFn) error {
+func (b *CommonBridge) ProcessTx(methodName string, txCallback networks.ContractCallFn) error {
 	// if the transaction get stuck, then retry it with the higher gas price
 	var txOpts = b.Auth
 	var receipt *types.Receipt
