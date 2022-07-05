@@ -2,16 +2,17 @@ package fee_api
 
 import (
 	"fmt"
-	"log"
 	"math/big"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api/middlewares"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
 	"github.com/rs/cors"
+	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
@@ -26,29 +27,45 @@ type BridgeFeeApi interface {
 	GetTransferFee() *big.Int
 	GetWrapperAddress() common.Address
 	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetDefaultTransferFee() decimal.Decimal
 }
 
 type FeeAPI struct {
 	amb, side BridgeFeeApi
 
-	cache *memoize.Memoizer
+	cache  *memoize.Memoizer
+	logger *zerolog.Logger
 }
 
-func NewFeeAPI(amb, side BridgeFeeApi) *FeeAPI {
+func NewFeeAPI(amb, side BridgeFeeApi, logger *zerolog.Logger) *FeeAPI {
 	return &FeeAPI{
-		amb:   amb,
-		side:  side,
-		cache: memoize.NewMemoizer(cacheExpiration, time.Hour),
+		amb:    amb,
+		side:   side,
+		cache:  memoize.NewMemoizer(cacheExpiration, time.Hour),
+		logger: logger,
 	}
 }
 
-func (p *FeeAPI) Run(endpoint string, ip string, port int) {
-	c := p.setupCORS()
+func NewFeeAPILogger() *zerolog.Logger {
+	l := zerolog.New(os.Stderr)
+	return &l
+}
 
+func (p *FeeAPI) Run(endpoint string, ip string, port int) {
+	// endpoints
 	mux := http.NewServeMux()
 	mux.HandleFunc(endpoint, p.feesHandler)
 
-	log.Fatal(http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), c.Handler(mux)))
+	// init middlewares
+	corsMiddleware := p.setupCORS().Handler
+	loggingMiddleware := middlewares.LoggingMiddleware(p.logger)
+
+	// apply middlewares
+	handler := corsMiddleware(mux)
+	handler = loggingMiddleware(handler)
+	handler = middlewares.MetricsMiddleware(handler)
+
+	p.logger.Fatal().Err(http.ListenAndServe(fmt.Sprintf("%s:%d", ip, port), handler)).Msg("")
 }
 
 func (p *FeeAPI) setupCORS() *cors.Cors {

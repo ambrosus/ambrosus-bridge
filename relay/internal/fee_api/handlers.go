@@ -44,6 +44,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
 }
 
@@ -207,6 +208,10 @@ func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPric
 		return decimal.Decimal{}, err // todo
 	}
 	feeSideNative := feeSideNativeI.(*big.Int)
+
+	if feeSideNative == nil {
+		return bridge.GetDefaultTransferFee(), nil
+	}
 
 	// convert it to native bridge currency
 	feeUsd := coin2Usd(decimal.NewFromBigInt(feeSideNative, 0), sideCoinPrice)

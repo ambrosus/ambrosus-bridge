@@ -63,16 +63,17 @@ func main() {
 	}
 
 	if feeCfg := cfg.FeeApi; feeCfg.Enable {
-		feeAmb, err := fee.NewBridgeFee(ambBridge, sideBridge, feeCfg.Amb, feeCfg.Side)
+		feeAmb, err := fee.NewBridgeFee(ambBridge, sideBridge, feeCfg.Amb)
 		if err != nil {
 			log.Fatal().Err(err).Msg("feeAmb not created")
 		}
-		feeSide, err := fee.NewBridgeFee(sideBridge, ambBridge, feeCfg.Side, feeCfg.Amb)
+		feeSide, err := fee.NewBridgeFee(sideBridge, ambBridge, feeCfg.Side)
 		if err != nil {
 			log.Fatal().Err(err).Msg("feeSide not created")
 		}
+		feeApiLogger := fee_api.NewFeeAPILogger()
 
-		feeApi := fee_api.NewFeeAPI(feeAmb, feeSide)
+		feeApi := fee_api.NewFeeAPI(feeAmb, feeSide, feeApiLogger)
 		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
 	}
 

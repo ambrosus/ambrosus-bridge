@@ -1,12 +1,12 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x1E712576FA72fa90C445bf1FcCCD8807FFA89467",
-      "side": "0x9EA872c56813eeb4a70cf702CB47797D777CAD95"
+      "amb": "0x89F600091bB7D6f94fD1EC183866dce67F1ba19A",
+      "side": "0x8e5700d937A607213BC8aBb0E0EDd9BbF57d244d"
     },
     "bsc": {
-      "amb": "0x6B6EA49252E0C82492d1967Af5c96D10be8A30bB",
-      "side": "0x57a4fB30df9f64bc8D03f227D782D594595E9260"
+      "amb": "0x29086EBFb3f25b7fB10775e593b67ED6732017c0",
+      "side": "0x9177b3b395a108753026FbCD76BB841Dd6d7262C"
     }
   },
   "tokens": {
@@ -17,9 +17,9 @@
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "primaryNet": "amb",
       "addresses": {
-        "amb": "0xcee40F987FC4F24d28547107FaBd33C519B43Fe6",
-        "eth": "0x500268485CB411696bd48629f78E8846C1929a43",
-        "bsc": "0x18951A2D6527A01C089D5Ad595Ae4f0B5d749786"
+        "amb": "0x8feAb9749bb6d3F33619b6bf7236d160048beFCd",
+        "eth": "0x7ffE2c066C5a52295040CD695279DdCc65854F28",
+        "bsc": ""
       },
       "nativeAnalog": "AMB"
     },
@@ -30,8 +30,8 @@
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNet": "eth",
       "addresses": {
-        "amb": "0x7e1B07dEaf4619C3937A63E5A6f57B9095E3A8f7",
-        "eth": "0xf531B8F309Be94191af87605CfBf600D71C2cFe0",
+        "amb": "0xd1f26a16cf5C58E91DA996a228F050969910d4f4",
+        "eth": "0x562188D39352ad4CB5B456212C11FABC3a2294c2",
         "bsc": ""
       },
       "nativeAnalog": "ETH"
@@ -43,9 +43,9 @@
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "primaryNet": "bsc",
       "addresses": {
-        "amb": "0x0d728C951BFC4701256Ca7C4975F85229D9885c8",
+        "amb": "",
         "eth": "",
-        "bsc": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+        "bsc": ""
       },
       "nativeAnalog": "BNB"
     }
