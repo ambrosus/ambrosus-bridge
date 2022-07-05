@@ -12,6 +12,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb/aura_proof"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ethereum/go-ethereum/common"
@@ -201,7 +202,7 @@ func encodePoABlock() error {
 		return err
 	}
 
-	bd, err := amb.EncodeBlock(header)
+	bd, err := aura_proof.EncodeBlock(header)
 	if err != nil {
 		return err
 	}

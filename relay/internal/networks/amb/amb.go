@@ -7,6 +7,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb/aura_proof"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ethereum/go-ethereum/common"
@@ -19,6 +20,8 @@ type Bridge struct {
 	ParityClient *parity.Client
 	vSContract   *bindings.Vs
 	sideBridge   networks.BridgeReceiveAura
+
+	auraEncoder *aura_proof.AuraEncoder
 }
 
 // New creates a new ambrosus bridge.
@@ -74,6 +77,9 @@ func New(cfg *config.AMBConfig, externalLogger logger.Hook) (*Bridge, error) {
 func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceiveAura) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
+
+	// todo refactor: move to separate service along with vsContract creation
+	b.auraEncoder = aura_proof.NewAuraEncoder(b, sideBridge, b.vSContract, b.ParityClient)
 }
 
 func (b *Bridge) Run() {
@@ -85,7 +91,7 @@ func (b *Bridge) Run() {
 }
 
 func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
-	auraProof, err := b.encodeAuraProof(event, safetyBlocks)
+	auraProof, err := b.auraEncoder.EncodeAuraProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodeAuraProof: %w", err)
 	}

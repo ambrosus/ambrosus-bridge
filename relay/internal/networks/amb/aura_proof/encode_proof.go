@@ -1,4 +1,4 @@
-package amb
+package aura_proof
 
 import (
 	"context"
@@ -6,7 +6,12 @@ import (
 	"math/big"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/rs/zerolog"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -18,7 +23,27 @@ type blockExt struct {
 	lastEvent         *c.VsInitiateChange
 }
 
-func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
+type AuraEncoder struct {
+	bridge       *amb.Bridge
+	auraReceiver networks.BridgeReceiveAura
+
+	vsContract   *c.Vs
+	parityClient *parity.Client
+
+	logger *zerolog.Logger
+}
+
+func NewAuraEncoder(bridge *amb.Bridge, sideBridge networks.BridgeReceiveAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
+	return &AuraEncoder{
+		bridge:       bridge,
+		auraReceiver: sideBridge,
+		vsContract:   vSContract,
+		parityClient: parityClient,
+		logger:       bridge.GetLogger(), // todo maybe sublogger?
+	}
+}
+
+func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
 	// populated by functions below
 	blocksMap := make(map[uint64]*blockExt)
 
@@ -81,8 +106,8 @@ func (b *Bridge) encodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 // if proof too long we need to split it into smaller parts
-func (b *Bridge) splitVsChanges(proof *c.CheckAuraAuraProof) *c.CheckAuraAuraProof {
-	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("Aura proof too long")
+func (b *AuraEncoder) splitVsChanges(proof *c.CheckAuraAuraProof) *c.CheckAuraAuraProof {
+	b.logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("Aura proof too long")
 	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
 	// todo maybe keep ~3000 blocks instead of half
 
@@ -101,8 +126,8 @@ func (b *Bridge) splitVsChanges(proof *c.CheckAuraAuraProof) *c.CheckAuraAuraPro
 	}
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
-	proof, err := b.GetProof(event)
+func (b *AuraEncoder) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
+	proof, err := b.bridge.GetProof(event)
 	if err != nil {
 		return nil, err
 	}
@@ -119,13 +144,13 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.Bridg
 	}, nil
 }
 
-func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.VsInitiateChange) error {
-	prevSet, err := b.sideBridge.GetValidatorSet()
+func (b *AuraEncoder) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.VsInitiateChange) error {
+	prevSet, err := b.auraReceiver.GetValidatorSet()
 	if err != nil {
 		return fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
-	minSafetyBlocksValidators, err := b.sideBridge.GetMinSafetyBlocksValidators()
+	minSafetyBlocksValidators, err := b.auraReceiver.GetMinSafetyBlocksValidators()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksValidators: %w", err)
 	}
@@ -164,7 +189,7 @@ func (b *Bridge) encodeVSChangeEvents(blocks map[uint64]*blockExt, events []*c.V
 	return nil
 }
 
-func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
+func (b *AuraEncoder) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint64) ([]*c.VsInitiateChange, error) {
 	start, err := b.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
@@ -177,7 +202,7 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 		Context: context.Background(),
 	}
 
-	logs, err := b.vSContract.FilterInitiateChange(opts, nil)
+	logs, err := b.vsContract.FilterInitiateChange(opts, nil)
 	if err != nil {
 		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
@@ -190,13 +215,13 @@ func (b *Bridge) fetchVSChangeEvents(event *c.BridgeTransfer, safetyBlocks uint6
 	return res, nil
 }
 
-func (b *Bridge) getLastProcessedBlockNum() (*big.Int, error) {
-	blockHash, err := b.sideBridge.GetLastProcessedBlockHash()
+func (b *AuraEncoder) getLastProcessedBlockNum() (*big.Int, error) {
+	blockHash, err := b.auraReceiver.GetLastProcessedBlockHash()
 	if err != nil {
 		return nil, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
 	}
 
-	block, err := b.Client.BlockByHash(context.Background(), *blockHash)
+	block, err := b.bridge.GetClient().BlockByHash(context.Background(), *blockHash)
 	if err != nil {
 		return nil, fmt.Errorf("get block by hash: %w", err)
 	}
@@ -232,7 +257,7 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 }
 
 // save blocks from `from` to `to` INCLUSIVE
-func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
+func (b *AuraEncoder) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64) error {
 	for i := from; i <= to; i++ {
 		if err := b.saveBlock(blocksMap, i); err != nil {
 			return err
@@ -241,12 +266,12 @@ func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*blockExt, from, to uint64
 	return nil
 }
 
-func (b *Bridge) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
+func (b *AuraEncoder) saveBlock(blocksMap map[uint64]*blockExt, blockNumber uint64) error {
 	if _, ok := blocksMap[blockNumber]; ok {
 		return nil
 	}
 
-	block, err := b.ParityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
+	block, err := b.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
