@@ -16,8 +16,8 @@ import (
 type BridgeFee struct {
 	networks.Bridge
 
-	minBridgeFee           decimal.Decimal
-	sideDefaultTransferFee *big.Int
+	minBridgeFee       decimal.Decimal
+	defaultTransferFee decimal.Decimal
 
 	wrapperAddress common.Address
 	privateKey     *ecdsa.PrivateKey
@@ -25,7 +25,7 @@ type BridgeFee struct {
 	transferFeeTracker *transferFeeTracker
 }
 
-func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork, sideCfg config.FeeApiNetwork) (*BridgeFee, error) {
+func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) (*BridgeFee, error) {
 	wrapperAddress, err := bridge.GetContract().WrapperAddress(nil)
 	if err != nil {
 		return nil, err
@@ -41,18 +41,18 @@ func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork, 
 		return nil, err
 	}
 
-	sideDefaultTransferFee, ok := new(big.Int).SetString(sideCfg.DefaultTransferFee, 10)
-	if !ok {
-		return nil, fmt.Errorf("failed to parse sideDefaultTransferFee (%s)", cfg.DefaultTransferFee)
+	defaultTransferFee, err := decimal.NewFromString(cfg.DefaultTransferFee)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse defaultTransferFee (%s)", cfg.DefaultTransferFee)
 	}
 
 	return &BridgeFee{
-		Bridge:                 bridge,
-		minBridgeFee:           decimal.NewFromFloat(cfg.MinBridgeFee),
-		sideDefaultTransferFee: sideDefaultTransferFee,
-		privateKey:             privateKey,
-		wrapperAddress:         wrapperAddress,
-		transferFeeTracker:     transferFee,
+		Bridge:             bridge,
+		minBridgeFee:       decimal.NewFromFloat(cfg.MinBridgeFee),
+		defaultTransferFee: defaultTransferFee,
+		privateKey:         privateKey,
+		wrapperAddress:     wrapperAddress,
+		transferFeeTracker: transferFee,
 	}, nil
 }
 
@@ -61,11 +61,7 @@ func (b *BridgeFee) Sign(digestHash []byte) ([]byte, error) {
 }
 
 func (b *BridgeFee) GetTransferFee() *big.Int {
-	feeSideNative := b.transferFeeTracker.GasPerWithdraw()
-	if feeSideNative == nil {
-		feeSideNative = b.sideDefaultTransferFee
-	}
-	return feeSideNative
+	return b.transferFeeTracker.GasPerWithdraw()
 }
 
 func (b *BridgeFee) GetWrapperAddress() common.Address {
@@ -74,4 +70,8 @@ func (b *BridgeFee) GetWrapperAddress() common.Address {
 
 func (b *BridgeFee) GetMinBridgeFee() decimal.Decimal {
 	return b.minBridgeFee
+}
+
+func (b *BridgeFee) GetDefaultTransferFee() decimal.Decimal {
+	return b.defaultTransferFee
 }

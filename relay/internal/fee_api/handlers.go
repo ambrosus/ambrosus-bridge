@@ -209,6 +209,10 @@ func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPric
 	}
 	feeSideNative := feeSideNativeI.(*big.Int)
 
+	if feeSideNative == nil {
+		return bridge.GetDefaultTransferFee(), nil
+	}
+
 	// convert it to native bridge currency
 	feeUsd := coin2Usd(decimal.NewFromBigInt(feeSideNative, 0), sideCoinPrice)
 	feeThisNative := usd2Coin(feeUsd, thisCoinPrice)

@@ -27,6 +27,7 @@ type BridgeFeeApi interface {
 	GetTransferFee() *big.Int
 	GetWrapperAddress() common.Address
 	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetDefaultTransferFee() decimal.Decimal
 }
 
 type FeeAPI struct {
