@@ -24,7 +24,7 @@ type blockExt struct {
 }
 
 type AuraEncoder struct {
-	bridge       *amb.Bridge
+	bridge       networks.Bridge
 	auraReceiver networks.BridgeReceiveAura
 
 	vsContract   *c.Vs
@@ -78,7 +78,7 @@ func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 		// fill up 'vsChanges'
 		if blocksMap[blockNum].lastEvent != nil {
-			proof, err := b.GetProof(blocksMap[blockNum].lastEvent)
+			proof, err := cb.GetProof(b.bridge.GetClient(), blocksMap[blockNum].lastEvent)
 			if err != nil {
 				return nil, fmt.Errorf("GetProof: %w", err)
 			}
@@ -127,7 +127,7 @@ func (b *AuraEncoder) splitVsChanges(proof *c.CheckAuraAuraProof) *c.CheckAuraAu
 }
 
 func (b *AuraEncoder) encodeTransferEvent(blocks map[uint64]*blockExt, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
-	proof, err := b.bridge.GetProof(event)
+	proof, err := cb.GetProof(b.bridge.GetClient(), event)
 	if err != nil {
 		return nil, err
 	}
