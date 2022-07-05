@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x9AB69478E26197eb41544ACe827A46E4e61710aa",
-      "side": "0x50251e066ff0AEF13636CE85e29715f45EE96A2e"
+      "amb": "0xF5403ff735f94aC00894D0603f865ed3D951A610",
+      "side": "0x05BbbFA325e16C9b1535c51E5aC4E0F69A5987B4"
     },
     "bsc": {
       "amb": "0x29086EBFb3f25b7fB10775e593b67ED6732017c0",
@@ -17,8 +17,8 @@
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "primaryNet": "amb",
       "addresses": {
-        "amb": "0x6a8441e991d45EfD94C65eD8F200e6fCf94eeEE4",
-        "eth": "0xa0Dace4948d8488F6cB83C7e7b8f7d243314442e",
+        "amb": "0x3aEAF7626EBccad5DFE07a426F7EFA88E5a5b014",
+        "eth": "0x824A5caB9c9dfD259e76aaD4de878128fC759373",
         "bsc": "0x85EaEB572355c3087e7513B28E273bcbbEbB7748"
       },
       "nativeAnalog": "AMB"
@@ -30,8 +30,8 @@
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNet": "eth",
       "addresses": {
-        "amb": "0x447681BfCa2afe51B0D248F04B5E435CfDb87258",
-        "eth": "0xc514b6c6E5ae2882cdE3CAE55228858EfbFE6CEB",
+        "amb": "0x7e80Bb53816F4E7d95Eb6B6a64293b44812969F8",
+        "eth": "0xe8188160f0b8E4A2940A6B9779ed0FE9A2506dF7",
         "bsc": ""
       },
       "nativeAnalog": "ETH"
@@ -43,9 +43,9 @@
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "primaryNet": "bsc",
       "addresses": {
-        "amb": "0x1280beEa346978127925118D9cF2d62f284Fc3d2",
+        "amb": "",
         "eth": "",
-        "bsc": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+        "bsc": ""
       },
       "nativeAnalog": "BNB"
     }
