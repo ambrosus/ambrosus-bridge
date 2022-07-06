@@ -26,21 +26,28 @@ type GetTxErrParams struct {
 
 type Bridge interface {
 	GetClient() ethclients.ClientInterface
+	GetWsClient() ethclients.ClientInterface
+
 	GetContract() *bindings.Bridge
 	GetWsContract() *bindings.Bridge
+
 	GetLogger() *zerolog.Logger
 	GetName() string
 
-	Run()
-	ValidityWatchdog()
+	ShouldHavePk()
+	EnsureContractUnpaused()
+}
 
+type Submitter interface {
+	Bridge
+	GetEventById(eventId *big.Int) (*bindings.BridgeTransfer, error)
+	SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error
+}
+
+type Receiver interface {
 	// GetLastReceivedEventId used by the other side of the bridge for synchronization
 	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
-	GetEventById(eventId *big.Int) (*bindings.BridgeTransfer, error)
-
-	SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error
-
 	EnsureContractUnpaused()
 }
 

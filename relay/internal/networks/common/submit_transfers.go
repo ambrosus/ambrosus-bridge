@@ -8,54 +8,61 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/rs/zerolog"
 )
 
-func (b *CommonBridge) SubmitTransfersLoop() {
-	b.shouldHavePk()
+type SubmitTransfers struct {
+	submitter networks.Submitter
+	receiver  networks.Receiver
+	logger    zerolog.Logger
+}
+
+func (b *SubmitTransfers) SubmitTransfersLoop() {
+	b.submitter.ShouldHavePk()
 	for {
-		// since we submit transfers to SideBridge, ensure that it is unpaused
-		b.SideBridge.EnsureContractUnpaused()
+		// since we submit transfers to receiver, ensure that it is unpaused
+		b.receiver.EnsureContractUnpaused()
 
 		if err := b.watchTransfers(); err != nil {
-			b.Logger.Error().Err(err).Msg("watchTransfers error")
+			b.logger.Error().Err(err).Msg("watchTransfers error")
 		}
 		time.Sleep(failSleepTIme)
 	}
 }
 
-func (b *CommonBridge) checkOldTransfers() error {
-	b.Logger.Info().Msg("Checking old events...")
+func (b *SubmitTransfers) checkOldTransfers() error {
+	b.logger.Info().Msg("Checking old events...")
 
-	lastEventId, err := b.SideBridge.GetLastReceivedEventId()
+	lastEventId, err := b.receiver.GetLastReceivedEventId()
 	if err != nil {
 		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
 
 	for i := int64(1); ; i++ {
 		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
-		nextEvent, err := b.GetEventById(nextEventId)
+		nextEvent, err := b.submitter.GetEventById(nextEventId)
 		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
 			return nil
 		} else if err != nil {
-			return fmt.Errorf("GetEventById on id %v: %w", nextEventId.String(), err)
+			return fmt.Errorf("getEventById on id %v: %w", nextEventId.String(), err)
 		}
 
-		b.Logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
+		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
 		if err := b.processEvent(nextEvent); err != nil {
 			return err
 		}
 	}
 }
 
-func (b *CommonBridge) watchTransfers() error {
+func (b *SubmitTransfers) watchTransfers() error {
 	if err := b.checkOldTransfers(); err != nil {
 		return fmt.Errorf("checkOldTransfers: %w", err)
 	}
-	b.Logger.Info().Msg("Listening new events...")
+	b.logger.Info().Msg("Listening new events...")
 
 	// Subscribe to events
 	eventCh := make(chan *bindings.BridgeTransfer)
-	eventSub, err := b.WsContract.WatchTransfer(nil, eventCh, nil)
+	eventSub, err := b.submitter.GetWsContract().WatchTransfer(nil, eventCh, nil)
 	if err != nil {
 		return fmt.Errorf("watchTransfer: %w", err)
 	}
@@ -70,7 +77,7 @@ func (b *CommonBridge) watchTransfers() error {
 			if event.Raw.Removed {
 				continue
 			}
-			b.Logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
+			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
 			if err := b.processEvent(event); err != nil {
 				return err
 			}
@@ -78,25 +85,38 @@ func (b *CommonBridge) watchTransfers() error {
 	}
 }
 
-func (b *CommonBridge) processEvent(event *bindings.BridgeTransfer) error {
-	safetyBlocks, err := b.SideBridge.GetMinSafetyBlocksNum()
+func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
+	safetyBlocks, err := b.receiver.GetMinSafetyBlocksNum()
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
 
-	if err := b.WaitForBlock(event.Raw.BlockNumber + safetyBlocks); err != nil {
-		return fmt.Errorf("WaitForBlock: %w", err)
+	b.logger.Debug().Uint64("blockNum", event.Raw.BlockNumber+safetyBlocks).Msg("Waiting for block...")
+	if err := waitForBlock(b.submitter.GetWsClient(), event.Raw.BlockNumber+safetyBlocks); err != nil {
+		return fmt.Errorf("waitForBlock: %w", err)
 	}
 
 	// Check if the event has been removed.
-	if err := b.IsEventRemoved(event); err != nil {
+	if err := isEventRemoved(b.submitter, event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
-	if err := b.SendEvent(event, safetyBlocks); err != nil {
+	if err := b.submitter.SendEvent(event, safetyBlocks); err != nil {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	b.AddWithdrawalsCountMetric(len(event.Queue))
+	// todo
+	//b.AddWithdrawalsCountMetric(len(event.Queue))
+	return nil
+}
+
+func isEventRemoved(s networks.Submitter, event *bindings.BridgeTransfer) error {
+	newEvent, err := s.GetEventById(event.EventId)
+	if err != nil {
+		return err
+	}
+	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
+		return fmt.Errorf("looks like the event has been removed")
+	}
 	return nil
 }

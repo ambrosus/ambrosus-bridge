@@ -18,7 +18,7 @@ import (
 var ErrEmptyLockedTransfers = errors.New("empty locked transfers")
 
 func (b *CommonBridge) ValidityWatchdog() {
-	b.shouldHavePk()
+	b.ShouldHavePk()
 
 	for {
 		b.EnsureContractUnpaused()
@@ -101,7 +101,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 func (b *CommonBridge) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
 	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
 	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
-		return fmt.Errorf("GetEventById: %w", err)
+		return fmt.Errorf("getEventById: %w", err)
 	}
 
 	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
