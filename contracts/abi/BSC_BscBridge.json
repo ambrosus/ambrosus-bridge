@@ -293,6 +293,19 @@
     "inputs": [
       {
         "internalType": "uint256",
+        "name": "minSafetyBlocksValidators_",
+        "type": "uint256"
+      }
+    ],
+    "name": "changeMinSafetyBlocksValidators",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
         "name": "signatureFeeCheckNumber_",
         "type": "uint256"
       }
@@ -528,6 +541,11 @@
         "internalType": "bytes32",
         "name": "lastProcessedBlock",
         "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "minSafetyBlocksValidators",
+        "type": "uint256"
       }
     ],
     "name": "initialize",
@@ -622,6 +640,19 @@
   {
     "inputs": [],
     "name": "minSafetyBlocks",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minSafetyBlocksValidators",
     "outputs": [
       {
         "internalType": "uint256",
@@ -845,6 +876,11 @@
                 "internalType": "struct CheckAura.ValidatorSetChange[]",
                 "name": "changes",
                 "type": "tuple[]"
+              },
+              {
+                "internalType": "uint256",
+                "name": "eventBlock",
+                "type": "uint256"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",

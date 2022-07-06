@@ -44,7 +44,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await hre.deployments.deploy("CheckAuraTest", {
         from: owner,
         args: [
-            "0x0000000000000000000000000000000000000F00", // validatorSetAddress_
+            "0x0000000000000000000000000000000000000F00", // validatorSetAddress
+            10, // minSafetyBlocksValidators
         ],
     });
 

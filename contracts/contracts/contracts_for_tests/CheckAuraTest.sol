@@ -4,8 +4,9 @@ pragma solidity 0.8.6;
 import "../checks/CheckAura.sol";
 
 contract CheckAuraTest is CheckAura {
-    constructor(address validatorSetAddress_) {
+    constructor(address validatorSetAddress_, uint minSafetyBlocksValidators_) {
         validatorSetAddress = validatorSetAddress_;
+        minSafetyBlocksValidators = minSafetyBlocksValidators_;
     }
 
     function checkAuraTest(AuraProof calldata auraProof, uint minSafetyBlocks, address sideBridgeAddress, address[] memory initialValidators_) public {
