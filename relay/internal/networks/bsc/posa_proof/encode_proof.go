@@ -2,7 +2,6 @@ package posa_proof
 
 import (
 	"context"
-	"encoding/binary"
 	"fmt"
 	"math/big"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 )
 
@@ -27,6 +27,9 @@ type PoSAEncoder struct {
 	chainId *big.Int
 
 	logger *zerolog.Logger
+
+	// cache for fetching blocks. clear (almost) every `EncodePoSAProof` call
+	fetchBlockCache func(arg uint64) (*types.Header, error)
 }
 
 func NewPoSAEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceivePoSA, chainId *big.Int) *PoSAEncoder {
@@ -39,66 +42,49 @@ func NewPoSAEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceivePoS
 }
 
 func (b *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckPoSAPoSAProof, error) {
-	// populated by functions below
-	var blocksMap = make(map[uint64]*c.CheckPoSABlockPoSA)
+	// todo arg for split (reduced size proof)
 
-	// encode transferProof and save event block to blocksMap
-	transfer, err := b.encodeTransferEvent(blocksMap, transferEvent, safetyBlocks)
+	// new cache for every call
+	// todo don't clear cache for reduced size proof
+	b.fetchBlockCache = helpers.NewCache(b.fetchBlock)
+
+	var blocksToSave []uint64
+
+	lastBlock := transferEvent.Raw.BlockNumber + safetyBlocks
+
+	// todo don't encode and save blocks for reduced size proof
+	transferProof, err := b.encodeTransferEvent(transferEvent)
 	if err != nil {
-		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
+		return nil, fmt.Errorf("encodeTransferProof: %w", err)
 	}
 
-	// encode vsChange blocks to blocksMap
-	epochChangesLastBlock := transferEvent.Raw.BlockNumber + safetyBlocks - 1 // no need to change epoch for last block (it will be changed in next event processing)
-	err = b.encodeEpochChanges(blocksMap, epochChangesLastBlock)
+	// save blocks for transfer
+	blocksToSave = append(blocksToSave, helpers.Range(transferEvent.Raw.BlockNumber, lastBlock+1)...)
+
+	// lastBlock can be decreased if proof is too big
+	epochBlocks, err := b.encodeEpochChanges(lastBlock)
 	if err != nil {
 		return nil, fmt.Errorf("encodeEpochChanges: %w", err)
 	}
+	// save blocks for epoch changes
+	blocksToSave = append(blocksToSave, epochBlocks...)
 
-	// fill up blocks and get transfer event index
-	indexToBlockNum := helpers.SortedKeys(blocksMap)
-	var blocks []c.CheckPoSABlockPoSA
-	var transferEventIndex uint64
-
-	for i, blockNum := range indexToBlockNum {
-		if blockNum == transferEvent.Raw.BlockNumber {
-			transferEventIndex = uint64(i) // set transferEventIndex to index in blocks array
-		}
-		blocks = append(blocks, *blocksMap[blockNum])
+	// fetch and encode blocksToSave
+	blocks, blockNumToIndex, err := b.saveEncodedBlocks(blocksToSave)
+	if err != nil {
+		return nil, fmt.Errorf("saveEncodedBlocks: %w", err)
 	}
 
 	return &c.CheckPoSAPoSAProof{
 		Blocks:             blocks,
-		Transfer:           *transfer,
-		TransferEventBlock: transferEventIndex,
+		Transfer:           *transferProof,
+		TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
 	}, nil
 }
 
-// if proof too long we need to split it into smaller parts
-func (b *PoSAEncoder) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAProof {
-	b.logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("PoSA proof too long")
-	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
-	// todo maybe keep ~3000 blocks instead of half
-
-	// last block should be vsFinalize (just before new epoch block)
-	for i := len(blocks); i > 0; i-- {
-		if binary.BigEndian.Uint64(blocks[i].Number)%200 == 0 {
-			blocks = blocks[:i]
-		}
-	}
-	return &c.CheckPoSAPoSAProof{
-		Blocks: blocks,
-	}
-}
-
-func (b *PoSAEncoder) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
+func (b *PoSAEncoder) encodeTransferEvent(event *c.BridgeTransfer) (*c.CommonStructsTransferProof, error) {
 	proof, err := cb.GetProof(b.bridge.GetClient(), event)
 	if err != nil {
-		return nil, err
-	}
-
-	// save `safetyBlocks` blocks after event block
-	if err := b.saveBlocksRange(blocks, event.Raw.BlockNumber, event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return nil, err
 	}
 
@@ -109,64 +95,65 @@ func (b *PoSAEncoder) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoS
 	}, nil
 }
 
-func (b *PoSAEncoder) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, end uint64) error {
+func (b *PoSAEncoder) encodeEpochChanges(end uint64) ([]uint64, error) {
+	var blocksToSave []uint64
+
 	currentEpoch, err := b.posaReceiver.GetCurrentEpoch()
 	if err != nil {
-		return fmt.Errorf("GetCurrentEpoch: %w", err)
+		return nil, fmt.Errorf("GetCurrentEpoch: %w", err)
 	}
-	epochChangeBlock, err := b.saveBlock(map[uint64]*c.CheckPoSABlockPoSA{}, currentEpoch*epochLength)
+	currentSetLen, err := b.fetchVSLength(currentEpoch) // use to determine how many blocks need to save in next epoch
 	if err != nil {
-		return fmt.Errorf("saveBlock: %w", err)
+		return nil, fmt.Errorf("fetchVSLength: %w", err)
 	}
-	prevVsLen := getVSLength(epochChangeBlock) // use to determine how many blocks need to save in next epoch
 
-	// save blocks into blocks (without current epoch)
-	for epochBlock := (currentEpoch + 1) * epochLength; epochBlock < end; epochBlock += epochLength {
-		// save epoch change block and get VS length
-		epochChangeBlock, err = b.saveBlock(blocks, epochBlock)
+	// save blocks (without current epoch)
+	for epoch := currentEpoch + 1; epoch*epochLength < end; epoch++ {
+		blockWithSet := epoch * epochLength
+		finalizeBlock := blockWithSet + currentSetLen/2 + 1
+		blocksToSave = append(blocksToSave, helpers.Range(blockWithSet, finalizeBlock+1)...)
+
+		currentSetLen, err = b.fetchVSLength(epoch) // use to determine how many blocks need to save in next epoch
 		if err != nil {
-			return fmt.Errorf("save epoch change block: %w", err)
+			return nil, fmt.Errorf("fetchVSLength: %w", err)
 		}
-
-		// start from +1 cuz the epoch change block is already saved
-		if err = b.saveBlocksRange(blocks, epochBlock+1, epochBlock+prevVsLen/2); err != nil {
-			return err
-		}
-
-		prevVsLen = getVSLength(epochChangeBlock)
 	}
-	return nil
+	return blocksToSave, nil
 }
 
-func getVSLength(epochChangeBlock *c.CheckPoSABlockPoSA) uint64 {
-	validatorsLen := len(epochChangeBlock.ExtraData) - extraSealLength - extraVanityLength
+func (b *PoSAEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckPoSABlockPoSA, blockNumToIndex map[uint64]int, err error) {
+	blocks = make([]c.CheckPoSABlockPoSA, len(blockNums))
+
+	for i, bn := range helpers.Sorted(blockNums) {
+		block, err := b.fetchBlockCache(bn)
+		if err != nil {
+			return nil, nil, fmt.Errorf("fetchBlockCache: %w", err)
+		}
+		encodedBlock, err := b.EncodeBlock(block)
+		if err != nil {
+			return nil, nil, fmt.Errorf("EncodeBlock: %w", err)
+		}
+
+		blocks[i] = *encodedBlock
+		blockNumToIndex[bn] = i
+	}
+
+	return blocks, blockNumToIndex, nil
+}
+
+func (b *PoSAEncoder) fetchBlock(blockNum uint64) (*types.Header, error) {
+	return b.bridge.GetClient().HeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
+}
+
+func (b *PoSAEncoder) fetchVSLength(epoch uint64) (uint64, error) {
+	block, err := b.fetchBlockCache(epoch * epochLength)
+	if err != nil {
+		return 0, fmt.Errorf("fetchBlockCache: %w", err)
+	}
+	return getVSLength(block), nil
+}
+
+func getVSLength(epochChangeBlock *types.Header) uint64 {
+	validatorsLen := len(epochChangeBlock.Extra) - extraSealLength - extraVanityLength
 	return uint64(validatorsLen) / addressLength
-}
-
-// save blocks from `from` to `to` INCLUSIVE
-func (b *PoSAEncoder) saveBlocksRange(blocksMap map[uint64]*c.CheckPoSABlockPoSA, from, to uint64) error {
-	for i := from; i <= to; i++ {
-		if _, err := b.saveBlock(blocksMap, i); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func (b *PoSAEncoder) saveBlock(blocksMap map[uint64]*c.CheckPoSABlockPoSA, blockNumber uint64) (*c.CheckPoSABlockPoSA, error) {
-	if encodedBlock, ok := blocksMap[blockNumber]; ok {
-		return encodedBlock, nil
-	}
-
-	block, err := b.bridge.GetClient().HeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
-	if err != nil {
-		return nil, fmt.Errorf("HeaderByNumber: %w", err)
-	}
-	encodedBlock, err := b.EncodeBlock(block)
-	if err != nil {
-		return nil, fmt.Errorf("encode: %w", err)
-	}
-
-	blocksMap[blockNumber] = encodedBlock
-	return encodedBlock, nil
 }
