@@ -1,4 +1,4 @@
-package amb
+package aura_proof
 
 import (
 	"fmt"
