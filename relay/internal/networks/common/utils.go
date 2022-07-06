@@ -6,10 +6,7 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"golang.org/x/sync/errgroup"
 )
 
 // failSleepTIme is how many seconds to sleep between iterations in infinity loops
@@ -85,43 +82,6 @@ func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
 	}
 
 	return nil
-}
-
-func (b *CommonBridge) GetReceipts(blockHash common.Hash) ([]*types.Receipt, error) {
-	txsCount, err := b.Client.TransactionCount(context.Background(), blockHash)
-	if err != nil {
-		return nil, fmt.Errorf("get transaction count: %w", err)
-	}
-
-	receipts := make([]*types.Receipt, txsCount)
-
-	errGroup := new(errgroup.Group)
-	for i := uint(0); i < txsCount; i++ {
-		i := i // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
-		errGroup.Go(func() error {
-			tx, err := b.Client.TransactionInBlock(context.Background(), blockHash, i)
-			if err != nil {
-				return fmt.Errorf("get transaction in block: %w", err)
-			}
-			receipt, err := b.Client.TransactionReceipt(context.Background(), tx.Hash())
-			if err != nil {
-				return fmt.Errorf("get transaction receipt: %w", err)
-			}
-
-			receipts[i] = receipt
-			return nil
-		})
-	}
-
-	return receipts, errGroup.Wait()
-}
-
-func (b *CommonBridge) GetProof(event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := b.GetReceipts(event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("GetReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
 }
 
 func (b *CommonBridge) IsEventRemoved(event *bindings.BridgeTransfer) error {
