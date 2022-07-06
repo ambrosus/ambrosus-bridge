@@ -126,7 +126,7 @@ func (b *AuraEncoder) encodeTransferProof(event *c.BridgeTransfer) (*c.CommonStr
 func (b *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int, err error) {
 	blocks = make([]c.CheckAuraBlockAura, len(blockNums))
 
-	for i, bn := range blockNums {
+	for i, bn := range helpers.Sorted(blockNums) {
 		block, err := b.fetchBlockCache(bn)
 		if err != nil {
 			return nil, nil, fmt.Errorf("fetchBlockCache: %w", err)
