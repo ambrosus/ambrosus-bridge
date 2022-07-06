@@ -16,6 +16,12 @@ func SortedKeys[K constraints.Integer, V any](m map[K]V) []K {
 	return keys
 }
 
+// Sorted is like sort.Ints, but generi.
+func Sorted[K constraints.Integer](l []K) []K {
+	sort.Slice(l, func(i, j int) bool { return l[i] < l[j] })
+	return l
+}
+
 func Unique[T comparable](slice []T) []T {
 	mapSet := map[T]bool{}
 	for _, v := range slice {
