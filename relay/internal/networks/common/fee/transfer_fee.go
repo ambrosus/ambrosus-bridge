@@ -82,7 +82,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get events batch requests
-	transfers, err := p.bridge.GetEventsByIds(eventIds)
+	transfers, err := getTransfersByIds(p.sideBridge.GetContract(), eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfers by ids: %v", err)
 	}
@@ -208,6 +208,20 @@ func (p *transferFeeTracker) watchUnlocks() error {
 
 func getOldestLockedEventId(contract *bindings.Bridge) (*big.Int, error) {
 	return contract.OldestLockedEventId(nil)
+}
+
+func getTransfersByIds(contract *bindings.Bridge, eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
+	logTransfer, err := contract.FilterTransfer(nil, eventIds)
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer: %w", err)
+	}
+
+	for logTransfer.Next() {
+		if !logTransfer.Event.Raw.Removed {
+			transfers = append(transfers, logTransfer.Event)
+		}
+	}
+	return transfers, nil
 }
 
 func getTransferSubmitsByIds(contract *bindings.Bridge, eventIds []*big.Int) (submits []*bindings.BridgeTransferSubmit, err error) {

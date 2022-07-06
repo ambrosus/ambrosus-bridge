@@ -106,21 +106,6 @@ func (b *CommonBridge) GetEventById(eventId *big.Int) (*bindings.BridgeTransfer,
 	return nil, networks.ErrEventNotFound
 }
 
-// GetEventsByIds gets contract events by ids.
-func (b *CommonBridge) GetEventsByIds(eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
-	logTransfer, err := b.Contract.FilterTransfer(nil, eventIds)
-	if err != nil {
-		return nil, fmt.Errorf("filter transfer: %w", err)
-	}
-
-	for logTransfer.Next() {
-		if !logTransfer.Event.Raw.Removed {
-			transfers = append(transfers, logTransfer.Event)
-		}
-	}
-	return transfers, nil
-}
-
 func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
 	if err != nil {

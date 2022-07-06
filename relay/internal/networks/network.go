@@ -38,7 +38,6 @@ type Bridge interface {
 	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
 	GetEventById(eventId *big.Int) (*bindings.BridgeTransfer, error)
-	GetEventsByIds(eventIds []*big.Int) ([]*bindings.BridgeTransfer, error)
 
 	SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error
 
