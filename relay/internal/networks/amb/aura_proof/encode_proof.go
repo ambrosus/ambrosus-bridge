@@ -7,7 +7,6 @@ import (
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -28,7 +27,7 @@ type AuraEncoder struct {
 	fetchBlockCache func(arg uint64) (*parity.Header, error)
 }
 
-func NewAuraEncoder(bridge *amb.Bridge, sideBridge networks.BridgeReceiveAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
+func NewAuraEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceiveAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
 	return &AuraEncoder{
 		bridge:       bridge,
 		auraReceiver: sideBridge,
