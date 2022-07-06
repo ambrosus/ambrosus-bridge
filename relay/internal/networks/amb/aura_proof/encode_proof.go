@@ -11,7 +11,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/rs/zerolog"
-	"golang.org/x/exp/constraints"
 )
 
 type AuraEncoder struct {
@@ -42,7 +41,7 @@ func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 	// new cache for every call
 	// todo don't clear cache for reduced size proof
-	b.fetchBlockCache = NewCache(b.fetchBlock)
+	b.fetchBlockCache = helpers.NewCache(b.fetchBlock)
 
 	var blocksToSave []uint64
 
@@ -55,7 +54,7 @@ func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 	}
 
 	// save blocks for transfer
-	blocksToSave = append(blocksToSave, Range(transferEvent.Raw.BlockNumber, lastBlock+1)...)
+	blocksToSave = append(blocksToSave, helpers.Range(transferEvent.Raw.BlockNumber, lastBlock+1)...)
 
 	// lastBlock can be decreased if proof is too big
 	// todo better name
@@ -70,7 +69,7 @@ func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 		return nil, fmt.Errorf("GetMinSafetyBlocksValidators: %w", err)
 	}
 	for _, vsChange := range vsChangesExt {
-		blocksToSave = append(blocksToSave, Range(vsChange.eventBlock, vsChange.eventBlock+safetyBlocksValidators+1)...)
+		blocksToSave = append(blocksToSave, helpers.Range(vsChange.eventBlock, vsChange.eventBlock+safetyBlocksValidators+1)...)
 		// gap
 		blocksToSave = append(blocksToSave, vsChange.finalizedBlock)
 	}
@@ -145,22 +144,4 @@ func (b *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAur
 
 func (b *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
 	return b.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
-}
-
-func NewCache[K comparable, V any](getter func(K) (V, error)) func(arg K) (V, error) {
-	cache := map[K]V{}
-	return func(arg K) (V, error) {
-		if v, ok := cache[arg]; ok {
-			return v, nil
-		}
-		return getter(arg)
-	}
-}
-
-func Range[T constraints.Integer](start, end T) []T {
-	res := make([]T, end-start)
-	for i := start; i < end; i++ {
-		res = append(res, i)
-	}
-	return res
 }
