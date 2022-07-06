@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth/pow_proof"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 )
 
@@ -18,7 +19,9 @@ const BridgeName = "ethereum"
 type Bridge struct {
 	nc.CommonBridge
 	sideBridge networks.BridgeReceiveEthash
+
 	ethash     *ethash.Ethash
+	powEncoder *pow_proof.PoWEncoder
 }
 
 // New creates a new ethereum bridge.
@@ -40,6 +43,9 @@ func New(cfg *config.ETHConfig, externalLogger logger.Hook) (*Bridge, error) {
 func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceiveEthash) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
+
+	// todo refactor: move to separate service
+	b.powEncoder = pow_proof.NewPoWEncoder(b, sideBridge, b.ethash)
 }
 
 func (b *Bridge) Run() {
@@ -52,7 +58,7 @@ func (b *Bridge) Run() {
 }
 
 func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
-	powProof, err := b.encodePoWProof(event, safetyBlocks)
+	powProof, err := b.powEncoder.EncodePoWProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodePoWProof: %w", err)
 	}

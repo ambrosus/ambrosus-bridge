@@ -17,28 +17,28 @@ type vsChangeInBlock struct {
 	lastEvent      *c.VsInitiateChange
 }
 
-func (b *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock, error) {
-	start, err := b.getLastProcessedBlockNum()
+func (e *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock, error) {
+	start, err := e.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
 
-	initialValidatorSet, err := b.auraReceiver.GetValidatorSet()
+	initialValidatorSet, err := e.auraReceiver.GetValidatorSet()
 	if err != nil {
 		return nil, fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
-	vsChangeEvents, err := b.fetchVSChangeEvents(start, toBlock)
+	vsChangeEvents, err := e.fetchVSChangeEvents(start, toBlock)
 	if err != nil {
 		return nil, err
 	}
 
-	blockToEvents, err := b.preprocessVSChangeEvents(initialValidatorSet, vsChangeEvents)
+	blockToEvents, err := e.preprocessVSChangeEvents(initialValidatorSet, vsChangeEvents)
 	if err != nil {
 		return nil, err
 	}
 
-	err = b.findWhenFinalize(start, initialValidatorSet, blockToEvents)
+	err = e.findWhenFinalize(start, initialValidatorSet, blockToEvents)
 	if err != nil {
 		return nil, err
 	}
@@ -46,12 +46,12 @@ func (b *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock,
 	return blockToEvents, nil
 }
 
-func (b *AuraEncoder) findWhenFinalize(start uint64, initialValidatorSet []common.Address, blockToEvents map[uint64]*vsChangeInBlock) error {
+func (e *AuraEncoder) findWhenFinalize(start uint64, initialValidatorSet []common.Address, blockToEvents map[uint64]*vsChangeInBlock) error {
 	rf := rolling_finality.NewRollingFinality(initialValidatorSet)
 	eventsToFinalize := len(blockToEvents)
 
 	for blockNum := start; eventsToFinalize > 0; blockNum++ {
-		block, err := b.fetchBlockCache(blockNum)
+		block, err := e.fetchBlockCache(blockNum)
 		if err != nil {
 			return err
 		}
@@ -75,7 +75,7 @@ func (b *AuraEncoder) findWhenFinalize(start uint64, initialValidatorSet []commo
 	return nil
 }
 
-func (b *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Address, events []*c.VsInitiateChange) (map[uint64]*vsChangeInBlock, error) {
+func (e *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Address, events []*c.VsInitiateChange) (map[uint64]*vsChangeInBlock, error) {
 	blocksToEvents := map[uint64]*vsChangeInBlock{}
 
 	prevSet := initialValidatorSet
@@ -98,14 +98,14 @@ func (b *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Addr
 	return blocksToEvents, nil
 }
 
-func (b *AuraEncoder) fetchVSChangeEvents(start, end uint64) ([]*c.VsInitiateChange, error) {
+func (e *AuraEncoder) fetchVSChangeEvents(start, end uint64) ([]*c.VsInitiateChange, error) {
 	opts := &bind.FilterOpts{
 		Start:   start,
 		End:     &end,
 		Context: context.Background(),
 	}
 
-	logs, err := b.vsContract.FilterInitiateChange(opts, nil)
+	logs, err := e.vsContract.FilterInitiateChange(opts, nil)
 	if err != nil {
 		return nil, fmt.Errorf("filter initiate changes: %w", err)
 	}
@@ -118,13 +118,13 @@ func (b *AuraEncoder) fetchVSChangeEvents(start, end uint64) ([]*c.VsInitiateCha
 	return res, nil
 }
 
-func (b *AuraEncoder) getLastProcessedBlockNum() (uint64, error) {
-	blockHash, err := b.auraReceiver.GetLastProcessedBlockHash()
+func (e *AuraEncoder) getLastProcessedBlockNum() (uint64, error) {
+	blockHash, err := e.auraReceiver.GetLastProcessedBlockHash()
 	if err != nil {
 		return 0, fmt.Errorf("GetLastProcessedBlockHash: %w", err)
 	}
 
-	block, err := b.bridge.GetClient().BlockByHash(context.Background(), *blockHash)
+	block, err := e.bridge.GetClient().BlockByHash(context.Background(), *blockHash)
 	if err != nil {
 		return 0, fmt.Errorf("get rfBlock by hash: %w", err)
 	}

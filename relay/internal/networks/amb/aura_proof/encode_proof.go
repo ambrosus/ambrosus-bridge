@@ -11,7 +11,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/rs/zerolog"
-	"golang.org/x/exp/constraints"
 )
 
 type AuraEncoder struct {
@@ -37,46 +36,46 @@ func NewAuraEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceiveAur
 	}
 }
 
-func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
+func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
 	// todo arg for split (reduced size proof)
 
 	// new cache for every call
 	// todo don't clear cache for reduced size proof
-	b.fetchBlockCache = NewCache(b.fetchBlock)
+	e.fetchBlockCache = helpers.NewCache(e.fetchBlock)
 
 	var blocksToSave []uint64
 
 	lastBlock := transferEvent.Raw.BlockNumber + safetyBlocks
 
 	// todo don't encode and save blocks for reduced size proof
-	transferProof, err := b.encodeTransferProof(transferEvent)
+	transferProof, err := cb.EncodeTransferProof(e.bridge.GetClient(), transferEvent)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferProof: %w", err)
 	}
 
 	// save blocks for transfer
-	blocksToSave = append(blocksToSave, Range(transferEvent.Raw.BlockNumber, lastBlock+1)...)
+	blocksToSave = append(blocksToSave, helpers.Range(transferEvent.Raw.BlockNumber, lastBlock+1)...)
 
 	// lastBlock can be decreased if proof is too big
 	// todo better name
-	vsChangesExt, err := b.getVsChanges(lastBlock)
+	vsChangesExt, err := e.getVsChanges(lastBlock)
 	if err != nil {
 		return nil, fmt.Errorf("getVsChanges: %w", err)
 	}
 
 	// save blocks for vs change events
-	safetyBlocksValidators, err := b.auraReceiver.GetMinSafetyBlocksValidators()
+	safetyBlocksValidators, err := e.auraReceiver.GetMinSafetyBlocksValidators()
 	if err != nil {
 		return nil, fmt.Errorf("GetMinSafetyBlocksValidators: %w", err)
 	}
 	for _, vsChange := range vsChangesExt {
-		blocksToSave = append(blocksToSave, Range(vsChange.eventBlock, vsChange.eventBlock+safetyBlocksValidators+1)...)
+		blocksToSave = append(blocksToSave, helpers.Range(vsChange.eventBlock, vsChange.eventBlock+safetyBlocksValidators+1)...)
 		// gap
 		blocksToSave = append(blocksToSave, vsChange.finalizedBlock)
 	}
 
 	// fetch and encode blocksToSave
-	blocks, blockNumToIndex, err := b.saveEncodedBlocks(blocksToSave)
+	blocks, blockNumToIndex, err := e.saveEncodedBlocks(blocksToSave)
 	if err != nil {
 		return nil, fmt.Errorf("saveEncodedBlocks: %w", err)
 	}
@@ -87,7 +86,7 @@ func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 		vsChangeEvent := vsChangesExt[blockWithEvent]
 		finalizedBlockIndex := blockNumToIndex[vsChangeEvent.finalizedBlock]
 
-		proof, err := cb.GetProof(b.bridge.GetClient(), vsChangeEvent.lastEvent)
+		proof, err := cb.GetProof(e.bridge.GetClient(), vsChangeEvent.lastEvent)
 		if err != nil {
 			return nil, fmt.Errorf("GetProof: %w", err)
 		}
@@ -110,24 +109,11 @@ func (b *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 }
 
-func (b *AuraEncoder) encodeTransferProof(event *c.BridgeTransfer) (*c.CommonStructsTransferProof, error) {
-	proof, err := cb.GetProof(b.bridge.GetClient(), event)
-	if err != nil {
-		return nil, err
-	}
-
-	return &c.CommonStructsTransferProof{
-		ReceiptProof: proof,
-		EventId:      event.EventId,
-		Transfers:    event.Queue,
-	}, nil
-}
-
-func (b *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int, err error) {
+func (e *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int, err error) {
 	blocks = make([]c.CheckAuraBlockAura, len(blockNums))
 
 	for i, bn := range helpers.Sorted(blockNums) {
-		block, err := b.fetchBlockCache(bn)
+		block, err := e.fetchBlockCache(bn)
 		if err != nil {
 			return nil, nil, fmt.Errorf("fetchBlockCache: %w", err)
 		}
@@ -143,24 +129,6 @@ func (b *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAur
 	return blocks, blockNumToIndex, nil
 }
 
-func (b *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
-	return b.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
-}
-
-func NewCache[K comparable, V any](getter func(K) (V, error)) func(arg K) (V, error) {
-	cache := map[K]V{}
-	return func(arg K) (V, error) {
-		if v, ok := cache[arg]; ok {
-			return v, nil
-		}
-		return getter(arg)
-	}
-}
-
-func Range[T constraints.Integer](start, end T) []T {
-	res := make([]T, end-start)
-	for i := start; i < end; i++ {
-		res = append(res, i)
-	}
-	return res
+func (e *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
+	return e.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
 }

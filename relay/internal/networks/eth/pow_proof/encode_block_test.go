@@ -1,32 +1,30 @@
-package eth
+package pow_proof
 
 import (
 	"context"
 	"math/big"
 	"testing"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestEncoding(t *testing.T) {
-	ethBridge, err := New(&config.ETHConfig{
-		Network: config.Network{HttpURL: "https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069"},
-	}, nil)
+	client, err := ethclient.Dial("https://mainnet.infura.io/v3/ab050ca98686478e9e9b06dfc3b2f069")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	blockOld, err := ethBridge.Client.BlockByNumber(context.Background(), big.NewInt(10000))
+	blockOld, err := client.BlockByNumber(context.Background(), big.NewInt(10000))
 	if err != nil {
 		t.Fatal(err)
 	}
-	blockNew, err := ethBridge.Client.BlockByNumber(context.Background(), big.NewInt(14264072))
+	blockNew, err := client.BlockByNumber(context.Background(), big.NewInt(14264072))
 	if err != nil {
 		t.Fatal(err)
 	}

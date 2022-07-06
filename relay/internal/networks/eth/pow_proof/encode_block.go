@@ -1,4 +1,4 @@
-package eth
+package pow_proof
 
 import (
 	"fmt"
@@ -11,13 +11,13 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBlockPoW, error) {
+func (e *PoWEncoder) EncodeBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBlockPoW, error) {
 	encodedBlock, err := splitBlock(header, isEventBlock)
 	if err != nil {
 		return nil, fmt.Errorf("split block: %w", err)
 	}
 
-	encodedBlock.DataSetLookup, encodedBlock.WitnessForLookup, err = b.getLookupData(header)
+	encodedBlock.DataSetLookup, encodedBlock.WitnessForLookup, err = e.getLookupData(header)
 	if err != nil {
 		return nil, fmt.Errorf("get lookup data: %w", err)
 	}
@@ -93,13 +93,13 @@ func splitBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBloc
 
 }
 
-func (b *Bridge) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
+func (e *PoWEncoder) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
 	blockHeaderWithoutNonce, err := headerRlp(header, false)
 	if err != nil {
 		return nil, nil, fmt.Errorf("rlp header: %w", err)
 	}
 	hashWithoutNonce := helpers.BytesToBytes32(crypto.Keccak256(blockHeaderWithoutNonce))
-	return b.ethash.GetBlockLookups(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)
+	return e.ethash.GetBlockLookups(header.Number.Uint64(), header.Nonce.Uint64(), hashWithoutNonce)
 }
 
 func headerRlp(header *types.Header, withNonce bool) ([]byte, error) {

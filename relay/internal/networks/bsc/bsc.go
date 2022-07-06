@@ -9,6 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc/posa_proof"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 )
 
@@ -18,6 +19,8 @@ type Bridge struct {
 	nc.CommonBridge
 	sideBridge networks.BridgeReceivePoSA
 	chainId    *big.Int // cache chainId, cos it used many times in encode_block
+
+	posaEncoder *posa_proof.PoSAEncoder
 }
 
 // New creates a new ethereum bridge.
@@ -44,6 +47,9 @@ func New(cfg *config.BSCConfig, externalLogger logger.Hook) (*Bridge, error) {
 func (b *Bridge) SetSideBridge(sideBridge networks.BridgeReceivePoSA) {
 	b.sideBridge = sideBridge
 	b.CommonBridge.SideBridge = sideBridge
+
+	// todo refactor: move to separate service along with fetching chainId
+	b.posaEncoder = posa_proof.NewPoSAEncoder(b, sideBridge, b.chainId)
 }
 
 func (b *Bridge) Run() {
@@ -54,7 +60,7 @@ func (b *Bridge) Run() {
 }
 
 func (b *Bridge) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
-	posaProof, err := b.encodePoSAProof(event, safetyBlocks)
+	posaProof, err := b.posaEncoder.EncodePoSAProof(event, safetyBlocks)
 	if err != nil {
 		return fmt.Errorf("encodePoSAProof: %w", err)
 	}

@@ -1,4 +1,4 @@
-package bsc
+package posa_proof
 
 import (
 	"fmt"
@@ -9,13 +9,13 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func (b *Bridge) EncodeBlock(header *types.Header) (*bindings.CheckPoSABlockPoSA, error) {
+func (e *PoSAEncoder) EncodeBlock(header *types.Header) (*bindings.CheckPoSABlockPoSA, error) {
 	signedHeader, err := rlp.EncodeToBytes(header)
 	if err != nil {
 		return nil, fmt.Errorf("encode signed header: %w", err)
 	}
 
-	unsignedHeader, err := b.encodeUnsignedHeader(header)
+	unsignedHeader, err := e.encodeUnsignedHeader(header)
 	if err != nil {
 		return nil, fmt.Errorf("encode unsigned header: %w", err)
 	}
@@ -57,9 +57,9 @@ func (b *Bridge) EncodeBlock(header *types.Header) (*bindings.CheckPoSABlockPoSA
 	}, nil
 }
 
-func (b *Bridge) encodeUnsignedHeader(header *types.Header) ([]byte, error) {
+func (e *PoSAEncoder) encodeUnsignedHeader(header *types.Header) ([]byte, error) {
 	return rlp.EncodeToBytes([]interface{}{
-		b.chainId,
+		e.chainId,
 		header.ParentHash, header.UncleHash, header.Coinbase,
 		header.Root, header.TxHash, header.ReceiptHash,
 		header.Bloom, header.Difficulty, header.Number,
