@@ -1,4 +1,4 @@
-package eth
+package pow_proof
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 )
 
-func (b *Bridge) EncodeBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBlockPoW, error) {
+func (b *PoWEncoder) EncodeBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBlockPoW, error) {
 	encodedBlock, err := splitBlock(header, isEventBlock)
 	if err != nil {
 		return nil, fmt.Errorf("split block: %w", err)
@@ -93,7 +93,7 @@ func splitBlock(header *types.Header, isEventBlock bool) (*bindings.CheckPoWBloc
 
 }
 
-func (b *Bridge) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
+func (b *PoWEncoder) getLookupData(header *types.Header) ([]*big.Int, []*big.Int, error) {
 	blockHeaderWithoutNonce, err := headerRlp(header, false)
 	if err != nil {
 		return nil, nil, fmt.Errorf("rlp header: %w", err)
