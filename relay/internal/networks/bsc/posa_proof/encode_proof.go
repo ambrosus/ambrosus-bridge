@@ -1,4 +1,4 @@
-package bsc
+package posa_proof
 
 import (
 	"context"
@@ -7,7 +7,10 @@ import (
 	"math/big"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -17,7 +20,25 @@ const (
 	epochLength       = 200
 )
 
-func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckPoSAPoSAProof, error) {
+type PoSAEncoder struct {
+	bridge       networks.Bridge
+	posaReceiver networks.BridgeReceivePoSA
+
+	chainId *big.Int
+
+	logger *zerolog.Logger
+}
+
+func NewPoSAEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceivePoSA, chainId *big.Int) *PoSAEncoder {
+	return &PoSAEncoder{
+		bridge:       bridge,
+		posaReceiver: sideBridge,
+		chainId:      chainId,
+		logger:       bridge.GetLogger(), // todo maybe sublogger?
+	}
+}
+
+func (b *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckPoSAPoSAProof, error) {
 	// populated by functions below
 	var blocksMap = make(map[uint64]*c.CheckPoSABlockPoSA)
 
@@ -54,8 +75,8 @@ func (b *Bridge) encodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks u
 }
 
 // if proof too long we need to split it into smaller parts
-func (b *Bridge) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAProof {
-	b.Logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("PoSA proof too long")
+func (b *PoSAEncoder) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAProof {
+	b.logger.Warn().Int("blocks", len(proof.Blocks)).Msgf("PoSA proof too long")
 	blocks := proof.Blocks[:len(proof.Blocks)/2] // drop half of blocks
 	// todo maybe keep ~3000 blocks instead of half
 
@@ -70,8 +91,8 @@ func (b *Bridge) splitVsChanges(proof *c.CheckPoSAPoSAProof) *c.CheckPoSAPoSAPro
 	}
 }
 
-func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
-	proof, err := b.GetProof(event)
+func (b *PoSAEncoder) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, event *c.BridgeTransfer, safetyBlocks uint64) (*c.CommonStructsTransferProof, error) {
+	proof, err := cb.GetProof(b.bridge.GetClient(), event)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +109,8 @@ func (b *Bridge) encodeTransferEvent(blocks map[uint64]*c.CheckPoSABlockPoSA, ev
 	}, nil
 }
 
-func (b *Bridge) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, end uint64) error {
-	currentEpoch, err := b.sideBridge.GetCurrentEpoch()
+func (b *PoSAEncoder) encodeEpochChanges(blocks map[uint64]*c.CheckPoSABlockPoSA, end uint64) error {
+	currentEpoch, err := b.posaReceiver.GetCurrentEpoch()
 	if err != nil {
 		return fmt.Errorf("GetCurrentEpoch: %w", err)
 	}
@@ -123,7 +144,7 @@ func getVSLength(epochChangeBlock *c.CheckPoSABlockPoSA) uint64 {
 }
 
 // save blocks from `from` to `to` INCLUSIVE
-func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*c.CheckPoSABlockPoSA, from, to uint64) error {
+func (b *PoSAEncoder) saveBlocksRange(blocksMap map[uint64]*c.CheckPoSABlockPoSA, from, to uint64) error {
 	for i := from; i <= to; i++ {
 		if _, err := b.saveBlock(blocksMap, i); err != nil {
 			return err
@@ -132,12 +153,12 @@ func (b *Bridge) saveBlocksRange(blocksMap map[uint64]*c.CheckPoSABlockPoSA, fro
 	return nil
 }
 
-func (b *Bridge) saveBlock(blocksMap map[uint64]*c.CheckPoSABlockPoSA, blockNumber uint64) (*c.CheckPoSABlockPoSA, error) {
+func (b *PoSAEncoder) saveBlock(blocksMap map[uint64]*c.CheckPoSABlockPoSA, blockNumber uint64) (*c.CheckPoSABlockPoSA, error) {
 	if encodedBlock, ok := blocksMap[blockNumber]; ok {
 		return encodedBlock, nil
 	}
 
-	block, err := b.Client.HeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
+	block, err := b.bridge.GetClient().HeaderByNumber(context.Background(), big.NewInt(int64(blockNumber)))
 	if err != nil {
 		return nil, fmt.Errorf("HeaderByNumber: %w", err)
 	}
