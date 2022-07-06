@@ -29,27 +29,27 @@ func NewPoWEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceiveEtha
 	}
 }
 
-func (b *PoWEncoder) EncodePoWProof(transferEvent *bindings.BridgeTransfer, safetyBlocks uint64) (*bindings.CheckPoWPoWProof, error) {
+func (e *PoWEncoder) EncodePoWProof(transferEvent *bindings.BridgeTransfer, safetyBlocks uint64) (*bindings.CheckPoWPoWProof, error) {
 	blocks := make([]bindings.CheckPoWBlockPoW, 0, safetyBlocks+1)
 
-	transfer, err := b.encodeTransferEvent(transferEvent)
+	transfer, err := e.encodeTransferEvent(transferEvent)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
 	}
 
 	for i := uint64(0); i <= safetyBlocks; i++ {
 		targetBlockNum := big.NewInt(int64(transferEvent.Raw.BlockNumber + i))
-		targetBlock, err := b.bridge.GetClient().BlockByNumber(context.Background(), targetBlockNum)
+		targetBlock, err := e.bridge.GetClient().BlockByNumber(context.Background(), targetBlockNum)
 		if err != nil {
 			return nil, fmt.Errorf("BlockByNumber: %w", err)
 		}
 
-		b.logger.Debug().Msgf("Encoding block %d... (%d/%d)", targetBlock.NumberU64(), i, safetyBlocks)
-		encodedBlock, err := b.EncodeBlock(targetBlock.Header(), i == 0)
+		e.logger.Debug().Msgf("Encoding block %d... (%d/%d)", targetBlock.NumberU64(), i, safetyBlocks)
+		encodedBlock, err := e.EncodeBlock(targetBlock.Header(), i == 0)
 		if err != nil {
 			return nil, fmt.Errorf("EncodeBlock: %w", err)
 		}
-		b.logger.Debug().Msgf("Encoded block %d", targetBlock.NumberU64())
+		e.logger.Debug().Msgf("Encoded block %d", targetBlock.NumberU64())
 		blocks = append(blocks, *encodedBlock)
 	}
 
@@ -59,8 +59,8 @@ func (b *PoWEncoder) EncodePoWProof(transferEvent *bindings.BridgeTransfer, safe
 	}, nil
 }
 
-func (b *PoWEncoder) encodeTransferEvent(event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
-	proof, err := cb.GetProof(b.bridge.GetClient(), event)
+func (e *PoWEncoder) encodeTransferEvent(event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
+	proof, err := cb.GetProof(e.bridge.GetClient(), event)
 	if err != nil {
 		return nil, fmt.Errorf("GetProof: %w", err)
 	}
