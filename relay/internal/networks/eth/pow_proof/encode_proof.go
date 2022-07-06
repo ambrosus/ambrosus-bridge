@@ -32,7 +32,7 @@ func NewPoWEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceiveEtha
 func (e *PoWEncoder) EncodePoWProof(transferEvent *bindings.BridgeTransfer, safetyBlocks uint64) (*bindings.CheckPoWPoWProof, error) {
 	blocks := make([]bindings.CheckPoWBlockPoW, 0, safetyBlocks+1)
 
-	transfer, err := e.encodeTransferEvent(transferEvent)
+	transferProof, err := cb.EncodeTransferProof(e.bridge.GetClient(), transferEvent)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferEvent: %w", err)
 	}
@@ -55,19 +55,6 @@ func (e *PoWEncoder) EncodePoWProof(transferEvent *bindings.BridgeTransfer, safe
 
 	return &bindings.CheckPoWPoWProof{
 		Blocks:   blocks,
-		Transfer: *transfer,
-	}, nil
-}
-
-func (e *PoWEncoder) encodeTransferEvent(event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
-	proof, err := cb.GetProof(e.bridge.GetClient(), event)
-	if err != nil {
-		return nil, fmt.Errorf("GetProof: %w", err)
-	}
-
-	return &bindings.CommonStructsTransferProof{
-		ReceiptProof: proof,
-		EventId:      event.EventId,
-		Transfers:    event.Queue,
+		Transfer: *transferProof,
 	}, nil
 }

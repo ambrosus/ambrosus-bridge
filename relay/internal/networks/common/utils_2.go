@@ -4,12 +4,26 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/errgroup"
 )
+
+func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
+	proof, err := GetProof(client, event)
+	if err != nil {
+		return nil, fmt.Errorf("GetProof: %w", err)
+	}
+
+	return &bindings.CommonStructsTransferProof{
+		ReceiptProof: proof,
+		EventId:      event.EventId,
+		Transfers:    event.Queue,
+	}, nil
+}
 
 func GetProof(client ethclients.ClientInterface, event receipts_proof.ProofEvent) ([][]byte, error) {
 	receipts, err := getReceipts(client, event.Log().BlockHash)

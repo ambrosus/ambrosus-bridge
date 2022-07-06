@@ -48,7 +48,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 	lastBlock := transferEvent.Raw.BlockNumber + safetyBlocks
 
 	// todo don't encode and save blocks for reduced size proof
-	transferProof, err := e.encodeTransferProof(transferEvent)
+	transferProof, err := cb.EncodeTransferProof(e.bridge.GetClient(), transferEvent)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferProof: %w", err)
 	}
@@ -107,19 +107,6 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 		TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
 	}, nil
 
-}
-
-func (e *AuraEncoder) encodeTransferProof(event *c.BridgeTransfer) (*c.CommonStructsTransferProof, error) {
-	proof, err := cb.GetProof(e.bridge.GetClient(), event)
-	if err != nil {
-		return nil, err
-	}
-
-	return &c.CommonStructsTransferProof{
-		ReceiptProof: proof,
-		EventId:      event.EventId,
-		Transfers:    event.Queue,
-	}, nil
 }
 
 func (e *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int, err error) {

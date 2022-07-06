@@ -53,7 +53,7 @@ func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlo
 	lastBlock := transferEvent.Raw.BlockNumber + safetyBlocks
 
 	// todo don't encode and save blocks for reduced size proof
-	transferProof, err := e.encodeTransferEvent(transferEvent)
+	transferProof, err := cb.EncodeTransferProof(e.bridge.GetClient(), transferEvent)
 	if err != nil {
 		return nil, fmt.Errorf("encodeTransferProof: %w", err)
 	}
@@ -79,19 +79,6 @@ func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlo
 		Blocks:             blocks,
 		Transfer:           *transferProof,
 		TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
-	}, nil
-}
-
-func (e *PoSAEncoder) encodeTransferEvent(event *c.BridgeTransfer) (*c.CommonStructsTransferProof, error) {
-	proof, err := cb.GetProof(e.bridge.GetClient(), event)
-	if err != nil {
-		return nil, err
-	}
-
-	return &c.CommonStructsTransferProof{
-		ReceiptProof: proof,
-		EventId:      event.EventId,
-		Transfers:    event.Queue,
 	}, nil
 }
 
