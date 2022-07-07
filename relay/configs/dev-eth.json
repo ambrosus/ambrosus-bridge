@@ -10,8 +10,8 @@
             "privateKey": "in env"
         },
         "eth": {
-            "httpUrl": "https://sepolia.ambrosus-test.io/",
-            "wsUrl": "wss://sepolia.ambrosus-test.io/ws",
+            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contractAddr": "0xccED45b8E3B0c6BC8A783A3C5BE2A08bF0c7784d",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",
