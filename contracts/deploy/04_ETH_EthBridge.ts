@@ -26,9 +26,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
            timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
            lockTime: isMainNet ? 60 * 10 : 60,
            minSafetyBlocks: isMainNet ? 10 : 2,
-           minSafetyBlocksValidators: isMainNet ? 10 : 2,
          },
-        await getAmbValidators(ambNet),
+        [
+            ...(await getAmbValidators(ambNet)),
+            isMainNet ? 10 : 2, // minSafetyBlocksValidators
+        ]
     )
   }
 
