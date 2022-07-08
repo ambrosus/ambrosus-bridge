@@ -34,14 +34,14 @@ func NewWatchTransfers(bridge networks.Bridge, eventEmitter interfaces.BridgeCon
 	}
 }
 
-func (b *WatchTransfers) ValidityWatchdog() {
+func (b *WatchTransfers) Run() {
 	b.bridge.ShouldHavePk()
 
 	for {
 		b.bridge.EnsureContractUnpaused()
 
 		if err := b.watchLockedTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("ValidityWatchdog: %s", err)).Msg("ValidityWatchdog error")
+			b.logger.Error().Err(fmt.Errorf("watchLockedTransfers: %s", err)).Msg("WatchTransfers")
 		}
 		time.Sleep(1 * time.Minute)
 	}

@@ -26,13 +26,13 @@ func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_watchdog.
 	}
 }
 
-func (b *UnlockTransfers) UnlockTransfersLoop() {
+func (b *UnlockTransfers) Run() {
 	b.bridge.ShouldHavePk()
 	for {
 		b.bridge.EnsureContractUnpaused()
 
 		if err := b.unlockOldTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("UnlockTransfersLoop: %s", err)).Msg("UnlockTransfersLoop error")
+			b.logger.Error().Err(fmt.Errorf("unlockOldTransfers: %s", err)).Msg("UnlockTransfers")
 		}
 		time.Sleep(1 * time.Minute)
 	}

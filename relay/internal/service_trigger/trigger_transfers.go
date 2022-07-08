@@ -23,13 +23,13 @@ func NewTriggerTransfers(bridge networks.Bridge) *TriggerTransfers {
 	}
 }
 
-func (b *TriggerTransfers) TriggerTransfersLoop() {
+func (b *TriggerTransfers) Run() {
 	b.bridge.ShouldHavePk()
 	for {
 		b.bridge.EnsureContractUnpaused()
 
 		if err := b.checkTriggerTransfers(); err != nil {
-			b.logger.Error().Err(err).Msg("checkTriggerTransfers error")
+			b.logger.Error().Err(fmt.Errorf("checkTriggerTransfers: %s", err)).Msg("TriggerTransfers")
 		}
 		time.Sleep(1 * time.Minute)
 	}

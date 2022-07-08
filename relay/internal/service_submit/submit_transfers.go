@@ -19,17 +19,25 @@ import (
 type SubmitTransfers struct {
 	submitter Submitter
 	receiver  Receiver
-	logger    zerolog.Logger
+	logger    *zerolog.Logger
 }
 
-func (b *SubmitTransfers) SubmitTransfersLoop() {
+func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers {
+	return &SubmitTransfers{
+		submitter: submitter,
+		receiver:  receiver,
+		logger:    submitter.GetLogger(), // todo maybe sublogger?
+	}
+}
+
+func (b *SubmitTransfers) Run() {
 	b.submitter.ShouldHavePk()
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
 		b.receiver.EnsureContractUnpaused()
 
 		if err := b.watchTransfers(); err != nil {
-			b.logger.Error().Err(err).Msg("watchTransfers error")
+			b.logger.Error().Err(fmt.Errorf("watchTransfers: %s", err)).Msg("SubmitTransfers")
 		}
 		time.Sleep(1 * time.Minute)
 	}
