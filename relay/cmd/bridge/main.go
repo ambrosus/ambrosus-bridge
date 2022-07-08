@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram/middlewares"
@@ -10,8 +9,9 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_api"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
 	"github.com/rs/zerolog/log"
 )
 
@@ -64,17 +64,16 @@ func main() {
 	}
 
 	if feeCfg := cfg.FeeApi; feeCfg.Enable {
-		feeAmb, err := fee.NewBridgeFee(ambBridge, sideBridge, feeCfg.Amb)
+		feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, feeCfg.Amb)
 		if err != nil {
 			log.Fatal().Err(err).Msg("feeAmb not created")
 		}
-		feeSide, err := fee.NewBridgeFee(sideBridge, ambBridge, feeCfg.Side)
+		feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, feeCfg.Side)
 		if err != nil {
 			log.Fatal().Err(err).Msg("feeSide not created")
 		}
-		feeApiLogger := fee_api.NewFeeAPILogger()
 
-		feeApi := fee_api.NewFeeAPI(feeAmb, feeSide, feeApiLogger)
+		feeApi := fee_api.NewFeeAPI(feeAmb, feeSide, baseLogger)
 		go feeApi.Run(cfg.FeeApi.Endpoint, cfg.FeeApi.Ip, cfg.FeeApi.Port)
 	}
 
