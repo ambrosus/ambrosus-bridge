@@ -1,4 +1,4 @@
-package fee_api
+package fee
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (p *FeeAPI) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
+func (p *Fee) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
 	tokenPriceI, err, _ := p.cache.Memoize(bridge.GetName()+tokenAddress.Hex(), func() (interface{}, error) {
 		return tokenPrice(bridge, tokenAddress)
 	})

@@ -1,9 +1,6 @@
-package fee_api
+package fee
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/shopspring/decimal"
 )
 
@@ -20,11 +17,4 @@ func coin2Usd(amountWei decimal.Decimal, priceUsd decimal.Decimal) decimal.Decim
 // amount * bps / 10_000
 func calcBps(amount decimal.Decimal, bps int64) decimal.Decimal {
 	return amount.Mul(decimal.NewFromInt(bps)).Div(decimal.NewFromInt(10_000))
-}
-
-func writeError(w http.ResponseWriter, code int, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("X-Content-Type-Options", "nosniff")
-	w.WriteHeader(code)
-	fmt.Fprintln(w, err.Error())
 }

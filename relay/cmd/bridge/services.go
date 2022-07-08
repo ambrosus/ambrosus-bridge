@@ -7,7 +7,8 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_api"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
@@ -93,7 +94,8 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		log.Fatal().Err(err).Msg("feeSide not created")
 	}
 
-	feeApi := fee_api.NewFeeAPI(feeAmb, feeSide, logger)
+	feeService := fee.NewFee(feeAmb, feeSide, logger)
+	feeApi := &api.FeeAPI{Service: feeService}
 	feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port)
 }
 

@@ -1,121 +1,116 @@
-package fee_api
+package fee
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"math/big"
-	"net/http"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/kofalt/go-memoize"
+	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
-type reqParams struct {
-	TokenAddress common.Address `json:"tokenAddress"`
-	IsAmb        bool           `json:"isAmb"`
+const (
+	signatureFeeTimestamp = 30 * 60 // 30 minutes
+	cacheExpiration       = time.Minute * 10
+)
 
-	Amount           *hexutil.Big `json:"amount"`
-	IsAmountWithFees bool         `json:"IsAmountWithFees"`
+type BridgeFeeApi interface {
+	networks.Bridge
+	Sign(message []byte) ([]byte, error)
+	GetTransferFee() *big.Int
+	GetWrapperAddress() common.Address
+	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
+	GetDefaultTransferFee() decimal.Decimal
 }
 
-type result struct {
-	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
-	TransferFee *hexutil.Big  `json:"transferFee"`
-	Amount      *hexutil.Big  `json:"amount"`
-	Signature   hexutil.Bytes `json:"signature"`
+type Fee struct {
+	amb, side BridgeFeeApi
+
+	cache  *memoize.Memoizer
+	Logger *zerolog.Logger
 }
 
-func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
-	var req reqParams
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, fmt.Errorf("error when decoding request body: %w", err))
-		return
+func NewFee(amb, side BridgeFeeApi, logger zerolog.Logger) *Fee {
+	return &Fee{
+		amb:    amb,
+		side:   side,
+		cache:  memoize.NewMemoizer(cacheExpiration, time.Hour),
+		Logger: &logger,
 	}
-
-	result, err := p.getFees(req)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("error getting bridge_fee: %w", err))
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(result)
 }
 
-func (p *FeeAPI) getFees(req reqParams) (*result, error) {
+func (p *Fee) GetFees(tokenAddress common.Address, Amount *big.Int, isAmb, isAmountWithFees bool) (
+	bridgeFeeBigInt, transferFeeBigInt, amountBigInt *big.Int, signature []byte, err error) {
+
 	var bridge, sideBridge BridgeFeeApi
-	if req.IsAmb {
+	if isAmb {
 		bridge, sideBridge = p.amb, p.side
 	} else {
 		bridge, sideBridge = p.side, p.amb
 	}
 
 	// if token address is native, then it's "wrapWithdraw" and we need to work with "wrapperAddress"
-	if req.TokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
-		req.TokenAddress = bridge.GetWrapperAddress()
+	if tokenAddress == common.HexToAddress("0x0000000000000000000000000000000000000000") {
+		tokenAddress = bridge.GetWrapperAddress()
 	}
 
 	// get coin prices of this and side bridges for reusing it below
 	thisCoinPrice, err := p.getTokenPrice(bridge, common.Address{})
 	if err != nil {
-		return nil, fmt.Errorf("error when getting this bridge coin price: %w", err)
+		return
 	}
 	sideCoinPrice, err := p.getTokenPrice(sideBridge, common.Address{})
 	if err != nil {
-		return nil, fmt.Errorf("error when getting side bridge coin price: %w", err)
+		return
 	}
 	// get token price
-	tokenUsdPrice, err := p.getTokenPrice(bridge, req.TokenAddress)
+	tokenUsdPrice, err := p.getTokenPrice(bridge, tokenAddress)
 	if err != nil {
-		return nil, fmt.Errorf("get token price: %w", err)
+		return
 	}
 	bridge.GetLogger().Debug().Msgf("thisCoinPrice: %s, sideCoinPrice: %s, tokenUsdPrice: %s", thisCoinPrice.String(), sideCoinPrice.String(), tokenUsdPrice.String())
 
 	// get transfer fee
 	transferFee, err := p.getTransferFee(bridge, thisCoinPrice, sideCoinPrice)
 	if err != nil {
-		return nil, fmt.Errorf("error when getting transfer fee: %w", err)
+		return
 	}
 	bridge.GetLogger().Debug().Msgf("transferFee: %s", transferFee.String())
 
 	bridgeFee, amount, err := getBridgeFeeAndAmount(
-		decimal.NewFromBigInt((*big.Int)(req.Amount), 0),
-		req.IsAmountWithFees,
+		decimal.NewFromBigInt(Amount, 0),
+		isAmountWithFees,
 		tokenUsdPrice,
 		thisCoinPrice,
 		transferFee,
 		bridge.GetMinBridgeFee(),
 	)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	// make the fees as big int (throw away the decimal part)
-	bridgeFeeBigInt := bridgeFee.BigInt()
-	transferFeeBigInt := transferFee.BigInt()
-	amountBigInt := amount.BigInt()
+	bridgeFeeBigInt = bridgeFee.BigInt()
+	transferFeeBigInt = transferFee.BigInt()
+	amountBigInt = amount.BigInt()
 	bridge.GetLogger().Debug().Msgf("bridgeFeeBigInt: %s, transferFeeBigInt: %s, amountBigInt: %s", bridgeFeeBigInt.String(), transferFeeBigInt.String(), amountBigInt.String())
 	bridge.GetLogger().Debug().Msgf("bridgeFeeHex: %s, transferFeeHex: %s, amountHex: %s", (*hexutil.Big)(bridgeFeeBigInt).String(), (*hexutil.Big)(transferFeeBigInt).String(), (*hexutil.Big)(amountBigInt).String())
 
 	// sign the price with private key
-	message := buildMessage(req.TokenAddress, transferFeeBigInt, bridgeFeeBigInt, amountBigInt)
-	signature, err := bridge.Sign(message)
+	message := buildMessage(tokenAddress, transferFeeBigInt, bridgeFeeBigInt, amountBigInt)
+	signature, err = bridge.Sign(message)
 	if err != nil {
 		err = fmt.Errorf("error when signing data: %w", err)
 	}
 
-	return &result{
-		BridgeFee:   (*hexutil.Big)(bridgeFeeBigInt),
-		TransferFee: (*hexutil.Big)(transferFeeBigInt),
-		Amount:      (*hexutil.Big)(amountBigInt),
-		Signature:   signature,
-	}, err
+	return bridgeFeeBigInt, transferFeeBigInt, amountBigInt, signature, err
 }
 
 func getBridgeFeeAndAmount(
@@ -200,7 +195,7 @@ func buildMessage(tokenAddress common.Address, transferFee, bridgeFee, amount *b
 	return accounts.TextHash(crypto.Keccak256(data.Bytes()))
 }
 
-func (p *FeeAPI) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice decimal.Decimal) (decimal.Decimal, error) {
+func (p *Fee) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice decimal.Decimal) (decimal.Decimal, error) {
 	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee"+bridge.GetName(), func() (interface{}, error) {
 		return bridge.GetTransferFee(), nil
 	})
