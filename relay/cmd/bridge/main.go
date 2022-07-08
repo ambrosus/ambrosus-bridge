@@ -43,7 +43,7 @@ func createLogger(cfg *config.ExternalLoggers) zerolog.Logger {
 	return logger.NewLoggerWithHook(tgLogger)
 }
 
-func createBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.Bridge, sideBridge service_submit.ReceiverAura) {
+func createBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.Bridge, sideBridge service_submit.Receiver) {
 	var err error
 
 	// Creating a new ambrosus bridge.
