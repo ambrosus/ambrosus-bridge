@@ -130,6 +130,10 @@ func (b *CommonBridge) GetName() string {
 	return b.Name
 }
 
+func (b *CommonBridge) GetAuth() *bind.TransactOpts {
+	return b.Auth
+}
+
 func (b *CommonBridge) ShouldHavePk() {
 	if b.Auth == nil {
 		b.Logger.Fatal().Msg("Private key is required")

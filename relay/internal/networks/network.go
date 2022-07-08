@@ -33,8 +33,10 @@ type Bridge interface {
 
 	GetContract() interfaces.BridgeContract
 	GetWsContract() interfaces.BridgeContract
+
 	GetLogger() *zerolog.Logger
 	GetName() string
+	GetAuth() *bind.TransactOpts
 
 	ProcessTx(methodName string, txCallback ContractCallFn) error
 	ShouldHavePk()
