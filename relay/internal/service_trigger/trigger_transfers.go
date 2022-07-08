@@ -1,29 +1,44 @@
-package common
+package service_trigger
 
 import (
 	"fmt"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/rs/zerolog"
 )
 
-func (b *CommonBridge) TriggerTransfersLoop() {
-	b.shouldHavePk()
-	for {
-		b.EnsureContractUnpaused()
+type TriggerTransfers struct {
+	bridge networks.Bridge
+	logger *zerolog.Logger
+}
 
-		if err := b.checkTriggerTransfers(); err != nil {
-			b.Logger.Error().Err(err).Msg("checkTriggerTransfers error")
-		}
-		time.Sleep(failSleepTIme)
+func NewTriggerTransfers(bridge networks.Bridge) *TriggerTransfers {
+	return &TriggerTransfers{
+		bridge: bridge,
+		logger: bridge.GetLogger(), // todo maybe sublogger?
 	}
 }
 
-func (b *CommonBridge) checkTriggerTransfers() error {
-	b.Logger.Info().Msg("checkTriggerTransfers... ")
+func (b *TriggerTransfers) TriggerTransfersLoop() {
+	b.bridge.ShouldHavePk()
+	for {
+		b.bridge.EnsureContractUnpaused()
 
-	timeFrameSeconds, lastTimeFrame, err := fetchTimeParams(b)
+		if err := b.checkTriggerTransfers(); err != nil {
+			b.logger.Error().Err(err).Msg("checkTriggerTransfers error")
+		}
+		time.Sleep(1 * time.Minute)
+	}
+}
+
+func (b *TriggerTransfers) checkTriggerTransfers() error {
+	b.logger.Info().Msg("checkTriggerTransfers... ")
+
+	timeFrameSeconds, lastTimeFrame, err := fetchTimeParams(b.bridge.GetContract())
 	if err != nil {
 		return fmt.Errorf("fetchTimeParams error: %w", err)
 	}
@@ -33,12 +48,12 @@ func (b *CommonBridge) checkTriggerTransfers() error {
 
 	remained := time.Until(triggerAt)
 	if remained > 0 {
-		b.Logger.Info().Msgf("Sleep until next time frame (%s)", remained.String())
+		b.logger.Info().Msgf("Sleep until next time frame (%s)", remained.String())
 		time.Sleep(remained) // sleep to the moment where we should trigger transfers
 		return nil           // return so we can get actual `lastTimeFrame` value in next iteration
 	}
 
-	isQueueEmpty, err := b.Contract.IsQueueEmpty(nil)
+	isQueueEmpty, err := b.bridge.GetContract().IsQueueEmpty(nil)
 	if err != nil {
 		return fmt.Errorf("IsQueueEmpty: %w", err)
 	} else if isQueueEmpty {
@@ -47,7 +62,7 @@ func (b *CommonBridge) checkTriggerTransfers() error {
 		triggerAt = calcTriggerAt(currentTimeFrame, timeFrameSeconds)
 
 		remained := time.Until(triggerAt)
-		b.Logger.Info().Msgf("Queue empty, skipping... (sleep for %s)", remained.String())
+		b.logger.Info().Msgf("Queue empty, skipping... (sleep for %s)", remained.String())
 		time.Sleep(remained) // sleep to the moment where we should trigger transfers
 		return nil
 	}
@@ -58,11 +73,11 @@ func (b *CommonBridge) checkTriggerTransfers() error {
 	return nil
 }
 
-func (b *CommonBridge) triggerTransfers() error {
-	b.Logger.Info().Msg("Triggering transfers...")
+func (b *TriggerTransfers) triggerTransfers() error {
+	b.logger.Info().Msg("Triggering transfers...")
 
-	return b.ProcessTx("triggerTransfers", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.Contract.TriggerTransfers(opts)
+	return b.bridge.ProcessTx("triggerTransfers", func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.bridge.GetContract().TriggerTransfers(opts)
 	})
 }
 
@@ -72,13 +87,13 @@ func calcTriggerAt(timeFrameId, timeFrameSeconds int64) time.Time {
 	return time.Unix(triggerAtUnix, 0)
 }
 
-func fetchTimeParams(b *CommonBridge) (timeFrame, lastTimeFrame int64, err error) {
-	timeFrameSeconds, err := b.Contract.TimeframeSeconds(nil)
+func fetchTimeParams(contract interfaces.BridgeContract) (timeFrame, lastTimeFrame int64, err error) {
+	timeFrameSeconds, err := contract.TimeframeSeconds(nil)
 	if err != nil {
 		return 0, 0, fmt.Errorf("TimeframeSeconds: %w", err)
 	}
 
-	lastTimeframe, err := b.Contract.LastTimeframe(nil)
+	lastTimeframe, err := contract.LastTimeframe(nil)
 	if err != nil {
 		return 0, 0, fmt.Errorf("LastTimeframe: %w", err)
 	}
