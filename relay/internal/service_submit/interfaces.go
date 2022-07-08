@@ -11,7 +11,6 @@ import (
 
 type Submitter interface {
 	networks.Bridge
-	GetEventById(eventId *big.Int) (*bindings.BridgeTransfer, error)
 	SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error
 }
 

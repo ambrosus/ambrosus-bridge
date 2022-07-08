@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
@@ -43,7 +45,7 @@ func (b *SubmitTransfers) checkOldTransfers() error {
 
 	for i := int64(1); ; i++ {
 		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
-		nextEvent, err := b.submitter.GetEventById(nextEventId)
+		nextEvent, err := cb.GetEventById(b.submitter.GetContract(), nextEventId)
 		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
 			return nil
 		} else if err != nil {
@@ -100,7 +102,7 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	}
 
 	// Check if the event has been removed.
-	if err := isEventRemoved(b.submitter, event); err != nil {
+	if err := isEventRemoved(b.submitter.GetContract(), event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
@@ -113,8 +115,8 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	return nil
 }
 
-func isEventRemoved(s Submitter, event *bindings.BridgeTransfer) error {
-	newEvent, err := s.GetEventById(event.EventId)
+func isEventRemoved(contract interfaces.BridgeContract, event *bindings.BridgeTransfer) error {
+	newEvent, err := cb.GetEventById(contract, event.EventId)
 	if err != nil {
 		return err
 	}

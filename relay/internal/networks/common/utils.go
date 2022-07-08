@@ -3,9 +3,12 @@ package common
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 	"github.com/ethereum/go-ethereum/common"
@@ -15,6 +18,20 @@ import (
 
 // failSleepTIme is how many seconds to sleep between iterations in infinity loops
 const failSleepTIme = time.Second * 30
+
+// GetEventById get `Transfer` event (emitted by this contract) by id.
+func GetEventById(client interfaces.BridgeContract, eventId *big.Int) (*bindings.BridgeTransfer, error) {
+	logs, err := client.FilterTransfer(nil, []*big.Int{eventId})
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer: %w", err)
+	}
+	for logs.Next() {
+		if !logs.Event.Raw.Removed {
+			return logs.Event, nil
+		}
+	}
+	return nil, networks.ErrEventNotFound
+}
 
 func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
 	proof, err := GetProof(client, event)

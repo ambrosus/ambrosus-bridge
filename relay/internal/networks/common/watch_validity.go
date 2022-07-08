@@ -99,7 +99,7 @@ func (b *CommonBridge) watchLockedTransfers() error {
 }
 
 func (b *CommonBridge) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
-	sideEvent, err := b.SideBridge.GetEventById(lockedEventId)
+	sideEvent, err := GetEventById(b.SideBridge.GetContract(), lockedEventId)
 	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("getEventById: %w", err)
 	}
