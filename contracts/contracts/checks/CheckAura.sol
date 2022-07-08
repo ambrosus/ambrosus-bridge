@@ -90,6 +90,7 @@ contract CheckAura is Initializable {
 
         bytes32 parentHash;
         bytes32 receiptHash;
+        bytes32 lastProcessedBlockTemp;
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
         if (auraProof.transferEventBlock != 0) {
@@ -134,8 +135,7 @@ contract CheckAura is Initializable {
             // and again, if this block is finalizing block
             if (block_.finalizedVs != 0) {
                 // save it hash to `lastProcessedBlock`
-                // todo saving to temp memory variable may reduce gas cost
-                lastProcessedBlock = parentHash;
+                lastProcessedBlockTemp = parentHash;
 
                 // there is gap AFTER finalizing block, so disable parentHash check for it
                 // but only if it's not the safety blocks for transfer event
@@ -143,6 +143,11 @@ contract CheckAura is Initializable {
                     parentHash = bytes32(0);
             }
 
+        }
+
+        // saving in temp variable cost lower than saving in global `lastProcessedBlock`
+        if (lastProcessedBlockTemp != bytes32(0)) {
+            lastProcessedBlock = lastProcessedBlockTemp;
         }
     }
 
