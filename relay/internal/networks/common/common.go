@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
@@ -117,22 +116,4 @@ func (b *CommonBridge) GetName() string {
 
 func (b *CommonBridge) GetAuth() *bind.TransactOpts {
 	return b.Auth
-}
-
-func (b *CommonBridge) ShouldHavePk() {
-	if b.Auth == nil {
-		b.Logger.Fatal().Msg("Private key is required")
-	}
-}
-
-func (b *CommonBridge) EnsureContractUnpaused() {
-	for {
-		err := b.waitForUnpauseContract()
-		if err == nil {
-			return
-		}
-
-		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
-		time.Sleep(failSleepTIme)
-	}
 }

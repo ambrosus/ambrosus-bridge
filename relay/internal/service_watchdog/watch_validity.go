@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -35,10 +36,10 @@ func NewWatchTransfers(bridge networks.Bridge, eventEmitter interfaces.BridgeCon
 }
 
 func (b *WatchTransfers) Run() {
-	b.bridge.ShouldHavePk()
+	cb.ShouldHavePk(b.bridge)
 
 	for {
-		b.bridge.EnsureContractUnpaused()
+		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.watchLockedTransfers(); err != nil {
 			b.logger.Error().Err(fmt.Errorf("watchLockedTransfers: %s", err)).Msg("WatchTransfers")

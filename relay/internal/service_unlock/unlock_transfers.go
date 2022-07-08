@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -27,9 +28,9 @@ func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_watchdog.
 }
 
 func (b *UnlockTransfers) Run() {
-	b.bridge.ShouldHavePk()
+	cb.ShouldHavePk(b.bridge)
 	for {
-		b.bridge.EnsureContractUnpaused()
+		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.unlockOldTransfers(); err != nil {
 			b.logger.Error().Err(fmt.Errorf("unlockOldTransfers: %s", err)).Msg("UnlockTransfers")

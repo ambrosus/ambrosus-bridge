@@ -16,8 +16,54 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-// failSleepTIme is how many seconds to sleep between iterations in infinity loops
-const failSleepTIme = time.Second * 30
+func ShouldHavePk(b networks.Bridge) {
+	if b.GetAuth() == nil {
+		b.GetLogger().Fatal().Msg("Private key is required")
+	}
+}
+
+func EnsureContractUnpaused(b networks.Bridge) {
+	for {
+		err := waitForUnpauseContract(b)
+		if err == nil {
+			return
+		}
+
+		b.GetLogger().Error().Err(err).Msg("waitForUnpauseContract error")
+		time.Sleep(time.Second * 30)
+	}
+}
+
+func waitForUnpauseContract(b networks.Bridge) error {
+	paused, err := b.GetContract().Paused(nil)
+	if err != nil {
+		return fmt.Errorf("Paused: %w", err)
+	}
+	if !paused {
+		return nil
+	}
+
+	eventCh := make(chan *bindings.BridgeUnpaused)
+	eventSub, err := b.GetWsContract().WatchUnpaused(nil, eventCh)
+	if err != nil {
+		return fmt.Errorf("WatchUnpaused: %w", err)
+	}
+	defer eventSub.Unsubscribe()
+
+	for {
+		select {
+		case err := <-eventSub.Err():
+			return fmt.Errorf("watching unpaused event: %w", err)
+		case event := <-eventCh:
+			if event.Raw.Removed {
+				continue
+			}
+
+			b.GetLogger().Info().Msg("Contracts is unpaused, continue working!")
+			return nil
+		}
+	}
+}
 
 // GetEventById get `Transfer` event (emitted by this contract) by id.
 func GetEventById(client interfaces.BridgeContract, eventId *big.Int) (*bindings.BridgeTransfer, error) {
@@ -81,35 +127,4 @@ func getReceipts(client ethclients.ClientInterface, blockHash common.Hash) ([]*t
 	}
 
 	return receipts, errGroup.Wait()
-}
-
-func (b *CommonBridge) waitForUnpauseContract() error {
-	paused, err := b.Contract.Paused(nil)
-	if err != nil {
-		return fmt.Errorf("Paused: %w", err)
-	}
-	if !paused {
-		return nil
-	}
-
-	eventCh := make(chan *bindings.BridgeUnpaused)
-	eventSub, err := b.WsContract.WatchUnpaused(nil, eventCh)
-	if err != nil {
-		return fmt.Errorf("WatchUnpaused: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
-	for {
-		select {
-		case err := <-eventSub.Err():
-			return fmt.Errorf("watching unpaused event: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
-
-			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
-			return nil
-		}
-	}
 }

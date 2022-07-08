@@ -6,6 +6,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
@@ -24,9 +25,9 @@ func NewTriggerTransfers(bridge networks.Bridge) *TriggerTransfers {
 }
 
 func (b *TriggerTransfers) Run() {
-	b.bridge.ShouldHavePk()
+	cb.ShouldHavePk(b.bridge)
 	for {
-		b.bridge.EnsureContractUnpaused()
+		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.checkTriggerTransfers(); err != nil {
 			b.logger.Error().Err(fmt.Errorf("checkTriggerTransfers: %s", err)).Msg("TriggerTransfers")

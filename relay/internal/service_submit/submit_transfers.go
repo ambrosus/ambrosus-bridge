@@ -32,10 +32,11 @@ func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers
 }
 
 func (b *SubmitTransfers) Run() {
-	b.submitter.ShouldHavePk()
+	cb.ShouldHavePk(b.submitter)
+
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
-		b.receiver.EnsureContractUnpaused()
+		cb.EnsureContractUnpaused(b.receiver)
 
 		if err := b.watchTransfers(); err != nil {
 			b.logger.Error().Err(fmt.Errorf("watchTransfers: %s", err)).Msg("SubmitTransfers")
