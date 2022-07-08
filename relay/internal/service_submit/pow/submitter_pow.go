@@ -1,4 +1,4 @@
-package eth
+package pow
 
 import (
 	"context"
@@ -7,22 +7,24 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth/pow_proof"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/pow/pow_proof"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/rs/zerolog"
 )
 
 type SubmitterPoW struct {
 	networks.Bridge
-	powReceiver networks.BridgeReceiveEthash
+	powReceiver service_submit.BridgeReceiveEthash
 	powEncoder  *pow_proof.PoWEncoder
 	ethash      *ethash.Ethash
 	logger      *zerolog.Logger
 }
 
-func NewSubmitterPoW(bridge networks.Bridge, powReceiver networks.BridgeReceiveEthash) (*SubmitterPoW, error) {
+func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.BridgeReceiveEthash) (*SubmitterPoW, error) {
 	// todo hope this works. anyway, better create ethash instance here.
-	ethsh := bridge.(*Bridge).Ethash
+	ethsh := bridge.(*eth.Bridge).Ethash
 
 	return &SubmitterPoW{
 		Bridge:      bridge,

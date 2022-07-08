@@ -1,6 +1,7 @@
-package common
+package service_submit
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -8,12 +9,14 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 )
 
 type SubmitTransfers struct {
-	submitter networks.Submitter
-	receiver  networks.Receiver
+	submitter Submitter
+	receiver  Receiver
 	logger    zerolog.Logger
 }
 
@@ -26,7 +29,7 @@ func (b *SubmitTransfers) SubmitTransfersLoop() {
 		if err := b.watchTransfers(); err != nil {
 			b.logger.Error().Err(err).Msg("watchTransfers error")
 		}
-		time.Sleep(failSleepTIme)
+		time.Sleep(1 * time.Minute)
 	}
 }
 
@@ -110,7 +113,7 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	return nil
 }
 
-func isEventRemoved(s networks.Submitter, event *bindings.BridgeTransfer) error {
+func isEventRemoved(s Submitter, event *bindings.BridgeTransfer) error {
 	newEvent, err := s.GetEventById(event.EventId)
 	if err != nil {
 		return err
@@ -118,5 +121,33 @@ func isEventRemoved(s networks.Submitter, event *bindings.BridgeTransfer) error 
 	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
 		return fmt.Errorf("looks like the event has been removed")
 	}
+	return nil
+}
+
+func waitForBlock(wsClient ethclients.ClientInterface, targetBlockNum uint64) error {
+
+	// todo maybe timeout (context)
+	blockChannel := make(chan *types.Header)
+	blockSub, err := wsClient.SubscribeNewHead(context.Background(), blockChannel)
+	if err != nil {
+		return fmt.Errorf("SubscribeNewHead: %w", err)
+	}
+	defer blockSub.Unsubscribe()
+
+	currentBlockNum, err := wsClient.BlockNumber(context.Background())
+	if err != nil {
+		return fmt.Errorf("get last block num: %w", err)
+	}
+
+	for currentBlockNum < targetBlockNum {
+		select {
+		case err := <-blockSub.Err():
+			return fmt.Errorf("listening new blocks: %w", err)
+
+		case block := <-blockChannel:
+			currentBlockNum = block.Number.Uint64()
+		}
+	}
+
 	return nil
 }

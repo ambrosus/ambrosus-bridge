@@ -1,11 +1,12 @@
-package amb
+package aura
 
 import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb/aura_proof"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura/aura_proof"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
@@ -13,12 +14,12 @@ import (
 
 type SubmitterAura struct {
 	networks.Bridge
-	auraReceiver networks.BridgeReceiveAura
+	auraReceiver service_submit.BridgeReceiveAura
 	auraEncoder  *aura_proof.AuraEncoder
 	logger       *zerolog.Logger
 }
 
-func NewSubmitterAura(bridge networks.Bridge, auraReceiver networks.BridgeReceiveAura, vSContractAddr common.Address) (*SubmitterAura, error) {
+func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.BridgeReceiveAura, vSContractAddr common.Address) (*SubmitterAura, error) {
 	parityClient := bridge.GetClient().(*parity.Client)
 
 	// Creating a new ambrosus VS contract instance.

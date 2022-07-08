@@ -8,19 +8,20 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/rs/zerolog"
 )
 
 type PoWEncoder struct {
 	bridge      networks.Bridge
-	powReceiver networks.BridgeReceiveEthash
+	powReceiver service_submit.BridgeReceiveEthash
 
 	ethash *ethash.Ethash
 	logger *zerolog.Logger
 }
 
-func NewPoWEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceiveEthash, ethash *ethash.Ethash) *PoWEncoder {
+func NewPoWEncoder(bridge networks.Bridge, sideBridge service_submit.BridgeReceiveEthash, ethash *ethash.Ethash) *PoWEncoder {
 	return &PoWEncoder{
 		bridge:      bridge,
 		powReceiver: sideBridge,

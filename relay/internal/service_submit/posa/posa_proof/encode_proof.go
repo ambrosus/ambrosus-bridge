@@ -8,6 +8,7 @@ import (
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
@@ -22,7 +23,7 @@ const (
 
 type PoSAEncoder struct {
 	bridge       networks.Bridge
-	posaReceiver networks.BridgeReceivePoSA
+	posaReceiver service_submit.BridgeReceivePoSA
 
 	chainId *big.Int
 
@@ -32,7 +33,7 @@ type PoSAEncoder struct {
 	fetchBlockCache func(arg uint64) (*types.Header, error)
 }
 
-func NewPoSAEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceivePoSA, chainId *big.Int) *PoSAEncoder {
+func NewPoSAEncoder(bridge networks.Bridge, sideBridge service_submit.BridgeReceivePoSA, chainId *big.Int) *PoSAEncoder {
 	return &PoSAEncoder{
 		bridge:       bridge,
 		posaReceiver: sideBridge,
