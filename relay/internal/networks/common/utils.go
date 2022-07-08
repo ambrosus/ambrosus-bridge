@@ -3,25 +3,84 @@ package common
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"golang.org/x/sync/errgroup"
 )
 
 // failSleepTIme is how many seconds to sleep between iterations in infinity loops
 const failSleepTIme = time.Second * 30
 
-func (b *CommonBridge) EnsureContractUnpaused() {
-	for {
-		err := b.waitForUnpauseContract()
-		if err == nil {
-			return
-		}
-
-		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
-		time.Sleep(failSleepTIme)
+// GetEventById get `Transfer` event (emitted by this contract) by id.
+func GetEventById(client interfaces.BridgeContract, eventId *big.Int) (*bindings.BridgeTransfer, error) {
+	logs, err := client.FilterTransfer(nil, []*big.Int{eventId})
+	if err != nil {
+		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
+	for logs.Next() {
+		if !logs.Event.Raw.Removed {
+			return logs.Event, nil
+		}
+	}
+	return nil, networks.ErrEventNotFound
+}
+
+func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
+	proof, err := GetProof(client, event)
+	if err != nil {
+		return nil, fmt.Errorf("GetProof: %w", err)
+	}
+
+	return &bindings.CommonStructsTransferProof{
+		ReceiptProof: proof,
+		EventId:      event.EventId,
+		Transfers:    event.Queue,
+	}, nil
+}
+
+func GetProof(client ethclients.ClientInterface, event receipts_proof.ProofEvent) ([][]byte, error) {
+	receipts, err := getReceipts(client, event.Log().BlockHash)
+	if err != nil {
+		return nil, fmt.Errorf("getReceipts: %w", err)
+	}
+	return receipts_proof.CalcProofEvent(receipts, event)
+}
+
+func getReceipts(client ethclients.ClientInterface, blockHash common.Hash) ([]*types.Receipt, error) {
+	txsCount, err := client.TransactionCount(context.Background(), blockHash)
+	if err != nil {
+		return nil, fmt.Errorf("get transaction count: %w", err)
+	}
+
+	receipts := make([]*types.Receipt, txsCount)
+
+	errGroup := new(errgroup.Group)
+	for i := uint(0); i < txsCount; i++ {
+		i := i // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
+		errGroup.Go(func() error {
+			tx, err := client.TransactionInBlock(context.Background(), blockHash, i)
+			if err != nil {
+				return fmt.Errorf("get transaction in block: %w", err)
+			}
+			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
+			if err != nil {
+				return fmt.Errorf("get transaction receipt: %w", err)
+			}
+
+			receipts[i] = receipt
+			return nil
+		})
+	}
+
+	return receipts, errGroup.Wait()
 }
 
 func (b *CommonBridge) waitForUnpauseContract() error {
@@ -52,53 +111,5 @@ func (b *CommonBridge) waitForUnpauseContract() error {
 			b.Logger.Info().Msg("Contracts is unpaused, continue working!")
 			return nil
 		}
-	}
-}
-
-func (b *CommonBridge) WaitForBlock(targetBlockNum uint64) error {
-	b.Logger.Debug().Uint64("blockNum", targetBlockNum).Msg("Waiting for block...")
-
-	// todo maybe timeout (context)
-	blockChannel := make(chan *types.Header)
-	blockSub, err := b.WsClient.SubscribeNewHead(context.Background(), blockChannel)
-	if err != nil {
-		return fmt.Errorf("SubscribeNewHead: %w", err)
-	}
-	defer blockSub.Unsubscribe()
-
-	currentBlockNum, err := b.Client.BlockNumber(context.Background())
-	if err != nil {
-		return fmt.Errorf("get last block num: %w", err)
-	}
-
-	for currentBlockNum < targetBlockNum {
-		select {
-		case err := <-blockSub.Err():
-			return fmt.Errorf("listening new blocks: %w", err)
-
-		case block := <-blockChannel:
-			currentBlockNum = block.Number.Uint64()
-		}
-	}
-
-	return nil
-}
-
-func (b *CommonBridge) IsEventRemoved(event *bindings.BridgeTransfer) error {
-	b.Logger.Debug().Str("event_id", event.EventId.String()).Msg("Checking if the event has been removed...")
-
-	newEvent, err := b.GetEventById(event.EventId)
-	if err != nil {
-		return err
-	}
-	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
-		return fmt.Errorf("looks like the event has been removed")
-	}
-	return nil
-}
-
-func (b *CommonBridge) shouldHavePk() {
-	if b.Auth == nil {
-		b.Logger.Fatal().Msg("Private key is required")
 	}
 }

@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"math/big"
 	"sync"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -23,7 +25,7 @@ type CommonBridge struct {
 	SideBridge networks.Bridge
 
 	Client, WsClient     ethclients.ClientInterface
-	Contract, WsContract *bindings.Bridge
+	Contract, WsContract interfaces.BridgeContract
 	Auth                 *bind.TransactOpts
 
 	Logger zerolog.Logger
@@ -33,7 +35,7 @@ type CommonBridge struct {
 	ContractCallLock *sync.Mutex
 }
 
-func New(cfg config.Network, name string) (b CommonBridge, err error) {
+func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.Name = name
 
 	b.Client, err = ethclient.Dial(cfg.HttpURL)
@@ -87,38 +89,11 @@ func New(cfg config.Network, name string) (b CommonBridge, err error) {
 
 }
 
+// interface `Receiver`
+
 // GetLastReceivedEventId get last event id submitted in this contract.
 func (b *CommonBridge) GetLastReceivedEventId() (*big.Int, error) {
 	return b.Contract.InputEventId(nil)
-}
-
-// GetEventById get `Transfer` event (emitted by this contract) by id.
-func (b *CommonBridge) GetEventById(eventId *big.Int) (*bindings.BridgeTransfer, error) {
-	logs, err := b.Contract.FilterTransfer(nil, []*big.Int{eventId})
-	if err != nil {
-		return nil, fmt.Errorf("filter transfer: %w", err)
-	}
-	for logs.Next() {
-		if !logs.Event.Raw.Removed {
-			return logs.Event, nil
-		}
-	}
-	return nil, networks.ErrEventNotFound
-}
-
-// GetEventsByIds gets contract events by ids.
-func (b *CommonBridge) GetEventsByIds(eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
-	logTransfer, err := b.Contract.FilterTransfer(nil, eventIds)
-	if err != nil {
-		return nil, fmt.Errorf("filter transfer: %w", err)
-	}
-
-	for logTransfer.Next() {
-		if !logTransfer.Event.Raw.Removed {
-			transfers = append(transfers, logTransfer.Event)
-		}
-	}
-	return transfers, nil
 }
 
 func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
@@ -129,22 +104,50 @@ func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
 	return safetyBlocks.Uint64(), nil
 }
 
-func (b *CommonBridge) GetName() string {
-	return b.Name
-}
+// interface `Bridge`
 
 func (b *CommonBridge) GetClient() ethclients.ClientInterface {
 	return b.Client
 }
 
-func (b *CommonBridge) GetContract() *bindings.Bridge {
+func (b *CommonBridge) GetWsClient() ethclients.ClientInterface {
+	return b.WsClient
+}
+
+func (b *CommonBridge) GetContract() interfaces.BridgeContract {
 	return b.Contract
 }
 
-func (b *CommonBridge) GetWsContract() *bindings.Bridge {
+func (b *CommonBridge) GetWsContract() interfaces.BridgeContract {
 	return b.WsContract
 }
 
 func (b *CommonBridge) GetLogger() *zerolog.Logger {
 	return &b.Logger
+}
+
+func (b *CommonBridge) GetName() string {
+	return b.Name
+}
+
+func (b *CommonBridge) GetAuth() *bind.TransactOpts {
+	return b.Auth
+}
+
+func (b *CommonBridge) ShouldHavePk() {
+	if b.Auth == nil {
+		b.Logger.Fatal().Msg("Private key is required")
+	}
+}
+
+func (b *CommonBridge) EnsureContractUnpaused() {
+	for {
+		err := b.waitForUnpauseContract()
+		if err == nil {
+			return
+		}
+
+		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
+		time.Sleep(failSleepTIme)
+	}
 }

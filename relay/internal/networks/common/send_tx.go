@@ -7,18 +7,15 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
-// ContractCallFn is a callback type for calling paid contract's method.
-type ContractCallFn func(opts *bind.TransactOpts) (*types.Transaction, error)
-
-func (b *CommonBridge) ProcessTx(methodName string, txCallback ContractCallFn) error {
+func (b *CommonBridge) ProcessTx(methodName string, txCallback networks.ContractCallFn) error {
 	// if the transaction get stuck, then retry it with the higher gas price
 	var txOpts = b.Auth
 	var receipt *types.Receipt
@@ -106,16 +103,6 @@ func (b *CommonBridge) waitMined(tx *types.Transaction) (receipt *types.Receipt,
 		return nil, fmt.Errorf("wait mined: %w", err)
 	}
 	return
-}
-
-func (b *CommonBridge) getTxErr(err error) error {
-	if err != nil {
-		if err.Error() == "execution reverted" {
-			dataErr := err.(rpc.DataError)
-			return fmt.Errorf("contract runtime error: %s", dataErr.ErrorData())
-		}
-	}
-	return err
 }
 
 func (b *CommonBridge) getFailureReason(tx *types.Transaction) error {

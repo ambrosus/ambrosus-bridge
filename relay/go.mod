@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/avast/retry-go v3.0.0+incompatible
 	github.com/ethereum/go-ethereum v1.10.13
+	github.com/golang/mock v1.4.4
 	github.com/kofalt/go-memoize v0.0.0-20210721235729-46a601ff34b8
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/cors v1.8.2

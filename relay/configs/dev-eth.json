@@ -1,30 +1,39 @@
 {
-    "isRelay": true,
-    "isWatchdog": true,
     "networks": {
-        "amb": {
+        "sideBridgeNetwork": "ETH",
+        "AMB": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
             "contractAddr": "0x55252974F0277023C6ad296D33c4FDB4ABF971f3",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
-        "eth": {
+        "ETH": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contractAddr": "0xFA2A3190419280611f816a031d28248a0d95bCff",
-            "privateKey": "in env",
+            "privateKey": "in env"
+        }
+    },
+
+    "submitters": {
+        "aura": {
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
+        },
+        "pow": {
             "ethashDir": "/root/ethash",
             "ethashKeepPrevEpochs": 1,
             "ethashGenNextEpochs": 0
         }
     },
-    "externalLogger": {
-        "telegram": {
-            "enable": true,
-            "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
-            "chatId": "-1001732781392"
-        }
+    "watchdogs":  {
+        "enable": true
+    },
+    "triggers":  {
+        "enable": true
+    },
+    "unlockers":  {
+        "enable": true
     },
     "feeApi":  {
         "enable": true,
@@ -40,6 +49,14 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "defaultTransferFeeWei": "10000000000000000"
+        }
+    },
+
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
+            "chatId": "-1001732781392"
         }
     },
     "prometheus": {
