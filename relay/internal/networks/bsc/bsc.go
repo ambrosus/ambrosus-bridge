@@ -27,11 +27,3 @@ func New(cfg *config.BSCConfig, baseLogger zerolog.Logger) (*Bridge, error) {
 		CommonBridge: commonBridge,
 	}, nil
 }
-
-//
-//func (b *Bridge) Run() {
-//	b.Logger.Debug().Msg("Running binance bridge...")
-//
-//	go b.UnlockTransfersLoop()
-//	b.SubmitTransfersLoop()
-//}

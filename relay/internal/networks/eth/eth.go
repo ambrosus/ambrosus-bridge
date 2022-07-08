@@ -31,12 +31,3 @@ func New(cfg *config.ETHConfig, baseLogger zerolog.Logger) (*Bridge, error) {
 		Ethash:       ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs),
 	}, nil
 }
-
-func (b *Bridge) Run() {
-	b.Logger.Debug().Msg("Running ethereum bridge...")
-
-	// go b.ensureDAGsExists()
-	go b.UnlockTransfersLoop()
-	go b.TriggerTransfersLoop()
-	//b.SubmitTransfersLoop()
-}
