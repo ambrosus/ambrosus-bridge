@@ -14,12 +14,12 @@ import (
 
 type SubmitterAura struct {
 	networks.Bridge
-	auraReceiver service_submit.BridgeReceiveAura
+	auraReceiver service_submit.ReceiverAura
 	auraEncoder  *aura_proof.AuraEncoder
 	logger       *zerolog.Logger
 }
 
-func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.BridgeReceiveAura, vSContractAddr common.Address) (*SubmitterAura, error) {
+func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.ReceiverAura, vSContractAddr common.Address) (*SubmitterAura, error) {
 	parityClient := bridge.GetClient().(*parity.Client)
 
 	// Creating a new ambrosus VS contract instance.

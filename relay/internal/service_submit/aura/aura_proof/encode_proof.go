@@ -18,7 +18,7 @@ const maxRequestContentLength = 1024*1024*5 - 10240 // -10KB for extra data in r
 
 type AuraEncoder struct {
 	bridge       networks.Bridge
-	auraReceiver service_submit.BridgeReceiveAura
+	auraReceiver service_submit.ReceiverAura
 
 	vsContract   *c.Vs
 	parityClient *parity.Client
@@ -29,7 +29,7 @@ type AuraEncoder struct {
 	fetchBlockCache func(arg uint64) (*parity.Header, error)
 }
 
-func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.BridgeReceiveAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
+func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
 	return &AuraEncoder{
 		bridge:       bridge,
 		auraReceiver: sideBridge,

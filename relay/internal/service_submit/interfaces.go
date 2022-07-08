@@ -15,29 +15,30 @@ type Submitter interface {
 }
 
 type Receiver interface {
+	networks.Bridge
 	// GetLastReceivedEventId used by the other side of the bridge for synchronization
 	GetLastReceivedEventId() (*big.Int, error)
 	GetMinSafetyBlocksNum() (uint64, error)
 	EnsureContractUnpaused()
 }
 
-type BridgeReceiveAura interface {
-	networks.Bridge
+type ReceiverAura interface {
+	Receiver
 	SubmitTransferAura(*bindings.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
 	GetLastProcessedBlockHash() (*common.Hash, error)
 	GetMinSafetyBlocksValidators() (uint64, error)
 }
 
-type BridgeReceiveEthash interface {
-	networks.Bridge
+type ReceiverPoW interface {
+	Receiver
 	SubmitTransferPoW(*bindings.CheckPoWPoWProof) error
 	SubmitEpochData(*ethash.EpochData) error
 	IsEpochSet(epoch uint64) (bool, error)
 }
 
-type BridgeReceivePoSA interface {
-	networks.Bridge
+type ReceiverPoSA interface {
+	Receiver
 	SubmitTransferPoSA(proof *bindings.CheckPoSAPoSAProof) error
 	GetCurrentEpoch() (uint64, error)
 }

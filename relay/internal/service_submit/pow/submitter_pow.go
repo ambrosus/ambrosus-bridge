@@ -16,13 +16,13 @@ import (
 
 type SubmitterPoW struct {
 	networks.Bridge
-	powReceiver service_submit.BridgeReceiveEthash
+	powReceiver service_submit.ReceiverPoW
 	powEncoder  *pow_proof.PoWEncoder
 	ethash      *ethash.Ethash
 	logger      *zerolog.Logger
 }
 
-func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.BridgeReceiveEthash) (*SubmitterPoW, error) {
+func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.ReceiverPoW) (*SubmitterPoW, error) {
 	// todo hope this works. anyway, better create ethash instance here.
 	ethsh := bridge.(*eth.Bridge).Ethash
 

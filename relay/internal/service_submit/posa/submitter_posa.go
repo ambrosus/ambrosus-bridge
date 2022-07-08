@@ -13,12 +13,12 @@ import (
 
 type SubmitterPoSA struct {
 	networks.Bridge
-	posaReceiver service_submit.BridgeReceivePoSA
+	posaReceiver service_submit.ReceiverPoSA
 	posaEncoder  *posa_proof.PoSAEncoder
 	logger       *zerolog.Logger
 }
 
-func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.BridgeReceivePoSA) (*SubmitterPoSA, error) {
+func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.ReceiverPoSA) (*SubmitterPoSA, error) {
 	chainId, err := bridge.GetClient().ChainID(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("chain id: %w", err)

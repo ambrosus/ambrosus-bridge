@@ -23,7 +23,7 @@ const (
 
 type PoSAEncoder struct {
 	bridge       networks.Bridge
-	posaReceiver service_submit.BridgeReceivePoSA
+	posaReceiver service_submit.ReceiverPoSA
 
 	chainId *big.Int
 
@@ -33,7 +33,7 @@ type PoSAEncoder struct {
 	fetchBlockCache func(arg uint64) (*types.Header, error)
 }
 
-func NewPoSAEncoder(bridge networks.Bridge, sideBridge service_submit.BridgeReceivePoSA, chainId *big.Int) *PoSAEncoder {
+func NewPoSAEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverPoSA, chainId *big.Int) *PoSAEncoder {
 	return &PoSAEncoder{
 		bridge:       bridge,
 		posaReceiver: sideBridge,

@@ -15,13 +15,13 @@ import (
 
 type PoWEncoder struct {
 	bridge      networks.Bridge
-	powReceiver service_submit.BridgeReceiveEthash
+	powReceiver service_submit.ReceiverPoW
 
 	ethash *ethash.Ethash
 	logger *zerolog.Logger
 }
 
-func NewPoWEncoder(bridge networks.Bridge, sideBridge service_submit.BridgeReceiveEthash, ethash *ethash.Ethash) *PoWEncoder {
+func NewPoWEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverPoW, ethash *ethash.Ethash) *PoWEncoder {
 	return &PoWEncoder{
 		bridge:      bridge,
 		powReceiver: sideBridge,
