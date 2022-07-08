@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"math/big"
 	"sync"
 	"time"
 
@@ -88,21 +87,6 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.ContractCallLock = &sync.Mutex{}
 	return b, nil
 
-}
-
-// interface `Receiver`
-
-// GetLastReceivedEventId get last event id submitted in this contract.
-func (b *CommonBridge) GetLastReceivedEventId() (*big.Int, error) {
-	return b.Contract.InputEventId(nil)
-}
-
-func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
-	if err != nil {
-		return 0, err
-	}
-	return safetyBlocks.Uint64(), nil
 }
 
 // interface `Bridge`

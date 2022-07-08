@@ -169,8 +169,6 @@ func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *b
 
 func (p *transferFeeTracker) WatchUnlocksLoop() {
 	for {
-		p.bridge.EnsureContractUnpaused()
-
 		if err := p.watchUnlocks(); err != nil {
 			p.sideBridge.GetLogger().Error().Err(err).Msg("price tracker watchUnlocks error")
 		}

@@ -47,7 +47,7 @@ func (b *SubmitTransfers) Run() {
 func (b *SubmitTransfers) checkOldTransfers() error {
 	b.logger.Info().Msg("Checking old events...")
 
-	lastEventId, err := b.receiver.GetLastReceivedEventId()
+	lastEventId, err := b.receiver.GetContract().InputEventId(nil)
 	if err != nil {
 		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
@@ -100,7 +100,7 @@ func (b *SubmitTransfers) watchTransfers() error {
 }
 
 func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
-	safetyBlocks, err := b.receiver.GetMinSafetyBlocksNum()
+	safetyBlocks, err := getMinSafetyBlocksNum(b.receiver.GetContract())
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
@@ -160,4 +160,12 @@ func waitForBlock(wsClient ethclients.ClientInterface, targetBlockNum uint64) er
 	}
 
 	return nil
+}
+
+func getMinSafetyBlocksNum(contract interfaces.BridgeContract) (uint64, error) {
+	safetyBlocks, err := contract.MinSafetyBlocks(nil)
+	if err != nil {
+		return 0, err
+	}
+	return safetyBlocks.Uint64(), nil
 }
