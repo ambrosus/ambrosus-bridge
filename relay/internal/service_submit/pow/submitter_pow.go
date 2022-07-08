@@ -6,8 +6,8 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/pow/pow_proof"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
@@ -22,9 +22,8 @@ type SubmitterPoW struct {
 	logger      *zerolog.Logger
 }
 
-func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.ReceiverPoW) (*SubmitterPoW, error) {
-	// todo hope this works. anyway, better create ethash instance here.
-	ethsh := bridge.(*eth.Bridge).Ethash
+func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.ReceiverPoW, cfg *config.SubmitterPoW) (*SubmitterPoW, error) {
+	ethsh := ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs)
 
 	return &SubmitterPoW{
 		Bridge:      bridge,

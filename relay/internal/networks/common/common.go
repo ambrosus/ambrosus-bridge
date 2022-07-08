@@ -35,7 +35,7 @@ type CommonBridge struct {
 	ContractCallLock *sync.Mutex
 }
 
-func New(cfg config.Network, name string) (b CommonBridge, err error) {
+func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.Name = name
 
 	b.Client, err = ethclient.Dial(cfg.HttpURL)

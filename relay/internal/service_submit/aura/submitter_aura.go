@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura/aura_proof"
@@ -19,11 +20,11 @@ type SubmitterAura struct {
 	logger       *zerolog.Logger
 }
 
-func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.ReceiverAura, vSContractAddr common.Address) (*SubmitterAura, error) {
+func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.ReceiverAura, cfg *config.SubmitterAura) (*SubmitterAura, error) {
 	parityClient := bridge.GetClient().(*parity.Client)
 
 	// Creating a new ambrosus VS contract instance.
-	vsContract, err := bindings.NewVs(vSContractAddr, parityClient)
+	vsContract, err := bindings.NewVs(common.HexToAddress(cfg.VSContractAddr), parityClient)
 	if err != nil {
 		return nil, fmt.Errorf("create vs contract: %w", err)
 	}
