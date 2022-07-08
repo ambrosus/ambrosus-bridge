@@ -19,8 +19,8 @@ type Bridge struct {
 }
 
 // New creates a new ambrosus bridge.
-func New(cfg *config.AMBConfig, baseLogger zerolog.Logger) (*Bridge, error) {
-	commonBridge, err := nc.New(cfg.Network, BridgeName)
+func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
+	commonBridge, err := nc.New(cfg, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
@@ -58,12 +58,3 @@ func New(cfg *config.AMBConfig, baseLogger zerolog.Logger) (*Bridge, error) {
 		CommonBridge: commonBridge,
 	}, nil
 }
-
-//
-//func (b *Bridge) Run() {
-//	b.Logger.Debug().Msg("Running ambrosus bridge...")
-//
-//	go b.UnlockTransfersLoop()
-//	go b.TriggerTransfersLoop()
-//	b.SubmitTransfersLoop()
-//}

@@ -8,6 +8,7 @@ import (
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/rs/zerolog"
@@ -17,7 +18,7 @@ const maxRequestContentLength = 1024*1024*5 - 10240 // -10KB for extra data in r
 
 type AuraEncoder struct {
 	bridge       networks.Bridge
-	auraReceiver networks.BridgeReceiveAura
+	auraReceiver service_submit.ReceiverAura
 
 	vsContract   *c.Vs
 	parityClient *parity.Client
@@ -28,7 +29,7 @@ type AuraEncoder struct {
 	fetchBlockCache func(arg uint64) (*parity.Header, error)
 }
 
-func NewAuraEncoder(bridge networks.Bridge, sideBridge networks.BridgeReceiveAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
+func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
 	return &AuraEncoder{
 		bridge:       bridge,
 		auraReceiver: sideBridge,

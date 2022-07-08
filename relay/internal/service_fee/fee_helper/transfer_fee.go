@@ -1,4 +1,4 @@
-package fee
+package fee_helper
 
 import (
 	"context"

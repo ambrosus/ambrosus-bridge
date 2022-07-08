@@ -1,4 +1,4 @@
-package bsc
+package posa
 
 import (
 	"context"
@@ -6,18 +6,19 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc/posa_proof"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa/posa_proof"
 	"github.com/rs/zerolog"
 )
 
 type SubmitterPoSA struct {
 	networks.Bridge
-	posaReceiver networks.BridgeReceivePoSA
+	posaReceiver service_submit.ReceiverPoSA
 	posaEncoder  *posa_proof.PoSAEncoder
 	logger       *zerolog.Logger
 }
 
-func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver networks.BridgeReceivePoSA) (*SubmitterPoSA, error) {
+func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.ReceiverPoSA) (*SubmitterPoSA, error) {
 	chainId, err := bridge.GetClient().ChainID(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("chain id: %w", err)

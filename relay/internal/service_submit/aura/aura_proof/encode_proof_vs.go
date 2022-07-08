@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb/aura_proof/rolling_finality"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura/aura_proof/rolling_finality"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )

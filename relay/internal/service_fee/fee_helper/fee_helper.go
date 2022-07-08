@@ -1,4 +1,4 @@
-package fee
+package fee_helper
 
 import (
 	"crypto/ecdsa"
@@ -13,7 +13,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type BridgeFee struct {
+type FeeHelper struct {
 	networks.Bridge
 
 	minBridgeFee       decimal.Decimal
@@ -25,7 +25,7 @@ type BridgeFee struct {
 	transferFeeTracker *transferFeeTracker
 }
 
-func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) (*BridgeFee, error) {
+func NewFeeHelper(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) (*FeeHelper, error) {
 	wrapperAddress, err := bridge.GetContract().WrapperAddress(nil)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) 
 		return nil, fmt.Errorf("failed to parse defaultTransferFee (%s)", cfg.DefaultTransferFee)
 	}
 
-	return &BridgeFee{
+	return &FeeHelper{
 		Bridge:             bridge,
 		minBridgeFee:       decimal.NewFromFloat(cfg.MinBridgeFee),
 		defaultTransferFee: defaultTransferFee,
@@ -56,22 +56,22 @@ func NewBridgeFee(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) 
 	}, nil
 }
 
-func (b *BridgeFee) Sign(digestHash []byte) ([]byte, error) {
+func (b *FeeHelper) Sign(digestHash []byte) ([]byte, error) {
 	return crypto.Sign(digestHash, b.privateKey)
 }
 
-func (b *BridgeFee) GetTransferFee() *big.Int {
+func (b *FeeHelper) GetTransferFee() *big.Int {
 	return b.transferFeeTracker.GasPerWithdraw()
 }
 
-func (b *BridgeFee) GetWrapperAddress() common.Address {
+func (b *FeeHelper) GetWrapperAddress() common.Address {
 	return b.wrapperAddress
 }
 
-func (b *BridgeFee) GetMinBridgeFee() decimal.Decimal {
+func (b *FeeHelper) GetMinBridgeFee() decimal.Decimal {
 	return b.minBridgeFee
 }
 
-func (b *BridgeFee) GetDefaultTransferFee() decimal.Decimal {
+func (b *FeeHelper) GetDefaultTransferFee() decimal.Decimal {
 	return b.defaultTransferFee
 }

@@ -15,8 +15,8 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.BSCConfig, baseLogger zerolog.Logger) (*Bridge, error) {
-	commonBridge, err := nc.New(cfg.Network, BridgeName)
+func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
+	commonBridge, err := nc.New(cfg, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
@@ -27,11 +27,3 @@ func New(cfg *config.BSCConfig, baseLogger zerolog.Logger) (*Bridge, error) {
 		CommonBridge: commonBridge,
 	}, nil
 }
-
-//
-//func (b *Bridge) Run() {
-//	b.Logger.Debug().Msg("Running binance bridge...")
-//
-//	go b.UnlockTransfersLoop()
-//	b.SubmitTransfersLoop()
-//}

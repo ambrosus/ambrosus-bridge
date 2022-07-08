@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/fee_api/middlewares"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_api/middlewares"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
 	"github.com/rs/cors"
@@ -37,18 +37,13 @@ type FeeAPI struct {
 	logger *zerolog.Logger
 }
 
-func NewFeeAPI(amb, side BridgeFeeApi, logger *zerolog.Logger) *FeeAPI {
+func NewFeeAPI(amb, side BridgeFeeApi, logger zerolog.Logger) *FeeAPI {
 	return &FeeAPI{
 		amb:    amb,
 		side:   side,
 		cache:  memoize.NewMemoizer(cacheExpiration, time.Hour),
-		logger: logger,
+		logger: &logger,
 	}
-}
-
-func NewFeeAPILogger() *zerolog.Logger {
-	l := zerolog.New(os.Stderr)
-	return &l
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int) {
