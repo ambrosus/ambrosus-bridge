@@ -13,6 +13,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+const maxRequestContentLength = 1024*1024*5 - 10240 // -10KB for extra data in request
+
 type AuraEncoder struct {
 	bridge       networks.Bridge
 	auraReceiver networks.BridgeReceiveAura
@@ -131,4 +133,12 @@ func (e *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAur
 
 func (e *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
 	return e.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
+}
+
+func isProofTooBig(proof *c.CheckAuraAuraProof, maxRequestContentLength int) (bool, error) {
+	size, err := proof.Size()
+	if err != nil {
+		return false, err
+	}
+	return size > maxRequestContentLength, nil
 }

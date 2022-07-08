@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/rs/zerolog"
 )
 
 const BridgeName = "binance"
@@ -15,12 +15,13 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.BSCConfig, externalLogger logger.Hook) (*Bridge, error) {
+func New(cfg *config.BSCConfig, baseLogger zerolog.Logger) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
-	commonBridge.Logger = logger.NewSubLogger(BridgeName, externalLogger)
+
+	commonBridge.Logger = baseLogger.With().Str("bridge", BridgeName).Logger()
 
 	return &Bridge{
 		CommonBridge: commonBridge,

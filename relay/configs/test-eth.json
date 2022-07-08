@@ -10,8 +10,8 @@
             "vsContractAddr": "0x0000000000000000000000000000000000000F00"
         },
         "eth": {
-            "httpUrl": "https://sepolia.ambrosus-test.io/",
-            "wsUrl": "wss://sepolia.ambrosus-test.io/ws",
+            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
             "contractAddr": "0x91b054b82D3DE9DC9Fa771A07aC1355BDD86aE00",
             "privateKey": "in env",
             "ethashDir": "/root/ethash",

@@ -31,13 +31,13 @@ const config: HardhatUserConfig = {
     },
 
     "dev/eth": {
-      url: "https://sepolia.ambrosus-test.io/",
+      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
       gasPrice: 9000000000
     },
     "test/eth": {
-      url: "https://sepolia.ambrosus-test.io/",
+      url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "testnet"],
       companionNetworks: {amb: 'test/amb'},
     },

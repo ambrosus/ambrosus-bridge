@@ -1,5 +1,7 @@
 package helpers
 
+// TODO: name the file better
+
 import (
 	"crypto/ecdsa"
 	"encoding/hex"
@@ -30,7 +32,13 @@ func NewCache[K comparable, V any](getter func(K) (V, error)) func(arg K) (V, er
 		if v, ok := cache[arg]; ok {
 			return v, nil
 		}
-		return getter(arg)
+
+		res, err := getter(arg)
+		if err == nil {
+			cache[arg] = res
+		}
+
+		return res, err
 	}
 }
 
