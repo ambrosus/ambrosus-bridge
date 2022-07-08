@@ -1,6 +1,7 @@
 package fee
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/shopspring/decimal"
@@ -59,7 +60,7 @@ func Test_getBridgeAndAmount(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bridgeFee, amount, err := getBridgeFeeAndAmount(tt.args.reqAmount, tt.args.isAmountWithFees, tt.args.tokenUsdPrice, tt.args.thisCoinPrice, tt.args.transferFee, tt.args.minBridgeFee)
+			bridgeFee, amount, err := getBridgeFeeAndAmount(tt.args.reqAmount, tt.args.tokenUsdPrice, tt.args.thisCoinPrice, tt.args.transferFee, tt.args.minBridgeFee, tt.args.isAmountWithFees)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getBridgeFeeAndAmount() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -72,4 +73,34 @@ func Test_getBridgeAndAmount(t *testing.T) {
 			}
 		})
 	}
+}
+
+// todo rewrite tests without this func
+
+func getBridgeFeeAndAmount(
+	reqAmount decimal.Decimal,
+	tokenUsdPrice decimal.Decimal,
+	thisCoinPrice decimal.Decimal,
+	transferFee decimal.Decimal,
+	minBridgeFee decimal.Decimal,
+	isAmountWithFees bool,
+) (decimal.Decimal, decimal.Decimal, error) {
+	amount := reqAmount.Copy()
+
+	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
+	if isAmountWithFees {
+		var err error
+		amount, err = possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, minBridgeFee)
+		if err != nil {
+			return decimal.Decimal{}, decimal.Decimal{}, err
+		}
+	}
+
+	// get bridge fee
+	bridgeFee, err := getBridgeFee(thisCoinPrice, tokenUsdPrice, amount, minBridgeFee)
+	if err != nil {
+		return decimal.Decimal{}, decimal.Decimal{}, fmt.Errorf("error when getting bridge fee: %w", err)
+	}
+
+	return bridgeFee, amount, nil
 }
