@@ -79,7 +79,7 @@ func runTriggers(cfg *config.Triggers, ambBridge *amb.Bridge, sideBridge network
 	go service_trigger.NewTriggerTransfers(sideBridge).Run()
 }
 
-func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger *zerolog.Logger) {
 	log.Info().Str("service", "fee api").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
@@ -94,9 +94,11 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		log.Fatal().Err(err).Msg("feeSide not created")
 	}
 
-	feeService := fee.NewFee(feeAmb, feeSide, logger)
+	feeService := fee.NewFee(feeAmb, feeSide)
 	feeApi := &api.FeeAPI{Service: feeService}
-	feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port)
+	if err = feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port, logger); err != nil {
+		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Fee Api endpoint)")
+	}
 }
 
 func runPrometheus(cfg *config.Prometheus) {

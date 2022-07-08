@@ -8,7 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/kofalt/go-memoize"
-	"github.com/rs/zerolog"
 	"github.com/shopspring/decimal"
 )
 
@@ -28,17 +27,14 @@ type BridgeFeeApi interface {
 
 type Fee struct {
 	amb, side BridgeFeeApi
-
-	cache  *memoize.Memoizer
-	Logger *zerolog.Logger
+	cache     *memoize.Memoizer
 }
 
-func NewFee(amb, side BridgeFeeApi, logger zerolog.Logger) *Fee {
+func NewFee(amb, side BridgeFeeApi) *Fee {
 	return &Fee{
-		amb:    amb,
-		side:   side,
-		cache:  memoize.NewMemoizer(cacheExpiration, time.Hour),
-		Logger: &logger,
+		amb:   amb,
+		side:  side,
+		cache: memoize.NewMemoizer(cacheExpiration, time.Hour),
 	}
 }
 
