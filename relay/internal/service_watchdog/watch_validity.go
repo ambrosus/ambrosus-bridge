@@ -18,7 +18,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-var ErrEmptyLockedTransfers = errors.New("empty locked transfers")
+var errEmptyLockedTransfers = errors.New("empty locked transfers")
 
 type WatchTransfers struct {
 	bridge       networks.Bridge
@@ -55,14 +55,14 @@ func (b *WatchTransfers) checkOldLockedTransfers() error {
 		return fmt.Errorf("get oldest locked event id: %w", err)
 	}
 
-	return b.checkOldLockedTransferFromId(oldestLockedEventId)
+	return b.CheckOldLockedTransferFromId(oldestLockedEventId)
 }
 
-func (b *WatchTransfers) checkOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
+func (b *WatchTransfers) CheckOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
 	for i := int64(0); ; i++ {
 		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
 		nextLockedTransfer, err := b.getLockedTransfers(nextLockedEventId, nil)
-		if errors.Is(err, ErrEmptyLockedTransfers) {
+		if errors.Is(err, errEmptyLockedTransfers) {
 			return nil
 		} else if err != nil {
 			return fmt.Errorf("GetLockedTransfers: %w", err)
@@ -165,7 +165,7 @@ func (b *WatchTransfers) getLockedTransfers(eventId *big.Int, opts *bind.CallOpt
 
 			// check
 			if lockedTransfer.EndTimestamp.Uint64() == 0 {
-				return ErrEmptyLockedTransfers
+				return errEmptyLockedTransfers
 			}
 			return nil
 		},
