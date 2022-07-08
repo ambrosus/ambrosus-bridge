@@ -101,6 +101,8 @@ contract CheckAura is Initializable {
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura calldata block_ = auraProof.blocks[i];
 
+            checkBlock(block_);
+
             // 0 means no events should be finalized, so indexes are shifted by 1
             if (block_.finalizedVs != 0) {
                 // vs changes in that block
@@ -127,7 +129,7 @@ contract CheckAura is Initializable {
                 require(block_.parentHash == parentHash, "Wrong parent hash");
 
             // calc block hash for this block
-            parentHash = checkBlock(block_);
+            (, parentHash) = calcBlockHash(block_);
 
             // and again, if this block is finalizing block
             if (block_.finalizedVs != 0) {
