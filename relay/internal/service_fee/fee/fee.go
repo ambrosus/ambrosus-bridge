@@ -26,15 +26,17 @@ type BridgeFeeApi interface {
 }
 
 type Fee struct {
-	amb, side BridgeFeeApi
-	cache     *memoize.Memoizer
+	amb, side   BridgeFeeApi
+	priceGetter priceGetter
+	cache       *memoize.Memoizer
 }
 
 func NewFee(amb, side BridgeFeeApi) *Fee {
 	return &Fee{
-		amb:   amb,
-		side:  side,
-		cache: memoize.NewMemoizer(cacheExpiration, time.Hour),
+		amb:         amb,
+		side:        side,
+		priceGetter: new(priceGetterS),
+		cache:       memoize.NewMemoizer(cacheExpiration, time.Hour),
 	}
 }
 

@@ -9,6 +9,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type priceGetter interface {
+	tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error)
+}
+
+type priceGetterS struct{}
+
 func (p *Fee) getPrices(bridge, sideBridge BridgeFeeApi, tokenAddress common.Address) (thisCoinPrice, sideCoinPrice, tokenUsdPrice decimal.Decimal, err error) {
 	thisCoinPrice, err = p.getTokenPrice(bridge, common.Address{})
 	if err != nil {
@@ -31,7 +37,7 @@ func (p *Fee) getPrices(bridge, sideBridge BridgeFeeApi, tokenAddress common.Add
 
 func (p *Fee) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
 	tokenPriceI, err, _ := p.cache.Memoize(bridge.GetName()+tokenAddress.Hex(), func() (interface{}, error) {
-		return tokenPrice(bridge, tokenAddress)
+		return p.priceGetter.tokenPrice(bridge, tokenAddress)
 	})
 	if err != nil {
 		return decimal.Decimal{}, err
@@ -39,7 +45,7 @@ func (p *Fee) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (d
 	return tokenPriceI.(decimal.Decimal), nil
 }
 
-func tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
+func (_ *priceGetterS) tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
 	if (tokenAddress == common.Address{}) {
 		tokenAddress = bridge.GetWrapperAddress()
 	}
