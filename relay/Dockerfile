@@ -7,7 +7,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o bridge cmd/bridge/main.go
+RUN go build ./cmd/bridge
 EXPOSE 9090
 EXPOSE 8080
 
