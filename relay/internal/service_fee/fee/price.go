@@ -9,6 +9,26 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+func (p *Fee) getPrices(bridge, sideBridge BridgeFeeApi, tokenAddress common.Address) (thisCoinPrice, sideCoinPrice, tokenUsdPrice decimal.Decimal, err error) {
+	thisCoinPrice, err = p.getTokenPrice(bridge, common.Address{})
+	if err != nil {
+		err = fmt.Errorf("getTokenPrice native bridge: %w", err)
+		return
+	}
+	sideCoinPrice, err = p.getTokenPrice(sideBridge, common.Address{})
+	if err != nil {
+		err = fmt.Errorf("getTokenPrice native sideBridge: %w", err)
+		return
+	}
+	tokenUsdPrice, err = p.getTokenPrice(bridge, tokenAddress)
+	if err != nil {
+		err = fmt.Errorf("getTokenPrice %v: %w", tokenAddress, err)
+		return
+	}
+
+	return
+}
+
 func (p *Fee) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
 	tokenPriceI, err, _ := p.cache.Memoize(bridge.GetName()+tokenAddress.Hex(), func() (interface{}, error) {
 		return tokenPrice(bridge, tokenAddress)
