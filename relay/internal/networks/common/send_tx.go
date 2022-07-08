@@ -7,6 +7,7 @@ import (
 	"math/big"
 	"time"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/avast/retry-go"
@@ -30,7 +31,7 @@ func (b *CommonBridge) ProcessTx(methodName string, txCallback networks.Contract
 				return err
 			}
 
-			b.IncTxCountMetric(methodName)
+			metric.IncTxCountMetric(b, methodName)
 
 			b.Logger.Info().
 				Str("method", methodName).
@@ -64,10 +65,10 @@ func (b *CommonBridge) ProcessTx(methodName string, txCallback networks.Contract
 		return err
 	}
 
-	b.SetUsedGasMetric(methodName, receipt.GasUsed, tx.GasPrice())
+	metric.SetUsedGasMetric(b, methodName, receipt.GasUsed, tx.GasPrice())
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
-		b.IncFailedTxCountMetric(methodName)
+		metric.IncFailedTxCountMetric(b, methodName)
 		if err = b.getFailureReason(tx); err != nil {
 			return fmt.Errorf("tx %s failed: %w", tx.Hash().Hex(), helpers.ParseError(err))
 		}

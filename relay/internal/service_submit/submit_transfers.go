@@ -9,6 +9,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -118,8 +119,7 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	// todo
-	//b.AddWithdrawalsCountMetric(len(event.Queue))
+	metric.AddWithdrawalsCountMetric(b.submitter, len(event.Queue))
 	return nil
 }
 

@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -79,7 +80,7 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 		}
 
 		// update metrics
-		b.SetRelayBalanceMetric()
+		metric.SetRelayBalanceMetric(&b)
 	} else {
 		b.Logger.Info().Msg("No private key provided")
 	}
