@@ -7,11 +7,11 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth/pow_proof"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
+	"github.com/rs/zerolog"
 )
 
 const BridgeName = "ethereum"
@@ -25,12 +25,13 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.ETHConfig, externalLogger logger.Hook) (*Bridge, error) {
+func New(cfg *config.ETHConfig, baseLogger zerolog.Logger) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg.Network, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
-	commonBridge.Logger = logger.NewSubLogger(BridgeName, externalLogger)
+
+	commonBridge.Logger = baseLogger.With().Str("bridge", BridgeName).Logger()
 
 	b := &Bridge{
 		CommonBridge: commonBridge,

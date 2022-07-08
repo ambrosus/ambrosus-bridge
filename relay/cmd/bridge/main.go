@@ -26,9 +26,10 @@ func main() {
 	if tg := cfg.ExtLoggers.Telegram; tg.Enable {
 		tgLogger = middlewares.NewAntiDoubleMiddleware(telegram.NewLogger(tg.Token, tg.ChatId, nil))
 	}
+	baseLogger := logger.NewLoggerWithHook(tgLogger)
 
 	// Creating a new ambrosus bridge.
-	ambBridge, err := amb.New(cfg.Networks.AMB, tgLogger)
+	ambBridge, err := amb.New(cfg.Networks.AMB, baseLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ambrosus bridge not created")
 	}
@@ -37,14 +38,14 @@ func main() {
 	var sideBridge networks.BridgeReceiveAura
 	switch {
 	case cfg.Networks.ETH != nil:
-		sideBridge, err = eth.New(cfg.Networks.ETH, tgLogger)
+		sideBridge, err = eth.New(cfg.Networks.ETH, baseLogger)
 		if err != nil {
 			log.Fatal().Err(err).Msg("eth bridge not created")
 		}
 		sideBridge.(*eth.Bridge).SetSideBridge(ambBridge)
 
 	case cfg.Networks.BSC != nil:
-		sideBridge, err = bsc.New(cfg.Networks.BSC, tgLogger)
+		sideBridge, err = bsc.New(cfg.Networks.BSC, baseLogger)
 		if err != nil {
 			log.Fatal().Err(err).Msg("bsc bridge not created")
 		}
