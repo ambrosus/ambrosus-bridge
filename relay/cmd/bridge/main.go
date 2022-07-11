@@ -28,7 +28,7 @@ func main() {
 	go runWatchdogs(cfg.Watchdogs, ambBridge, sideBridge)
 	go runUnlockers(cfg.Unlockers, ambBridge, sideBridge)
 	go runTriggers(cfg.Triggers, ambBridge, sideBridge)
-	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, baseLogger)
+	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, &baseLogger)
 	go runPrometheus(cfg.Prometheus)
 
 	select {}
