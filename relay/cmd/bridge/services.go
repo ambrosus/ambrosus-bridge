@@ -65,7 +65,7 @@ func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge netwo
 	ambWatchdog := service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
 	sideWatchdog := service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
 	go service_unlock.NewUnlockTransfers(ambBridge, ambWatchdog).Run()
-	go service_unlock.NewUnlockTransfers(ambBridge, sideWatchdog).Run()
+	go service_unlock.NewUnlockTransfers(sideBridge, sideWatchdog).Run()
 }
 
 func runTriggers(cfg *config.Triggers, ambBridge *amb.Bridge, sideBridge networks.Bridge) {
