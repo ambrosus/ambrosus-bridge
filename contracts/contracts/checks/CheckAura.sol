@@ -102,8 +102,24 @@ contract CheckAura is Initializable {
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura calldata block_ = auraProof.blocks[i];
 
-            checkBlock(block_);
+            // if this block is finalizing block
+            if (block_.finalizedVs != 0) {
+                // there is gap BEFORE finalizing block, so disable parentHash check for it
+                // but only if it's not the safety blocks for transfer event
+                if (i <= auraProof.transferEventBlock)
+                    parentHash = bytes32(0);
+            }
 
+            // check that block.parentHash == parentHash (hash of prev block)
+            // don't check parentHash for first block and for blocks before and after finalizing vs
+            if (parentHash != bytes32(0))
+                require(block_.parentHash == parentHash, "Wrong parent hash");
+
+            // check validator for this block
+            // calc block hash for this block
+            parentHash = checkBlock(block_);
+
+            // if this block is finalizing block
             // 0 means no events should be finalized, so indexes are shifted by 1
             if (block_.finalizedVs != 0) {
                 // vs changes in that block
@@ -118,28 +134,13 @@ contract CheckAura is Initializable {
                 require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
                 require(i - vsProof.eventBlock >= minSafetyBlocksValidators, "Few safety blocks validators");
 
-                // there is gap BEFORE finalizing block, so disable parentHash check for it
-                // but only if it's not the safety blocks for transfer event
-                if (i < auraProof.transferEventBlock)
-                    parentHash = bytes32(0);
-            }
 
-            // check that block.parentHash == parentHash (hash of prev block)
-            // don't check parentHash for first block and for blocks before and after finalizing vs
-            if (parentHash != bytes32(0))
-                require(block_.parentHash == parentHash, "Wrong parent hash");
-
-            // calc block hash for this block
-            (, parentHash) = calcBlockHash(block_);
-
-            // and again, if this block is finalizing block
-            if (block_.finalizedVs != 0) {
-                // save it hash to `lastProcessedBlock`
+                // save finalization block hash to `lastProcessedBlock`
                 lastProcessedBlockTemp = parentHash;
 
                 // there is gap AFTER finalizing block, so disable parentHash check for it
                 // but only if it's not the safety blocks for transfer event
-                if (i < auraProof.transferEventBlock)
+                if (i <= auraProof.transferEventBlock)
                     parentHash = bytes32(0);
             }
 
