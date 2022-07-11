@@ -15,11 +15,11 @@ import (
 
 type UnlockTransfers struct {
 	bridge        networks.Bridge
-	watchValidity *service_watchdog.WatchTransfers
+	watchValidity *service_watchdog.WatchTransfersValidity
 	logger        *zerolog.Logger
 }
 
-func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_watchdog.WatchTransfers) *UnlockTransfers {
+func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_watchdog.WatchTransfersValidity) *UnlockTransfers {
 	return &UnlockTransfers{
 		bridge:        bridge,
 		watchValidity: watchValidity,

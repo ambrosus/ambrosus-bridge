@@ -4,19 +4,20 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x55252974F0277023C6ad296D33c4FDB4ABF971f3",
+            "contractAddr": "0x2fb8b7B7A974f0E80A6CECCc7688dbFA8CfA82B0",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "ETH": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xFA2A3190419280611f816a031d28248a0d95bCff",
+            "contractAddr": "0xf248aB12F2510372Fbf2B26dD0C2073bC971f125",
             "privateKey": "in env"
         }
     },
 
     "submitters": {
+        "enable": true,
         "aura": {
             "vsContractAddr": "0x0000000000000000000000000000000000000F00"
         },

@@ -43,7 +43,7 @@ func NewCache[K comparable, V any](getter func(K) (V, error)) func(arg K) (V, er
 }
 
 func Range[T constraints.Integer](start, end T) []T {
-	res := make([]T, end-start)
+	res := make([]T, 0, end-start)
 	for i := start; i < end; i++ {
 		res = append(res, i)
 	}
