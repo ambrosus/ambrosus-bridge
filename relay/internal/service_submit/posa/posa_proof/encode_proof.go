@@ -34,11 +34,13 @@ type PoSAEncoder struct {
 }
 
 func NewPoSAEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverPoSA, chainId *big.Int) *PoSAEncoder {
+	logger := bridge.GetLogger().With().Str("service", "PoSAEncoder").Logger()
+
 	return &PoSAEncoder{
 		bridge:       bridge,
 		posaReceiver: sideBridge,
 		chainId:      chainId,
-		logger:       bridge.GetLogger(), // todo maybe sublogger?
+		logger:       &logger,
 	}
 }
 

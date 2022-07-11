@@ -24,10 +24,12 @@ type SubmitTransfers struct {
 }
 
 func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers {
+	logger := submitter.GetLogger().With().Str("service", "SubmitTransfers").Logger()
+
 	return &SubmitTransfers{
 		submitter: submitter,
 		receiver:  receiver,
-		logger:    submitter.GetLogger(), // todo maybe sublogger?
+		logger:    &logger,
 	}
 }
 
@@ -39,7 +41,7 @@ func (b *SubmitTransfers) Run() {
 		cb.EnsureContractUnpaused(b.receiver)
 
 		if err := b.watchTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("watchTransfers: %s", err)).Msg("SubmitTransfers")
+			b.logger.Error().Err(err).Msg("")
 		}
 		time.Sleep(1 * time.Minute)
 	}

@@ -22,11 +22,13 @@ type PoWEncoder struct {
 }
 
 func NewPoWEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverPoW, ethash *ethash.Ethash) *PoWEncoder {
+	logger := bridge.GetLogger().With().Str("service", "PoWEncoder").Logger()
+
 	return &PoWEncoder{
 		bridge:      bridge,
 		powReceiver: sideBridge,
 		ethash:      ethash,
-		logger:      bridge.GetLogger(), // todo maybe sublogger?
+		logger:      &logger,
 	}
 }
 

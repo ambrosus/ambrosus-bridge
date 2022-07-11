@@ -29,11 +29,13 @@ func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.Receiv
 		return nil, fmt.Errorf("create vs contract: %w", err)
 	}
 
+	logger := bridge.GetLogger().With().Str("service", "SubmitterAura").Logger()
+
 	return &SubmitterAura{
 		Bridge:       bridge,
 		auraReceiver: auraReceiver,
 		auraEncoder:  aura_proof.NewAuraEncoder(bridge, auraReceiver, vsContract, parityClient),
-		logger:       bridge.GetLogger(), // todo maybe sublogger?
+		logger:       &logger,
 	}, nil
 }
 

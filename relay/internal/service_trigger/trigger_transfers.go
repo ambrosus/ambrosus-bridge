@@ -18,9 +18,11 @@ type TriggerTransfers struct {
 }
 
 func NewTriggerTransfers(bridge networks.Bridge) *TriggerTransfers {
+	logger := bridge.GetLogger().With().Str("service", "TriggerTransfers").Logger()
+
 	return &TriggerTransfers{
 		bridge: bridge,
-		logger: bridge.GetLogger(), // todo maybe sublogger?
+		logger: &logger,
 	}
 }
 
@@ -30,7 +32,7 @@ func (b *TriggerTransfers) Run() {
 		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.checkTriggerTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("checkTriggerTransfers: %s", err)).Msg("TriggerTransfers")
+			b.logger.Error().Err(err).Msg("")
 		}
 		time.Sleep(1 * time.Minute)
 	}
