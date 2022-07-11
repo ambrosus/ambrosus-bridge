@@ -108,10 +108,10 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
 
 async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAbi: any): Promise<[string[], Block, any]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi);
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi).connect(provider);
 
   const latestBlock = await provider.getBlock('latest');
-  const validators = await vsContract.connect(provider).getValidators({blockTag: "latest"});
+  const validators = await vsContract.getValidators({blockTag: "latest"});
   return [validators, latestBlock, vsContract];
 }
 
