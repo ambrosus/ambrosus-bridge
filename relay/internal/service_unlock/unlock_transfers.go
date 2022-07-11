@@ -35,7 +35,7 @@ func (b *UnlockTransfers) Run() {
 		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.unlockOldTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("unlockOldTransfers: %s", err)).Msg("UnlockTransfers")
+			b.logger.Error().Err(err).Msg("")
 		}
 		time.Sleep(1 * time.Minute)
 	}
@@ -58,7 +58,7 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 		}
 
 		b.logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"unlockOldTransfers: there are no locked transfers with that id. Sleep %v seconds...",
+			"there are no locked transfers with that id. Sleep %v seconds...",
 			lockTime.Uint64(),
 		)
 		time.Sleep(time.Duration(lockTime.Uint64()) * time.Second)
@@ -75,23 +75,23 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
 		b.logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"unlockOldTransfers: sleep %v seconds...",
+			"sleep %v seconds...",
 			sleepTime,
 		)
 		time.Sleep(time.Duration(sleepTime) * time.Second)
 	}
 
 	// Unlock the oldest transfer.
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: check validity of locked transfers...")
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("check validity of locked transfers...")
 	if err := b.watchValidity.CheckOldLockedTransferFromId(oldestLockedEventId); err != nil {
 		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
 	}
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocking...")
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocking...")
 	err = b.unlockTransfers()
 	if err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlockOldTransfers: unlocked")
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocked")
 	return nil
 }
 

@@ -44,7 +44,7 @@ func (b *WatchTransfersValidity) Run() {
 		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.watchLockedTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("watchLockedTransfers: %s", err)).Msg("WatchTransfersValidity")
+			b.logger.Error().Err(err).Msg("")
 		}
 		time.Sleep(1 * time.Minute)
 	}
