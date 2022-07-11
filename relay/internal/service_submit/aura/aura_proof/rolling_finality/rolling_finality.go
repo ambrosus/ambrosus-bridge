@@ -8,7 +8,6 @@ import (
 
 // RollingFinality checker for authority round consensus.
 // Stores a chain of unfinalized hashes that can be pushed onto.
-// nolint
 type RollingFinality struct {
 	blocks       []block
 	validatorSet []common.Address
