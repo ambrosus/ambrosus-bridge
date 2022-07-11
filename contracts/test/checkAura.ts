@@ -57,6 +57,22 @@ describe("Check Aura", () => {
     );
   });
 
+  it("Test CheckAura (changes in VS & transfer block == finalized block)", async () => {
+    const proof = require("./fixtures/auraProof-changesVs-transferblock-equals-finalizedblock.json");
+    await ethBridge.checkAuraTest(proof, 2, "0x2fb8b7B7A974f0E80A6CECCc7688dbFA8CfA82B0", [
+      "0xdecA85befcC43ed1891758E37c35053aFF935AC1",
+      "0x427933454115d6D55E8e24821d430F944d3eD936",
+      "0x87a3d2CcacDe32f366Bd01bcbeB202643cD38A4E",
+      "0x4682b2553F68a6C6d0182ac83425A1D0A0547337",
+      "0xa45899BD58c4dE692883B3430B2e4a4CCE087c07",
+      "0xA1c203F8B88F902b92cc96817382EC0b5dDAA77C",
+      "0x716963005bf5b517cC7ACb4c8D99d7Dc1dC9A7c8",
+      "0xaD5caf4A4B68eD66C2CD3A7d730Aee5747f31DFe",
+      "0x6DD23d8c5c42c98194771218fB2aD465a8CFd55d"
+      ], {gasLimit: 40000000}
+    );
+  });
+
 
   // it("Test CheckAura (changes in VS NEW)", async () => {
   //   const proof = require("./fixtures/auraProof-changeVs-NEW.json");
