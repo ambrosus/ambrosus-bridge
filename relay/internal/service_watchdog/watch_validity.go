@@ -173,6 +173,7 @@ func (b *WatchTransfers) getLockedTransfers(eventId *big.Int, opts *bind.CallOpt
 
 		retry.Attempts(5),
 		retry.Delay(time.Second*2),
+		retry.DelayType(retry.FixedDelay),
 		retry.LastErrorOnly(true),
 	)
 	return lockedTransfer, err
