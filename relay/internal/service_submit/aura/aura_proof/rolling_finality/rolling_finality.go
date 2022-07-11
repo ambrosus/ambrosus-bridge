@@ -13,6 +13,7 @@ type RollingFinality struct {
 	validatorSet []common.Address
 	signCount    map[common.Address]uint
 }
+
 type block struct {
 	num    uint64
 	signer common.Address
@@ -27,13 +28,13 @@ func NewRollingFinality(validatorSet []common.Address) *RollingFinality {
 	}
 }
 
-// Push a hash onto the rolling finality checker (implying `subchain_head` == head.parent)
-//
+// Push a block onto the rolling finality checker
+// Block should be a child of previous pushed block.
 // Fails if `signer` isn't a member of the active validator set.
-// Returns a list of all newly finalized headers.
+// Returns a list of all newly finalized block numbers.
 func (f *RollingFinality) Push(num uint64, signer common.Address) (newlyFinalized []uint64, err error) {
 	if !f.isValidator(signer) {
-		return nil, fmt.Errorf("unknown validator")
+		return nil, fmt.Errorf("unknown validator %v", signer)
 	}
 
 	f.push(num, signer)

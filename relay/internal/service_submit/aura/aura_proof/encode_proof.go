@@ -115,9 +115,12 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 }
 
 func (e *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int, err error) {
-	blocks = make([]c.CheckAuraBlockAura, len(blockNums))
+	sortedAndWithoutDupsBlockNums := helpers.Sorted(helpers.Unique(blockNums))
 
-	for i, bn := range helpers.Sorted(blockNums) {
+	blocks = make([]c.CheckAuraBlockAura, len(sortedAndWithoutDupsBlockNums))
+	blockNumToIndex = make(map[uint64]int)
+
+	for i, bn := range sortedAndWithoutDupsBlockNums {
 		block, err := e.fetchBlockCache(bn)
 		if err != nil {
 			return nil, nil, fmt.Errorf("fetchBlockCache: %w", err)

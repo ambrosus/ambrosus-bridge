@@ -106,13 +106,13 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
 
 // valildators
 
-async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAbi: any): Promise<[string[], Block]> {
+async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAbi: any): Promise<[string[], Block, any]> {
   const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi);
+  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi).connect(provider);
 
   const latestBlock = await provider.getBlock('latest');
-  const validators = await vsContract.connect(provider).getValidators({blockTag: "latest"});
-  return [validators, latestBlock];
+  const validators = await vsContract.getValidators({blockTag: "latest"});
+  return [validators, latestBlock, vsContract];
 }
 
 export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
@@ -125,7 +125,18 @@ export async function getBscValidators(bscNetwork: any): Promise<[number, string
 
 export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00";
-  const [validators, latestBlock] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
+  const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
+
+  // check that current validators match with the latest finalized event
+  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange())
+  const latestLog = logs[logs.length-1]
+  const latestSet = vsContract.interface.parseLog(latestLog).args.newSet
+  console.assert(JSON.stringify(latestSet) == JSON.stringify(validators),
+    `ValidatorSet extracted from ${latestBlock.number} block doesn't equal to 
+    ValidatorSet emitted in ${latestLog.blockNumber} block. 
+    Probably, latest event doesn't finalized yet and this can cause a trouble.
+    Try again at block ~${latestLog.blockNumber + latestSet.length/2}`)
+
   return [validators, vsAddress, latestBlock.hash]
 }
 
