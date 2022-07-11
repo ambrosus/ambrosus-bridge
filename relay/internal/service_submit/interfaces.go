@@ -1,8 +1,6 @@
 package service_submit
 
 import (
-	"math/big"
-
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
@@ -16,10 +14,6 @@ type Submitter interface {
 
 type Receiver interface {
 	networks.Bridge
-	// GetLastReceivedEventId used by the other side of the bridge for synchronization
-	GetLastReceivedEventId() (*big.Int, error)
-	GetMinSafetyBlocksNum() (uint64, error)
-	EnsureContractUnpaused()
 }
 
 type ReceiverAura interface {

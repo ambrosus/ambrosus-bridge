@@ -43,11 +43,11 @@ func createLogger(cfg *config.ExternalLoggers) zerolog.Logger {
 	return logger.NewLoggerWithHook(tgLogger)
 }
 
-func createBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.Bridge, sideBridge service_submit.ReceiverAura) {
+func createBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.Bridge, sideBridge service_submit.Receiver) {
 	var err error
 
 	// Creating a new ambrosus bridge.
-	ambBridge, err = amb.New(cfg.Networks["AMB"], logger)
+	ambBridge, err = amb.New(cfg.Networks["amb"], logger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("ambrosus bridge not created")
 	}
@@ -55,9 +55,9 @@ func createBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.
 	// Creating a side (eth or bsc) bridge.
 	switch cfg.SideBridgeNetwork {
 	case "ETH":
-		sideBridge, err = eth.New(cfg.Networks["ETH"], logger)
+		sideBridge, err = eth.New(cfg.Networks["eth"], logger)
 	case "BSC":
-		sideBridge, err = bsc.New(cfg.Networks["BSC"], logger)
+		sideBridge, err = bsc.New(cfg.Networks["bsc"], logger)
 	default:
 		log.Fatal().Msg("dunno which sideBridge to create")
 	}

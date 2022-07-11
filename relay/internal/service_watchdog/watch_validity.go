@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -20,34 +21,34 @@ import (
 
 var errEmptyLockedTransfers = errors.New("empty locked transfers")
 
-type WatchTransfers struct {
+type WatchTransfersValidity struct {
 	bridge       networks.Bridge
 	eventEmitter interfaces.BridgeContract
 	logger       *zerolog.Logger
 }
 
-func NewWatchTransfers(bridge networks.Bridge, eventEmitter interfaces.BridgeContract) *WatchTransfers {
-	return &WatchTransfers{
+func NewWatchTransfersValidity(bridge networks.Bridge, eventEmitter interfaces.BridgeContract) *WatchTransfersValidity {
+	return &WatchTransfersValidity{
 		bridge:       bridge,
 		eventEmitter: eventEmitter,
 		logger:       bridge.GetLogger(), // todo maybe sublogger?
 	}
 }
 
-func (b *WatchTransfers) Run() {
-	b.bridge.ShouldHavePk()
+func (b *WatchTransfersValidity) Run() {
+	cb.ShouldHavePk(b.bridge)
 
 	for {
-		b.bridge.EnsureContractUnpaused()
+		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.watchLockedTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("watchLockedTransfers: %s", err)).Msg("WatchTransfers")
+			b.logger.Error().Err(fmt.Errorf("watchLockedTransfers: %s", err)).Msg("WatchTransfersValidity")
 		}
 		time.Sleep(1 * time.Minute)
 	}
 }
 
-func (b *WatchTransfers) checkOldLockedTransfers() error {
+func (b *WatchTransfersValidity) checkOldLockedTransfers() error {
 	b.logger.Info().Msg("Checking old transfer submit events...")
 
 	oldestLockedEventId, err := b.bridge.GetContract().OldestLockedEventId(nil)
@@ -58,7 +59,7 @@ func (b *WatchTransfers) checkOldLockedTransfers() error {
 	return b.CheckOldLockedTransferFromId(oldestLockedEventId)
 }
 
-func (b *WatchTransfers) CheckOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
+func (b *WatchTransfersValidity) CheckOldLockedTransferFromId(oldestLockedEventId *big.Int) error {
 	for i := int64(0); ; i++ {
 		nextLockedEventId := new(big.Int).Add(oldestLockedEventId, big.NewInt(i))
 		nextLockedTransfer, err := b.getLockedTransfers(nextLockedEventId, nil)
@@ -75,7 +76,7 @@ func (b *WatchTransfers) CheckOldLockedTransferFromId(oldestLockedEventId *big.I
 	}
 }
 
-func (b *WatchTransfers) watchLockedTransfers() error {
+func (b *WatchTransfersValidity) watchLockedTransfers() error {
 	if err := b.checkOldLockedTransfers(); err != nil {
 		return fmt.Errorf("checkOldLockedTransfers: %w", err)
 	}
@@ -115,7 +116,7 @@ func (b *WatchTransfers) watchLockedTransfers() error {
 	}
 }
 
-func (b *WatchTransfers) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
+func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
 	sideEvent, err := common.GetEventById(b.eventEmitter, lockedEventId)
 	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("getEventById: %w", err)
@@ -155,7 +156,7 @@ Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
 }
 
-func (b *WatchTransfers) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer bindings.CommonStructsLockedTransfers, err error) {
+func (b *WatchTransfersValidity) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer bindings.CommonStructsLockedTransfers, err error) {
 	err = retry.Do(
 		func() error {
 			lockedTransfer, err = b.bridge.GetContract().GetLockedTransfers(opts, eventId)
@@ -172,6 +173,7 @@ func (b *WatchTransfers) getLockedTransfers(eventId *big.Int, opts *bind.CallOpt
 
 		retry.Attempts(5),
 		retry.Delay(time.Second*2),
+		retry.DelayType(retry.FixedDelay),
 		retry.LastErrorOnly(true),
 	)
 	return lockedTransfer, err

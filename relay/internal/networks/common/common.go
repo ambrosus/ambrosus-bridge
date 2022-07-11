@@ -4,13 +4,12 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
-	"math/big"
 	"sync"
-	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -79,7 +78,7 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 		}
 
 		// update metrics
-		b.SetRelayBalanceMetric()
+		metric.SetRelayBalanceMetric(&b)
 	} else {
 		b.Logger.Info().Msg("No private key provided")
 	}
@@ -87,21 +86,6 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.ContractCallLock = &sync.Mutex{}
 	return b, nil
 
-}
-
-// interface `Receiver`
-
-// GetLastReceivedEventId get last event id submitted in this contract.
-func (b *CommonBridge) GetLastReceivedEventId() (*big.Int, error) {
-	return b.Contract.InputEventId(nil)
-}
-
-func (b *CommonBridge) GetMinSafetyBlocksNum() (uint64, error) {
-	safetyBlocks, err := b.Contract.MinSafetyBlocks(nil)
-	if err != nil {
-		return 0, err
-	}
-	return safetyBlocks.Uint64(), nil
 }
 
 // interface `Bridge`
@@ -132,22 +116,4 @@ func (b *CommonBridge) GetName() string {
 
 func (b *CommonBridge) GetAuth() *bind.TransactOpts {
 	return b.Auth
-}
-
-func (b *CommonBridge) ShouldHavePk() {
-	if b.Auth == nil {
-		b.Logger.Fatal().Msg("Private key is required")
-	}
-}
-
-func (b *CommonBridge) EnsureContractUnpaused() {
-	for {
-		err := b.waitForUnpauseContract()
-		if err == nil {
-			return
-		}
-
-		b.Logger.Error().Err(err).Msg("waitForUnpauseContract error")
-		time.Sleep(failSleepTIme)
-	}
 }

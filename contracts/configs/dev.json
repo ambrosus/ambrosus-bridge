@@ -43,7 +43,7 @@
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "primaryNet": "bsc",
       "addresses": {
-        "amb": "",
+        "amb": "0x21105dd7cd948497a71281C831b30F0Fc31aFaf6",
         "eth": "",
         "bsc": ""
       },

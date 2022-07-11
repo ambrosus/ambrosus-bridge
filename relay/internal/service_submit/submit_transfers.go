@@ -9,6 +9,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -31,10 +32,11 @@ func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers
 }
 
 func (b *SubmitTransfers) Run() {
-	b.submitter.ShouldHavePk()
+	cb.ShouldHavePk(b.submitter)
+
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
-		b.receiver.EnsureContractUnpaused()
+		cb.EnsureContractUnpaused(b.receiver)
 
 		if err := b.watchTransfers(); err != nil {
 			b.logger.Error().Err(fmt.Errorf("watchTransfers: %s", err)).Msg("SubmitTransfers")
@@ -46,7 +48,7 @@ func (b *SubmitTransfers) Run() {
 func (b *SubmitTransfers) checkOldTransfers() error {
 	b.logger.Info().Msg("Checking old events...")
 
-	lastEventId, err := b.receiver.GetLastReceivedEventId()
+	lastEventId, err := b.receiver.GetContract().InputEventId(nil)
 	if err != nil {
 		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
@@ -99,7 +101,7 @@ func (b *SubmitTransfers) watchTransfers() error {
 }
 
 func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
-	safetyBlocks, err := b.receiver.GetMinSafetyBlocksNum()
+	safetyBlocks, err := getMinSafetyBlocksNum(b.receiver.GetContract())
 	if err != nil {
 		return fmt.Errorf("GetMinSafetyBlocksNum: %w", err)
 	}
@@ -118,8 +120,7 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	// todo
-	//b.AddWithdrawalsCountMetric(len(event.Queue))
+	metric.AddWithdrawalsCountMetric(b.submitter, len(event.Queue))
 	return nil
 }
 
@@ -160,4 +161,12 @@ func waitForBlock(wsClient ethclients.ClientInterface, targetBlockNum uint64) er
 	}
 
 	return nil
+}
+
+func getMinSafetyBlocksNum(contract interfaces.BridgeContract) (uint64, error) {
+	safetyBlocks, err := contract.MinSafetyBlocks(nil)
+	if err != nil {
+		return 0, err
+	}
+	return safetyBlocks.Uint64(), nil
 }

@@ -39,6 +39,4 @@ type Bridge interface {
 	GetAuth() *bind.TransactOpts
 
 	ProcessTx(methodName string, txCallback ContractCallFn) error
-	ShouldHavePk()
-	EnsureContractUnpaused()
 }

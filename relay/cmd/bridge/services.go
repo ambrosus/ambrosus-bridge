@@ -20,13 +20,13 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge service_submit.ReceiverAura) {
+func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge service_submit.Receiver) {
 	log.Info().Str("service", "submitter").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
-	auraSubmitter, err := aura.NewSubmitterAura(ambBridge, sideBridge, cfg.Aura)
+	auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
 	if err != nil {
 		log.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
 	}
@@ -34,9 +34,9 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 	var sideBridgeSubmitter service_submit.Submitter
 	switch sideBridge.(type) {
 	case *eth.Bridge:
-		sideBridgeSubmitter, err = pow.NewSubmitterPoW(sideBridge, ambBridge, cfg.Pow)
+		sideBridgeSubmitter, err = pow.NewSubmitterPoW(sideBridge, &pow.ReceiverPoW{Receiver: ambBridge}, cfg.Pow)
 	case *bsc.Bridge:
-		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, ambBridge)
+		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
 	}
 	if err != nil {
 		log.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
@@ -52,8 +52,8 @@ func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	go service_watchdog.NewWatchTransfers(ambBridge, sideBridge.GetContract()).Run()
-	go service_watchdog.NewWatchTransfers(sideBridge, ambBridge.GetContract()).Run()
+	go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+	go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
 }
 
 func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge) {
@@ -62,9 +62,9 @@ func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	ambWatchdog := service_watchdog.NewWatchTransfers(ambBridge, sideBridge.GetContract())
+	ambWatchdog := service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
+	sideWatchdog := service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
 	go service_unlock.NewUnlockTransfers(ambBridge, ambWatchdog).Run()
-	sideWatchdog := service_watchdog.NewWatchTransfers(sideBridge, ambBridge.GetContract())
 	go service_unlock.NewUnlockTransfers(ambBridge, sideWatchdog).Run()
 }
 
