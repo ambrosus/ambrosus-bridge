@@ -131,8 +131,8 @@ export async function getAmbValidators(ambNetwork: any): Promise<[string[], stri
   const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange())
   const latestLog = logs[logs.length-1]
   const latestSet = vsContract.interface.parseLog(latestLog).args.newSet
-  console.assert(latestSet == validators,
-    `ValidatorSet extracted from ${latestBlock} block doesn't equal to 
+  console.assert(JSON.stringify(latestSet) == JSON.stringify(validators),
+    `ValidatorSet extracted from ${latestBlock.number} block doesn't equal to 
     ValidatorSet emitted in ${latestLog.blockNumber} block. 
     Probably, latest event doesn't finalized yet and this can cause a trouble.
     Try again at block ~${latestLog.blockNumber + latestSet.length/2}`)
