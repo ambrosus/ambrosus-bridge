@@ -24,10 +24,12 @@ type SubmitTransfers struct {
 }
 
 func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers {
+	logger := submitter.GetLogger().With().Str("service", "SubmitTransfers").Logger()
+
 	return &SubmitTransfers{
 		submitter: submitter,
 		receiver:  receiver,
-		logger:    submitter.GetLogger(), // todo maybe sublogger?
+		logger:    &logger,
 	}
 }
 

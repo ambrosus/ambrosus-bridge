@@ -24,12 +24,13 @@ type SubmitterPoW struct {
 
 func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.ReceiverPoW, cfg *config.SubmitterPoW) (*SubmitterPoW, error) {
 	ethashObj := ethash.New(cfg.EthashDir, cfg.EthashKeepPrevEpochs, cfg.EthashGenNextEpochs)
+	logger := bridge.GetLogger().With().Str("service", "SubmitterPoW").Logger()
 
 	return &SubmitterPoW{
 		Bridge:      bridge,
 		powReceiver: powReceiver,
 		powEncoder:  pow_proof.NewPoWEncoder(bridge, powReceiver, ethashObj),
-		logger:      bridge.GetLogger(), // todo maybe sublogger?
+		logger:      &logger,
 	}, nil
 }
 

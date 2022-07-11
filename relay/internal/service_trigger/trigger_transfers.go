@@ -18,9 +18,11 @@ type TriggerTransfers struct {
 }
 
 func NewTriggerTransfers(bridge networks.Bridge) *TriggerTransfers {
+	logger := bridge.GetLogger().With().Str("service", "TriggerTransfers").Logger()
+
 	return &TriggerTransfers{
 		bridge: bridge,
-		logger: bridge.GetLogger(), // todo maybe sublogger?
+		logger: &logger,
 	}
 }
 

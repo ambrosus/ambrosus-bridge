@@ -20,10 +20,12 @@ type UnlockTransfers struct {
 }
 
 func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_watchdog.WatchTransfersValidity) *UnlockTransfers {
+	logger := bridge.GetLogger().With().Str("service", "UnlockTransfers").Logger()
+
 	return &UnlockTransfers{
 		bridge:        bridge,
 		watchValidity: watchValidity,
-		logger:        bridge.GetLogger(), // todo maybe sublogger?
+		logger:        &logger,
 	}
 }
 

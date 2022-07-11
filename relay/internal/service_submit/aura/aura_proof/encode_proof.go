@@ -30,12 +30,14 @@ type AuraEncoder struct {
 }
 
 func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
+	logger := bridge.GetLogger().With().Str("service", "AuraEncoder").Logger()
+
 	return &AuraEncoder{
 		bridge:       bridge,
 		auraReceiver: sideBridge,
 		vsContract:   vSContract,
 		parityClient: parityClient,
-		logger:       bridge.GetLogger(), // todo maybe sublogger?
+		logger:       &logger,
 	}
 }
 

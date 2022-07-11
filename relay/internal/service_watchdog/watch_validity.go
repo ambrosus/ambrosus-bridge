@@ -28,10 +28,12 @@ type WatchTransfersValidity struct {
 }
 
 func NewWatchTransfersValidity(bridge networks.Bridge, eventEmitter interfaces.BridgeContract) *WatchTransfersValidity {
+	logger := bridge.GetLogger().With().Str("service", "WatchTransfersValidity").Logger()
+
 	return &WatchTransfersValidity{
 		bridge:       bridge,
 		eventEmitter: eventEmitter,
-		logger:       bridge.GetLogger(), // todo maybe sublogger?
+		logger:       &logger,
 	}
 }
 

@@ -24,11 +24,13 @@ func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.Receiv
 		return nil, fmt.Errorf("chain id: %w", err)
 	}
 
+	logger := bridge.GetLogger().With().Str("service", "SubmitterPoSA").Logger()
+
 	return &SubmitterPoSA{
 		Bridge:       bridge,
 		posaReceiver: posaReceiver,
 		posaEncoder:  posa_proof.NewPoSAEncoder(bridge, posaReceiver, chainId),
-		logger:       bridge.GetLogger(), // todo maybe sublogger?
+		logger:       &logger,
 	}, nil
 }
 
