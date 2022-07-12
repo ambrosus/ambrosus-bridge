@@ -35,13 +35,13 @@ contract CheckAura is Initializable {
 
     struct ValidatorSetChange {
         address deltaAddress;
-        int64 deltaIndex; // < 0 ? remove : add
+        uint16 deltaIndex; // add if 0, else remove
     }
 
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
-        uint eventBlock;
+        uint64 eventBlock;
     }
 
     struct AuraProof {
@@ -157,13 +157,12 @@ contract CheckAura is Initializable {
     }
 
     function applyVsChange(ValidatorSetChange calldata vsEvent) internal {
-        // todo invert indexes sign meaning
-        if (vsEvent.deltaIndex < 0) { // delete validator
-            uint index = uint(int(vsEvent.deltaIndex * (- 1) - 1));
+        if (vsEvent.deltaIndex == 0) {// add validator
+            validatorSet.push(vsEvent.deltaAddress);
+        } else {// delete validator
+            uint index = uint(vsEvent.deltaIndex - 1);
             validatorSet[index] = validatorSet[validatorSet.length - 1];
             validatorSet.pop();
-        } else { // add validator
-            validatorSet.push(vsEvent.deltaAddress);
         }
     }
 

@@ -74,12 +74,6 @@ describe("Check Aura", () => {
   });
 
 
-  // it("Test CheckAura (changes in VS NEW)", async () => {
-  //   const proof = require("./fixtures/auraProof-changeVs-NEW.json");
-  //   await ethBridge.checkAuraTest(proof, 10, "0x08e0dB5952df058E18dbCD6F3d9433Cfd6bbC18B");
-  // });
-
-
   it("Test blockHash", async () => {
     const block = require("./fixtures/BlockPoA-48879.json");
 

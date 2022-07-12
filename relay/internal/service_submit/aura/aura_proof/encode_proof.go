@@ -98,7 +98,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 		vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
 			ReceiptProof: proof,
 			Changes:      vsChangeEvent.changes,
-			EventBlock:   big.NewInt(int64(blockNumToIndex[vsChangeEvent.eventBlock])), // todo uint64
+			EventBlock:   uint64(blockNumToIndex[vsChangeEvent.eventBlock]),
 		})
 
 		// in this Block contract should finalize all events in vsChanges array up to `FinalizedVs` index
