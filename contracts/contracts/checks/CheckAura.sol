@@ -93,7 +93,7 @@ contract CheckAura is Initializable {
         bytes32 lastProcessedBlockTemp;
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
-        if (auraProof.transferEventBlock != 0) {
+        if (auraProof.transfer.eventId != 0) {
             receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
             require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
             require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
