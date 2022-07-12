@@ -29,4 +29,8 @@ contract BSC_BscBridge is CommonBridge, CheckAura {
         checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
         lockTransfers(auraProof.transfer.transfers, auraProof.transfer.eventId);
     }
+
+    function submitValidatorSetChangesAura(AuraProof calldata auraProof) public onlyRole(RELAY_ROLE) whenNotPaused {
+        checkAura_(auraProof, minSafetyBlocks, sideBridgeAddress);
+    }
 }
