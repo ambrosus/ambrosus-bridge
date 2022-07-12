@@ -174,7 +174,7 @@ func (e *AuraEncoder) getLastProcessedBlockNum() (uint64, error) {
 	return block.Number().Uint64(), nil
 }
 
-func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
+func deltaVS(prev, curr []common.Address) (common.Address, uint16, error) {
 	d := len(curr) - len(prev)
 	if d != 1 && d != -1 {
 		return common.Address{}, 0, fmt.Errorf("delta has more (or less) than 1 change")
@@ -182,21 +182,21 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 
 	for i, prevEl := range prev {
 		if i >= len(curr) { // deleted at the end
-			return prev[i], int64(-i - 1), nil
+			return prev[i], uint16(i + 1), nil
 		}
 
 		if curr[i] != prevEl {
 			if d == 1 { // added
-				return curr[i], int64(i), nil
+				return curr[i], 0, nil
 			} else { // deleted
-				return prev[i], int64(-i - 1), nil
+				return prev[i], uint16(i + 1), nil
 			}
 		}
 	}
 
 	// add at the end
 	i := len(curr) - 1
-	return curr[i], int64(i), nil
+	return curr[i], 0, nil
 
 	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }

@@ -17,7 +17,7 @@ func Test_deltaVS(t *testing.T) {
 		name    string
 		args    args
 		address common.Address
-		index   int64
+		index   uint16
 		wantErr bool
 	}{
 		{
@@ -26,7 +26,7 @@ func Test_deltaVS(t *testing.T) {
 				prev: set("0", "1", "2"),
 				curr: set("0", "2"),
 			},
-			addr("1"), -2,
+			addr("1"), 2,
 			false,
 		},
 		{
@@ -36,7 +36,7 @@ func Test_deltaVS(t *testing.T) {
 				curr: set("0", "1"),
 			},
 			addr("2"),
-			-3,
+			3,
 			false,
 		},
 		{
@@ -46,7 +46,7 @@ func Test_deltaVS(t *testing.T) {
 				curr: set("0", "1", "3", "2"),
 			},
 			addr("3"),
-			2,
+			0,
 			false,
 		},
 		{
