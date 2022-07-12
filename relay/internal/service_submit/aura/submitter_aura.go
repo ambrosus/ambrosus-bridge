@@ -51,7 +51,7 @@ func (b *SubmitterAura) SendEvent(event *bindings.BridgeTransfer, safetyBlocks u
 			if err != nil {
 				return fmt.Errorf("SubmitValidatorSetChangesAura: %w", err)
 			}
-
+			continue
 		} else if err != nil {
 			return fmt.Errorf("encodeAuraProof: %w", err)
 		}
