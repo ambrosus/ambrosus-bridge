@@ -22,7 +22,7 @@ const (
 	epochLength       = 200
 )
 
-const maxRequestContentLength = 1024*1024*5 - 10240 // -10KB for extra data in request
+const maxTxSize = 1024*300 - 10240 // -10KB for extra data in request
 var ProofTooBig = errors.New("proof is too big")
 
 type PoSAEncoder struct {
@@ -64,8 +64,12 @@ func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlo
 		return nil, fmt.Errorf("getEpochChanges: %w", err)
 	}
 
-	var blocksMap map[uint64]c.CheckPoSABlockPoSA
-	var transferProof c.CommonStructsTransferProof
+	var blocksMap = make(map[uint64]c.CheckPoSABlockPoSA)
+	var transferProof = c.CommonStructsTransferProof{
+		ReceiptProof: [][]byte{},
+		EventId:      big.NewInt(0),
+		Transfers:    []c.CommonStructsTransfer{},
+	}
 
 	// this func use so many local variables, so it's better to be closure
 	buildProof := func() *c.CheckPoSAPoSAProof {
@@ -87,6 +91,7 @@ func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 		newProof := buildProof()
 		if err = isProofTooBig(newProof); err != nil {
+			proof.TransferEventBlock = ^uint64(0) // max uint64, coz gaps between vsChanges work only BEFORE `TransferEventBlock`
 			return proof, err
 		}
 		proof = newProof
@@ -177,7 +182,7 @@ func isProofTooBig(proof *c.CheckPoSAPoSAProof) error {
 		return fmt.Errorf("proof.Size(): %w", err)
 	}
 	// todo maxRequestContentLength depends on receiver network
-	if size > maxRequestContentLength {
+	if size > maxTxSize {
 		return ProofTooBig
 	}
 	return nil
