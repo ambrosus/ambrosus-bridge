@@ -41,7 +41,7 @@ contract CheckAura is Initializable {
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
-        uint eventBlock;
+        uint64 eventBlock;
     }
 
     struct AuraProof {
