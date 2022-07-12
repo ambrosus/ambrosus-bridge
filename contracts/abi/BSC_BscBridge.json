@@ -868,9 +868,9 @@
                     "type": "address"
                   },
                   {
-                    "internalType": "int64",
+                    "internalType": "uint16",
                     "name": "deltaIndex",
-                    "type": "int64"
+                    "type": "uint16"
                   }
                 ],
                 "internalType": "struct CheckAura.ValidatorSetChange[]",
@@ -878,9 +878,9 @@
                 "type": "tuple[]"
               },
               {
-                "internalType": "uint256",
+                "internalType": "uint64",
                 "name": "eventBlock",
-                "type": "uint256"
+                "type": "uint64"
               }
             ],
             "internalType": "struct CheckAura.ValidatorSetProof[]",
