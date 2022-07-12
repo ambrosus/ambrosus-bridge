@@ -21,6 +21,14 @@ func (b *ReceiverAura) SubmitTransferAura(proof *bindings.CheckAuraAuraProof) er
 	})
 }
 
+func (b *ReceiverAura) SubmitValidatorSetChangesAura(proof *bindings.CheckAuraAuraProof) error {
+	defer metric.SetRelayBalanceMetric(b)
+
+	return b.ProcessTx("SubmitValidatorSetChangesAura", func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitValidatorSetChangesAura(b.GetAuth(), *proof)
+	})
+}
+
 func (b *ReceiverAura) GetValidatorSet() ([]common.Address, error) {
 	return b.GetContract().GetValidatorSet(nil)
 }

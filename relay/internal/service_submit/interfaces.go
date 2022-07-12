@@ -19,6 +19,7 @@ type Receiver interface {
 type ReceiverAura interface {
 	Receiver
 	SubmitTransferAura(*bindings.CheckAuraAuraProof) error
+	SubmitValidatorSetChangesAura(*bindings.CheckAuraAuraProof) error
 	GetValidatorSet() ([]common.Address, error)
 	GetLastProcessedBlockHash() (*common.Hash, error)
 	GetMinSafetyBlocksValidators() (uint64, error)

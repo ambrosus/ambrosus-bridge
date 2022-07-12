@@ -1,6 +1,7 @@
 package aura
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -40,15 +41,27 @@ func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.Receiv
 }
 
 func (b *SubmitterAura) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
-	auraProof, err := b.auraEncoder.EncodeAuraProof(event, safetyBlocks)
-	if err != nil {
-		return fmt.Errorf("encodeAuraProof: %w", err)
-	}
+	for {
 
-	b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
-	err = b.auraReceiver.SubmitTransferAura(auraProof)
-	if err != nil {
-		return fmt.Errorf("SubmitTransferAura: %w", err)
+		auraProof, err := b.auraEncoder.EncodeAuraProof(event, safetyBlocks)
+		if errors.Is(err, aura_proof.ProofTooBig) {
+
+			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit size-reduced transfer Aura...")
+			err = b.auraReceiver.SubmitValidatorSetChangesAura(auraProof)
+			if err != nil {
+				return fmt.Errorf("SubmitValidatorSetChangesAura: %w", err)
+			}
+
+		} else if err != nil {
+			return fmt.Errorf("encodeAuraProof: %w", err)
+		}
+
+		b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit transfer Aura...")
+		err = b.auraReceiver.SubmitTransferAura(auraProof)
+		if err != nil {
+			return fmt.Errorf("SubmitTransferAura: %w", err)
+		}
+		return nil
+
 	}
-	return nil
 }
