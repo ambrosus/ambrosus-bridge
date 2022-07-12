@@ -67,6 +67,7 @@ type BridgeContract interface {
 	SubmitTransferAura(*bind.TransactOpts, bindings.CheckAuraAuraProof) (*types.Transaction, error)
 	SubmitTransferPoSA(*bind.TransactOpts, bindings.CheckPoSAPoSAProof) (*types.Transaction, error)
 	SubmitTransferPoW(*bind.TransactOpts, bindings.CheckPoWPoWProof) (*types.Transaction, error)
+	SubmitValidatorSetChangesAura(*bind.TransactOpts, bindings.CheckAuraAuraProof) (*types.Transaction, error)
 	SupportsInterface(*bind.CallOpts, [4]byte) (bool, error)
 	TimeframeSeconds(*bind.CallOpts) (*big.Int, error)
 	TokenAddresses(*bind.CallOpts, common.Address) (common.Address, error)
