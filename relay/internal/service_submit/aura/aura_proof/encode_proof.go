@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const maxRequestContentLength = 1024*1024*5 - 10240 // -10KB for extra data in request
+const maxTxSize = 1024*128 - 10240 // -10KB for extra data in request
 var ProofTooBig = errors.New("proof is too big")
 
 type AuraEncoder struct {
@@ -157,7 +157,7 @@ func isProofTooBig(proof *c.CheckAuraAuraProof) error {
 		return fmt.Errorf("proof.Size(): %w", err)
 	}
 	// todo maxRequestContentLength depends on receiver network
-	if size > maxRequestContentLength {
+	if size > maxTxSize {
 		return ProofTooBig
 	}
 	return nil
