@@ -18,7 +18,7 @@ type FeeAPI struct {
 
 type FeeService interface {
 	GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, isAmountWithFees bool) (
-		bridgeFeeBigInt, transferFeeBigInt, amountBigInt *big.Int, signature []byte, err error)
+		bridgeFee, transferFee, amount *big.Int, signature []byte, err error)
 }
 
 func (p *FeeAPI) Run(endpoint string, ip string, port int, logger *zerolog.Logger) error {
