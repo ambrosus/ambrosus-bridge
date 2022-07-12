@@ -12,13 +12,12 @@ import (
 )
 
 type vsChangeInBlock struct {
-	eventBlock     uint64
-	finalizedBlock uint64
-	changes        []c.CheckAuraValidatorSetChange
-	lastEvent      *c.VsInitiateChange
+	c.CheckAuraValidatorSetProof                     // to be sent to the bridge
+	finalizedBlock               uint64              // block number when this event was finalized
+	lastEvent                    *c.VsInitiateChange // last event in this block, used to generate proof
 }
 
-func (e *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock, error) {
+func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
 	// note:
 	// lastProcessedBlock *should* be after finalizing `ValidatorSet` but before next VSChangeEvent
 	// so, if after last fetched event and before it finalized exist another VSChangeEvent then it will be skipped
@@ -50,13 +49,30 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock,
 
 	// delete events that finalized after `toBlock`
 	// otherwise, next time we can miss some events emitted after `toBlock` and before current highest finalized
+	filterBlocks(blockToEvents, toBlock)
+
+	vsChanges, err := mapToList(blockToEvents)
+	if err != nil {
+		return nil, fmt.Errorf("mapToList: %w", err)
+	}
+
+	return vsChanges, nil
+}
+
+func mapToList(blockToEvents map[uint64]*vsChangeInBlock) ([]*vsChangeInBlock, error) {
+	vsChanges := make([]*vsChangeInBlock, 0, len(blockToEvents))
+	for _, bn := range helpers.SortedKeys(blockToEvents) {
+		vsChanges = append(vsChanges, blockToEvents[bn])
+	}
+	return vsChanges, nil
+}
+
+func filterBlocks(blockToEvents map[uint64]*vsChangeInBlock, toBlock uint64) {
 	for blockNum, event := range blockToEvents {
 		if event.finalizedBlock >= toBlock {
 			delete(blockToEvents, blockNum)
 		}
 	}
-
-	return blockToEvents, nil
 }
 
 func (e *AuraEncoder) findWhenFinalize(initialValidatorSet []common.Address, blockToEvents map[uint64]*vsChangeInBlock) error {
@@ -70,11 +86,11 @@ func (e *AuraEncoder) findWhenFinalize(initialValidatorSet []common.Address, blo
 
 		// current event implicitly finalized, but we don't know in which block.
 		// so, it's easier to pretend that this event doesn't exist.
-		if event.eventBlock <= currentEpoch {
+		if event.EventBlock <= currentEpoch {
 			if i < len(eventBlockNums) {
 				// save this event `changes` before the next event `changes`
 				nextEvent := blockToEvents[eventBlockNums[i+1]]
-				nextEvent.changes = append(event.changes, nextEvent.changes...)
+				nextEvent.Changes = append(event.Changes, nextEvent.Changes...)
 			}
 			delete(blockToEvents, eventBlockNum)
 			e.logger.Trace().Uint64("block", eventBlockNum).Uint64("finalized", currentEpoch).Msg("aura implicitly finalized event block")
@@ -96,7 +112,7 @@ func (e *AuraEncoder) finalizeEvent(initialValidatorSet []common.Address, event 
 	rf := rolling_finality.NewRollingFinality(initialValidatorSet)
 
 	// get next blocks, until event block finalized
-	for blockNum := event.eventBlock; ; blockNum++ {
+	for blockNum := event.EventBlock; ; blockNum++ {
 		block, err := e.fetchBlockCache(blockNum)
 		if err != nil {
 			return fmt.Errorf("fetchBlockCache: %w", err)
@@ -108,7 +124,7 @@ func (e *AuraEncoder) finalizeEvent(initialValidatorSet []common.Address, event 
 		}
 
 		for _, finalizedBlock := range finalizedBlocks {
-			if finalizedBlock >= event.eventBlock {
+			if finalizedBlock >= event.EventBlock {
 				event.finalizedBlock = blockNum
 				return nil
 			}
@@ -131,9 +147,9 @@ func (e *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Addr
 		prevSet = event.NewSet
 
 		if _, ok := blocksToEvents[event.Raw.BlockNumber]; !ok {
-			blocksToEvents[event.Raw.BlockNumber] = &vsChangeInBlock{eventBlock: event.Raw.BlockNumber}
+			blocksToEvents[event.Raw.BlockNumber] = &vsChangeInBlock{CheckAuraValidatorSetProof: c.CheckAuraValidatorSetProof{EventBlock: event.Raw.BlockNumber}}
 		}
-		blocksToEvents[event.Raw.BlockNumber].changes = append(blocksToEvents[event.Raw.BlockNumber].changes, vsChange)
+		blocksToEvents[event.Raw.BlockNumber].Changes = append(blocksToEvents[event.Raw.BlockNumber].Changes, vsChange)
 		blocksToEvents[event.Raw.BlockNumber].lastEvent = event
 	}
 
