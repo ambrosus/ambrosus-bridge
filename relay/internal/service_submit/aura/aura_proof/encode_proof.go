@@ -2,6 +2,7 @@ package aura_proof
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/big"
 
@@ -15,6 +16,7 @@ import (
 )
 
 const maxRequestContentLength = 1024*1024*5 - 10240 // -10KB for extra data in request
+var ProofTooBig = errors.New("proof is too big")
 
 type AuraEncoder struct {
 	bridge       networks.Bridge
@@ -25,7 +27,7 @@ type AuraEncoder struct {
 
 	logger *zerolog.Logger
 
-	// cache for fetching blocks. clear (almost) every `EncodeAuraProof` call
+	// cache for fetching blocks. clear every `EncodeAuraProof` call
 	fetchBlockCache func(arg uint64) (*parity.Header, error)
 }
 
@@ -42,109 +44,126 @@ func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAu
 }
 
 func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckAuraAuraProof, error) {
-	// todo arg for split (reduced size proof)
-
 	// new cache for every call
-	// todo don't clear cache for reduced size proof
 	e.fetchBlockCache = helpers.NewCache(e.fetchBlock)
-
-	var blocksToSave []uint64
 
 	lastBlock := transferEvent.Raw.BlockNumber + safetyBlocks
 
-	// todo don't encode and save blocks for reduced size proof
-	transferProof, err := cb.EncodeTransferProof(e.bridge.GetClient(), transferEvent)
-	if err != nil {
-		return nil, fmt.Errorf("encodeTransferProof: %w", err)
-	}
-
-	// save blocks for transfer
-	blocksToSave = append(blocksToSave, helpers.Range(transferEvent.Raw.BlockNumber, lastBlock+1)...)
-
-	// lastBlock can be decreased if proof is too big
-	// todo better name
-	vsChangesExt, err := e.getVsChanges(lastBlock)
-	if err != nil {
-		return nil, fmt.Errorf("getVsChanges: %w", err)
-	}
-
-	// save blocks for vs change events
 	safetyBlocksValidators, err := e.auraReceiver.GetMinSafetyBlocksValidators()
 	if err != nil {
 		return nil, fmt.Errorf("GetMinSafetyBlocksValidators: %w", err)
 	}
-	for _, vsChange := range vsChangesExt {
-		blocksToSave = append(blocksToSave, helpers.Range(vsChange.eventBlock, vsChange.eventBlock+safetyBlocksValidators+1)...)
-		// gap
-		blocksToSave = append(blocksToSave, vsChange.finalizedBlock)
-	}
 
-	// fetch and encode blocksToSave
-	blocks, blockNumToIndex, err := e.saveEncodedBlocks(blocksToSave)
+	vsProofs, err := e.getVsChanges(lastBlock)
 	if err != nil {
-		return nil, fmt.Errorf("saveEncodedBlocks: %w", err)
+		return nil, fmt.Errorf("getVsChanges: %w", err)
 	}
 
-	// for each finalized event save it into `vsChanges` and set it `index+1` to block `FinalizedVs` field
+	var blocksMap map[uint64]c.CheckAuraBlockAura
 	var vsChanges []c.CheckAuraValidatorSetProof
-	for _, blockWithEvent := range helpers.SortedKeys(vsChangesExt) {
-		vsChangeEvent := vsChangesExt[blockWithEvent]
-		finalizedBlockIndex := blockNumToIndex[vsChangeEvent.finalizedBlock]
+	var transferProof c.CommonStructsTransferProof
 
-		proof, err := cb.GetProof(e.bridge.GetClient(), vsChangeEvent.lastEvent)
+	// this func use so many local variables, so it's better to be closure
+	buildProof := func() *c.CheckAuraAuraProof {
+		blocks, blockNumToIndex := blocksMapToList(blocksMap)
+		// set indexes
+		for i, vsChange := range vsChanges {
+			// in this block contract should finalize vsChanges[FinalizedVs-1] event
+			finalizedBlockIndex := blockNumToIndex[vsProofs[i].finalizedBlock]
+			blocks[finalizedBlockIndex].FinalizedVs = uint64(i + 1)
+
+			vsChange.EventBlock = uint64(blockNumToIndex[vsProofs[i].EventBlock])
+		}
+		return &c.CheckAuraAuraProof{
+			Blocks:             blocks,
+			Transfer:           transferProof,
+			VsChanges:          vsChanges,
+			TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
+		}
+	}
+
+	proof := buildProof()
+
+	// add vsChange events one by one to proof
+	// return acceptable size proof if new proof is too big
+	for _, vsChange := range vsProofs {
+		receiptProof, err := cb.GetProof(e.bridge.GetClient(), vsChange.lastEvent)
 		if err != nil {
 			return nil, fmt.Errorf("GetProof: %w", err)
 		}
-		vsChanges = append(vsChanges, c.CheckAuraValidatorSetProof{
-			ReceiptProof: proof,
-			Changes:      vsChangeEvent.changes,
-			EventBlock:   uint64(blockNumToIndex[vsChangeEvent.eventBlock]),
-		})
+		vsChange.CheckAuraValidatorSetProof.ReceiptProof = receiptProof
+		vsChanges = append(vsChanges, vsChange.CheckAuraValidatorSetProof)
 
-		// in this Block contract should finalize all events in vsChanges array up to `FinalizedVs` index
-		blocks[finalizedBlockIndex].FinalizedVs = uint64(len(vsChanges))
+		blocksToSave := append(helpers.Range(vsChange.EventBlock, vsChange.EventBlock+safetyBlocksValidators+1), vsChange.finalizedBlock)
+		if err := e.saveBlocks(blocksMap, blocksToSave...); err != nil {
+			return nil, fmt.Errorf("saveBlocks: %w", err)
+		}
+
+		newProof := buildProof()
+		if err = isProofTooBig(newProof); err != nil {
+			return proof, err
+		}
+		proof = newProof
 	}
 
-	return &c.CheckAuraAuraProof{
-		Blocks:             blocks,
-		Transfer:           transferProof,
-		VsChanges:          vsChanges,
-		TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
-	}, nil
+	// add transfer event to proof
+	// return proof without transferEvent if new proof is too big
+	transferProof, err = cb.EncodeTransferProof(e.bridge.GetClient(), transferEvent)
+	if err != nil {
+		return nil, fmt.Errorf("encodeTransferProof: %w", err)
+	}
+	blocksToSave := helpers.Range(transferEvent.Raw.BlockNumber, transferEvent.Raw.BlockNumber+safetyBlocks+1)
+	if err := e.saveBlocks(blocksMap, blocksToSave...); err != nil {
+		return nil, fmt.Errorf("saveBlocks: %w", err)
+	}
 
+	newProof := buildProof()
+	if err = isProofTooBig(newProof); err != nil {
+		proof.TransferEventBlock = ^uint64(0) // max uint64, coz gaps between vsChanges work only BEFORE `TransferEventBlock`
+		return proof, err
+	}
+	return newProof, nil
 }
 
-func (e *AuraEncoder) saveEncodedBlocks(blockNums []uint64) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int, err error) {
-	sortedAndWithoutDupsBlockNums := helpers.Sorted(helpers.Unique(blockNums))
-
-	blocks = make([]c.CheckAuraBlockAura, len(sortedAndWithoutDupsBlockNums))
-	blockNumToIndex = make(map[uint64]int)
-
-	for i, bn := range sortedAndWithoutDupsBlockNums {
-		block, err := e.fetchBlockCache(bn)
-		if err != nil {
-			return nil, nil, fmt.Errorf("fetchBlockCache: %w", err)
+func (e *AuraEncoder) saveBlocks(blocksMap map[uint64]c.CheckAuraBlockAura, blockNums ...uint64) error {
+	for _, bn := range blockNums {
+		if _, ok := blocksMap[bn]; !ok {
+			block, err := e.fetchBlockCache(bn)
+			if err != nil {
+				return fmt.Errorf("fetchBlockCache: %w", err)
+			}
+			encodedBlock, err := EncodeBlock(block)
+			if err != nil {
+				return fmt.Errorf("EncodeBlock: %w", err)
+			}
+			blocksMap[bn] = *encodedBlock
 		}
-		encodedBlock, err := EncodeBlock(block)
-		if err != nil {
-			return nil, nil, fmt.Errorf("EncodeBlock: %w", err)
-		}
-
-		blocks[i] = *encodedBlock
-		blockNumToIndex[bn] = i
 	}
-
-	return blocks, blockNumToIndex, nil
+	return nil
 }
 
 func (e *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
 	return e.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
 }
 
-func isProofTooBig(proof *c.CheckAuraAuraProof, maxRequestContentLength int) (bool, error) {
+func blocksMapToList(blocksMap map[uint64]c.CheckAuraBlockAura) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int) {
+	blockNums := helpers.SortedKeys(blocksMap)
+	blocks = make([]c.CheckAuraBlockAura, len(blockNums))
+	for i, bn := range blockNums {
+		blocks[i] = blocksMap[bn]
+		blockNumToIndex[bn] = i
+	}
+	return blocks, blockNumToIndex
+}
+
+func isProofTooBig(proof *c.CheckAuraAuraProof) error {
 	size, err := proof.Size()
 	if err != nil {
-		return false, err
+		return fmt.Errorf("proof.Size(): %w", err)
 	}
-	return size > maxRequestContentLength, nil
+	// todo maxRequestContentLength depends on receiver network
+	if size > maxRequestContentLength {
+		return ProofTooBig
+	}
+	return nil
 }
