@@ -102,18 +102,22 @@ contract CheckAura is Initializable {
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura calldata block_ = auraProof.blocks[i];
 
-            // if this block is finalizing block
-            if (block_.finalizedVs != 0) {
-                // there is gap BEFORE finalizing block, so disable parentHash check for it
-                // but only if it's not the safety blocks for transfer event
-                if (i <= auraProof.transferEventBlock)
-                    parentHash = bytes32(0);
-            }
+            // check that parentHash is correct
+            if (block_.parentHash != parentHash) {
+                // we can ignore wrong parentHash if:
+                // - it's NOT safety blocks for transfer event
+                // - it's first block (don't know parentHash)
+                // - it's finalizing block (there is gap BEFORE finalizing block)
+                // - it's next block after finalizing (there is gap AFTER finalizing block)
+                // else, raise error
 
-            // check that block.parentHash == parentHash (hash of prev block)
-            // don't check parentHash for first block and for blocks before and after finalizing vs
-            if (parentHash != bytes32(0))
-                require(block_.parentHash == parentHash, "Wrong parent hash");
+                if (i > auraProof.transferEventBlock || // safety blocks for transfer event
+                    (i != 0 && // not first block
+                    block_.finalizedVs == 0 && // not finalizing block
+                    auraProof.blocks[i-1].finalizedVs == 0) // not next block after finalizing
+                )
+                    revert("Wrong parent hash");
+            }
 
             // check validator for this block
             // calc block hash for this block
@@ -137,11 +141,6 @@ contract CheckAura is Initializable {
 
                 // save finalization block hash to `lastProcessedBlock`
                 lastProcessedBlockTemp = parentHash;
-
-                // there is gap AFTER finalizing block, so disable parentHash check for it
-                // but only if it's not the safety blocks for transfer event
-                if (i <= auraProof.transferEventBlock)
-                    parentHash = bytes32(0);
             }
 
         }
