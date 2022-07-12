@@ -52,9 +52,11 @@ func NewPoSAEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverPo
 	}
 }
 
-func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64) (*c.CheckPoSAPoSAProof, error) {
-	// new cache for every call
-	e.fetchBlockCache = helpers.NewCache(e.fetchBlock)
+func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlocks uint64, saveCache bool) (*c.CheckPoSAPoSAProof, error) {
+	// new cache if saveCache is true
+	if saveCache == false {
+		e.fetchBlockCache = helpers.NewCache(e.fetchBlock)
+	}
 
 	lastBlock := transferEvent.Raw.BlockNumber + safetyBlocks
 

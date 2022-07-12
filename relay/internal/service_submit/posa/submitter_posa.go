@@ -36,9 +36,10 @@ func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.Receiv
 }
 
 func (b *SubmitterPoSA) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
+	saveCache := false
 	for {
 
-		posaProof, err := b.posaEncoder.EncodePoSAProof(event, safetyBlocks)
+		posaProof, err := b.posaEncoder.EncodePoSAProof(event, safetyBlocks, saveCache)
 
 		if errors.Is(err, posa_proof.ProofTooBig) {
 
@@ -47,6 +48,8 @@ func (b *SubmitterPoSA) SendEvent(event *bindings.BridgeTransfer, safetyBlocks u
 			if err != nil {
 				return fmt.Errorf("SubmitValidatorSetChangesPoSA: %w", err)
 			}
+
+			saveCache = true
 			continue
 		} else if err != nil {
 			return fmt.Errorf("encodePoSAProof: %w", err)
