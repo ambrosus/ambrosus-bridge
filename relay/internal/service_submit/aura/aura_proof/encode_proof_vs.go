@@ -51,19 +51,8 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
 	// otherwise, next time we can miss some events emitted after `toBlock` and before current highest finalized
 	filterBlocks(blockToEvents, toBlock)
 
-	vsChanges, err := mapToList(blockToEvents)
-	if err != nil {
-		return nil, fmt.Errorf("mapToList: %w", err)
-	}
+	vsChanges := helpers.SortedValues(blockToEvents)
 
-	return vsChanges, nil
-}
-
-func mapToList(blockToEvents map[uint64]*vsChangeInBlock) ([]*vsChangeInBlock, error) {
-	vsChanges := make([]*vsChangeInBlock, 0, len(blockToEvents))
-	for _, bn := range helpers.SortedKeys(blockToEvents) {
-		vsChanges = append(vsChanges, blockToEvents[bn])
-	}
 	return vsChanges, nil
 }
 

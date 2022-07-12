@@ -65,7 +65,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 	// this func use so many local variables, so it's better to be closure
 	buildProof := func() *c.CheckAuraAuraProof {
-		blocks, blockNumToIndex := blocksMapToList(blocksMap)
+		blocks, blockNumToIndex := helpers.SortedValuesWithIndices(blocksMap)
 		// set indexes
 		for i, vsChange := range vsChanges {
 			// in this block contract should finalize vsChanges[FinalizedVs-1] event
@@ -144,16 +144,6 @@ func (e *AuraEncoder) saveBlocks(blocksMap map[uint64]c.CheckAuraBlockAura, bloc
 
 func (e *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
 	return e.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
-}
-
-func blocksMapToList(blocksMap map[uint64]c.CheckAuraBlockAura) (blocks []c.CheckAuraBlockAura, blockNumToIndex map[uint64]int) {
-	blockNums := helpers.SortedKeys(blocksMap)
-	blocks = make([]c.CheckAuraBlockAura, len(blockNums))
-	for i, bn := range blockNums {
-		blocks[i] = blocksMap[bn]
-		blockNumToIndex[bn] = i
-	}
-	return blocks, blockNumToIndex
 }
 
 func isProofTooBig(proof *c.CheckAuraAuraProof) error {
