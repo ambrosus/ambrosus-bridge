@@ -107,7 +107,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 	return &c.CheckAuraAuraProof{
 		Blocks:             blocks,
-		Transfer:           *transferProof,
+		Transfer:           transferProof,
 		VsChanges:          vsChanges,
 		TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
 	}, nil

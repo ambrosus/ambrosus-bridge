@@ -80,7 +80,7 @@ func (e *PoSAEncoder) EncodePoSAProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 	return &c.CheckPoSAPoSAProof{
 		Blocks:             blocks,
-		Transfer:           *transferProof,
+		Transfer:           transferProof,
 		TransferEventBlock: uint64(blockNumToIndex[transferEvent.Raw.BlockNumber]),
 	}, nil
 }

@@ -79,13 +79,13 @@ func GetEventById(client interfaces.BridgeContract, eventId *big.Int) (*bindings
 	return nil, networks.ErrEventNotFound
 }
 
-func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (*bindings.CommonStructsTransferProof, error) {
+func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (bindings.CommonStructsTransferProof, error) {
 	proof, err := GetProof(client, event)
 	if err != nil {
-		return nil, fmt.Errorf("GetProof: %w", err)
+		return bindings.CommonStructsTransferProof{}, fmt.Errorf("GetProof: %w", err)
 	}
 
-	return &bindings.CommonStructsTransferProof{
+	return bindings.CommonStructsTransferProof{
 		ReceiptProof: proof,
 		EventId:      event.EventId,
 		Transfers:    event.Queue,

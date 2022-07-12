@@ -58,6 +58,6 @@ func (e *PoWEncoder) EncodePoWProof(transferEvent *bindings.BridgeTransfer, safe
 
 	return &bindings.CheckPoWPoWProof{
 		Blocks:   blocks,
-		Transfer: *transferProof,
+		Transfer: transferProof,
 	}, nil
 }
