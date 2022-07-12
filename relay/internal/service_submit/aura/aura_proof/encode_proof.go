@@ -59,20 +59,24 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 		return nil, fmt.Errorf("getVsChanges: %w", err)
 	}
 
-	var blocksMap map[uint64]c.CheckAuraBlockAura
+	var blocksMap = make(map[uint64]c.CheckAuraBlockAura)
 	var vsChanges []c.CheckAuraValidatorSetProof
-	var transferProof c.CommonStructsTransferProof
+	var transferProof = c.CommonStructsTransferProof{
+		ReceiptProof: [][]byte{},
+		EventId:      big.NewInt(0),
+		Transfers:    []c.CommonStructsTransfer{},
+	}
 
 	// this func use so many local variables, so it's better to be closure
 	buildProof := func() *c.CheckAuraAuraProof {
 		blocks, blockNumToIndex := helpers.SortedValuesWithIndices(blocksMap)
 		// set indexes
-		for i, vsChange := range vsChanges {
+		for i := 0; i < len(vsChanges); i++ {
 			// in this block contract should finalize vsChanges[FinalizedVs-1] event
 			finalizedBlockIndex := blockNumToIndex[vsProofs[i].finalizedBlock]
 			blocks[finalizedBlockIndex].FinalizedVs = uint64(i + 1)
 
-			vsChange.EventBlock = uint64(blockNumToIndex[vsProofs[i].EventBlock])
+			vsChanges[i].EventBlock = uint64(blockNumToIndex[vsProofs[i].EventBlock])
 		}
 		return &c.CheckAuraAuraProof{
 			Blocks:             blocks,
@@ -101,6 +105,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 
 		newProof := buildProof()
 		if err = isProofTooBig(newProof); err != nil {
+			proof.TransferEventBlock = ^uint64(0) // max uint64, coz gaps between vsChanges work only BEFORE `TransferEventBlock`
 			return proof, err
 		}
 		proof = newProof
