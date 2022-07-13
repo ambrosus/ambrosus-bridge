@@ -67,11 +67,12 @@ func (p *transferFeeTracker) init() error {
 		return nil
 	}
 
-	p.latestProcessedEvent = latestEventId.Uint64() - eventsForGasCalc - 1 // -1 cuz in `processEvents` we'll +1 to it
-	if latestEventId.Uint64() <= 0 {
-		p.latestProcessedEvent = 1
+	latestProcessedEvent := latestEventId.Int64() - eventsForGasCalc - 1 // -1 cuz in `processEvents` we'll +1 to it
+	if latestProcessedEvent < 0 {
+		latestProcessedEvent = 0
 	}
 
+	p.latestProcessedEvent = uint64(latestProcessedEvent)
 	return p.processEvents(latestEventId.Uint64() - 1) // -1 cuz we need latest unlocked instead of locked event id
 }
 
