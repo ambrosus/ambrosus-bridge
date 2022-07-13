@@ -83,7 +83,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get events batch requests
-	transfers, err := getTransfersByIds(p.sideBridge.GetContract(), eventIds)
+	transfers, err := getTransfersByIds(p.bridge.GetContract(), eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfers by ids: %v", err)
 	}
