@@ -30,6 +30,8 @@ func BuildMessage(l *logger.ExtLog) string {
 		msg += fmt.Sprintf("<b>%s</b>\n", "We got an unexpected error:")
 	case zerolog.LevelWarnValue:
 		msg += fmt.Sprintf("<b>%s</b>\n", "Warning!")
+	case zerolog.LevelFatalValue:
+		msg += fmt.Sprintf("<b>%s</b>\n", "Fatal!")
 	default:
 		return ""
 	}
