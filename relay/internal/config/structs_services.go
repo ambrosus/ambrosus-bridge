@@ -9,7 +9,8 @@ type (
 	}
 
 	SubmitterAura struct {
-		VSContractAddr string `mapstructure:"vsContractAddr"`
+		VSContractAddr     string `mapstructure:"vsContractAddr"`
+		FinalizeServiceUrl string `mapstructure:"finalizeServiceUrl"`
 	}
 	SubmitterPoW struct {
 		EthashDir            string `mapstructure:"ethashDir"`
