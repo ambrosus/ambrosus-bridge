@@ -1,15 +1,13 @@
 import os
 import re
 import time
-from collections import namedtuple
 from dataclasses import dataclass
 from pathlib import Path
-from pprint import pprint
 
 import requests
 
-LOGS_FILE = Path.cwd() / "files" / "logs.txt"
-LAST_LOG_FILE = Path.cwd() / "files" / "last_log.txt"
+LOGS_FILE = Path.cwd() / "files" / "logs.bin"
+LAST_LOG_TIMESTAMP_FILE = Path.cwd() / "files" / "last_log_timestamp.txt"
 
 LOKI_URL = os.getenv("LOKI_URL")  # ex: 'loki:QWE123qwe123qwe123qwe@loki.ambrosus-ops.io'
 LOKI_PARAMS = os.getenv("LOKI_PARAMS")  # ex: '{host="dev-parity0", container_name="parity"}'
@@ -24,32 +22,32 @@ class Log:
     finalize_at: int
     signaled_at: int
 
+    def to_binary(self):
+        # block numbers is uint64 => 8 bytes
+        return self.signaled_at.to_bytes(8, byteorder='little') + \
+               self.finalize_at.to_bytes(8, byteorder='little')
+
 
 def main():
-    last_log = read_last_log()
-    print("Start working from", last_log)
+    last_log_timestamp = read_last_log()
+    print("Start working from", last_log_timestamp)
 
     while True:
         try:
-            logs = fetch_logs(last_log.timestamp)
+            logs = fetch_logs(last_log_timestamp)
         except Exception as e:
             print("Exception while fetching logs", e)
             time.sleep(60)
             continue
-        print(f"fetched {len(logs)} logs")
+        last_log_timestamp = int(logs[-1][0])
+        print(f"fetched {len(logs)} logs, latest is {last_log_timestamp}")
 
-        finalize_logs = filter(None, map(parse_loki_log, logs))  # filter out not finalize logs
-        finalize_logs = list(filter(
-            lambda log, last_log_=last_log: log.finalize_at < last_log_.finalize_at,
-            finalize_logs))  # filter out already saved logs
-
-        last_log.timestamp = int(logs[-1][0])  # set last_log timestamp to last log timestamp 🤯
-
+        finalize_logs = list(filter(None, map(parse_loki_log, logs)))  # filter out not finalize logs
         if finalize_logs:
-            # set last_log last block to last finalize log block to avoid doubles
-            last_log.finalize_at = finalize_logs[-1].finalize_at
-            print(f"find {len(logs)} new logs, latest is {last_log}")
-            save_new_logs(logs)
+            print(f"find {len(logs)} new finalize logs")
+            save_new_logs(finalize_logs)
+
+        save_last_log(last_log_timestamp)
 
         if len(logs) < LOKI_LIMIT:
             print(f"Fetched less logs than limit ({len(logs)} / {LOKI_LIMIT}); Sleep 60 sec")
@@ -63,7 +61,7 @@ def fetch_logs(from_timestamp: int) -> [Log]:
         "start": from_timestamp,
         "limit": LOKI_LIMIT,
         "direction": "forward",
-    })
+    }, timeout=5)
     data_result = r.json()["data"]["result"]
     if not data_result:
         return []
@@ -88,30 +86,27 @@ def parse_loki_log(log: [str, str]) -> Log:
 
 
 def save_new_logs(logs: [Log]):
-    logs_str = '\n'.join([
-        f"{log.finalize_at} {log.signaled_at}"
-        for log in logs
-    ])
-    with LOGS_FILE.open("a") as f:
-        f.write(logs_str)
-
-    last_log_str = f"{logs[-1].timestamp} {logs[-1].finalize_at}"
-    LAST_LOG_FILE.write_text(last_log_str)
+    with LOGS_FILE.open("ab") as f:
+        for log in logs:
+            f.write(log.to_binary())
 
 
-def read_last_log() -> Log:
+def save_last_log(last_log_timestamp: int):
+    LAST_LOG_TIMESTAMP_FILE.write_text(str(last_log_timestamp))
+
+
+def read_last_log() -> int:
     try:
-        log = LAST_LOG_FILE.read_text()
-        timestamp, finalize_at = map(int, log.split(" "))
-        return Log(timestamp, finalize_at, signaled_at=0)
+        return int(LAST_LOG_TIMESTAMP_FILE.read_text())
     except FileNotFoundError:
-        LAST_LOG_FILE.parent.mkdir(exist_ok=True)
-        LAST_LOG_FILE.write_text(f"{time.time_ns()} 0")
-        print(f"For first launch, set wanted timestamp (first number) in {LAST_LOG_FILE} file. "
+        LAST_LOG_TIMESTAMP_FILE.parent.mkdir(exist_ok=True)
+        LAST_LOG_TIMESTAMP_FILE.write_text(str(time.time_ns()))
+        print(f"For first launch, set wanted timestamp (in ns) in {LAST_LOG_TIMESTAMP_FILE} file. "
               f"\n It's now set to current timestamp")
         exit(1)
     except Exception as e:
-        raise Exception(f"Error when read {LAST_LOG_FILE} file") from e
+        raise Exception(f"Error when read {LAST_LOG_TIMESTAMP_FILE} file") from e
 
 
-main()
+if __name__ == "__main__":
+    main()
