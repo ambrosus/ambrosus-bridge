@@ -18,12 +18,17 @@ import (
 const maxTxSize = 1024*128 - 10240 // -10KB for extra data in request
 var ProofTooBig = errors.New("proof is too big")
 
+type finalizeService interface {
+	getBlockWhenFinalize(emitBlockNum uint64) (uint64, error)
+}
+
 type AuraEncoder struct {
 	bridge       networks.Bridge
 	auraReceiver service_submit.ReceiverAura
 
-	vsContract   *c.Vs
-	parityClient *parity.Client
+	vsContract      *c.Vs
+	parityClient    *parity.Client
+	finalizeService finalizeService
 
 	logger *zerolog.Logger
 

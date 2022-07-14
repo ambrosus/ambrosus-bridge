@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura/aura_proof/rolling_finality"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -62,9 +61,11 @@ func filterBlocks(blockToEvents map[uint64]*vsChangeInBlock, toBlock uint64) {
 	}
 }
 
-func (e *AuraEncoder) findWhenFinalize(initialValidatorSet []common.Address, blockToEvents map[uint64]*vsChangeInBlock) error {
-	currentSet := initialValidatorSet
-	currentEpoch := uint64(0)
+func (e *AuraEncoder) findWhenFinalize(lastProcessedBlockNum uint64, blockToEvents map[uint64]*vsChangeInBlock) error {
+	currentEpoch, err := e.finalizeService.getBlockWhenFinalize(lastProcessedBlockNum)
+	if err != nil {
+		return fmt.Errorf("getBlockWhenFinalize: %w", err)
+	}
 
 	eventBlockNums := helpers.SortedKeys(blockToEvents)
 
@@ -73,51 +74,27 @@ func (e *AuraEncoder) findWhenFinalize(initialValidatorSet []common.Address, blo
 
 		// current event implicitly finalized, but we don't know in which block.
 		// so, it's easier to pretend that this event doesn't exist.
+		// first explicit finalized event will use `changes` from this event
 		if event.EventBlock <= currentEpoch {
-			if i < len(eventBlockNums) {
+			if i+1 < len(eventBlockNums) {
 				// save this event `changes` before the next event `changes`
 				nextEvent := blockToEvents[eventBlockNums[i+1]]
 				nextEvent.Changes = append(event.Changes, nextEvent.Changes...)
 			}
 			delete(blockToEvents, eventBlockNum)
-			e.logger.Trace().Uint64("block", eventBlockNum).Uint64("finalized", currentEpoch).Msg("aura implicitly finalized event block")
+			e.logger.Trace().Uint64("block", eventBlockNum).Msg("aura implicitly finalized event block")
 
 		} else {
-			if err := e.finalizeEvent(currentSet, event); err != nil {
-				return fmt.Errorf("finalizeEvent: %w", err)
+			currentEpoch, err = e.finalizeService.getBlockWhenFinalize(eventBlockNum)
+			if err != nil {
+				return fmt.Errorf("getBlockWhenFinalize: %w", err)
 			}
-			currentEpoch = event.finalizedBlock
-			currentSet = event.lastEvent.NewSet
+			event.finalizedBlock = currentEpoch
 
 			e.logger.Trace().Uint64("block", eventBlockNum).Uint64("finalized", event.finalizedBlock).Msg("aura finalized event block")
 		}
 	}
 	return nil
-}
-
-func (e *AuraEncoder) finalizeEvent(initialValidatorSet []common.Address, event *vsChangeInBlock) error {
-	rf := rolling_finality.NewRollingFinality(initialValidatorSet)
-
-	// get next blocks, until event block finalized
-	for blockNum := event.EventBlock; ; blockNum++ {
-		block, err := e.fetchBlockCache(blockNum)
-		if err != nil {
-			return fmt.Errorf("fetchBlockCache: %w", err)
-		}
-
-		finalizedBlocks, err := rf.Push(blockNum, *block.Coinbase)
-		if err != nil {
-			return fmt.Errorf("rf.Push: %w", err)
-		}
-
-		for _, finalizedBlock := range finalizedBlocks {
-			if finalizedBlock >= event.EventBlock {
-				event.finalizedBlock = blockNum
-				return nil
-			}
-		}
-	}
-
 }
 
 func (e *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Address, events []*c.VsInitiateChange) (map[uint64]*vsChangeInBlock, error) {
