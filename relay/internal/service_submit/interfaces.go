@@ -35,5 +35,6 @@ type ReceiverPoW interface {
 type ReceiverPoSA interface {
 	Receiver
 	SubmitTransferPoSA(proof *bindings.CheckPoSAPoSAProof) error
+	SubmitValidatorSetChangesPoSA(*bindings.CheckPoSAPoSAProof) error
 	GetCurrentEpoch() (uint64, error)
 }

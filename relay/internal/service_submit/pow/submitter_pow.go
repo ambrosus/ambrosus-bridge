@@ -30,6 +30,7 @@ func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.Receiver
 		Bridge:      bridge,
 		powReceiver: powReceiver,
 		powEncoder:  pow_proof.NewPoWEncoder(bridge, powReceiver, ethashObj),
+		ethash:      ethashObj,
 		logger:      &logger,
 	}, nil
 }

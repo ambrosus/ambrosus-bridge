@@ -23,13 +23,17 @@ func (t *TgLogger) Log(l *logger.ExtLog) {
 func BuildMessage(l *logger.ExtLog) string {
 	var msg string
 
-	msg += fmt.Sprintf("[<b>%s</b>] ", strings.ToUpper(l.Bridge))
+	if l.Bridge != "" {
+		msg += fmt.Sprintf("[<b>%s</b>] ", strings.ToUpper(l.Bridge))
+	}
 
 	switch l.Level {
 	case zerolog.LevelErrorValue:
 		msg += fmt.Sprintf("<b>%s</b>\n", "We got an unexpected error:")
 	case zerolog.LevelWarnValue:
 		msg += fmt.Sprintf("<b>%s</b>\n", "Warning!")
+	case zerolog.LevelFatalValue:
+		msg += fmt.Sprintf("<b>%s</b>\n", "Fatal!")
 	default:
 		return ""
 	}
