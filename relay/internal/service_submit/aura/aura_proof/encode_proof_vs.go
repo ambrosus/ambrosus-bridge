@@ -62,7 +62,7 @@ func filterBlocks(blockToEvents map[uint64]*vsChangeInBlock, toBlock uint64) {
 }
 
 func (e *AuraEncoder) findWhenFinalize(lastProcessedBlockNum uint64, blockToEvents map[uint64]*vsChangeInBlock) error {
-	currentEpoch, err := e.finalizeService.getBlockWhenFinalize(lastProcessedBlockNum)
+	currentEpoch, err := e.finalizeService.GetBlockWhenFinalize(lastProcessedBlockNum)
 	if err != nil {
 		return fmt.Errorf("getBlockWhenFinalize: %w", err)
 	}
@@ -85,7 +85,7 @@ func (e *AuraEncoder) findWhenFinalize(lastProcessedBlockNum uint64, blockToEven
 			e.logger.Trace().Uint64("block", eventBlockNum).Msg("aura implicitly finalized event block")
 
 		} else {
-			currentEpoch, err = e.finalizeService.getBlockWhenFinalize(eventBlockNum)
+			currentEpoch, err = e.finalizeService.GetBlockWhenFinalize(eventBlockNum)
 			if err != nil {
 				return fmt.Errorf("getBlockWhenFinalize: %w", err)
 			}
