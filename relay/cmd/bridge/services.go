@@ -17,18 +17,17 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
-func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge service_submit.Receiver) {
-	log.Info().Str("service", "submitter").Bool("enabled", cfg.Enable).Send()
+func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge service_submit.Receiver, logger zerolog.Logger) {
+	logger.Info().Str("service", "submitter").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
 	auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
 	if err != nil {
-		log.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
+		logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
 	}
 
 	var sideBridgeSubmitter service_submit.Submitter
@@ -39,15 +38,15 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
 	}
 	if err != nil {
-		log.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
+		logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
 	}
 
 	go service_submit.NewSubmitTransfers(auraSubmitter, sideBridge).Run()
 	go service_submit.NewSubmitTransfers(sideBridgeSubmitter, ambBridge).Run()
 }
 
-func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge) {
-	log.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
+func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
@@ -56,8 +55,8 @@ func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge netwo
 	go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
 }
 
-func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge) {
-	log.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
+func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
@@ -68,8 +67,8 @@ func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge netwo
 	go service_unlock.NewUnlockTransfers(sideBridge, sideWatchdog).Run()
 }
 
-func runTriggers(cfg *config.Triggers, ambBridge *amb.Bridge, sideBridge networks.Bridge) {
-	log.Info().Str("service", "triggers").Bool("enabled", cfg.Enable).Send()
+func runTriggers(cfg *config.Triggers, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "triggers").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
@@ -79,31 +78,31 @@ func runTriggers(cfg *config.Triggers, ambBridge *amb.Bridge, sideBridge network
 }
 
 func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger zerolog.Logger) {
-	log.Info().Str("service", "fee api").Bool("enabled", cfg.Enable).Send()
+	logger.Info().Str("service", "fee api").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
 	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, cfg.Amb)
 	if err != nil {
-		log.Fatal().Err(err).Msg("feeAmb not created")
+		logger.Fatal().Err(err).Msg("feeAmb not created")
 	}
 	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, cfg.Side)
 	if err != nil {
-		log.Fatal().Err(err).Msg("feeSide not created")
+		logger.Fatal().Err(err).Msg("feeSide not created")
 	}
 
 	feeApi := fee_api.NewFeeAPI(feeAmb, feeSide, logger)
 	feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port)
 }
 
-func runPrometheus(cfg *config.Prometheus) {
-	log.Info().Str("service", "prometheus").Bool("enabled", cfg.Enable).Send()
+func runPrometheus(cfg *config.Prometheus, logger zerolog.Logger) {
+	logger.Info().Str("service", "prometheus").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
 	if err := metric.ServeEndpoint(cfg.Ip, cfg.Port); err != nil {
-		log.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
+		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
 	}
 }

@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
@@ -14,6 +15,7 @@ const (
 type AntiDoubleMiddleware struct {
 	tgLogger *telegram.TgLogger
 
+	mu              sync.Mutex
 	lastLogMsg      string
 	lastLogMsgParts []string
 	lastLogTgId     uint64
@@ -29,6 +31,9 @@ func (f *AntiDoubleMiddleware) Log(l *logger.ExtLog) {
 	if msg == "" {
 		return
 	}
+
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
 	// if msg == last sent message, add the counter to the end
 	if msg == f.lastLogMsg {

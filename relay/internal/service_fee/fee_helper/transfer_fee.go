@@ -67,11 +67,12 @@ func (p *transferFeeTracker) init() error {
 		return nil
 	}
 
-	p.latestProcessedEvent = latestEventId.Uint64() - eventsForGasCalc - 1 // -1 cuz in `processEvents` we'll +1 to it
-	if latestEventId.Uint64() <= 0 {
-		p.latestProcessedEvent = 1
+	latestProcessedEvent := latestEventId.Int64() - eventsForGasCalc - 1 // -1 cuz in `processEvents` we'll +1 to it
+	if latestProcessedEvent < 0 {
+		latestProcessedEvent = 0
 	}
 
+	p.latestProcessedEvent = uint64(latestProcessedEvent)
 	return p.processEvents(latestEventId.Uint64() - 1) // -1 cuz we need latest unlocked instead of locked event id
 }
 
@@ -83,7 +84,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get events batch requests
-	transfers, err := getTransfersByIds(p.sideBridge.GetContract(), eventIds)
+	transfers, err := getTransfersByIds(p.bridge.GetContract(), eventIds)
 	if err != nil {
 		return fmt.Errorf("get transfers by ids: %v", err)
 	}

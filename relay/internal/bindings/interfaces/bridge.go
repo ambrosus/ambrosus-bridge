@@ -3,12 +3,13 @@
 package interfaces
 
 import (
+	"math/big"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
-	"math/big"
 )
 
 // BridgeContract is an interface generated for "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings.Bridge".
@@ -68,6 +69,7 @@ type BridgeContract interface {
 	SubmitTransferPoSA(*bind.TransactOpts, bindings.CheckPoSAPoSAProof) (*types.Transaction, error)
 	SubmitTransferPoW(*bind.TransactOpts, bindings.CheckPoWPoWProof) (*types.Transaction, error)
 	SubmitValidatorSetChangesAura(*bind.TransactOpts, bindings.CheckAuraAuraProof) (*types.Transaction, error)
+	SubmitValidatorSetChangesPoSA(*bind.TransactOpts, bindings.CheckPoSAPoSAProof) (*types.Transaction, error)
 	SupportsInterface(*bind.CallOpts, [4]byte) (bool, error)
 	TimeframeSeconds(*bind.CallOpts) (*big.Int, error)
 	TokenAddresses(*bind.CallOpts, common.Address) (common.Address, error)

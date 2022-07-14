@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "",
+            "contractAddr": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
             "privateKey": "in env"
         },
         "BSC": {
             "httpUrl": "https://bsc.ambrosus-test.io",
             "wsUrl": "wss://bsc.ambrosus-test.io/ws",
-            "contractAddr": "",
+            "contractAddr": "0x99a88dF85C3ffded0D7fF6B18596597e2ffcB3ee",
             "privateKey": "in env"
         }
     },
