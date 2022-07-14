@@ -137,7 +137,7 @@ export async function getAmbValidators(ambNetwork: any): Promise<[string[], stri
     Probably, latest event doesn't finalized yet and this can cause a trouble.
     Try again at block ~${latestLog.blockNumber + latestSet.length/2}`)
 
-  return [validators, vsAddress, latestBlock.hash]
+  return [validators, vsAddress, latestLog.blockHash]
 }
 
 
