@@ -18,11 +18,9 @@ type vsChangeInBlock struct {
 }
 
 func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
-	// note:
-	// lastProcessedBlock *should* be after finalizing `ValidatorSet` but before next VSChangeEvent
-	// so, if after last fetched event and before it finalized exist another VSChangeEvent then it will be skipped
+	// note: lastProcessedBlock *should* be a block when latest *finalized* `VSChangeEvent` is *emitted*
 
-	start, err := e.getLastProcessedBlockNum()
+	lastProcessedBlockNum, err := e.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
@@ -32,7 +30,7 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
 		return nil, fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
-	vsChangeEvents, err := e.fetchVSChangeEvents(start+1, toBlock)
+	vsChangeEvents, err := e.fetchVSChangeEvents(lastProcessedBlockNum+1, toBlock)
 	if err != nil {
 		return nil, fmt.Errorf("fetchVSChangeEvents: %w", err)
 	}
@@ -42,7 +40,7 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
 		return nil, fmt.Errorf("preprocessVSChangeEvents: %w", err)
 	}
 
-	err = e.findWhenFinalize(initialValidatorSet, blockToEvents)
+	err = e.findWhenFinalize(lastProcessedBlockNum, blockToEvents)
 	if err != nil {
 		return nil, fmt.Errorf("findWhenFinalize: %w", err)
 	}
@@ -176,7 +174,9 @@ func (e *AuraEncoder) getLastProcessedBlockNum() (uint64, error) {
 		return 0, fmt.Errorf("get rfBlock by hash: %w", err)
 	}
 
-	return block.Number().Uint64(), nil
+	// last processed block is *parentHash* of block in which last processed event was *emitted*
+	// so, processed event emitted at `start+1` block num
+	return block.Number().Uint64() + 1, nil
 }
 
 func deltaVS(prev, curr []common.Address) (common.Address, uint16, error) {
