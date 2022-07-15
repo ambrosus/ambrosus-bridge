@@ -44,7 +44,7 @@ def main():
 
         finalize_logs = list(filter(None, map(parse_loki_log, logs)))  # filter out not finalize logs
         if finalize_logs:
-            print(f"find {len(logs)} new finalize logs")
+            print(f"find {len(finalize_logs)} new finalize logs")
             save_new_logs(finalize_logs)
 
         save_last_log(last_log_timestamp)
