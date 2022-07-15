@@ -5,16 +5,20 @@ type (
 		enable `mapstructure:",squash"`
 		Aura   *SubmitterAura `mapstructure:"aura"`
 		Pow    *SubmitterPoW  `mapstructure:"pow"`
-		//Posa    *SubmitterPoSA `mapstructure:"posa"`  PoSA doesn't need any cfg
+		Posa   *SubmitterPoSA `mapstructure:"posa"`
 	}
 
 	SubmitterAura struct {
-		VSContractAddr string `mapstructure:"vsContractAddr"`
+		VSContractAddr            string `mapstructure:"vsContractAddr"`
+		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 	SubmitterPoW struct {
 		EthashDir            string `mapstructure:"ethashDir"`
 		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
 		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
+	}
+	SubmitterPoSA struct {
+		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 )
 
