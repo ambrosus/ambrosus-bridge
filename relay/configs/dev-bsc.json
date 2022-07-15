@@ -18,7 +18,11 @@
     "submitters": {
         "enable": true,
         "aura": {
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "receiverBridgeMaxTxSizeKB": 128
+        },
+        "posa": {
+            "receiverBridgeMaxTxSizeKB": 300
         }
     },
     "watchdogs":  {
