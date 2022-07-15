@@ -4,14 +4,14 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0x8D207EC6Bd3ad47c7455A31a27e611a68af093a9",
+            "contractAddr": "0xf7E15b720867747a536137f4EFdAB4309225f8D6",
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "ETH": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x4dd9feD97363Eb0159173cE74e120c5E9DD58b9D",
+            "contractAddr": "0x5570DF279dA47Fa46aBa4c1e27b55c8e1d6648A1",
             "privateKey": "in env"
         }
     },
@@ -19,7 +19,8 @@
     "submitters": {
         "enable": true,
         "aura": {
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00"
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "finalizeServiceUrl": "http://0.0.0.0:8000/files/logs.bin"
         },
         "pow": {
             "ethashDir": "/root/ethash",
