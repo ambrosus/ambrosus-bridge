@@ -32,7 +32,7 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
 		return nil, fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
-	vsChangeEvents, err := e.fetchVSChangeEvents(start, toBlock)
+	vsChangeEvents, err := e.fetchVSChangeEvents(start+1, toBlock)
 	if err != nil {
 		return nil, fmt.Errorf("fetchVSChangeEvents: %w", err)
 	}
