@@ -33,5 +33,5 @@ jobs:
         with:
           context: ./aura_finalizing_service
           push: true
-          tags: ${{ steps.meta_relay.outputs.tags }}
-          labels: ${{ steps.meta_relay.outputs.labels }}
+          tags: ${{ steps.meta_finalizing.outputs.tags }}
+          labels: ${{ steps.meta_finalizing.outputs.labels }}
