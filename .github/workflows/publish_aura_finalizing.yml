@@ -1,4 +1,4 @@
-name: Publish a docker image
+name: Publish aura_finalizing image
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
       - dev
     paths:
       - 'aura_finalizing_service/**'
-
 
 jobs:
   publish:
