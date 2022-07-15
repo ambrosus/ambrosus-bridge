@@ -18,12 +18,17 @@ import (
 const maxTxSize = 1024*128 - 10240 // -10KB for extra data in request
 var ProofTooBig = errors.New("proof is too big")
 
+type finalizeService interface {
+	GetBlockWhenFinalize(emitBlockNum uint64) (uint64, error)
+}
+
 type AuraEncoder struct {
 	bridge       networks.Bridge
 	auraReceiver service_submit.ReceiverAura
 
-	vsContract   *c.Vs
-	parityClient *parity.Client
+	vsContract      *c.Vs
+	parityClient    *parity.Client
+	finalizeService finalizeService
 
 	logger *zerolog.Logger
 
@@ -31,15 +36,17 @@ type AuraEncoder struct {
 	fetchBlockCache func(arg uint64) (*parity.Header, error)
 }
 
-func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura, vSContract *c.Vs, parityClient *parity.Client) *AuraEncoder {
+func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura,
+	vSContract *c.Vs, parityClient *parity.Client, finalizeService finalizeService) *AuraEncoder {
 	logger := bridge.GetLogger().With().Str("service", "AuraEncoder").Logger()
 
 	return &AuraEncoder{
-		bridge:       bridge,
-		auraReceiver: sideBridge,
-		vsContract:   vSContract,
-		parityClient: parityClient,
-		logger:       &logger,
+		bridge:          bridge,
+		auraReceiver:    sideBridge,
+		vsContract:      vSContract,
+		parityClient:    parityClient,
+		finalizeService: finalizeService,
+		logger:          &logger,
 	}
 }
 
