@@ -57,17 +57,19 @@ const config: HardhatUserConfig = {
       url: "https://network.ambrosus-dev.io",
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
-      companionNetworks: {bsc: 'dev/bsc'},
+      companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
+      companionNetworks: {eth: 'test/eth', bsc: 'test/bsc'},
     },
     "main/amb": {
       url: "https://network.ambrosus.io",
       tags: ["amb", "mainnet"],
       hardfork: "byzantium",
+      companionNetworks: {eth: 'main/eth', bsc: 'main/bsc'},
     },
     "integr/amb": {
       url: "http://127.0.0.1:8545",
@@ -76,17 +78,23 @@ const config: HardhatUserConfig = {
       hardfork: "byzantium",
     },
 
+
     "dev/bsc": {
       url: "https://bsc.ambrosus-test.io",
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
     },
+    "main/bsc": {
+      url: "https://bsc-dataseed1.binance.org/",
+      tags: ["bsc", "devnet"],
+      companionNetworks: {amb: 'main/amb'},
+    },
   },
 
-  // random pk for hardhat network
-  // dev pk for test networks
-  // env vars pk or address for main network
   namedAccounts: {
+    // random pk for hardhat network
+    // dev pk for test networks
+    // env vars pk or address for main network
     owner: {
       default: "privatekey://" + devPK,
       "main/amb": "privatekey://" + process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero,
@@ -94,21 +102,10 @@ const config: HardhatUserConfig = {
       "main/bsc": "privatekey://" + process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero,
       hardhat: 0,
     },
-    // admin and relay can be just addresses for prod, not private key
-    admin: {
-      default: "privatekey://" + devPK,
-      "main/amb": process.env.ADDRESS_ADMIN_AMB || ethers.constants.AddressZero,
-      "main/eth": process.env.ADDRESS_ADMIN_ETH || ethers.constants.AddressZero,
-      "main/bsc": process.env.ADDRESS_ADMIN_BSC || ethers.constants.AddressZero,
-      hardhat: 1,
-    },
-    relay: {
-      default: "privatekey://" + devPK,
-      "main/amb": process.env.ADDRESS_RELAY_AMB || ethers.constants.AddressZero,
-      "main/eth": process.env.ADDRESS_RELAY_ETH || ethers.constants.AddressZero,
-      "main/bsc": process.env.ADDRESS_RELAY_BSC || ethers.constants.AddressZero,
-      hardhat: 2,
-    },
+
+    // used only for local hardhat tests
+    admin: 1,
+    relay: 2,
     bridge: 3,
     user: 4,
   },
