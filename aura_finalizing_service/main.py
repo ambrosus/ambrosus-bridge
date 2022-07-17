@@ -39,7 +39,8 @@ def main():
             print("Exception while fetching logs", e)
             time.sleep(60)
             continue
-        last_log_timestamp = int(logs[-1][0])
+        if logs:
+            last_log_timestamp = int(logs[-1][0])
         print(f"fetched {len(logs)} logs, latest is {last_log_timestamp}")
 
         finalize_logs = list(filter(None, map(parse_loki_log, logs)))  # filter out not finalize logs
