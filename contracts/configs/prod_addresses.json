@@ -1,5 +1,19 @@
 {
-  "amb": {
+  "BSC_AmbBridge": {
+    "description": "amb part of amb-bsc bridge",
+    "adminAddress": "0x0000000000000000000000000000000000000000",
+    "relayAddress": "0x0000000000000000000000000000000000000000",
+    "transferFeeRecipient": "0x0000000000000000000000000000000000000000",
+    "bridgeFeeRecipient": "0x0000000000000000000000000000000000000000",
+    "multisig": {
+      "admins": [
+        "0x0000000000000000000000000000000000000000"
+      ],
+      "threshold": 0
+    }
+  },
+  "BSC_BscBridge": {
+    "description": "bsc part of amb-bsc bridge",
     "adminAddress": "0x0000000000000000000000000000000000000000",
     "relayAddress": "0x0000000000000000000000000000000000000000",
     "transferFeeRecipient": "0x0000000000000000000000000000000000000000",
@@ -12,7 +26,8 @@
     }
   },
 
-  "eth": {
+  "ETH_AmbBridge": {
+    "description": "amb part of amb-eth bridge",
     "adminAddress": "0x0000000000000000000000000000000000000000",
     "relayAddress": "0x0000000000000000000000000000000000000000",
     "transferFeeRecipient": "0x0000000000000000000000000000000000000000",
@@ -24,8 +39,8 @@
       "threshold": 0
     }
   },
-
-  "bsc": {
+  "ETH_EthBridge": {
+    "description": "eth part of amb-eth bridge",
     "adminAddress": "0x0000000000000000000000000000000000000000",
     "relayAddress": "0x0000000000000000000000000000000000000000",
     "transferFeeRecipient": "0x0000000000000000000000000000000000000000",
@@ -37,5 +52,4 @@
       "threshold": 0
     }
   }
-
 }

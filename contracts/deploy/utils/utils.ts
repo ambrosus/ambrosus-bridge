@@ -60,7 +60,7 @@ export async function setSideBridgeAddress(deploymentName: string, sideAddress: 
 
 //
 
-export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: string]: string },
+export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string, tokenPairs: { [k: string]: string },
                               commonArgs: any, args: any[]): Promise<DeployOptions> {
 
   const network = parseNet(hre.network);
@@ -68,7 +68,7 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
 
   // on testnets use only 1 account for all roles;
   // multisig threshold == 1, so no upgrade confirmations needed
-  const cfg = (network.stage === "main") ? getAddresses(network.name) :
+  const cfg = (network.stage === "main") ? getAddresses(bridgeName) :
     {
         adminAddress: owner,
         relayAddress: owner,
