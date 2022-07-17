@@ -19,7 +19,7 @@
         "enable": true,
         "aura": {
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "finalizeServiceUrl": "http://0.0.0.0:8000/files/logs.bin"
+            "finalizeServiceUrl": "https://finalizing-api.ambrosus-dev.io/logs.bin"
         }
     },
     "watchdogs":  {
