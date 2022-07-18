@@ -80,7 +80,7 @@ const config: HardhatUserConfig = {
 
 
     "dev/bsc": {
-      url: "https://bsc.ambrosus-test.io",
+      url: "https://bsc-dataseed1.binance.org/",
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
     },
