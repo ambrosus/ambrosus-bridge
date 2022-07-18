@@ -4,9 +4,9 @@ import {parseNet, readConfig_} from "./utils/utils";
 import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const isMainNet = parseNet(hre.network).stage === 'main'
+  const isMainNet = parseNet(hre.network).stage !== 'main'
   if (isMainNet) {
-    console.log("No need to deploy sAMB on mainnet");
+    console.log("No need to deploy testSAMB on non mainnet");
     return;
   }
 
@@ -15,14 +15,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const samb = configFile.tokens.SAMB;
 
   if (isAddress(samb.addresses.amb)) {
-      console.log("sAMB already deployed");
+      console.log("testSAMB already deployed");
       return;
   }
 
   const {owner} = await hre.getNamedAccounts();
 
   const deployResult = await hre.deployments.deploy(samb.symbol, {
-    contract: "sAMB",
+    contract: "testSAMB",
     from: owner,
     args: [samb.name, samb.symbol],
     log: true,
