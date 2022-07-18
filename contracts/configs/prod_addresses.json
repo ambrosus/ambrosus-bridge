@@ -15,7 +15,7 @@
         "0x59C66c7E3D3F239961c87A4627F86a5a9049407C",
         "0xa5E32D3fB342D9Ed3135fD5cb59a102AC8ED7B85"
       ],
-      "threshold": 0
+      "threshold": 4
     }
   },
   "BSC_BscBridge": {
@@ -34,7 +34,7 @@
         "0x59C66c7E3D3F239961c87A4627F86a5a9049407C",
         "0xa5E32D3fB342D9Ed3135fD5cb59a102AC8ED7B85"
       ],
-      "threshold": 0
+      "threshold": 4
     }
   },
 
@@ -54,7 +54,7 @@
         "0x59C66c7E3D3F239961c87A4627F86a5a9049407C",
         "0xa5E32D3fB342D9Ed3135fD5cb59a102AC8ED7B85"
       ],
-      "threshold": 0
+      "threshold": 4
     }
   },
   "ETH_EthBridge": {
@@ -73,7 +73,7 @@
         "0x59C66c7E3D3F239961c87A4627F86a5a9049407C",
         "0xa5E32D3fB342D9Ed3135fD5cb59a102AC8ED7B85"
       ],
-      "threshold": 0
+      "threshold": 4
     }
   }
 }
