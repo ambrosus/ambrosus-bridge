@@ -4,8 +4,8 @@ import {parseNet, readConfig_} from "./utils/utils";
 import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const isMainNet = parseNet(hre.network).stage !== 'main'
-  if (isMainNet) {
+  const isMainNet = parseNet(hre.network).stage === 'main'
+  if (!isMainNet) {
     console.log("No need to deploy testSAMB on non mainnet");
     return;
   }
