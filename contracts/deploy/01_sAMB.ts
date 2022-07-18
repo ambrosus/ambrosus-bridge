@@ -5,8 +5,8 @@ import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const isMainNet = parseNet(hre.network).stage === 'main'
-  if (isMainNet) {
-    console.log("No need to deploy sAMB on mainnet");
+  if (!isMainNet) {
+    console.log("No need to deploy sAMB on NON mainnet");
     return;
   }
 
