@@ -18,7 +18,7 @@ contract ETH_AmbBridge is CommonBridge, CheckPoW {
     function submitTransferPoW(PoWProof calldata powProof) public onlyRole(RELAY_ROLE) whenNotPaused {
         emit TransferSubmit(powProof.transfer.eventId);
         checkEventId(powProof.transfer.eventId);
-//        checkPoW_(powProof, sideBridgeAddress);
+        checkPoW_(powProof, sideBridgeAddress);
         lockTransfers(powProof.transfer.transfers, powProof.transfer.eventId);
     }
 
