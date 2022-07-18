@@ -4,12 +4,6 @@ import {parseNet, readConfig_} from "./utils/utils";
 import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-  const isMainNet = parseNet(hre.network).stage === 'main'
-  if (!isMainNet) {
-    console.log("No need to deploy sAMB on NON mainnet");
-    return;
-  }
-
   let configFile = readConfig_(hre.network);
 
   const samb = configFile.tokens.SAMB;
@@ -35,4 +29,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ["wAMB", "tokens"];
-func.skip = async (hre: HardhatRuntimeEnvironment) => !hre.network.tags["amb"]; // only amb
+func.skip = async (hre: HardhatRuntimeEnvironment) => {
+  const isAmb = hre.network.tags["amb"];
+  if (!isAmb) return true; // skip if not amb
+
+  const isMainNet = parseNet(hre.network).stage === 'main'
+  if (!isMainNet) return true; // skip if not mainnet
+
+  return false;
+}
