@@ -134,7 +134,7 @@ export async function getAmbValidators(ambNetwork: any): Promise<[string[], stri
   const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
 
   // check that current validators match with the latest finalized event
-  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange())
+  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), 19470402)
   const latestLog = logs[logs.length-1]
   const latestSet = vsContract.interface.parseLog(latestLog).args.newSet
   console.assert(JSON.stringify(latestSet) == JSON.stringify(validators),
