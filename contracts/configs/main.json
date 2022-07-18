@@ -18,8 +18,8 @@
       "primaryNet": "amb",
       "addresses": {
         "amb": "DEPLOY",
-        "eth": "DEPLOY, but later",
-        "bsc": "DEPLOY"
+        "eth": "DEPLOY",
+        "bsc": "DEPLOY, but later"
       },
       "nativeAnalog": "AMB"
     },
@@ -30,7 +30,7 @@
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNet": "eth",
       "addresses": {
-        "amb": "DEPLOY, but later",
+        "amb": "DEPLOY",
         "eth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         "bsc": ""
       },
@@ -43,7 +43,7 @@
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "primaryNet": "bsc",
       "addresses": {
-        "amb": "DEPLOY",
+        "amb": "DEPLOY, but later",
         "eth": "",
         "bsc": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
       },
