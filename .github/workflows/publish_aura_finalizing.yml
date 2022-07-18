@@ -3,8 +3,10 @@ name: Publish aura_finalizing image
 on:
   push:
     branches:
-      - master
+      - main
       - dev
+    tags:
+      - 'v*'
     paths:
       - 'aura_finalizing_service/**'
 
