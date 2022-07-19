@@ -9,12 +9,12 @@ type ambResponse struct {
 	Data ambResponse_ `json:"data"`
 }
 type ambResponse_ struct {
-	Price float64 `json:"total_price_usd"`
+	Price float64 `json:"price_usd"`
 }
 
 // GetAmb return usd price for smallest token part (wei 1e-18)
 func GetAmb() (float64, error) {
-	resp, err := http.Get("https://token.ambrosus.io/price")
+	resp, err := http.Get("https://token.ambrosus.io/")
 	if err != nil {
 		return 0, err
 	}
