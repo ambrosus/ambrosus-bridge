@@ -61,7 +61,7 @@ const config: HardhatUserConfig = {
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
-      accounts: [devPK],
+      accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero], // todo devPk
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
@@ -89,7 +89,7 @@ const config: HardhatUserConfig = {
       url: "https://bsc-dataseed1.binance.org/",
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
-      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero],
+      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
 
     },
     "main/bsc": {
