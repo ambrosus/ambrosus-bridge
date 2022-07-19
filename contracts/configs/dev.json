@@ -30,7 +30,7 @@
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNet": "eth",
       "addresses": {
-        "amb": "0x17429a725830792532493517d22F65d4E2E0681c",
+        "amb": "",
         "eth": "0xfb1c09373D1033575affb1500B3ebE4931E795Bb",
         "bsc": ""
       },
