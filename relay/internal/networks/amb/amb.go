@@ -1,6 +1,7 @@
 package amb
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -8,6 +9,7 @@ import (
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
 
@@ -28,11 +30,15 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 	commonBridge.Logger = baseLogger.With().Str("bridge", BridgeName).Logger()
 
 	// ///////////////////
+	origin := nc.GetAmbrosusOrigin()
 
-	parityClient, err := parity.Dial(cfg.HttpURL)
+	rpcHTTPClient, err := rpc.DialHTTP(cfg.HttpURL)
 	if err != nil {
 		return nil, fmt.Errorf("dial http: %w", err)
 	}
+	rpcHTTPClient.SetHeader("Origin", origin)
+
+	parityClient := parity.NewClient(rpcHTTPClient)
 	commonBridge.Client = parityClient
 
 	// Creating a new bridge contract instance.
@@ -43,10 +49,11 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 
 	// Create websocket instances if wsUrl provided
 	if cfg.WsURL != "" {
-		commonBridge.WsClient, err = parity.Dial(cfg.WsURL)
+		rpcWSClient, err := rpc.DialWebsocket(context.Background(), cfg.WsURL, origin)
 		if err != nil {
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
+		commonBridge.WsClient = parity.NewClient(rpcWSClient)
 
 		commonBridge.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.WsClient)
 		if err != nil {
