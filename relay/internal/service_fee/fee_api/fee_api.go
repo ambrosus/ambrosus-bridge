@@ -66,7 +66,7 @@ func (p *FeeAPI) Run(endpoint string, ip string, port int) {
 func (p *FeeAPI) setupCORS() *cors.Cors {
 	// setup CORS
 	var allowedOrigins = []string{"*"}
-	if os.Getenv("STAGE") == "main" {
+	if os.Getenv("STAGE") == "prod" {
 		allowedOrigins = []string{"https://*.ambrosus.io"}
 	}
 
