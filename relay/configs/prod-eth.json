@@ -1,0 +1,69 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "ETH",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus.io",
+            "wsUrl": "wss://network.ambrosus.io/ws",
+            "contractAddr": "0x19caBC1E34Ab0CC5C62DaA1394f6022B38b75c78",
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "privateKey": "in env"
+        },
+        "ETH": {
+            "httpUrl": "https://ambrosus.gynn.io/gethu/chs_NIFgn5rrdUAgHxiccy0jbJ9gdHnqWEH5AKBiT",
+            "wsUrl": "wss://ambrosus.gynn.io/gethu/ws/chs_NIFgn5rrdUAgHxiccy0jbJ9gdHnqWEH5AKBiT",
+            "contractAddr": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208",
+            "privateKey": "in env"
+        }
+    },
+
+    "submitters": {
+        "enable": true,
+        "aura": {
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "finalizeServiceUrl": "https://finalizing-api.ambrosus.io/logs.bin"
+        },
+        "pow": {
+            "ethashDir": "/root/ethash",
+            "ethashKeepPrevEpochs": 1,
+            "ethashGenNextEpochs": 0
+        }
+    },
+    "watchdogs":  {
+        "enable": true
+    },
+    "triggers":  {
+        "enable": true
+    },
+    "unlockers":  {
+        "enable": true
+    },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees",
+        "amb": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFeeWei": "1000000000000000000"
+        },
+        "side": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFeeWei": "10000000000000000"
+        }
+    },
+
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "in env",
+            "chatId": "-1001170462749"
+        }
+    },
+    "prometheus": {
+        "enable": true,
+        "ip": "",
+        "port": "9090"
+    }
+}
