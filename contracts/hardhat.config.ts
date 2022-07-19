@@ -96,7 +96,9 @@ const config: HardhatUserConfig = {
     // dev pk for test networks
     // env vars pk or address for main network
     owner: {
-      default: "privatekey://" + devPK,
+      "dev/amb": "privatekey://" + process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero,
+      "dev/eth": "privatekey://" + process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero,
+      "dev/bsc": "privatekey://" + process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero,
       "main/amb": "privatekey://" + process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero,
       "main/eth": "privatekey://" + process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero,
       "main/bsc": "privatekey://" + process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero,
