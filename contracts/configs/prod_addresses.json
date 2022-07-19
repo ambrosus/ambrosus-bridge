@@ -61,8 +61,8 @@
     "description": "eth part of amb-eth bridge",
     "adminAddress": "0xb6db3c082d25C0dC26602334B5F3D270091DC422",
     "relayAddress": "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded",
-    "transferFeeRecipient": "0x5b5Bcf0875C11EE37Bc789EF846D5D4B2b4594ea",
-    "bridgeFeeRecipient": "0x5b5Bcf0875C11EE37Bc789EF846D5D4B2b4594ea",
+    "transferFeeRecipient": "0x0BD1dD0F45f0F180001e6BD84477B985e8Ce7295",
+    "bridgeFeeRecipient": "0x0BD1dD0F45f0F180001e6BD84477B985e8Ce7295",
     "multisig": {
       "admins": [
         "0xf3cb1e06e72233e0350F7588D11a2585B268C7AD",
