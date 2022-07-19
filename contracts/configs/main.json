@@ -2,7 +2,7 @@
   "bridges": {
     "eth": {
       "amb": "0x19caBC1E34Ab0CC5C62DaA1394f6022B38b75c78",
-      "side": ""
+      "side": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208"
     },
     "bsc": {
       "amb": "",
