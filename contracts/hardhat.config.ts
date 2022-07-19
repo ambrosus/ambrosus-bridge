@@ -54,7 +54,7 @@ const config: HardhatUserConfig = {
     },
 
     "dev/amb": {
-      url: "https://network.ambrosus-dev.io",
+      url: "https://network.ambrosus.io",
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
