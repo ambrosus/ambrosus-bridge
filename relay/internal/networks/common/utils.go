@@ -128,3 +128,12 @@ func getReceipts(client ethclients.ClientInterface, blockHash common.Hash) ([]*t
 
 	return receipts, errGroup.Wait()
 }
+
+// GetTxGasPrice returns gas price from raw response if transaction's type - DynamicFeeTx
+// else - returns default gas price from transaction
+func GetTxGasPrice(client ethclients.ClientInterface, tx *types.Transaction) (*big.Int, error) {
+	if tx.Type() == types.DynamicFeeTxType {
+		return client.TxGasPriceFromResponse(context.Background(), tx.Hash())
+	}
+	return tx.GasPrice(), nil
+}
