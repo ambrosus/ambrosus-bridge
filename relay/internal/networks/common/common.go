@@ -13,10 +13,10 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	common_ethclient "github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
@@ -46,7 +46,7 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 		return b, fmt.Errorf("dial http: %w", err)
 	}
 	rpcHTTPClient.SetHeader("Origin", origin)
-	b.Client = ethclient.NewClient(rpcHTTPClient)
+	b.Client = common_ethclient.NewClient(rpcHTTPClient)
 
 	// Creating a new bridge contract instance.
 	b.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
@@ -60,7 +60,7 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 		if err != nil {
 			return b, fmt.Errorf("dial ws: %w", err)
 		}
-		b.WsClient = ethclient.NewClient(rpcWSClient)
+		b.WsClient = common_ethclient.NewClient(rpcWSClient)
 
 		b.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.WsClient)
 		if err != nil {

@@ -4,16 +4,16 @@ import (
 	"context"
 	"math/big"
 
+	common_ethclient "github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
 type Client struct {
-	ethclient.Client
+	common_ethclient.Client
 	c *rpc.Client
 }
 
@@ -32,7 +32,7 @@ func DialContext(ctx context.Context, rawurl string) (*Client, error) {
 
 // NewClient creates a client that uses the given RPC client.
 func NewClient(c *rpc.Client) (client *Client) {
-	return &Client{Client: *ethclient.NewClient(c), c: c}
+	return &Client{Client: *common_ethclient.NewClient(c), c: c}
 }
 
 // Blockchain Access
