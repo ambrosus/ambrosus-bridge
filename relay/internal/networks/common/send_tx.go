@@ -65,7 +65,11 @@ func (b *CommonBridge) ProcessTx(methodName string, txCallback networks.Contract
 		return err
 	}
 
-	metric.SetUsedGasMetric(b, methodName, receipt.GasUsed, tx.GasPrice())
+	txGasPrice, err := GetTxGasPrice(b.Client, tx)
+	if err != nil {
+		return fmt.Errorf("get tx gas price: %w", err)
+	}
+	metric.SetUsedGasMetric(b, methodName, receipt.GasUsed, txGasPrice)
 
 	if receipt.Status != types.ReceiptStatusSuccessful {
 		metric.IncFailedTxCountMetric(b, methodName)
