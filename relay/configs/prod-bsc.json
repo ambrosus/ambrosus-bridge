@@ -8,8 +8,8 @@
             "privateKey": "in env"
         },
         "BSC": {
-            "httpUrl": "https://ambrosus.gynn.io/bnbu/chs_NIFgn5rrdUAgHxiccy0jbJ9gdHnqWEH5AKBiT",
-            "wsUrl": "wss://ambrosus.gynn.io/bnbu/ws/chs_NIFgn5rrdUAgHxiccy0jbJ9gdHnqWEH5AKBiT",
+            "httpUrl": "https://bsc-mainnet.nodereal.io/v1/e88f6b95a25842d4b67bcf5d5f4a992c",
+            "wsUrl": "wss://bsc-mainnet.nodereal.io/ws/v1/e88f6b95a25842d4b67bcf5d5f4a992c",
             "contractAddr": "0xd461De9b5Ca6DF8575817a1a54a31A933913fa29",
             "privateKey": "in env"
         }
