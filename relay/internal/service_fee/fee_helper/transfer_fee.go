@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
@@ -152,9 +153,20 @@ func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *b
 				return fmt.Errorf("get transaction by hash: %w", err)
 			}
 
+			txGasPrice, err := cb.GetTxGasPrice(client, tx)
+			if err != nil {
+				return fmt.Errorf("get tx gas price: %w", err)
+			}
+			receipt, err := client.TransactionReceipt(context.Background(), txHash)
+			if err != nil {
+				return fmt.Errorf("get transaction receipt: %w", err)
+			}
+
+			txCost := new(big.Int).Mul(txGasPrice, big.NewInt(int64(receipt.GasUsed)))
+
 			lock.Lock()
-			totalGas.Add(totalGas, big.NewInt(int64(tx.Gas())))
-			totalGasCost.Add(totalGasCost, tx.Cost())
+			totalGas.Add(totalGas, big.NewInt(int64(receipt.GasUsed)))
+			totalGasCost.Add(totalGasCost, txCost)
 			lock.Unlock()
 			return nil
 		})
