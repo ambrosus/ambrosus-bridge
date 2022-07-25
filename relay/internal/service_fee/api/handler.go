@@ -34,7 +34,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 
 	bridgeFee, transferFee, amount, signature, err := p.Service.GetFees(req.TokenAddress, (*big.Int)(req.Amount), req.IsAmb, req.IsAmountWithFees)
 	if err != nil {
-		writeError(w, http.StatusInternalServerError, fmt.Errorf("error getting bridge_fee: %w", err))
+		writeError(w, http.StatusInternalServerError, fmt.Errorf("error when getting fees: %w", err))
 		return
 	}
 

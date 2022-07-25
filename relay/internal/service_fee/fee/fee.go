@@ -53,7 +53,7 @@ func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, is
 	// get fees
 	bridgeFee, transferFee, amount, err = p.getFees(bridge, sideBridge, tokenAddress, decimal.NewFromBigInt(reqAmount, 0), isAmountWithFees)
 	if err != nil {
-		err = fmt.Errorf("error when signing data: %w", err)
+		return
 	}
 	bridge.GetLogger().Debug().Msgf("bridgeFee: %s, transferFee: %s, amount: %s", bridgeFee.String(), transferFee.String(), amount.String())
 
