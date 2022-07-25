@@ -57,7 +57,7 @@ func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, is
 	}
 	bridge.GetLogger().Debug().Msgf("bridgeFee: %s, transferFee: %s, amount: %s", bridgeFee.String(), transferFee.String(), amount.String())
 
-	// sign fees with re;ay private key
+	// sign fees with relay private key
 	message := buildMessage(tokenAddress, transferFee, bridgeFee, amount)
 	signature, err = bridge.Sign(message)
 	if err != nil {
