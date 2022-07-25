@@ -17,37 +17,38 @@ func possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice
 	return amount, nil
 }
 
-func possibleAmountWithoutFeesUsd(amountUsd1, transferFeeUsd, minBridgeFee decimal.Decimal) decimal.Decimal {
-	// todo why float64(feePercent1+10_000) / 10_000) ??
-	// todo add comments, i understand nothing :(
-
-	// part 1
-	feePercent1 := getFeePercent(amountUsd1)
-
-	// if fee < minBridgeFee then use the minBridgeFee
-	if calcBps(amountUsd1, feePercent1).Cmp(minBridgeFee) == -1 {
-		// amountUsd1 - (transferFeeUsd + minBridgeFee)
-		return amountUsd1.Sub(minBridgeFee).Sub(transferFeeUsd)
+func possibleAmountWithoutFeesUsd(amountWithBridgeFee, transferFee, minBridgeFee decimal.Decimal) decimal.Decimal {
+	feePercentWithBridgeFee := getFeePercent(amountWithBridgeFee)
+	if shouldUseMinBridgeFee(amountWithBridgeFee, feePercentWithBridgeFee, minBridgeFee) {
+		return getAmountWithoutFees(amountWithBridgeFee, minBridgeFee, transferFee)
 	}
 
-	// part 2
-
-	// (amountUsd1 - transferFeeUsd) / %
-	amountUsd2 := amountUsd1.Div(decimal.NewFromFloat(float64(feePercent1)/10_000 + 1))
-	feePercent2 := getFeePercent(amountUsd2)
-
-	// if fee < minBridgeFee then use the minBridgeFee
-	if calcBps(amountUsd2, feePercent2).Cmp(minBridgeFee) == -1 {
-		// amountUsd1 - (transferFeeUsd + minBridgeFee)
-		return amountUsd1.Sub(minBridgeFee).Sub(transferFeeUsd)
+	amountWithoutBridgeFee := getAmountWithoutBridgeFeeRatio(amountWithBridgeFee, feePercentWithBridgeFee)
+	feePercentWithoutBridgeFee := getFeePercent(amountWithoutBridgeFee)
+	if shouldUseMinBridgeFee(amountWithoutBridgeFee, feePercentWithoutBridgeFee, minBridgeFee) {
+		return getAmountWithoutFees(amountWithBridgeFee, minBridgeFee, transferFee)
 	}
 
-	// part 3
-
-	// if fee percent of new amount if different from the old one, then recalculate with the new one
-	if feePercent2 != feePercent1 {
-		amountUsd2 = amountUsd1.Div(decimal.NewFromFloat(float64(feePercent2)/10_000 + 1))
+	// if fee percent of amount without bridge fee is different from the old one, then recalculate with the new one
+	if feePercentWithoutBridgeFee != feePercentWithBridgeFee {
+		amountWithoutBridgeFee = getAmountWithoutBridgeFeeRatio(amountWithBridgeFee, feePercentWithoutBridgeFee)
 	}
+	return getAmountWithoutTransferFee(amountWithoutBridgeFee, transferFee)
+}
 
-	return amountUsd2.Sub(transferFeeUsd)
+func shouldUseMinBridgeFee(amount decimal.Decimal, feePercent int64, minBridgeFee decimal.Decimal) bool {
+	return calcBps(amount, feePercent).Cmp(minBridgeFee) < 0
+}
+
+func getAmountWithoutFees(amount decimal.Decimal, bridgeFee decimal.Decimal, transferFee decimal.Decimal) decimal.Decimal {
+	return amount.Sub(bridgeFee).Sub(transferFee)
+}
+
+// "ratio" because 10/1.5=6.6667, not 5
+func getAmountWithoutBridgeFeeRatio(amount decimal.Decimal, feePercent int64) decimal.Decimal {
+	return amount.Div(decimal.NewFromInt(feePercent).Div(decimal.NewFromInt(10_000)).Add(decimal.NewFromInt(1)))
+}
+
+func getAmountWithoutTransferFee(amount, transferFee decimal.Decimal) decimal.Decimal {
+	return amount.Sub(transferFee)
 }
