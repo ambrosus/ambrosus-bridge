@@ -5,25 +5,21 @@ import (
 	"fmt"
 
 	c "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura/aura_proof/rolling_finality"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
 type vsChangeInBlock struct {
-	eventBlock     uint64
-	finalizedBlock uint64
-	changes        []c.CheckAuraValidatorSetChange
-	lastEvent      *c.VsInitiateChange
+	c.CheckAuraValidatorSetProof                     // to be sent to the bridge
+	finalizedBlock               uint64              // block number when this event was finalized
+	lastEvent                    *c.VsInitiateChange // last event in this block, used to generate proof
 }
 
-func (e *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock, error) {
-	// note:
-	// lastProcessedBlock *should* be after finalizing `ValidatorSet` but before next VSChangeEvent
-	// so, if after last fetched event and before it finalized exist another VSChangeEvent then it will be skipped
+func (e *AuraEncoder) getVsChanges(toBlock uint64) ([]*vsChangeInBlock, error) {
+	// note: lastProcessedBlock *should* be a block when latest *finalized* `VSChangeEvent` is *emitted*
 
-	start, err := e.getLastProcessedBlockNum()
+	lastProcessedBlockNum, err := e.getLastProcessedBlockNum()
 	if err != nil {
 		return nil, fmt.Errorf("getLastProcessedBlockNum: %w", err)
 	}
@@ -33,7 +29,7 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock,
 		return nil, fmt.Errorf("GetValidatorSet: %w", err)
 	}
 
-	vsChangeEvents, err := e.fetchVSChangeEvents(start, toBlock)
+	vsChangeEvents, err := e.fetchVSChangeEvents(lastProcessedBlockNum+1, toBlock)
 	if err != nil {
 		return nil, fmt.Errorf("fetchVSChangeEvents: %w", err)
 	}
@@ -43,25 +39,33 @@ func (e *AuraEncoder) getVsChanges(toBlock uint64) (map[uint64]*vsChangeInBlock,
 		return nil, fmt.Errorf("preprocessVSChangeEvents: %w", err)
 	}
 
-	err = e.findWhenFinalize(initialValidatorSet, blockToEvents)
+	err = e.findWhenFinalize(lastProcessedBlockNum, blockToEvents)
 	if err != nil {
 		return nil, fmt.Errorf("findWhenFinalize: %w", err)
 	}
 
 	// delete events that finalized after `toBlock`
 	// otherwise, next time we can miss some events emitted after `toBlock` and before current highest finalized
+	filterBlocks(blockToEvents, toBlock)
+
+	vsChanges := helpers.SortedValues(blockToEvents)
+
+	return vsChanges, nil
+}
+
+func filterBlocks(blockToEvents map[uint64]*vsChangeInBlock, toBlock uint64) {
 	for blockNum, event := range blockToEvents {
 		if event.finalizedBlock >= toBlock {
 			delete(blockToEvents, blockNum)
 		}
 	}
-
-	return blockToEvents, nil
 }
 
-func (e *AuraEncoder) findWhenFinalize(initialValidatorSet []common.Address, blockToEvents map[uint64]*vsChangeInBlock) error {
-	currentSet := initialValidatorSet
-	currentEpoch := uint64(0)
+func (e *AuraEncoder) findWhenFinalize(lastProcessedBlockNum uint64, blockToEvents map[uint64]*vsChangeInBlock) error {
+	currentEpoch, err := e.finalizeService.GetBlockWhenFinalize(lastProcessedBlockNum)
+	if err != nil {
+		return fmt.Errorf("getBlockWhenFinalize: %w", err)
+	}
 
 	eventBlockNums := helpers.SortedKeys(blockToEvents)
 
@@ -70,51 +74,27 @@ func (e *AuraEncoder) findWhenFinalize(initialValidatorSet []common.Address, blo
 
 		// current event implicitly finalized, but we don't know in which block.
 		// so, it's easier to pretend that this event doesn't exist.
-		if event.eventBlock <= currentEpoch {
-			if i < len(eventBlockNums) {
+		// first explicit finalized event will use `changes` from this event
+		if event.EventBlock <= currentEpoch {
+			if i+1 < len(eventBlockNums) {
 				// save this event `changes` before the next event `changes`
 				nextEvent := blockToEvents[eventBlockNums[i+1]]
-				nextEvent.changes = append(event.changes, nextEvent.changes...)
+				nextEvent.Changes = append(event.Changes, nextEvent.Changes...)
 			}
 			delete(blockToEvents, eventBlockNum)
-			e.logger.Trace().Uint64("block", eventBlockNum).Uint64("finalized", currentEpoch).Msg("aura implicitly finalized event block")
+			e.logger.Trace().Uint64("block", eventBlockNum).Msg("aura implicitly finalized event block")
 
 		} else {
-			if err := e.finalizeEvent(currentSet, event); err != nil {
-				return fmt.Errorf("finalizeEvent: %w", err)
+			currentEpoch, err = e.finalizeService.GetBlockWhenFinalize(eventBlockNum)
+			if err != nil {
+				return fmt.Errorf("getBlockWhenFinalize: %w", err)
 			}
-			currentEpoch = event.finalizedBlock
-			currentSet = event.lastEvent.NewSet
+			event.finalizedBlock = currentEpoch
 
 			e.logger.Trace().Uint64("block", eventBlockNum).Uint64("finalized", event.finalizedBlock).Msg("aura finalized event block")
 		}
 	}
 	return nil
-}
-
-func (e *AuraEncoder) finalizeEvent(initialValidatorSet []common.Address, event *vsChangeInBlock) error {
-	rf := rolling_finality.NewRollingFinality(initialValidatorSet)
-
-	// get next blocks, until event block finalized
-	for blockNum := event.eventBlock; ; blockNum++ {
-		block, err := e.fetchBlockCache(blockNum)
-		if err != nil {
-			return fmt.Errorf("fetchBlockCache: %w", err)
-		}
-
-		finalizedBlocks, err := rf.Push(blockNum, *block.Coinbase)
-		if err != nil {
-			return fmt.Errorf("rf.Push: %w", err)
-		}
-
-		for _, finalizedBlock := range finalizedBlocks {
-			if finalizedBlock >= event.eventBlock {
-				event.finalizedBlock = blockNum
-				return nil
-			}
-		}
-	}
-
 }
 
 func (e *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Address, events []*c.VsInitiateChange) (map[uint64]*vsChangeInBlock, error) {
@@ -131,9 +111,9 @@ func (e *AuraEncoder) preprocessVSChangeEvents(initialValidatorSet []common.Addr
 		prevSet = event.NewSet
 
 		if _, ok := blocksToEvents[event.Raw.BlockNumber]; !ok {
-			blocksToEvents[event.Raw.BlockNumber] = &vsChangeInBlock{eventBlock: event.Raw.BlockNumber}
+			blocksToEvents[event.Raw.BlockNumber] = &vsChangeInBlock{CheckAuraValidatorSetProof: c.CheckAuraValidatorSetProof{EventBlock: event.Raw.BlockNumber}}
 		}
-		blocksToEvents[event.Raw.BlockNumber].changes = append(blocksToEvents[event.Raw.BlockNumber].changes, vsChange)
+		blocksToEvents[event.Raw.BlockNumber].Changes = append(blocksToEvents[event.Raw.BlockNumber].Changes, vsChange)
 		blocksToEvents[event.Raw.BlockNumber].lastEvent = event
 	}
 
@@ -171,10 +151,12 @@ func (e *AuraEncoder) getLastProcessedBlockNum() (uint64, error) {
 		return 0, fmt.Errorf("get rfBlock by hash: %w", err)
 	}
 
-	return block.Number().Uint64(), nil
+	// last processed block is *parentHash* of block in which last processed event was *emitted*
+	// so, processed event emitted at `start+1` block num
+	return block.Number().Uint64() + 1, nil
 }
 
-func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
+func deltaVS(prev, curr []common.Address) (common.Address, uint16, error) {
 	d := len(curr) - len(prev)
 	if d != 1 && d != -1 {
 		return common.Address{}, 0, fmt.Errorf("delta has more (or less) than 1 change")
@@ -182,21 +164,21 @@ func deltaVS(prev, curr []common.Address) (common.Address, int64, error) {
 
 	for i, prevEl := range prev {
 		if i >= len(curr) { // deleted at the end
-			return prev[i], int64(-i - 1), nil
+			return prev[i], uint16(i + 1), nil
 		}
 
 		if curr[i] != prevEl {
 			if d == 1 { // added
-				return curr[i], int64(i), nil
+				return curr[i], 0, nil
 			} else { // deleted
-				return prev[i], int64(-i - 1), nil
+				return prev[i], uint16(i + 1), nil
 			}
 		}
 	}
 
 	// add at the end
 	i := len(curr) - 1
-	return curr[i], int64(i), nil
+	return curr[i], 0, nil
 
 	// return common.Address{}, 0, fmt.Errorf("this error shouln't exist")
 }

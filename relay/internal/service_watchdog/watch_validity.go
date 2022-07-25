@@ -28,10 +28,12 @@ type WatchTransfersValidity struct {
 }
 
 func NewWatchTransfersValidity(bridge networks.Bridge, eventEmitter interfaces.BridgeContract) *WatchTransfersValidity {
+	logger := bridge.GetLogger().With().Str("service", "WatchTransfersValidity").Logger()
+
 	return &WatchTransfersValidity{
 		bridge:       bridge,
 		eventEmitter: eventEmitter,
-		logger:       bridge.GetLogger(), // todo maybe sublogger?
+		logger:       &logger,
 	}
 }
 
@@ -42,7 +44,7 @@ func (b *WatchTransfersValidity) Run() {
 		cb.EnsureContractUnpaused(b.bridge)
 
 		if err := b.watchLockedTransfers(); err != nil {
-			b.logger.Error().Err(fmt.Errorf("watchLockedTransfers: %s", err)).Msg("WatchTransfersValidity")
+			b.logger.Error().Err(err).Msg("")
 		}
 		time.Sleep(1 * time.Minute)
 	}

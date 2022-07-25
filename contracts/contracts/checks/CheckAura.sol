@@ -13,7 +13,7 @@ contract CheckAura is Initializable {
 
     address[] public validatorSet;
     address validatorSetAddress;
-    bytes32 public lastProcessedBlock; // actually latest processed (finalized) *vs change event* block
+    bytes32 public lastProcessedBlock; // actually latest processed block in which *vs change event* emitted
     uint public minSafetyBlocksValidators;
 
 
@@ -35,13 +35,13 @@ contract CheckAura is Initializable {
 
     struct ValidatorSetChange {
         address deltaAddress;
-        int64 deltaIndex; // < 0 ? remove : add
+        uint16 deltaIndex; // add if 0, else remove
     }
 
     struct ValidatorSetProof {
         bytes[] receiptProof;
         ValidatorSetChange[] changes;
-        uint eventBlock;
+        uint64 eventBlock;
     }
 
     struct AuraProof {
@@ -90,10 +90,9 @@ contract CheckAura is Initializable {
 
         bytes32 parentHash;
         bytes32 receiptHash;
-        bytes32 lastProcessedBlockTemp;
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
-        if (auraProof.transferEventBlock != 0) {
+        if (auraProof.transfer.eventId != 0) {
             receiptHash = calcTransferReceiptsHash(auraProof.transfer, sideBridgeAddress);
             require(auraProof.blocks[auraProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
             require(auraProof.blocks.length - auraProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");
@@ -102,18 +101,22 @@ contract CheckAura is Initializable {
         for (uint i = 0; i < auraProof.blocks.length; i++) {
             BlockAura calldata block_ = auraProof.blocks[i];
 
-            // if this block is finalizing block
-            if (block_.finalizedVs != 0) {
-                // there is gap BEFORE finalizing block, so disable parentHash check for it
-                // but only if it's not the safety blocks for transfer event
-                if (i <= auraProof.transferEventBlock)
-                    parentHash = bytes32(0);
-            }
+            // check that parentHash is correct
+            if (block_.parentHash != parentHash) {
+                // we can ignore wrong parentHash if:
+                // - it's NOT safety blocks for transfer event
+                // - it's first block (don't know parentHash)
+                // - it's finalizing block (there is gap BEFORE finalizing block)
+                // - it's next block after finalizing (there is gap AFTER finalizing block)
+                // else, raise error
 
-            // check that block.parentHash == parentHash (hash of prev block)
-            // don't check parentHash for first block and for blocks before and after finalizing vs
-            if (parentHash != bytes32(0))
-                require(block_.parentHash == parentHash, "Wrong parent hash");
+                if (i > auraProof.transferEventBlock || // safety blocks for transfer event
+                    (i != 0 && // not first block
+                    block_.finalizedVs == 0 && // not finalizing block
+                    auraProof.blocks[i-1].finalizedVs == 0) // not next block after finalizing
+                )
+                    revert("Wrong parent hash");
+            }
 
             // check validator for this block
             // calc block hash for this block
@@ -133,22 +136,13 @@ contract CheckAura is Initializable {
                 receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
                 require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
                 require(i - vsProof.eventBlock >= minSafetyBlocksValidators, "Few safety blocks validators");
-
-
-                // save finalization block hash to `lastProcessedBlock`
-                lastProcessedBlockTemp = parentHash;
-
-                // there is gap AFTER finalizing block, so disable parentHash check for it
-                // but only if it's not the safety blocks for transfer event
-                if (i <= auraProof.transferEventBlock)
-                    parentHash = bytes32(0);
             }
 
         }
 
-        // saving in temp variable cost lower than saving in global `lastProcessedBlock`
-        if (lastProcessedBlockTemp != bytes32(0)) {
-            lastProcessedBlock = lastProcessedBlockTemp;
+        // save block.parentHash in which latest processed vsChange event emitted
+        if (auraProof.vsChanges.length > 0) {
+            lastProcessedBlock = auraProof.blocks[auraProof.vsChanges[auraProof.vsChanges.length - 1].eventBlock].parentHash;
         }
     }
 
@@ -157,13 +151,12 @@ contract CheckAura is Initializable {
     }
 
     function applyVsChange(ValidatorSetChange calldata vsEvent) internal {
-        // todo invert indexes sign meaning
-        if (vsEvent.deltaIndex < 0) { // delete validator
-            uint index = uint(int(vsEvent.deltaIndex * (- 1) - 1));
+        if (vsEvent.deltaIndex == 0) {// add validator
+            validatorSet.push(vsEvent.deltaAddress);
+        } else {// delete validator
+            uint index = uint(vsEvent.deltaIndex - 1);
             validatorSet[index] = validatorSet[validatorSet.length - 1];
             validatorSet.pop();
-        } else { // add validator
-            validatorSet.push(vsEvent.deltaAddress);
         }
     }
 

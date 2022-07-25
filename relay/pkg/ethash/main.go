@@ -11,7 +11,6 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/math"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 )
 
 type Ethash struct {
@@ -28,8 +27,8 @@ type Ethash struct {
 	// no lock for cache because is doesn't take that long to generate it
 }
 
-func New(dir string, keepPrevEpochs, genNextEpochs uint64) *Ethash {
-	logger := log.With().Str("pkg", "ethash").Logger()
+func New(dir string, keepPrevEpochs, genNextEpochs uint64, baseLogger zerolog.Logger) *Ethash {
+	logger := baseLogger.With().Str("pkg", "ethash").Logger()
 
 	if dir == "" {
 		logger.Info().Msg("No ethash dir provided, working in memory only")

@@ -84,7 +84,7 @@ contract CheckPoSA is Initializable {
         uint nextVsSize;
 
         // posaProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
-        if (posaProof.transferEventBlock != 0) {
+        if (posaProof.transfer.eventId != 0) {
             bytes32 receiptHash = calcTransferReceiptsHash(posaProof.transfer, sideBridgeAddress);
             require(posaProof.blocks[posaProof.transferEventBlock].receiptHash == receiptHash, "Transfer event validation failed");
             require(posaProof.blocks.length - posaProof.transferEventBlock >= minSafetyBlocks, "Not enough safety blocks");

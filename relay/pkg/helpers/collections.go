@@ -6,14 +6,33 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-// SortedKeys used for 'ordered' map
+// SortedValuesWithIndices return list from map values sorted by map keys with keys to indices map
+func SortedValuesWithIndices[K constraints.Integer, V any](m map[K]V) ([]V, map[K]int) {
+	values := make([]V, 0, len(m))
+	keyToIndex := map[K]int{}
+	for i, k := range SortedKeys(m) {
+		values = append(values, m[k])
+		keyToIndex[k] = i
+	}
+	return values, keyToIndex
+}
+
+// SortedValues return list from map values sorted by map keys
+func SortedValues[K constraints.Integer, V any](m map[K]V) []V {
+	values := make([]V, 0, len(m))
+	for _, k := range SortedKeys(m) {
+		values = append(values, m[k])
+	}
+	return values
+}
+
+// SortedKeys return list of sorted map keys
 func SortedKeys[K constraints.Integer, V any](m map[K]V) []K {
 	keys := make([]K, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
 	}
-	sort.Slice(keys, func(i, j int) bool { return keys[i] < keys[j] })
-	return keys
+	return Sorted(keys)
 }
 
 // Sorted is like sort.Ints, but generi.

@@ -75,7 +75,7 @@ func (t *CheckAuraBlockAura) MarshalJSON() ([]byte, error) {
 func (t *CheckAuraValidatorSetChange) MarshalJSON() ([]byte, error) {
 	type CheckAuraValidatorSetChange struct {
 		DeltaAddress common.Address `json:"deltaAddress"`
-		DeltaIndex   int64          `json:"deltaIndex"`
+		DeltaIndex   uint16         `json:"deltaIndex"`
 	}
 	tm := CheckAuraValidatorSetChange{t.DeltaAddress, t.DeltaIndex}
 	return json.Marshal(&tm)
@@ -85,13 +85,13 @@ func (t *CheckAuraValidatorSetProof) MarshalJSON() ([]byte, error) {
 	type ValidatorSetProof struct {
 		ReceiptProof []hexutil.Bytes               `json:"receiptProof"`
 		Changes      []CheckAuraValidatorSetChange `json:"changes"`
-		EventBlock   *hexutil.Big                  `json:"eventBlock"`
+		EventBlock   uint64                        `json:"eventBlock"`
 	}
 	rp := make([]hexutil.Bytes, len(t.ReceiptProof))
 	for i, v := range t.ReceiptProof {
 		rp[i] = v
 	}
-	tm := ValidatorSetProof{rp, t.Changes, (*hexutil.Big)(t.EventBlock)}
+	tm := ValidatorSetProof{rp, t.Changes, t.EventBlock}
 	return json.Marshal(&tm)
 }
 

@@ -849,6 +849,36 @@ func (mr *MockBridgeContractMockRecorder) SubmitTransferPoW(arg0, arg1 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitTransferPoW", reflect.TypeOf((*MockBridgeContract)(nil).SubmitTransferPoW), arg0, arg1)
 }
 
+// SubmitValidatorSetChangesAura mocks base method.
+func (m *MockBridgeContract) SubmitValidatorSetChangesAura(arg0 *bind.TransactOpts, arg1 bindings.CheckAuraAuraProof) (*types.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubmitValidatorSetChangesAura", arg0, arg1)
+	ret0, _ := ret[0].(*types.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubmitValidatorSetChangesAura indicates an expected call of SubmitValidatorSetChangesAura.
+func (mr *MockBridgeContractMockRecorder) SubmitValidatorSetChangesAura(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitValidatorSetChangesAura", reflect.TypeOf((*MockBridgeContract)(nil).SubmitValidatorSetChangesAura), arg0, arg1)
+}
+
+// SubmitValidatorSetChangesPoSA mocks base method.
+func (m *MockBridgeContract) SubmitValidatorSetChangesPoSA(arg0 *bind.TransactOpts, arg1 bindings.CheckPoSAPoSAProof) (*types.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubmitValidatorSetChangesPoSA", arg0, arg1)
+	ret0, _ := ret[0].(*types.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubmitValidatorSetChangesPoSA indicates an expected call of SubmitValidatorSetChangesPoSA.
+func (mr *MockBridgeContractMockRecorder) SubmitValidatorSetChangesPoSA(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitValidatorSetChangesPoSA", reflect.TypeOf((*MockBridgeContract)(nil).SubmitValidatorSetChangesPoSA), arg0, arg1)
+}
+
 // SupportsInterface mocks base method.
 func (m *MockBridgeContract) SupportsInterface(arg0 *bind.CallOpts, arg1 [4]byte) (bool, error) {
 	m.ctrl.T.Helper()

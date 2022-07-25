@@ -22,6 +22,14 @@ func (b *ReceiverPoSA) SubmitTransferPoSA(proof *bindings.CheckPoSAPoSAProof) er
 	})
 }
 
+func (b *ReceiverPoSA) SubmitValidatorSetChangesPoSA(proof *bindings.CheckPoSAPoSAProof) error {
+	defer metric.SetRelayBalanceMetric(b)
+
+	return b.ProcessTx("SubmitValidatorSetChangesPoSA", func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitValidatorSetChangesPoSA(b.GetAuth(), *proof)
+	})
+}
+
 func (b *ReceiverPoSA) GetCurrentEpoch() (uint64, error) {
 	epoch, err := b.GetContract().CurrentEpoch(nil)
 	if err != nil {

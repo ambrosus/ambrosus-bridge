@@ -491,11 +491,11 @@
       "changes": [
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 10
+          "deltaIndex": 0
         }
       ],
       "eventBlock": "0x0"
@@ -511,11 +511,11 @@
       "changes": [
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -11
+          "deltaIndex": 11
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 10
         }
       ],
       "eventBlock": "0x4"
@@ -529,7 +529,15 @@
       "changes": [
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 9
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
@@ -537,19 +545,11 @@
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 9
-        },
-        {
-          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
+          "deltaIndex": 10
         }
       ],
       "eventBlock": "0x8"
@@ -563,11 +563,11 @@
       "changes": [
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 10
+          "deltaIndex": 0
         }
       ],
       "eventBlock": "0xc"
@@ -583,15 +583,7 @@
       "changes": [
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
@@ -599,7 +591,15 @@
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
+          "deltaIndex": 10
         }
       ],
       "eventBlock": "0x10"
@@ -613,23 +613,23 @@
       "changes": [
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 9
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
+          "deltaIndex": 10
         }
       ],
       "eventBlock": "0x14"
@@ -643,15 +643,7 @@
       "changes": [
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
-        },
-        {
-          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 9
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
@@ -659,19 +651,27 @@
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 9
+          "deltaIndex": 10
+        },
+        {
+          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
+          "deltaIndex": 10
         }
       ],
       "eventBlock": "0x18"
@@ -687,7 +687,15 @@
       "changes": [
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
@@ -695,19 +703,11 @@
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
-        },
-        {
-          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 10
+          "deltaIndex": 0
         }
       ],
       "eventBlock": "0x1c"
@@ -723,15 +723,7 @@
       "changes": [
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
@@ -739,7 +731,15 @@
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
+          "deltaIndex": 10
         }
       ],
       "eventBlock": "0x20"
@@ -755,11 +755,19 @@
       "changes": [
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
+          "deltaIndex": 0
+        },
+        {
+          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
+          "deltaIndex": 10
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
@@ -767,19 +775,11 @@
         },
         {
           "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": -10
+          "deltaIndex": 0
         },
         {
           "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": -10
-        },
-        {
-          "deltaAddress": "0x7b10baefa1bf7edf72e1705b1e52dc66926a3bd8",
-          "deltaIndex": 9
-        },
-        {
-          "deltaAddress": "0x38a1835e04befed507f3ef6b25d61f3e4bfbf9a1",
-          "deltaIndex": 10
+          "deltaIndex": 0
         }
       ],
       "eventBlock": "0x24"
