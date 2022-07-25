@@ -14,6 +14,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -98,18 +99,29 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 		return fmt.Errorf("get transfer unlocks by ids: %v", err)
 	}
 
-	// save tx hashes made by (side) relay
+	// save tx hashes made by relay (this for triggered transfers and side for unlocks and submits)
 
-	var relayTxHashes []common.Hash
+	var thisRelayTxHashes []common.Hash
+	var sideRelayTxHashes []common.Hash
 	for _, event := range submits {
-		relayTxHashes = append(relayTxHashes, event.Raw.TxHash)
+		sideRelayTxHashes = append(sideRelayTxHashes, event.Raw.TxHash)
 	}
 	for _, event := range unlocks {
-		relayTxHashes = append(relayTxHashes, event.Raw.TxHash)
+		sideRelayTxHashes = append(sideRelayTxHashes, event.Raw.TxHash)
+	}
+	for _, event := range transfers {
+		isTransferTriggeredFromRelay, err := isTransferTriggeredFromRelay(event, p.bridge.GetClient(), p.bridge.GetAuth().From)
+		if err != nil {
+			return fmt.Errorf("is transfer triggered from relay: %w", err)
+		}
+
+		if isTransferTriggeredFromRelay {
+			thisRelayTxHashes = append(thisRelayTxHashes, event.Raw.TxHash)
+		}
 	}
 
 	// calc how much gas used in this txs
-	gas, _, err := usedGas(p.sideBridge.GetClient(), helpers.Unique(relayTxHashes))
+	gas, _, err := usedGas(p.bridge.GetClient(), p.sideBridge.GetClient(), thisRelayTxHashes, helpers.Unique(sideRelayTxHashes))
 	if err != nil {
 		return err
 	}
@@ -132,7 +144,24 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	return nil
 }
 
-func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *big.Int, error) {
+func isTransferTriggeredFromRelay(event *bindings.BridgeTransfer, client ethclients.ClientInterface, relayAddress common.Address) (bool, error) {
+	tx, _, err := client.TransactionByHash(context.Background(), event.Raw.TxHash)
+	if err != nil {
+		return false, fmt.Errorf("get transaction by hash: %w", err)
+	}
+
+	txAsMsg, err := tx.AsMessage(types.LatestSignerForChainID(tx.ChainId()), big.NewInt(1))
+	if err != nil {
+		return false, fmt.Errorf("get transaction as message: %w", err)
+	}
+
+	if txAsMsg.From() == relayAddress {
+		return true, nil
+	}
+	return false, nil
+}
+
+func usedGas(thisClient ethclients.ClientInterface, sideClient ethclients.ClientInterface, thisTxs []common.Hash, sideTxs []common.Hash) (*big.Int, *big.Int, error) {
 	// fetch transactions and sum gas
 
 	totalGas := new(big.Int)
@@ -141,10 +170,8 @@ func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *b
 	lock := sync.Mutex{}
 	sem := make(chan interface{}, 10) // max 20 simultaneous requests
 	errGroup := new(errgroup.Group)
-
-	for _, txHash := range txs {
-		txHash := txHash
-		errGroup.Go(func() error {
+	getAndSaveTotalGasParams := func(client ethclients.ClientInterface, txHash common.Hash) func() error {
+		return func() error {
 			sem <- 0
 			defer func() { <-sem }()
 
@@ -169,7 +196,16 @@ func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *b
 			totalGasCost.Add(totalGasCost, txCost)
 			lock.Unlock()
 			return nil
-		})
+		}
+	}
+
+	for _, txHash := range thisTxs {
+		txHash := txHash
+		errGroup.Go(getAndSaveTotalGasParams(thisClient, txHash))
+	}
+	for _, txHash := range sideTxs {
+		txHash := txHash
+		errGroup.Go(getAndSaveTotalGasParams(sideClient, txHash))
 	}
 	if err := errGroup.Wait(); err != nil {
 		return nil, nil, fmt.Errorf("calc used gas: %w", err)
