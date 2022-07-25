@@ -95,7 +95,7 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 
 	feeService := fee.NewFee(feeAmb, feeSide)
 	feeApi := &api.FeeAPI{Service: feeService}
-	if err = feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port, logger); err != nil {
+	if err = feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port, &logger); err != nil {
 		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Fee Api endpoint)")
 	}
 }
