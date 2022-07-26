@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - dev
+      - main
     paths:
       - 'contracts/configs/dev.json'
 
