@@ -1,6 +1,7 @@
 name: Upload bridge config on dev
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
