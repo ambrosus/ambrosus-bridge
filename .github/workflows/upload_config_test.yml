@@ -4,11 +4,12 @@ on:
   push:
     branches:
       - dev
+      - main
     paths:
       - 'contracts/configs/test.json'
 
 jobs:
-  upload_chainspec_devnet:
+  upload_chainspec_testnet:
     runs-on: ubuntu-latest
 
     steps:
