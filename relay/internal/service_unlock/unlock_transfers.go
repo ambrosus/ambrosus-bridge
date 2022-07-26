@@ -13,6 +13,8 @@ import (
 	"github.com/rs/zerolog"
 )
 
+const timeSleepBeforeUnlock = 2 * time.Second
+
 type UnlockTransfers struct {
 	bridge        networks.Bridge
 	watchValidity *service_watchdog.WatchTransfersValidity
@@ -86,6 +88,8 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	if err := b.watchValidity.CheckOldLockedTransferFromId(oldestLockedEventId); err != nil {
 		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
 	}
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf("sleeping %s before unlocking...", timeSleepBeforeUnlock)
+	time.Sleep(timeSleepBeforeUnlock)
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocking...")
 	err = b.unlockTransfers()
 	if err != nil {
