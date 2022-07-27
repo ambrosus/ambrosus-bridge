@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0x7F4f5d586F33075F4Ac1D3FC11fb394Da6f7c041",
+            "contractAddr": "0x42AeC662FD42119bFe2Fd6cC26d8B97d21548B6B",
             "privateKey": "in env"
         },
         "ETH": {
             "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x9149B334e2e023C5b01A3C17F4030168B6EF6575",
+            "contractAddr": "0x543d22CCd9Ec36bd01Fb48D1517a8c7965860A9d",
             "privateKey": "in env"
         }
     },
