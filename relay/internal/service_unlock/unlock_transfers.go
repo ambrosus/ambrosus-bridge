@@ -13,7 +13,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const timeSleepBeforeUnlock = 2 * time.Second
+const additionalSleepSecondsToSleepTime = 10
 
 type UnlockTransfers struct {
 	bridge        networks.Bridge
@@ -76,11 +76,14 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	// Check if the unlocking is allowed and get the sleep time.
 	sleepTime := lockedTransferTime.Int64() - int64(latestBlock.Time())
 	if sleepTime > 0 {
+		sleepTimeWithAdditionalTime := sleepTime + additionalSleepSecondsToSleepTime
 		b.logger.Debug().Str("event_id", oldestLockedEventId.String()).Msgf(
-			"sleep %v seconds...",
+			"sleep %v seconds (%v + %v)...",
+			sleepTimeWithAdditionalTime,
 			sleepTime,
+			additionalSleepSecondsToSleepTime,
 		)
-		time.Sleep(time.Duration(sleepTime) * time.Second)
+		time.Sleep(time.Duration(sleepTimeWithAdditionalTime) * time.Second)
 	}
 
 	// Unlock the oldest transfer.
@@ -88,8 +91,6 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	if err := b.watchValidity.CheckOldLockedTransferFromId(oldestLockedEventId); err != nil {
 		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
 	}
-	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf("sleeping %s before unlocking...", timeSleepBeforeUnlock)
-	time.Sleep(timeSleepBeforeUnlock)
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocking...")
 	err = b.unlockTransfers()
 	if err != nil {
