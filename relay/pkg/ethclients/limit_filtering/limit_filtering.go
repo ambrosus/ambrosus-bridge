@@ -42,7 +42,7 @@ func NewClient(c *rpc.Client, defaultFilterLogsFromBlock int64) (client *Client)
 
 // FilterLogs executes a filter query.
 func (ec *Client) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
-	var limit = int64(49999)
+	var limit = int64(4999)
 	var result []types.Log
 
 	if q.FromBlock.Cmp(big.NewInt(0)) == 0 {
