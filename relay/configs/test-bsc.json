@@ -1,0 +1,63 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "BSC",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus-test.io",
+            "wsUrl": "wss://network.ambrosus-test.io/ws",
+            "contractAddr": "0x17c9b9A8BeeB1FE98566877AF442dbeBd0F5dB09",
+            "privateKey": "in env"
+        },
+        "BSC": {
+            "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
+            "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
+            "contractAddr": "0x0c3001D98a02dFFf10814E2e5e1DA5a276C2552a",
+            "privateKey": "in env"
+        }
+    },
+
+    "submitters": {
+        "enable": true,
+        "aura": {
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin"
+        }
+    },
+    "watchdogs":  {
+        "enable": true
+    },
+    "triggers":  {
+        "enable": true
+    },
+    "unlockers":  {
+        "enable": true
+    },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees",
+        "amb": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFeeWei": "1000000000000000000"
+        },
+        "side": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFeeWei": "10000000000000000"
+        }
+    },
+
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "in env",
+            "chatId": "-1001732781392"
+        }
+    },
+    "prometheus": {
+        "enable": true,
+        "ip": "",
+        "port": "9090"
+    }
+}
