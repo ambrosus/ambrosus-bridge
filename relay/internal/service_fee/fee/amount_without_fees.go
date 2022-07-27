@@ -6,7 +6,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, minBridgeFee decimal.Decimal) (decimal.Decimal, error) {
+func possibleAmountWithoutFees(amount, tokenUsdPrice, thisCoinPrice, transferFee, minBridgeFee decimal.Decimal) (decimal.Decimal, error) {
 	transferFeeUsd := coin2Usd(transferFee, thisCoinPrice)
 	amountUsd := coin2Usd(amount, tokenUsdPrice)
 	amountUsd = possibleAmountWithoutFeesUsd(amountUsd, transferFeeUsd, minBridgeFee)

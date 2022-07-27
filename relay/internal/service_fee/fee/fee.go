@@ -85,7 +85,7 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 
 	// if amount contains fees, then we need change the amount to the possible amount without fees (when transfer *max* native coins)
 	if isAmountWithFees {
-		amount, err = possibleAmountWithoutFees(amount, tokenUsdPrice, transferFee, thisCoinPrice, bridge.GetMinBridgeFee())
+		amount, err = possibleAmountWithoutFees(amount, tokenUsdPrice, thisCoinPrice, transferFee, bridge.GetMinBridgeFee())
 		if err != nil {
 			return
 		}
