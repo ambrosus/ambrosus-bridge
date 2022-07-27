@@ -45,7 +45,7 @@ func (p *Fee) getTokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (d
 	return tokenPriceI.(decimal.Decimal), nil
 }
 
-func (_ *priceGetterS) tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
+func (*priceGetterS) tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address) (decimal.Decimal, error) {
 	if (tokenAddress == common.Address{}) {
 		tokenAddress = bridge.GetWrapperAddress()
 	}
