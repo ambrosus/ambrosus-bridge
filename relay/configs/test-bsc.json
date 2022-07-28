@@ -52,7 +52,7 @@
         "telegram": {
             "enable": true,
             "token": "in env",
-            "chatId": "-1001732781392"
+            "chatId": "-1001744413670"
         }
     },
     "prometheus": {
