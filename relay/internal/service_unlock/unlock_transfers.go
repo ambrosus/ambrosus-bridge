@@ -82,15 +82,22 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	}
 
 	// Unlock the oldest transfer.
+
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("check validity of locked transfers...")
 	if err := b.watchValidity.CheckOldLockedTransferFromId(oldestLockedEventId); err != nil {
 		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
 	}
+
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf("waiting next block before unlocking...")
+	if err := cb.WaitForNextBlock(b.bridge.GetWsClient()); err != nil {
+		return fmt.Errorf("wait for next block: %w", err)
+	}
+
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocking...")
-	err = b.unlockTransfers()
-	if err != nil {
+	if err := b.unlockTransfers(); err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
+
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocked")
 	return nil
 }
