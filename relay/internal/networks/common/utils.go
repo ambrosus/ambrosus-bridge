@@ -137,3 +137,40 @@ func GetTxGasPrice(client ethclients.ClientInterface, tx *types.Transaction) (*b
 	}
 	return tx.GasPrice(), nil
 }
+
+func WaitForBlock(wsClient ethclients.ClientInterface, targetBlockNum uint64) error {
+
+	// todo maybe timeout (context)
+	blockChannel := make(chan *types.Header)
+	blockSub, err := wsClient.SubscribeNewHead(context.Background(), blockChannel)
+	if err != nil {
+		return fmt.Errorf("SubscribeNewHead: %w", err)
+	}
+	defer blockSub.Unsubscribe()
+
+	currentBlockNum, err := wsClient.BlockNumber(context.Background())
+	if err != nil {
+		return fmt.Errorf("get last block num: %w", err)
+	}
+
+	for currentBlockNum < targetBlockNum {
+		select {
+		case err := <-blockSub.Err():
+			return fmt.Errorf("listening new blocks: %w", err)
+
+		case block := <-blockChannel:
+			currentBlockNum = block.Number.Uint64()
+		}
+	}
+
+	return nil
+}
+
+func WaitForNextBlock(wsClient ethclients.ClientInterface) error {
+	latestBlock, err := wsClient.BlockNumber(context.Background())
+	if err != nil {
+		return fmt.Errorf("get latest block number: %w", err)
+	}
+
+	return WaitForBlock(wsClient, latestBlock+1)
+}
