@@ -111,8 +111,8 @@ func (b *UnlockTransfers) unlockTransfers() error {
 		return fmt.Errorf("NoSend: %w", err)
 	}
 
-	// Send the tx with the gas limit 20% more than the estimated gas limit.
-	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multiplier configurable
+	// Send the tx with the gas limit 30% more than the estimated gas limit.
+	customGas := uint64(float64(tx.Gas()) * 1.30) // todo: make the multiplier configurable
 	authCustomGas := *b.bridge.GetAuth()
 	authCustomGas.GasLimit = customGas
 	return b.bridge.ProcessTx("unlockTransfersBatch", func(opts *bind.TransactOpts) (*types.Transaction, error) {
