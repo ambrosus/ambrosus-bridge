@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 type requestSend struct {
@@ -48,7 +47,7 @@ func (t *TgLogger) send(text string) (uint64, error) {
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
 		return 0, fmt.Errorf("json encode request: %w", err)
 	}
-	resp, err := http.Post(url, "application/json", payloadBuf)
+	resp, err := t.HttpClient.Post(url, "application/json", payloadBuf)
 	if err != nil {
 		return 0, err
 	}
