@@ -11,6 +11,7 @@ import {ethers} from "ethers";
 dotenv.config();
 // 0x295C2707319ad4BecA6b5bb4086617fD6F240CfE, used instead of empty PK
 const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
+const bscScanApiKey = "NFH875QU828E37MQD7XB3QHFBE4XTC2AKH"
 
 const config: HardhatUserConfig = {
 
@@ -90,13 +91,22 @@ const config: HardhatUserConfig = {
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
       accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
-
+      verify: {
+        etherscan: {
+          apiKey: bscScanApiKey
+        }
+      },
     },
     "main/bsc": {
       url: "https://bsc-dataseed1.binance.org/",
       tags: ["bsc", "mainnet"],
       companionNetworks: {amb: 'main/amb'},
       accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero],
+      verify: {
+        etherscan: {
+          apiKey: bscScanApiKey
+        }
+      },
     },
   },
 
