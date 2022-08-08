@@ -94,7 +94,7 @@ const config: HardhatUserConfig = {
     },
     "main/bsc": {
       url: "https://bsc-dataseed1.binance.org/",
-      tags: ["bsc", "devnet"],
+      tags: ["bsc", "mainnet"],
       companionNetworks: {amb: 'main/amb'},
       accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero],
     },
