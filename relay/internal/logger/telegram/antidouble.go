@@ -1,19 +1,18 @@
-package middlewares
+package telegram
 
 import (
 	"fmt"
 	"sync"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
 )
 
 const (
 	counterFormat = "%s\n\n<i>This log was repeated %d times</i>"
 )
 
-type AntiDoubleMiddleware struct {
-	tgLogger *telegram.TgLogger
+type AntiDoubleTgLogger struct {
+	tgLogger *TgLogger
 
 	mu              sync.Mutex
 	lastLogMsg      string
@@ -22,12 +21,12 @@ type AntiDoubleMiddleware struct {
 	logSentCount    uint64
 }
 
-func NewAntiDoubleMiddleware(tgLogger *telegram.TgLogger) *AntiDoubleMiddleware {
-	return &AntiDoubleMiddleware{tgLogger: tgLogger}
+func NewAntiDoubleTgLogger(tgLogger *TgLogger) *AntiDoubleTgLogger {
+	return &AntiDoubleTgLogger{tgLogger: tgLogger}
 }
 
-func (f *AntiDoubleMiddleware) Log(l *logger.ExtLog) {
-	msg := telegram.BuildMessage(l)
+func (f *AntiDoubleTgLogger) Log(l *logger.ExtLog) {
+	msg := BuildMessage(l)
 	if msg == "" {
 		return
 	}
