@@ -27,7 +27,7 @@ type BridgeFeeApi interface {
 	GetTransferFee() *big.Int
 	GetWrapperAddress() common.Address
 	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
-	GetDefaultTransferFee() decimal.Decimal
+	GetDefaultTransferFee() *big.Int
 }
 
 type FeeAPI struct {
@@ -66,7 +66,7 @@ func (p *FeeAPI) Run(endpoint string, ip string, port int) {
 func (p *FeeAPI) setupCORS() *cors.Cors {
 	// setup CORS
 	var allowedOrigins = []string{"*"}
-	if os.Getenv("STAGE") == "main" {
+	if os.Getenv("STAGE") == "prod" {
 		allowedOrigins = []string{"https://*.ambrosus.io"}
 	}
 
