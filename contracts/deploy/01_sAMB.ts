@@ -29,12 +29,4 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 export default func;
 func.tags = ["wAMB", "tokens"];
-func.skip = async (hre: HardhatRuntimeEnvironment) => {
-  const isAmb = hre.network.tags["amb"];
-  if (!isAmb) return true; // skip if not amb
-
-  const isMainNet = parseNet(hre.network).stage === 'main'
-  if (!isMainNet) return true; // skip if not mainnet
-
-  return false;
-}
+func.skip = async (hre: HardhatRuntimeEnvironment) => !hre.network.tags["amb"]; // only amb
