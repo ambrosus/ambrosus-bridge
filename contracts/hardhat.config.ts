@@ -87,7 +87,7 @@ const config: HardhatUserConfig = {
 
 
     "dev/bsc": {
-      url: "https://bsc-dataseed1.binance.org/",
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
       accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
@@ -96,6 +96,11 @@ const config: HardhatUserConfig = {
           apiKey: bscScanApiKey
         }
       },
+    },
+    "test/bsc": {
+      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
+      tags: ["bsc", "testnet"],
+      companionNetworks: {amb: 'test/amb'},
     },
     "main/bsc": {
       url: "https://bsc-dataseed1.binance.org/",
