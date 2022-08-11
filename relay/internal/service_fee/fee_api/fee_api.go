@@ -24,7 +24,7 @@ const (
 type BridgeFeeApi interface {
 	networks.Bridge
 	Sign(message []byte) ([]byte, error)
-	GetTransferFee() *big.Int
+	GetTransferFee(thisCoinPrice, sideCoinPrice decimal.Decimal) *big.Int
 	GetWrapperAddress() common.Address
 	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
 	GetDefaultTransferFee() *big.Int

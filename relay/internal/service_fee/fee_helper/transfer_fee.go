@@ -11,10 +11,12 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_api"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/shopspring/decimal"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -29,7 +31,8 @@ type transferFeeTracker struct {
 	latestProcessedEvent uint64
 
 	totalWithdrawCount *big.Int
-	totalGas           *big.Int
+	sideTotalGas       *big.Int
+	thisTotalGas       *big.Int
 }
 
 func newTransferFeeTracker(bridge, sideBridge networks.Bridge) (*transferFeeTracker, error) {
@@ -37,7 +40,8 @@ func newTransferFeeTracker(bridge, sideBridge networks.Bridge) (*transferFeeTrac
 		bridge:             bridge,
 		sideBridge:         sideBridge,
 		totalWithdrawCount: big.NewInt(0),
-		totalGas:           big.NewInt(0),
+		sideTotalGas:       big.NewInt(0),
+		thisTotalGas:       big.NewInt(0),
 	}
 
 	if err := p.init(); err != nil {
@@ -48,14 +52,17 @@ func newTransferFeeTracker(bridge, sideBridge networks.Bridge) (*transferFeeTrac
 	return p, nil
 }
 
-func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
-	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.totalGas, p.totalWithdrawCount)
+func (p *transferFeeTracker) GasPerWithdraw(thisCoinPrice, sideCoinPrice decimal.Decimal) *big.Int {
+	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.sideTotalGas, p.totalWithdrawCount)
 	// if there's no transfers then return nil
 	if p.totalWithdrawCount.Cmp(big.NewInt(0)) == 0 {
 		return nil
 	}
 
-	return new(big.Int).Div(p.totalGas, p.totalWithdrawCount)
+	convertedThisTotalGasToSide := fee_api.Coin2coin(decimal.NewFromBigInt(p.thisTotalGas, 0), thisCoinPrice, sideCoinPrice)
+	totalGas := new(big.Int).Add(p.sideTotalGas, convertedThisTotalGasToSide.BigInt())
+
+	return new(big.Int).Div(totalGas, p.totalWithdrawCount)
 }
 
 func (p *transferFeeTracker) init() error {
@@ -121,7 +128,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// calc how much gas used in this txs
-	gas, _, err := usedGas(p.bridge.GetClient(), p.sideBridge.GetClient(), thisRelayTxHashes, helpers.Unique(sideRelayTxHashes))
+	gas, err := usedGas(p.bridge.GetClient(), p.sideBridge.GetClient(), thisRelayTxHashes, helpers.Unique(sideRelayTxHashes))
 	if err != nil {
 		return err
 	}
@@ -136,10 +143,11 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 		return nil
 	}
 
-	p.totalGas = p.totalGas.Add(p.totalGas, gas)
+	p.thisTotalGas = p.thisTotalGas.Add(p.thisTotalGas, gas.thisTotalGasCost)
+	p.sideTotalGas = p.sideTotalGas.Add(p.sideTotalGas, gas.sideTotalGasCost)
 	p.totalWithdrawCount = p.totalWithdrawCount.Add(p.totalWithdrawCount, big.NewInt(int64(withdrawsCount)))
 	p.latestProcessedEvent = newEventId
-	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalGas: %d, totalWithdrawsCount: %d", gas, withdrawsCount, p.totalGas, p.totalWithdrawCount)
+	p.bridge.GetLogger().Debug().Msgf("from new event we got sideGasCost: %d, thisGasCost: %d, withdrawsCount: %d. sideTotalGas: %d, thisTotalGas: %d, totalWithdrawsCount: %d", gas.sideTotalGasCost, gas.thisTotalGasCost, withdrawsCount, p.sideTotalGas, p.thisTotalGas, p.totalWithdrawCount)
 
 	return nil
 }
@@ -161,16 +169,25 @@ func isTransferTriggeredFromRelay(event *bindings.BridgeTransfer, client ethclie
 	return false, nil
 }
 
-func usedGas(thisClient ethclients.ClientInterface, sideClient ethclients.ClientInterface, thisTxs []common.Hash, sideTxs []common.Hash) (*big.Int, *big.Int, error) {
+type usedGasResult struct {
+	thisTotalGasCost *big.Int
+	thisTotalGas     *big.Int
+	sideTotalGasCost *big.Int
+	sideTotalGas     *big.Int
+}
+
+func usedGas(thisClient ethclients.ClientInterface, sideClient ethclients.ClientInterface, thisTxs []common.Hash, sideTxs []common.Hash) (*usedGasResult, error) {
 	// fetch transactions and sum gas
 
-	totalGas := new(big.Int)
-	totalGasCost := new(big.Int)
+	thisTotalGas := new(big.Int)
+	thisTotalGasCost := new(big.Int)
+	sideTotalGas := new(big.Int)
+	sideTotalGasCost := new(big.Int)
 
 	lock := sync.Mutex{}
 	sem := make(chan interface{}, 10) // max 20 simultaneous requests
 	errGroup := new(errgroup.Group)
-	getAndSaveTotalGasParams := func(client ethclients.ClientInterface, txHash common.Hash) func() error {
+	getAndSaveTotalGasParams := func(client ethclients.ClientInterface, txHash common.Hash, totalGas, totalGasCost *big.Int) func() error {
 		return func() error {
 			sem <- 0
 			defer func() { <-sem }()
@@ -201,17 +218,22 @@ func usedGas(thisClient ethclients.ClientInterface, sideClient ethclients.Client
 
 	for _, txHash := range thisTxs {
 		txHash := txHash
-		errGroup.Go(getAndSaveTotalGasParams(thisClient, txHash))
+		errGroup.Go(getAndSaveTotalGasParams(thisClient, txHash, thisTotalGas, thisTotalGasCost))
 	}
 	for _, txHash := range sideTxs {
 		txHash := txHash
-		errGroup.Go(getAndSaveTotalGasParams(sideClient, txHash))
+		errGroup.Go(getAndSaveTotalGasParams(sideClient, txHash, sideTotalGas, sideTotalGasCost))
 	}
 	if err := errGroup.Wait(); err != nil {
-		return nil, nil, fmt.Errorf("calc used gas: %w", err)
+		return nil, fmt.Errorf("calc used gas: %w", err)
 	}
 
-	return totalGasCost, totalGas, nil
+	return &usedGasResult{
+		thisTotalGasCost: thisTotalGasCost,
+		thisTotalGas:     thisTotalGas,
+		sideTotalGasCost: sideTotalGasCost,
+		sideTotalGas:     sideTotalGas,
+	}, nil
 }
 
 // -------------------- watcher --------------------------

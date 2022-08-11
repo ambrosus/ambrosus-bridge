@@ -17,6 +17,12 @@ func coin2Usd(amountWei decimal.Decimal, priceUsd decimal.Decimal) decimal.Decim
 	return amountWei.Mul(priceUsd)
 }
 
+// through usd prices
+func Coin2coin(amountWei, firstCoinPriceUsd, secondCoinPriceUsd decimal.Decimal) decimal.Decimal {
+	firstCoinInUsd := coin2Usd(amountWei, firstCoinPriceUsd)
+	return usd2Coin(firstCoinInUsd, secondCoinPriceUsd)
+}
+
 // amount * bps / 10_000
 func calcBps(amount decimal.Decimal, bps int64) decimal.Decimal {
 	return amount.Mul(decimal.NewFromInt(bps)).Div(decimal.NewFromInt(10_000))
