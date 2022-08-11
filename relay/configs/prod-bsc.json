@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus.io",
             "wsUrl": "wss://network.ambrosus.io/ws",
-            "contractAddr": "0x0fA20862c5511cACC810Ca9d662F7c1edC230396",
+            "contractAddr": "0xe10eB55f6EeF66218BbE58B749428ec4A51D6659",
             "privateKey": "in env"
         },
         "BSC": {
             "httpUrl": "https://bsc-mainnet.nodereal.io/v1/e88f6b95a25842d4b67bcf5d5f4a992c",
             "wsUrl": "wss://bsc-mainnet.nodereal.io/ws/v1/e88f6b95a25842d4b67bcf5d5f4a992c",
-            "contractAddr": "0xd461De9b5Ca6DF8575817a1a54a31A933913fa29",
+            "contractAddr": "0x92fa52d3043725D00Eab422440C4e9ef3ba180d3",
             "privateKey": "in env"
         }
     },

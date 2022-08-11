@@ -1,12 +1,12 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0xFd3894B24494D5bf15949cEb33BC4645820Cdf60",
-      "side": "0x91b054b82D3DE9DC9Fa771A07aC1355BDD86aE00"
+      "amb": "0x073F6D7a999aa5F9172f4Fe1AB4604268ecbFd0E",
+      "side": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a"
     },
     "bsc": {
-      "amb": "",
-      "side": ""
+      "amb": "0x91c2F6725a1e076929E1fDECCfD72209D0694af0",
+      "side": "0x090801d716A9d501F57519B1f4bd6aBD2961aa88"
     }
   },
   "tokens": {
@@ -17,9 +17,9 @@
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "primaryNet": "amb",
       "addresses": {
-        "amb": "0x6d8b5F3be8685E7A44CCA3297b9C146D44221a84",
-        "eth": "0x979747b18c727d39747D00D51ec0eDbF44224575",
-        "bsc": ""
+        "amb": "0x55C402b5F9C2c3DfE3d866B36598f0Fd53e03B89",
+        "eth": "0xe208a39e3F988f1565628457F17E9Aa469B78F76",
+        "bsc": "0x132827Ee051b7276a2f85D6964F6182974aa243c"
       },
       "nativeAnalog": "AMB"
     },
@@ -30,8 +30,8 @@
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNet": "eth",
       "addresses": {
-        "amb": "0x4b7824792b887C1Fe8c8d05012Ed7e59754F540e",
-        "eth": "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+        "amb": "0xA9646A0281996fDcB88f8f6f01Af52BB0268c494",
+        "eth": "0x52d026B38b3382Fe1b8a28EA55895aF875191750",
         "bsc": ""
       },
       "nativeAnalog": "ETH"
@@ -43,9 +43,9 @@
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "primaryNet": "bsc",
       "addresses": {
-        "amb": "0x2F5d33805ebD17057eaeE54AD8f2c019D4025D28",
-        "eth": "0x3549b4d7FCD42e6cbc3D3d52A20CdcA8473DeCcf",
-        "bsc": "0xae13d989dac2f0debff460ac112a837c89baa7cd"
+        "amb": "0x4798Cbd108e3D7b531ef2f3d67E7fFabdEe29867",
+        "eth": "",
+        "bsc": "0x9436CEC90DC41F03c7b679779D3B55dca5a02382"
       },
       "nativeAnalog": "BNB"
     }

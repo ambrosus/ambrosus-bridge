@@ -36,6 +36,7 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid BSC_FILTER_LOGS_FROM_BLOCK: %w", err)
 	}
+	commonBridge.Logger.Info().Msgf("Set BSC_FILTER_LOGS_FROM_BLOCK to %d", filterLogsFromBlock)
 
 	rpcHTTPClient, err := rpc.DialHTTP(cfg.HttpURL)
 	if err != nil {

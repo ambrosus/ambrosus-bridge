@@ -129,12 +129,13 @@ export async function getBscValidators(bscNetwork: any): Promise<[number, string
   return [epoch, validators];
 }
 
-export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
+export async function getAmbValidators(ambNetwork: any, isMainNet: boolean): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00";
   const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
 
   // check that current validators match with the latest finalized event
-  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), 19470402)
+  const fromBlock = 19470402 ? isMainNet : 0;
+  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), fromBlock)
   const latestLog = logs[logs.length-1]
   const latestLogParsed = vsContract.interface.parseLog(latestLog).args
   console.assert(JSON.stringify(latestLogParsed.newSet) == JSON.stringify(validators),

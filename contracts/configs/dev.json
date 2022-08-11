@@ -5,21 +5,21 @@
       "side": "0x5570DF279dA47Fa46aBa4c1e27b55c8e1d6648A1"
     },
     "bsc": {
-      "amb": "0x0fA20862c5511cACC810Ca9d662F7c1edC230396",
-      "side": "0xd461De9b5Ca6DF8575817a1a54a31A933913fa29"
+      "amb": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
+      "side": "0x99a88dF85C3ffded0D7fF6B18596597e2ffcB3ee"
     }
   },
   "tokens": {
     "SAMB": {
       "name": "Synthetic Amber",
-      "symbol": "testSAMB",
+      "symbol": "SAMB",
       "denomination": 18,
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "primaryNet": "amb",
       "addresses": {
-        "amb": "0x72B2eFbB7876b0b4a3d49C5736982CAe9e0728e5",
-        "eth": "",
-        "bsc": "0x87f9d260b75505B463543f1A984b31A49dE4B572"
+        "amb": "0xBC3422cD37a271C7c388AEEeBC71cCBAD7FE368f",
+        "eth": "0x888eD88b44418e09412DaE1F17d1A0a9FC3681c1",
+        "bsc": "0x6d4287E23D544cab6d87518411FeAA2Ee36b26fd"
       },
       "nativeAnalog": "AMB"
     },
@@ -30,7 +30,7 @@
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNet": "eth",
       "addresses": {
-        "amb": "",
+        "amb": "0x17429a725830792532493517d22F65d4E2E0681c",
         "eth": "0xfb1c09373D1033575affb1500B3ebE4931E795Bb",
         "bsc": ""
       },
@@ -43,9 +43,9 @@
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "primaryNet": "bsc",
       "addresses": {
-        "amb": "0xF39Fd1D9a34F27552249c03b059F0c9D3dA06f0b",
+        "amb": "0x2FA390265Fd43c996f6335293ad60446494c621B",
         "eth": "",
-        "bsc": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+        "bsc": "0x50D697Fd57051573c00C305bb79f5978036d8BaA"
       },
       "nativeAnalog": "BNB"
     }

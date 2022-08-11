@@ -9,7 +9,7 @@ on:
       - 'contracts/configs/main.json'
 
 jobs:
-  upload_chainspec_devnet:
+  upload_chainspec_mainnet:
     runs-on: ubuntu-latest
 
     steps:

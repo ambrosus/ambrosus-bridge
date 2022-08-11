@@ -82,15 +82,22 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	}
 
 	// Unlock the oldest transfer.
+
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("check validity of locked transfers...")
 	if err := b.watchValidity.CheckOldLockedTransferFromId(oldestLockedEventId); err != nil {
 		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
 	}
+
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf("waiting next block before unlocking...")
+	if err := cb.WaitForNextBlock(b.bridge.GetWsClient()); err != nil {
+		return fmt.Errorf("wait for next block: %w", err)
+	}
+
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocking...")
-	err = b.unlockTransfers()
-	if err != nil {
+	if err := b.unlockTransfers(); err != nil {
 		return fmt.Errorf("unlock locked transfer %v: %w", oldestLockedEventId, err)
 	}
+
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocked")
 	return nil
 }
@@ -104,8 +111,8 @@ func (b *UnlockTransfers) unlockTransfers() error {
 		return fmt.Errorf("NoSend: %w", err)
 	}
 
-	// Send the tx with the gas limit 20% more than the estimated gas limit.
-	customGas := uint64(float64(tx.Gas()) * 1.20) // todo: make the multiplier configurable
+	// Send the tx with the gas limit 60% more than the estimated gas limit.
+	customGas := uint64(float64(tx.Gas()) * 1.60) // todo: make the multiplier configurable
 	authCustomGas := *b.bridge.GetAuth()
 	authCustomGas.GasLimit = customGas
 	return b.bridge.ProcessTx("unlockTransfersBatch", func(opts *bind.TransactOpts) (*types.Transaction, error) {

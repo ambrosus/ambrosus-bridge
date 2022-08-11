@@ -1,7 +1,6 @@
 package service_submit
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math/big"
@@ -12,8 +11,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
-	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 )
 
@@ -109,7 +106,7 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	}
 
 	b.logger.Debug().Uint64("blockNum", event.Raw.BlockNumber+safetyBlocks).Msg("Waiting for block...")
-	if err := waitForBlock(b.submitter.GetWsClient(), event.Raw.BlockNumber+safetyBlocks); err != nil {
+	if err := cb.WaitForBlock(b.submitter.GetWsClient(), event.Raw.BlockNumber+safetyBlocks); err != nil {
 		return fmt.Errorf("waitForBlock: %w", err)
 	}
 
@@ -134,34 +131,6 @@ func isEventRemoved(contract interfaces.BridgeContract, event *bindings.BridgeTr
 	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
 		return fmt.Errorf("looks like the event has been removed")
 	}
-	return nil
-}
-
-func waitForBlock(wsClient ethclients.ClientInterface, targetBlockNum uint64) error {
-
-	// todo maybe timeout (context)
-	blockChannel := make(chan *types.Header)
-	blockSub, err := wsClient.SubscribeNewHead(context.Background(), blockChannel)
-	if err != nil {
-		return fmt.Errorf("SubscribeNewHead: %w", err)
-	}
-	defer blockSub.Unsubscribe()
-
-	currentBlockNum, err := wsClient.BlockNumber(context.Background())
-	if err != nil {
-		return fmt.Errorf("get last block num: %w", err)
-	}
-
-	for currentBlockNum < targetBlockNum {
-		select {
-		case err := <-blockSub.Err():
-			return fmt.Errorf("listening new blocks: %w", err)
-
-		case block := <-blockChannel:
-			currentBlockNum = block.Number.Uint64()
-		}
-	}
-
 	return nil
 }
 

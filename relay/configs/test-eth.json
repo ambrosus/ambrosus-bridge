@@ -1,0 +1,68 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "ETH",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus-test.io",
+            "wsUrl": "wss://network.ambrosus-test.io/ws",
+            "contractAddr": "0x073F6D7a999aa5F9172f4Fe1AB4604268ecbFd0E",
+            "privateKey": "in env"
+        },
+        "ETH": {
+            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a",
+            "privateKey": "in env"
+        }
+    },
+
+    "submitters": {
+        "enable": true,
+        "aura": {
+            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+            "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin"
+        },
+        "pow": {
+            "ethashDir": "/root/ethash",
+            "ethashKeepPrevEpochs": 1,
+            "ethashGenNextEpochs": 0
+        }
+    },
+    "watchdogs":  {
+        "enable": true
+    },
+    "triggers":  {
+        "enable": true
+    },
+    "unlockers":  {
+        "enable": true
+    },
+    "feeApi":  {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees",
+        "amb": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFeeWei": "1000000000000000000"
+        },
+        "side": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 5,
+            "defaultTransferFeeWei": "10000000000000000"
+        }
+    },
+
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "in env",
+            "chatId": "-1001744413670"
+        }
+    },
+    "prometheus": {
+        "enable": true,
+        "ip": "",
+        "port": "9090"
+    }
+}

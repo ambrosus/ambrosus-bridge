@@ -1,9 +1,11 @@
 name: Upload bridge config on dev
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - dev
+      - main
     paths:
       - 'contracts/configs/dev.json'
 
