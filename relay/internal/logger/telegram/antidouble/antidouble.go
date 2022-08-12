@@ -13,7 +13,7 @@ import (
 var nowFunc = time.Now
 
 const (
-	logExpireTime = 5 * time.Minute
+	logExpireTime = 15 * time.Minute
 	counterFormat = "%s\n\n<i>This log was repeated %d times</i>"
 )
 
