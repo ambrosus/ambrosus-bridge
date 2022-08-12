@@ -134,7 +134,7 @@ export async function getAmbValidators(ambNetwork: any, isMainNet: boolean): Pro
   const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
 
   // check that current validators match with the latest finalized event
-  const fromBlock = 19470402 ? isMainNet : 0;
+  const fromBlock = isMainNet ? 19470402 : 0;
   const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), fromBlock)
   const latestLog = logs[logs.length-1]
   const latestLogParsed = vsContract.interface.parseLog(latestLog).args
