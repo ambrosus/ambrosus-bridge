@@ -48,6 +48,22 @@
         "bsc": "0x50D697Fd57051573c00C305bb79f5978036d8BaA"
       },
       "nativeAnalog": "BNB"
+    },
+    "USDC": {
+      "name": "USD Coin",
+      "symbol": "WUSDC",
+      "denomination": 6,
+      "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
+      "primaryNet": [
+        "eth",
+        "bsc"
+      ],
+      "addresses": {
+        "amb": "0xCd4Fd9712c6BC9eD7869791cE165db6FB57ecAbB",
+        "eth": "0xB5C9d6B84aAC8C2b0ada69f96582503f1b721772",
+        "bsc": "0xf763336f0CEf9FfDDe29dBAAe7dB3C0Ff14F119B"
+      },
+      "nativeAnalog": ""
     }
   }
 }
