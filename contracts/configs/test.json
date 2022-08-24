@@ -15,7 +15,7 @@
       "symbol": "SAMB",
       "denomination": 18,
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
-      "primaryNets": ["amb"],
+      "primaryNet": "amb",
       "addresses": {
         "amb": "0x55C402b5F9C2c3DfE3d866B36598f0Fd53e03B89",
         "eth": "0xe208a39e3F988f1565628457F17E9Aa469B78F76",
@@ -28,7 +28,7 @@
       "symbol": "WETH",
       "denomination": 18,
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
-      "primaryNets": ["eth"],
+      "primaryNet": "eth",
       "addresses": {
         "amb": "0xA9646A0281996fDcB88f8f6f01Af52BB0268c494",
         "eth": "0x52d026B38b3382Fe1b8a28EA55895aF875191750",
@@ -41,29 +41,13 @@
       "symbol": "WBNB",
       "denomination": 18,
       "logo": "https://bscscan.com/token/images/binance_32.png",
-      "primaryNets": ["bsc"],
+      "primaryNet": "bsc",
       "addresses": {
         "amb": "0x4798Cbd108e3D7b531ef2f3d67E7fFabdEe29867",
         "eth": "",
         "bsc": "0x9436CEC90DC41F03c7b679779D3B55dca5a02382"
       },
       "nativeAnalog": "BNB"
-    },
-    "USDC": {
-      "name": "USD Coin",
-      "symbol": "WUSDC",
-      "denomination": 6,
-      "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
-      "primaryNets": [
-        "eth",
-        "bsc"
-      ],
-      "addresses": {
-        "amb": "0xef83DCA3A6C0B39b907F8bb88bAc3B6e941c3882",
-        "eth": "0x4D13f6eA7d7D1E361E173605ac25de41E66d6789",
-        "bsc": "0x689020fd1aa4e064bdf9c6D1d19F0Cf378b19753"
-      },
-      "nativeAnalog": ""
     }
   }
 }
