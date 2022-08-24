@@ -38,3 +38,9 @@ type ReceiverPoSA interface {
 	SubmitValidatorSetChangesPoSA(*bindings.CheckPoSAPoSAProof) error
 	GetCurrentEpoch() (uint64, error)
 }
+
+type ReceiverUntrustless interface {
+	Receiver
+	SubmitTransferUntrustless(*bindings.BridgeTransfer) error
+	IsEventAlreadyConfirmed(event *bindings.BridgeTransfer) (bool, error)
+}

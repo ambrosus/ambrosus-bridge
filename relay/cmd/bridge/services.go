@@ -12,7 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/pow"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
@@ -33,7 +33,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 	var sideBridgeSubmitter service_submit.Submitter
 	switch sideBridge.(type) {
 	case *eth.Bridge:
-		sideBridgeSubmitter, err = pow.NewSubmitterPoW(sideBridge, &pow.ReceiverPoW{Receiver: ambBridge}, cfg.Pow)
+		sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
 	case *bsc.Bridge:
 		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
 	}
