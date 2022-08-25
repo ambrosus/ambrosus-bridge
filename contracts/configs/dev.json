@@ -66,8 +66,8 @@
       ],
       "addresses": {
         "amb": "0x6C5750Be93De7a4A3072bA10A6610C23e8399df1",
-        "eth": "0xF25Cc55fF338c2fE0eAc0a0855b7536D54bC1c7B",
-        "bsc": "0xC025129Dd64411B23A92B2A598EcdEfB65d61745"
+        "eth": "0xE4d4f9897E54Ca5bE8060365033a8b665F2cA63e",
+        "bsc": "0x32fac62b1196E03Ed3644a40DbFbe5728e31599A"
       },
       "nativeAnalog": ""
     }
