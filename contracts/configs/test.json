@@ -51,7 +51,7 @@
     },
     "USDC": {
       "name": "USD Coin",
-      "symbol": "WUSDC",
+      "symbol": "USDC",
       "denomination": 6,
       "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
       "primaryNets": [
@@ -59,9 +59,9 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0xef83DCA3A6C0B39b907F8bb88bAc3B6e941c3882",
-        "eth": "0x4D13f6eA7d7D1E361E173605ac25de41E66d6789",
-        "bsc": "0x689020fd1aa4e064bdf9c6D1d19F0Cf378b19753"
+        "amb": "0x63B825C40a78e2e9A7aeaC83027215A022b37B93",
+        "eth": "0xBf957afCF1Ce9491CbB140576544D3f4eE97B72b",
+        "bsc": "0x585896742516DF0703D72018E5c049D2C293718F"
       },
       "nativeAnalog": ""
     }
