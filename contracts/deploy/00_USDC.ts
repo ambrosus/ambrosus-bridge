@@ -23,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   const deployResult = await hre.deployments.deploy(usdc.symbol, {
-    contract: "ERC20",
+    contract: "MintableERC20",
     from: owner,
     args: [usdc.name, usdc.symbol],
     log: true,

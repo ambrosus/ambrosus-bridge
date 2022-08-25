@@ -15,7 +15,9 @@
       "symbol": "SAMB",
       "denomination": 18,
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
-      "primaryNets": ["amb"],
+      "primaryNets": [
+        "amb"
+      ],
       "addresses": {
         "amb": "0x55C402b5F9C2c3DfE3d866B36598f0Fd53e03B89",
         "eth": "0xe208a39e3F988f1565628457F17E9Aa469B78F76",
@@ -28,7 +30,9 @@
       "symbol": "WETH",
       "denomination": 18,
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
-      "primaryNets": ["eth"],
+      "primaryNets": [
+        "eth"
+      ],
       "addresses": {
         "amb": "0xA9646A0281996fDcB88f8f6f01Af52BB0268c494",
         "eth": "0x52d026B38b3382Fe1b8a28EA55895aF875191750",
@@ -41,7 +45,9 @@
       "symbol": "WBNB",
       "denomination": 18,
       "logo": "https://bscscan.com/token/images/binance_32.png",
-      "primaryNets": ["bsc"],
+      "primaryNets": [
+        "bsc"
+      ],
       "addresses": {
         "amb": "0x4798Cbd108e3D7b531ef2f3d67E7fFabdEe29867",
         "eth": "",
@@ -60,8 +66,8 @@
       ],
       "addresses": {
         "amb": "0x63B825C40a78e2e9A7aeaC83027215A022b37B93",
-        "eth": "0xBf957afCF1Ce9491CbB140576544D3f4eE97B72b",
-        "bsc": "0x585896742516DF0703D72018E5c049D2C293718F"
+        "eth": "0x861c6FF42fF509026dB2C1d0Af1426eD5fe339e5",
+        "bsc": "0x99B1A627604dB1479379c2c576dAFdC8AE4C546E"
       },
       "nativeAnalog": ""
     }
