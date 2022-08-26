@@ -39,7 +39,7 @@ contract CheckUntrustless {
 
     function isConfirmedByRelay(address relay, uint eventId, CommonStructs.Transfer[] calldata transfers) public view returns (bool) {
         bytes32 hash = transfersHash(eventId, transfers);
-        return confirmations[hash][msg.sender];
+        return confirmations[hash][relay];
     }
 
 
