@@ -161,6 +161,7 @@ const config: HardhatUserConfig = {
     flat: true,
     only: [
       "Bridge$",
+      "Bridge_",
       ":ValidatorSet$",
       "sAMB",
       "IWrapper",
