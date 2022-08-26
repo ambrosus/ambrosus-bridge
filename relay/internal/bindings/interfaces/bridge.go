@@ -3,13 +3,12 @@
 package interfaces
 
 import (
-	"math/big"
-
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
+	"math/big"
 )
 
 // BridgeContract is an interface generated for "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings.Bridge".
@@ -22,11 +21,18 @@ type BridgeContract interface {
 	ChangeSignatureFeeCheckNumber(*bind.TransactOpts, *big.Int) (*types.Transaction, error)
 	ChangeTimeframeSeconds(*bind.TransactOpts, *big.Int) (*types.Transaction, error)
 	ChangeTransferFeeRecipient(*bind.TransactOpts, common.Address) (*types.Transaction, error)
+	Confirmations(*bind.CallOpts, [32]byte, common.Address) (bool, error)
+	ConfirmationsThreshold(*bind.CallOpts) (*big.Int, error)
+	ConfirmedCount(*bind.CallOpts, [32]byte) (*big.Int, error)
 	CurrentEpoch(*bind.CallOpts) (*big.Int, error)
 	DEFAULTADMINROLE(*bind.CallOpts) ([32]byte, error)
+	FilterPaused(*bind.FilterOpts) (*bindings.BridgePausedIterator, error)
+	FilterRelayAdd(*bind.FilterOpts, []common.Address) (*bindings.BridgeRelayAddIterator, error)
+	FilterRelayRemove(*bind.FilterOpts, []common.Address) (*bindings.BridgeRelayRemoveIterator, error)
 	FilterRoleAdminChanged(*bind.FilterOpts, [][32]byte, [][32]byte, [][32]byte) (*bindings.BridgeRoleAdminChangedIterator, error)
 	FilterRoleGranted(*bind.FilterOpts, [][32]byte, []common.Address, []common.Address) (*bindings.BridgeRoleGrantedIterator, error)
 	FilterRoleRevoked(*bind.FilterOpts, [][32]byte, []common.Address, []common.Address) (*bindings.BridgeRoleRevokedIterator, error)
+	FilterThresholdChange(*bind.FilterOpts) (*bindings.BridgeThresholdChangeIterator, error)
 	FilterTransfer(*bind.FilterOpts, []*big.Int) (*bindings.BridgeTransferIterator, error)
 	FilterTransferFinish(*bind.FilterOpts, []*big.Int) (*bindings.BridgeTransferFinishIterator, error)
 	FilterTransferSubmit(*bind.FilterOpts, []*big.Int) (*bindings.BridgeTransferSubmitIterator, error)
@@ -39,8 +45,10 @@ type BridgeContract interface {
 	HasRole(*bind.CallOpts, [32]byte, common.Address) (bool, error)
 	Initialize(*bind.TransactOpts, bindings.CommonStructsConstructorArgs, *big.Int) (*types.Transaction, error)
 	InputEventId(*bind.CallOpts) (*big.Int, error)
+	IsConfirmedByRelay(*bind.CallOpts, common.Address, *big.Int, []bindings.CommonStructsTransfer) (bool, error)
 	IsEpochDataSet(*bind.CallOpts, *big.Int) (bool, error)
 	IsQueueEmpty(*bind.CallOpts) (bool, error)
+	IsRelay(*bind.CallOpts, common.Address) (bool, error)
 	LastProcessedBlock(*bind.CallOpts) ([32]byte, error)
 	LastTimeframe(*bind.CallOpts) (*big.Int, error)
 	LockTime(*bind.CallOpts) (*big.Int, error)
@@ -48,9 +56,13 @@ type BridgeContract interface {
 	MinSafetyBlocks(*bind.CallOpts) (*big.Int, error)
 	MinSafetyBlocksValidators(*bind.CallOpts) (*big.Int, error)
 	OldestLockedEventId(*bind.CallOpts) (*big.Int, error)
+	ParsePaused(types.Log) (*bindings.BridgePaused, error)
+	ParseRelayAdd(types.Log) (*bindings.BridgeRelayAdd, error)
+	ParseRelayRemove(types.Log) (*bindings.BridgeRelayRemove, error)
 	ParseRoleAdminChanged(types.Log) (*bindings.BridgeRoleAdminChanged, error)
 	ParseRoleGranted(types.Log) (*bindings.BridgeRoleGranted, error)
 	ParseRoleRevoked(types.Log) (*bindings.BridgeRoleRevoked, error)
+	ParseThresholdChange(types.Log) (*bindings.BridgeThresholdChange, error)
 	ParseTransfer(types.Log) (*bindings.BridgeTransfer, error)
 	ParseTransferFinish(types.Log) (*bindings.BridgeTransferFinish, error)
 	ParseTransferSubmit(types.Log) (*bindings.BridgeTransferSubmit, error)
@@ -59,15 +71,18 @@ type BridgeContract interface {
 	Pause(*bind.TransactOpts) (*types.Transaction, error)
 	Paused(*bind.CallOpts) (bool, error)
 	RELAYROLE(*bind.CallOpts) ([32]byte, error)
+	Relays(*bind.CallOpts, *big.Int) (common.Address, error)
 	RemoveLockedTransfers(*bind.TransactOpts, *big.Int) (*types.Transaction, error)
 	RenounceRole(*bind.TransactOpts, [32]byte, common.Address) (*types.Transaction, error)
 	RevokeRole(*bind.TransactOpts, [32]byte, common.Address) (*types.Transaction, error)
 	SetEpochData(*bind.TransactOpts, *big.Int, *big.Int, *big.Int, []*big.Int) (*types.Transaction, error)
+	SetRelaysAndConfirmations(*bind.TransactOpts, []common.Address, []common.Address, *big.Int) (*types.Transaction, error)
 	SetSideBridge(*bind.TransactOpts, common.Address) (*types.Transaction, error)
 	SideBridgeAddress(*bind.CallOpts) (common.Address, error)
 	SubmitTransferAura(*bind.TransactOpts, bindings.CheckAuraAuraProof) (*types.Transaction, error)
 	SubmitTransferPoSA(*bind.TransactOpts, bindings.CheckPoSAPoSAProof) (*types.Transaction, error)
 	SubmitTransferPoW(*bind.TransactOpts, bindings.CheckPoWPoWProof) (*types.Transaction, error)
+	SubmitTransferUntrustless(*bind.TransactOpts, *big.Int, []bindings.CommonStructsTransfer) (*types.Transaction, error)
 	SubmitValidatorSetChangesAura(*bind.TransactOpts, bindings.CheckAuraAuraProof) (*types.Transaction, error)
 	SubmitValidatorSetChangesPoSA(*bind.TransactOpts, bindings.CheckPoSAPoSAProof) (*types.Transaction, error)
 	SupportsInterface(*bind.CallOpts, [4]byte) (bool, error)
@@ -77,14 +92,19 @@ type BridgeContract interface {
 	TokensAddBatch(*bind.TransactOpts, []common.Address, []common.Address) (*types.Transaction, error)
 	TokensRemove(*bind.TransactOpts, common.Address) (*types.Transaction, error)
 	TokensRemoveBatch(*bind.TransactOpts, []common.Address) (*types.Transaction, error)
+	TransfersHash(*bind.CallOpts, *big.Int, []bindings.CommonStructsTransfer) ([32]byte, error)
 	TriggerTransfers(*bind.TransactOpts) (*types.Transaction, error)
 	UnlockTransfers(*bind.TransactOpts, *big.Int) (*types.Transaction, error)
 	UnlockTransfersBatch(*bind.TransactOpts) (*types.Transaction, error)
 	Unpause(*bind.TransactOpts) (*types.Transaction, error)
 	ValidatorSet(*bind.CallOpts, *big.Int) (common.Address, error)
+	WatchPaused(*bind.WatchOpts, chan<- *bindings.BridgePaused) (event.Subscription, error)
+	WatchRelayAdd(*bind.WatchOpts, chan<- *bindings.BridgeRelayAdd, []common.Address) (event.Subscription, error)
+	WatchRelayRemove(*bind.WatchOpts, chan<- *bindings.BridgeRelayRemove, []common.Address) (event.Subscription, error)
 	WatchRoleAdminChanged(*bind.WatchOpts, chan<- *bindings.BridgeRoleAdminChanged, [][32]byte, [][32]byte, [][32]byte) (event.Subscription, error)
 	WatchRoleGranted(*bind.WatchOpts, chan<- *bindings.BridgeRoleGranted, [][32]byte, []common.Address, []common.Address) (event.Subscription, error)
 	WatchRoleRevoked(*bind.WatchOpts, chan<- *bindings.BridgeRoleRevoked, [][32]byte, []common.Address, []common.Address) (event.Subscription, error)
+	WatchThresholdChange(*bind.WatchOpts, chan<- *bindings.BridgeThresholdChange) (event.Subscription, error)
 	WatchTransfer(*bind.WatchOpts, chan<- *bindings.BridgeTransfer, []*big.Int) (event.Subscription, error)
 	WatchTransferFinish(*bind.WatchOpts, chan<- *bindings.BridgeTransferFinish, []*big.Int) (event.Subscription, error)
 	WatchTransferSubmit(*bind.WatchOpts, chan<- *bindings.BridgeTransferSubmit, []*big.Int) (event.Subscription, error)

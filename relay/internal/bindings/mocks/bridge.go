@@ -159,6 +159,51 @@ func (mr *MockBridgeContractMockRecorder) ChangeTransferFeeRecipient(arg0, arg1 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeTransferFeeRecipient", reflect.TypeOf((*MockBridgeContract)(nil).ChangeTransferFeeRecipient), arg0, arg1)
 }
 
+// Confirmations mocks base method.
+func (m *MockBridgeContract) Confirmations(arg0 *bind.CallOpts, arg1 [32]byte, arg2 common.Address) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Confirmations", arg0, arg1, arg2)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Confirmations indicates an expected call of Confirmations.
+func (mr *MockBridgeContractMockRecorder) Confirmations(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Confirmations", reflect.TypeOf((*MockBridgeContract)(nil).Confirmations), arg0, arg1, arg2)
+}
+
+// ConfirmationsThreshold mocks base method.
+func (m *MockBridgeContract) ConfirmationsThreshold(arg0 *bind.CallOpts) (*big.Int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfirmationsThreshold", arg0)
+	ret0, _ := ret[0].(*big.Int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfirmationsThreshold indicates an expected call of ConfirmationsThreshold.
+func (mr *MockBridgeContractMockRecorder) ConfirmationsThreshold(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfirmationsThreshold", reflect.TypeOf((*MockBridgeContract)(nil).ConfirmationsThreshold), arg0)
+}
+
+// ConfirmedCount mocks base method.
+func (m *MockBridgeContract) ConfirmedCount(arg0 *bind.CallOpts, arg1 [32]byte) (*big.Int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ConfirmedCount", arg0, arg1)
+	ret0, _ := ret[0].(*big.Int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ConfirmedCount indicates an expected call of ConfirmedCount.
+func (mr *MockBridgeContractMockRecorder) ConfirmedCount(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfirmedCount", reflect.TypeOf((*MockBridgeContract)(nil).ConfirmedCount), arg0, arg1)
+}
+
 // CurrentEpoch mocks base method.
 func (m *MockBridgeContract) CurrentEpoch(arg0 *bind.CallOpts) (*big.Int, error) {
 	m.ctrl.T.Helper()
@@ -187,6 +232,51 @@ func (m *MockBridgeContract) DEFAULTADMINROLE(arg0 *bind.CallOpts) ([32]byte, er
 func (mr *MockBridgeContractMockRecorder) DEFAULTADMINROLE(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DEFAULTADMINROLE", reflect.TypeOf((*MockBridgeContract)(nil).DEFAULTADMINROLE), arg0)
+}
+
+// FilterPaused mocks base method.
+func (m *MockBridgeContract) FilterPaused(arg0 *bind.FilterOpts) (*bindings.BridgePausedIterator, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterPaused", arg0)
+	ret0, _ := ret[0].(*bindings.BridgePausedIterator)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FilterPaused indicates an expected call of FilterPaused.
+func (mr *MockBridgeContractMockRecorder) FilterPaused(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterPaused", reflect.TypeOf((*MockBridgeContract)(nil).FilterPaused), arg0)
+}
+
+// FilterRelayAdd mocks base method.
+func (m *MockBridgeContract) FilterRelayAdd(arg0 *bind.FilterOpts, arg1 []common.Address) (*bindings.BridgeRelayAddIterator, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterRelayAdd", arg0, arg1)
+	ret0, _ := ret[0].(*bindings.BridgeRelayAddIterator)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FilterRelayAdd indicates an expected call of FilterRelayAdd.
+func (mr *MockBridgeContractMockRecorder) FilterRelayAdd(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterRelayAdd", reflect.TypeOf((*MockBridgeContract)(nil).FilterRelayAdd), arg0, arg1)
+}
+
+// FilterRelayRemove mocks base method.
+func (m *MockBridgeContract) FilterRelayRemove(arg0 *bind.FilterOpts, arg1 []common.Address) (*bindings.BridgeRelayRemoveIterator, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterRelayRemove", arg0, arg1)
+	ret0, _ := ret[0].(*bindings.BridgeRelayRemoveIterator)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FilterRelayRemove indicates an expected call of FilterRelayRemove.
+func (mr *MockBridgeContractMockRecorder) FilterRelayRemove(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterRelayRemove", reflect.TypeOf((*MockBridgeContract)(nil).FilterRelayRemove), arg0, arg1)
 }
 
 // FilterRoleAdminChanged mocks base method.
@@ -232,6 +322,21 @@ func (m *MockBridgeContract) FilterRoleRevoked(arg0 *bind.FilterOpts, arg1 [][32
 func (mr *MockBridgeContractMockRecorder) FilterRoleRevoked(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterRoleRevoked", reflect.TypeOf((*MockBridgeContract)(nil).FilterRoleRevoked), arg0, arg1, arg2, arg3)
+}
+
+// FilterThresholdChange mocks base method.
+func (m *MockBridgeContract) FilterThresholdChange(arg0 *bind.FilterOpts) (*bindings.BridgeThresholdChangeIterator, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FilterThresholdChange", arg0)
+	ret0, _ := ret[0].(*bindings.BridgeThresholdChangeIterator)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FilterThresholdChange indicates an expected call of FilterThresholdChange.
+func (mr *MockBridgeContractMockRecorder) FilterThresholdChange(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FilterThresholdChange", reflect.TypeOf((*MockBridgeContract)(nil).FilterThresholdChange), arg0)
 }
 
 // FilterTransfer mocks base method.
@@ -414,6 +519,21 @@ func (mr *MockBridgeContractMockRecorder) InputEventId(arg0 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InputEventId", reflect.TypeOf((*MockBridgeContract)(nil).InputEventId), arg0)
 }
 
+// IsConfirmedByRelay mocks base method.
+func (m *MockBridgeContract) IsConfirmedByRelay(arg0 *bind.CallOpts, arg1 common.Address, arg2 *big.Int, arg3 []bindings.CommonStructsTransfer) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsConfirmedByRelay", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsConfirmedByRelay indicates an expected call of IsConfirmedByRelay.
+func (mr *MockBridgeContractMockRecorder) IsConfirmedByRelay(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsConfirmedByRelay", reflect.TypeOf((*MockBridgeContract)(nil).IsConfirmedByRelay), arg0, arg1, arg2, arg3)
+}
+
 // IsEpochDataSet mocks base method.
 func (m *MockBridgeContract) IsEpochDataSet(arg0 *bind.CallOpts, arg1 *big.Int) (bool, error) {
 	m.ctrl.T.Helper()
@@ -442,6 +562,21 @@ func (m *MockBridgeContract) IsQueueEmpty(arg0 *bind.CallOpts) (bool, error) {
 func (mr *MockBridgeContractMockRecorder) IsQueueEmpty(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsQueueEmpty", reflect.TypeOf((*MockBridgeContract)(nil).IsQueueEmpty), arg0)
+}
+
+// IsRelay mocks base method.
+func (m *MockBridgeContract) IsRelay(arg0 *bind.CallOpts, arg1 common.Address) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "IsRelay", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// IsRelay indicates an expected call of IsRelay.
+func (mr *MockBridgeContractMockRecorder) IsRelay(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRelay", reflect.TypeOf((*MockBridgeContract)(nil).IsRelay), arg0, arg1)
 }
 
 // LastProcessedBlock mocks base method.
@@ -549,6 +684,51 @@ func (mr *MockBridgeContractMockRecorder) OldestLockedEventId(arg0 interface{}) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OldestLockedEventId", reflect.TypeOf((*MockBridgeContract)(nil).OldestLockedEventId), arg0)
 }
 
+// ParsePaused mocks base method.
+func (m *MockBridgeContract) ParsePaused(arg0 types.Log) (*bindings.BridgePaused, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParsePaused", arg0)
+	ret0, _ := ret[0].(*bindings.BridgePaused)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParsePaused indicates an expected call of ParsePaused.
+func (mr *MockBridgeContractMockRecorder) ParsePaused(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParsePaused", reflect.TypeOf((*MockBridgeContract)(nil).ParsePaused), arg0)
+}
+
+// ParseRelayAdd mocks base method.
+func (m *MockBridgeContract) ParseRelayAdd(arg0 types.Log) (*bindings.BridgeRelayAdd, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseRelayAdd", arg0)
+	ret0, _ := ret[0].(*bindings.BridgeRelayAdd)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseRelayAdd indicates an expected call of ParseRelayAdd.
+func (mr *MockBridgeContractMockRecorder) ParseRelayAdd(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseRelayAdd", reflect.TypeOf((*MockBridgeContract)(nil).ParseRelayAdd), arg0)
+}
+
+// ParseRelayRemove mocks base method.
+func (m *MockBridgeContract) ParseRelayRemove(arg0 types.Log) (*bindings.BridgeRelayRemove, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseRelayRemove", arg0)
+	ret0, _ := ret[0].(*bindings.BridgeRelayRemove)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseRelayRemove indicates an expected call of ParseRelayRemove.
+func (mr *MockBridgeContractMockRecorder) ParseRelayRemove(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseRelayRemove", reflect.TypeOf((*MockBridgeContract)(nil).ParseRelayRemove), arg0)
+}
+
 // ParseRoleAdminChanged mocks base method.
 func (m *MockBridgeContract) ParseRoleAdminChanged(arg0 types.Log) (*bindings.BridgeRoleAdminChanged, error) {
 	m.ctrl.T.Helper()
@@ -592,6 +772,21 @@ func (m *MockBridgeContract) ParseRoleRevoked(arg0 types.Log) (*bindings.BridgeR
 func (mr *MockBridgeContractMockRecorder) ParseRoleRevoked(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseRoleRevoked", reflect.TypeOf((*MockBridgeContract)(nil).ParseRoleRevoked), arg0)
+}
+
+// ParseThresholdChange mocks base method.
+func (m *MockBridgeContract) ParseThresholdChange(arg0 types.Log) (*bindings.BridgeThresholdChange, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ParseThresholdChange", arg0)
+	ret0, _ := ret[0].(*bindings.BridgeThresholdChange)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ParseThresholdChange indicates an expected call of ParseThresholdChange.
+func (mr *MockBridgeContractMockRecorder) ParseThresholdChange(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseThresholdChange", reflect.TypeOf((*MockBridgeContract)(nil).ParseThresholdChange), arg0)
 }
 
 // ParseTransfer mocks base method.
@@ -714,6 +909,21 @@ func (mr *MockBridgeContractMockRecorder) RELAYROLE(arg0 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RELAYROLE", reflect.TypeOf((*MockBridgeContract)(nil).RELAYROLE), arg0)
 }
 
+// Relays mocks base method.
+func (m *MockBridgeContract) Relays(arg0 *bind.CallOpts, arg1 *big.Int) (common.Address, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Relays", arg0, arg1)
+	ret0, _ := ret[0].(common.Address)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Relays indicates an expected call of Relays.
+func (mr *MockBridgeContractMockRecorder) Relays(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Relays", reflect.TypeOf((*MockBridgeContract)(nil).Relays), arg0, arg1)
+}
+
 // RemoveLockedTransfers mocks base method.
 func (m *MockBridgeContract) RemoveLockedTransfers(arg0 *bind.TransactOpts, arg1 *big.Int) (*types.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -772,6 +982,21 @@ func (m *MockBridgeContract) SetEpochData(arg0 *bind.TransactOpts, arg1, arg2, a
 func (mr *MockBridgeContractMockRecorder) SetEpochData(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEpochData", reflect.TypeOf((*MockBridgeContract)(nil).SetEpochData), arg0, arg1, arg2, arg3, arg4)
+}
+
+// SetRelaysAndConfirmations mocks base method.
+func (m *MockBridgeContract) SetRelaysAndConfirmations(arg0 *bind.TransactOpts, arg1, arg2 []common.Address, arg3 *big.Int) (*types.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetRelaysAndConfirmations", arg0, arg1, arg2, arg3)
+	ret0, _ := ret[0].(*types.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SetRelaysAndConfirmations indicates an expected call of SetRelaysAndConfirmations.
+func (mr *MockBridgeContractMockRecorder) SetRelaysAndConfirmations(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRelaysAndConfirmations", reflect.TypeOf((*MockBridgeContract)(nil).SetRelaysAndConfirmations), arg0, arg1, arg2, arg3)
 }
 
 // SetSideBridge mocks base method.
@@ -847,6 +1072,21 @@ func (m *MockBridgeContract) SubmitTransferPoW(arg0 *bind.TransactOpts, arg1 bin
 func (mr *MockBridgeContractMockRecorder) SubmitTransferPoW(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitTransferPoW", reflect.TypeOf((*MockBridgeContract)(nil).SubmitTransferPoW), arg0, arg1)
+}
+
+// SubmitTransferUntrustless mocks base method.
+func (m *MockBridgeContract) SubmitTransferUntrustless(arg0 *bind.TransactOpts, arg1 *big.Int, arg2 []bindings.CommonStructsTransfer) (*types.Transaction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubmitTransferUntrustless", arg0, arg1, arg2)
+	ret0, _ := ret[0].(*types.Transaction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubmitTransferUntrustless indicates an expected call of SubmitTransferUntrustless.
+func (mr *MockBridgeContractMockRecorder) SubmitTransferUntrustless(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubmitTransferUntrustless", reflect.TypeOf((*MockBridgeContract)(nil).SubmitTransferUntrustless), arg0, arg1, arg2)
 }
 
 // SubmitValidatorSetChangesAura mocks base method.
@@ -984,6 +1224,21 @@ func (mr *MockBridgeContractMockRecorder) TokensRemoveBatch(arg0, arg1 interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TokensRemoveBatch", reflect.TypeOf((*MockBridgeContract)(nil).TokensRemoveBatch), arg0, arg1)
 }
 
+// TransfersHash mocks base method.
+func (m *MockBridgeContract) TransfersHash(arg0 *bind.CallOpts, arg1 *big.Int, arg2 []bindings.CommonStructsTransfer) ([32]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TransfersHash", arg0, arg1, arg2)
+	ret0, _ := ret[0].([32]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TransfersHash indicates an expected call of TransfersHash.
+func (mr *MockBridgeContractMockRecorder) TransfersHash(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransfersHash", reflect.TypeOf((*MockBridgeContract)(nil).TransfersHash), arg0, arg1, arg2)
+}
+
 // TriggerTransfers mocks base method.
 func (m *MockBridgeContract) TriggerTransfers(arg0 *bind.TransactOpts) (*types.Transaction, error) {
 	m.ctrl.T.Helper()
@@ -1059,6 +1314,51 @@ func (mr *MockBridgeContractMockRecorder) ValidatorSet(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidatorSet", reflect.TypeOf((*MockBridgeContract)(nil).ValidatorSet), arg0, arg1)
 }
 
+// WatchPaused mocks base method.
+func (m *MockBridgeContract) WatchPaused(arg0 *bind.WatchOpts, arg1 chan<- *bindings.BridgePaused) (event.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WatchPaused", arg0, arg1)
+	ret0, _ := ret[0].(event.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WatchPaused indicates an expected call of WatchPaused.
+func (mr *MockBridgeContractMockRecorder) WatchPaused(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchPaused", reflect.TypeOf((*MockBridgeContract)(nil).WatchPaused), arg0, arg1)
+}
+
+// WatchRelayAdd mocks base method.
+func (m *MockBridgeContract) WatchRelayAdd(arg0 *bind.WatchOpts, arg1 chan<- *bindings.BridgeRelayAdd, arg2 []common.Address) (event.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WatchRelayAdd", arg0, arg1, arg2)
+	ret0, _ := ret[0].(event.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WatchRelayAdd indicates an expected call of WatchRelayAdd.
+func (mr *MockBridgeContractMockRecorder) WatchRelayAdd(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchRelayAdd", reflect.TypeOf((*MockBridgeContract)(nil).WatchRelayAdd), arg0, arg1, arg2)
+}
+
+// WatchRelayRemove mocks base method.
+func (m *MockBridgeContract) WatchRelayRemove(arg0 *bind.WatchOpts, arg1 chan<- *bindings.BridgeRelayRemove, arg2 []common.Address) (event.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WatchRelayRemove", arg0, arg1, arg2)
+	ret0, _ := ret[0].(event.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WatchRelayRemove indicates an expected call of WatchRelayRemove.
+func (mr *MockBridgeContractMockRecorder) WatchRelayRemove(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchRelayRemove", reflect.TypeOf((*MockBridgeContract)(nil).WatchRelayRemove), arg0, arg1, arg2)
+}
+
 // WatchRoleAdminChanged mocks base method.
 func (m *MockBridgeContract) WatchRoleAdminChanged(arg0 *bind.WatchOpts, arg1 chan<- *bindings.BridgeRoleAdminChanged, arg2, arg3, arg4 [][32]byte) (event.Subscription, error) {
 	m.ctrl.T.Helper()
@@ -1102,6 +1402,21 @@ func (m *MockBridgeContract) WatchRoleRevoked(arg0 *bind.WatchOpts, arg1 chan<- 
 func (mr *MockBridgeContractMockRecorder) WatchRoleRevoked(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchRoleRevoked", reflect.TypeOf((*MockBridgeContract)(nil).WatchRoleRevoked), arg0, arg1, arg2, arg3, arg4)
+}
+
+// WatchThresholdChange mocks base method.
+func (m *MockBridgeContract) WatchThresholdChange(arg0 *bind.WatchOpts, arg1 chan<- *bindings.BridgeThresholdChange) (event.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "WatchThresholdChange", arg0, arg1)
+	ret0, _ := ret[0].(event.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WatchThresholdChange indicates an expected call of WatchThresholdChange.
+func (mr *MockBridgeContractMockRecorder) WatchThresholdChange(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchThresholdChange", reflect.TypeOf((*MockBridgeContract)(nil).WatchThresholdChange), arg0, arg1)
 }
 
 // WatchTransfer mocks base method.
