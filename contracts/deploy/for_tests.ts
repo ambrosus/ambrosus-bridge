@@ -49,6 +49,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         ],
     });
 
+    await hre.deployments.deploy("CheckUntrustlessTest", {
+        from: owner,
+    });
+
   await hre.deployments.deploy("CheckPoSATest", {
     from: owner,
     args: [
