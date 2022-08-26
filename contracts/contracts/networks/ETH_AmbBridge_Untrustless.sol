@@ -18,10 +18,11 @@ contract ETH_AmbBridge_Untrustless is CommonBridge, CheckUntrustless {
 
     function submitTransferUntrustless(uint eventId, CommonStructs.Transfer[] calldata transfers) public whenNotPaused {
         // relay "role" checked at CheckUntrustless contract
-        checkEventId(eventId);
+        require(eventId == inputEventId + 1, "EventId out of order");
 
         bool confirm = checkUntrustless_(eventId, transfers);
         if (confirm) {// required count of confirmations reached
+            ++inputEventId;
             emit TransferSubmit(eventId);
             lockTransfers(transfers, eventId);
             // todo need lock?
