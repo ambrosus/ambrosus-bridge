@@ -21,5 +21,5 @@ func (b *ReceiverUntrustless) SubmitTransferUntrustless(event *bindings.BridgeTr
 
 }
 func (b *ReceiverUntrustless) IsEventAlreadyConfirmed(event *bindings.BridgeTransfer) (bool, error) {
-	return b.GetContract().IsConfirmedByRelay(nil, event.EventId, event.Queue)
+	return b.GetContract().IsConfirmedByRelay(nil, b.GetAuth().From, event.EventId, event.Queue)
 }
