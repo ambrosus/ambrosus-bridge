@@ -17,7 +17,7 @@ contract CheckUntrustless {
     event RelayAdd(address indexed relay);
     event RelayRemove(address indexed relay);
     event ThresholdChange(uint newThreshold);
-    event Confirmation(address indexed sender, uint indexed eventId, bytes32 hash);
+    event RelayConfirmation(address indexed sender, uint indexed eventId, bytes32 hash);
 
     // return true if current call reach confirmationsThreshold
     function checkUntrustless_(uint eventId, CommonStructs.Transfer[] calldata transfers) internal returns (bool) {
@@ -30,7 +30,7 @@ contract CheckUntrustless {
         require(confirmCount < confirmationsThreshold, "Already confirmed");
 
         confirmations[hash][msg.sender] = true;
-        emit Confirmation(msg.sender, eventId, hash);
+        emit RelayConfirmation(msg.sender, eventId, hash);
 
         // +1 coz current relay confirmed just now
         return confirmCount + 1 >= confirmationsThreshold;
@@ -99,5 +99,6 @@ contract CheckUntrustless {
         return false;
     }
 
+    uint256[15] private ___gap;
 
 }

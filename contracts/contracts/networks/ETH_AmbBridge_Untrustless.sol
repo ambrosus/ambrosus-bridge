@@ -16,6 +16,14 @@ contract ETH_AmbBridge_Untrustless is CommonBridge, CheckUntrustless {
         _setRelaysAndConfirmations(new address[](0), _relays, _confirmations);
     }
 
+    function upgrade(
+        uint _confirmations,
+        address[] calldata _relays
+    ) public {
+        require(msg.sender == address(this), "This method require multisig");
+      _setRelaysAndConfirmations(new address[](0), _relays, _confirmations);
+    }
+
     function submitTransferUntrustless(uint eventId, CommonStructs.Transfer[] calldata transfers) public whenNotPaused {
         // relay "role" checked at CheckUntrustless contract
         require(eventId == inputEventId + 1, "EventId out of order");

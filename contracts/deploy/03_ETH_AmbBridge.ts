@@ -11,21 +11,36 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig_(hre.network);
   const tokenPairs = configFile.getTokenPairs("amb", "eth")
 
+  const optionsWithOnUpgrade: any = await options(hre, BRIDGE_NAME, tokenPairs,
+    {
+      sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+      wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
+      timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+      lockTime: isMainNet ? 60 * 10 : 60,
+      minSafetyBlocks: 10,
+    },
+    [
+      isMainNet ? 13_000_000_000 : 0  // minimum difficulty
+    ],
+  )
+
+  // Upgrade PoW to untrustless
+  // optionsWithOnUpgrade.proxy.execute.onUpgrade = {
+  //   methodName: "upgrade",
+  //   args: [
+  //     2,
+  //     ["0x295C2707319ad4BecA6b5bb4086617fD6F240CfE",
+  //       "0x1111111111111111111111111111111111111111",
+  //     ]
+  //   ]
+  // };
+
+
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
     contract: BRIDGE_NAME,
-    ...await options(hre, BRIDGE_NAME, tokenPairs,
-      {
-        sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-        wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-        timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-        lockTime: isMainNet ? 60 * 10 : 60,
-        minSafetyBlocks: 10,
-      },
-      [
-        isMainNet ? 13_000_000_000 : 0  // minimum difficulty
-      ],
-    )
+    ...optionsWithOnUpgrade
   });
+
 
   configFile.bridges.eth.amb = deployResult.address;
   configFile.save()
