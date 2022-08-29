@@ -16,12 +16,19 @@ import (
 
 const gapForExtraData = 1024 * 10
 
+type finalizeService interface {
+	GetBlockWhenFinalize(emitBlockNum uint64) (uint64, error)
+}
+
 type AuraEncoder struct {
 	bridge       networks.Bridge
 	auraReceiver service_submit.ReceiverAura
 
 	vsContract              *c.Vs
 	parityClient            *parity.Client
+	vsContract              *c.Vs
+	parityClient            *parity.Client
+	finalizeService         finalizeService
 	receiverBridgeMaxTxSize uint64
 
 	logger *zerolog.Logger
@@ -30,7 +37,8 @@ type AuraEncoder struct {
 	fetchBlockCache func(arg uint64) (*parity.Header, error)
 }
 
-func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura, vSContract *c.Vs, parityClient *parity.Client, receiverBridgeMaxTxSizeKB uint64) *AuraEncoder {
+func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura,
+	vSContract *c.Vs, parityClient *parity.Client, finalizeService finalizeService, receiverBridgeMaxTxSizeKB uint64) *AuraEncoder {
 	logger := bridge.GetLogger().With().Str("service", "AuraEncoder").Logger()
 
 	return &AuraEncoder{
@@ -38,6 +46,7 @@ func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAu
 		auraReceiver:            sideBridge,
 		vsContract:              vSContract,
 		parityClient:            parityClient,
+		finalizeService:         finalizeService,
 		receiverBridgeMaxTxSize: receiverBridgeMaxTxSizeKB * 1024,
 		logger:                  &logger,
 	}

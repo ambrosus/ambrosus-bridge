@@ -16,19 +16,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
     contract: BRIDGE_NAME,
-    ...await options(hre, tokenPairs,
+    ...await options(hre, BRIDGE_NAME, tokenPairs,
       {
         sideBridgeAddress: ambBridge.address,
         wrappingTokenAddress: configFile.tokens.WBNB.addresses.bsc,
-        transferFeeRecipient: ethers.constants.AddressZero,
-        bridgeFeeRecipient: ethers.constants.AddressZero,
         timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: isMainNet ? 10 : 2,
         minSafetyBlocksValidators: isMainNet ? 10 : 2,
       },
         [
-            ...(await getAmbValidators(ambNet)),
+            ...(await getAmbValidators(ambNet, isMainNet)),
             isMainNet ? 10 : 2, // minSafetyBlocksValidators
         ]
     )

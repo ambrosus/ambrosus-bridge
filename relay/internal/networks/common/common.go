@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"os"
 	"sync"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -12,10 +13,11 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
+	common_ethclient "github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
 
@@ -37,10 +39,14 @@ type CommonBridge struct {
 func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.Name = name
 
-	b.Client, err = ethclient.Dial(cfg.HttpURL)
+	origin := GetAmbrosusOrigin()
+
+	rpcHTTPClient, err := rpc.DialHTTP(cfg.HttpURL)
 	if err != nil {
 		return b, fmt.Errorf("dial http: %w", err)
 	}
+	rpcHTTPClient.SetHeader("Origin", origin)
+	b.Client = common_ethclient.NewClient(rpcHTTPClient)
 
 	// Creating a new bridge contract instance.
 	b.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
@@ -50,10 +56,11 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 
 	// Create websocket instances if wsUrl provided
 	if cfg.WsURL != "" {
-		b.WsClient, err = ethclient.Dial(cfg.WsURL)
+		rpcWSClient, err := rpc.DialWebsocket(context.Background(), cfg.WsURL, origin)
 		if err != nil {
 			return b, fmt.Errorf("dial ws: %w", err)
 		}
+		b.WsClient = common_ethclient.NewClient(rpcWSClient)
 
 		b.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.WsClient)
 		if err != nil {
@@ -86,6 +93,19 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.ContractCallLock = &sync.Mutex{}
 	return b, nil
 
+}
+
+func GetAmbrosusOrigin() string {
+	var origin string
+	stage := os.Getenv("STAGE")
+	if stage == "prod" {
+		origin = "https://ambrosus.io"
+	} else if stage == "test" {
+		origin = "https://ambrosus-test.io"
+	} else if stage == "dev" {
+		origin = "https://ambrosus-dev.io"
+	}
+	return origin
 }
 
 // interface `Bridge`

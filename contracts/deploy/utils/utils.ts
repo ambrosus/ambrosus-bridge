@@ -5,6 +5,7 @@ import {ethers} from "ethers";
 import vsAbi from "../../abi/ValidatorSet.json";
 import {Block} from "@ethersproject/abstract-provider";
 import {Config, readConfig} from "./config";
+import {getAddresses} from "./prod_addresses";
 
 export function readConfig_(network: Network): Config {
   return readConfig(parseNet(network).stage);
@@ -59,28 +60,33 @@ export async function setSideBridgeAddress(deploymentName: string, sideAddress: 
 
 //
 
-export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: string]: string },
+export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string, tokenPairs: { [k: string]: string },
                               commonArgs: any, args: any[]): Promise<DeployOptions> {
 
-  let {owner, admin, relay} = await hre.getNamedAccounts();
-
-  // multisig admins and threshold
-  let msAdmins = process.env.MULTISIG_ADDRESSES!.split(',');
-  let msThresh = +process.env.MULTISIG_THRESHOLD!;
+  const network = parseNet(hre.network);
+  let {owner} = await hre.getNamedAccounts();
 
   // on testnets use only 1 account for all roles;
   // multisig threshold == 1, so no upgrade confirmations needed
-  if (parseNet(hre.network).stage != "main") {
-    [admin, relay] = [owner, owner];
-    [msAdmins, msThresh] = [[owner], 1];
-  }
+  const cfg = (network.stage === "main") ? getAddresses(bridgeName) :
+    {
+        adminAddress: owner,
+        relayAddress: owner,
+        transferFeeRecipient: owner,
+        bridgeFeeRecipient: owner,
+        multisig: {
+            admins: [owner],
+            threshold: 1
+        }
+    };
 
   // add this args to user args
   const reallyCommonArgs = {
-    adminAddress: admin,
-    relayAddress: relay,
-    transferFeeRecipient: owner, // todo
-    bridgeFeeRecipient: owner,  // todo
+    adminAddress: cfg.adminAddress,
+    relayAddress: cfg.relayAddress,
+    transferFeeRecipient: cfg.transferFeeRecipient,
+    bridgeFeeRecipient: cfg.bridgeFeeRecipient,
+
     tokenThisAddresses: Object.keys(tokenPairs),
     tokenSideAddresses: Object.values(tokenPairs),
   }
@@ -91,7 +97,7 @@ export async function options(hre: HardhatRuntimeEnvironment, tokenPairs: { [k: 
     from: owner,
     proxy: {
       owner: owner,
-      proxyArgs: ["{implementation}", "{data}", msAdmins, msThresh],
+      proxyArgs: ["{implementation}", "{data}", cfg.multisig.admins, cfg.multisig.threshold],
       proxyContract: "ProxyMultiSig",
       execute: {
         init: {
@@ -123,21 +129,22 @@ export async function getBscValidators(bscNetwork: any): Promise<[number, string
   return [epoch, validators];
 }
 
-export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
+export async function getAmbValidators(ambNetwork: any, isMainNet: boolean): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00";
   const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
 
   // check that current validators match with the latest finalized event
-  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange())
+  const fromBlock = isMainNet ? 19470402 : 0;
+  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), fromBlock)
   const latestLog = logs[logs.length-1]
-  const latestSet = vsContract.interface.parseLog(latestLog).args.newSet
-  console.assert(JSON.stringify(latestSet) == JSON.stringify(validators),
+  const latestLogParsed = vsContract.interface.parseLog(latestLog).args
+  console.assert(JSON.stringify(latestLogParsed.newSet) == JSON.stringify(validators),
     `ValidatorSet extracted from ${latestBlock.number} block doesn't equal to 
     ValidatorSet emitted in ${latestLog.blockNumber} block. 
     Probably, latest event doesn't finalized yet and this can cause a trouble.
-    Try again at block ~${latestLog.blockNumber + latestSet.length/2}`)
+    Try again at block ~${latestLog.blockNumber + latestLogParsed.newSet.length/2}`)
 
-  return [validators, vsAddress, latestBlock.hash]
+  return [validators, vsAddress, latestLogParsed.parentHash]
 }
 
 

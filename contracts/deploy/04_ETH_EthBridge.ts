@@ -14,25 +14,19 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const ambNet = hre.companionNetworks['amb']
   const ambBridge = await ambNet.deployments.get('ETH_AmbBridge');
 
-  const optionsWithOnUpgrade: any = {
-    ...await options(
-         hre,
-         tokenPairs,
-         {
-           sideBridgeAddress: ambBridge.address,
-           wrappingTokenAddress: configFile.tokens.WETH.addresses.eth,
-           transferFeeRecipient: ethers.constants.AddressZero,
-           bridgeFeeRecipient: ethers.constants.AddressZero,
-           timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-           lockTime: isMainNet ? 60 * 10 : 60,
-           minSafetyBlocks: isMainNet ? 10 : 2,
-         },
-        [
-            ...(await getAmbValidators(ambNet)),
-            isMainNet ? 10 : 2, // minSafetyBlocksValidators
-        ]
-    )
-  }
+  const optionsWithOnUpgrade: any = await options(hre, BRIDGE_NAME, tokenPairs,
+    {
+      sideBridgeAddress: ambBridge.address,
+      wrappingTokenAddress: configFile.tokens.WETH.addresses.eth,
+      timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+      lockTime: isMainNet ? 60 * 10 : 60,
+      minSafetyBlocks: isMainNet ? 10 : 2,
+    },
+    [
+      ...(await getAmbValidators(ambNet, isMainNet)),
+      isMainNet ? 10 : 2, // minSafetyBlocksValidators
+    ]
+  )
 
   // Uncomment when updateLastProcessedBlock is needed
   // optionsWithOnUpgrade.proxy.execute.onUpgrade = {

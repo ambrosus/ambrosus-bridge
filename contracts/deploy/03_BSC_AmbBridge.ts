@@ -24,12 +24,10 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
     contract: BRIDGE_NAME,
-    ...await options(hre, tokenPairs,
+    ...await options(hre, BRIDGE_NAME, tokenPairs,
       {
         sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
         wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-        transferFeeRecipient: ethers.constants.AddressZero,
-        bridgeFeeRecipient: ethers.constants.AddressZero,
         timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
         lockTime: isMainNet ? 60 * 10 : 60,
         minSafetyBlocks: 10,

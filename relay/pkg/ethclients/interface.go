@@ -27,4 +27,5 @@ type ClientInterface interface {
 	Close()
 	BlockNumber(ctx context.Context) (uint64, error)
 	PendingNonceAt(ctx context.Context, account common.Address) (uint64, error)
+	TxGasPriceFromResponse(ctx context.Context, txHash common.Hash) (*big.Int, error)
 }

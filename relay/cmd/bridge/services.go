@@ -83,11 +83,11 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		return
 	}
 
-	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, cfg.Amb)
+	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, cfg.Amb, cfg.Side)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeAmb not created")
 	}
-	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, cfg.Side)
+	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, cfg.Side, cfg.Amb)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeSide not created")
 	}

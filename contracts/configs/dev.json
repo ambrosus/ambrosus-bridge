@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x2fb8b7B7A974f0E80A6CECCc7688dbFA8CfA82B0",
-      "side": "0xf248aB12F2510372Fbf2B26dD0C2073bC971f125"
+      "amb": "0xf7E15b720867747a536137f4EFdAB4309225f8D6",
+      "side": "0x5570DF279dA47Fa46aBa4c1e27b55c8e1d6648A1"
     },
     "bsc": {
       "amb": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
@@ -15,10 +15,12 @@
       "symbol": "SAMB",
       "denomination": 18,
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
-      "primaryNet": "amb",
+      "primaryNets": [
+        "amb"
+      ],
       "addresses": {
-        "amb": "0x18951A2D6527A01C089D5Ad595Ae4f0B5d749786",
-        "eth": "0x63A21381529fEb470bd10D0b9ceE6931D129c9A9",
+        "amb": "0xBC3422cD37a271C7c388AEEeBC71cCBAD7FE368f",
+        "eth": "0x888eD88b44418e09412DaE1F17d1A0a9FC3681c1",
         "bsc": "0x6d4287E23D544cab6d87518411FeAA2Ee36b26fd"
       },
       "nativeAnalog": "AMB"
@@ -28,10 +30,12 @@
       "symbol": "WETH",
       "denomination": 18,
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
-      "primaryNet": "eth",
+      "primaryNets": [
+        "eth"
+      ],
       "addresses": {
-        "amb": "0x3Ed6b39Ad815e08d9e7FF111FBbe975E7F778c64",
-        "eth": "0x9408A917A8aaa495Cf13F601D3d033D44Faa3F28",
+        "amb": "0x17429a725830792532493517d22F65d4E2E0681c",
+        "eth": "0xfb1c09373D1033575affb1500B3ebE4931E795Bb",
         "bsc": ""
       },
       "nativeAnalog": "ETH"
@@ -41,13 +45,31 @@
       "symbol": "WBNB",
       "denomination": 18,
       "logo": "https://bscscan.com/token/images/binance_32.png",
-      "primaryNet": "bsc",
+      "primaryNets": [
+        "bsc"
+      ],
       "addresses": {
         "amb": "0x2FA390265Fd43c996f6335293ad60446494c621B",
         "eth": "",
         "bsc": "0x50D697Fd57051573c00C305bb79f5978036d8BaA"
       },
       "nativeAnalog": "BNB"
+    },
+    "USDC": {
+      "name": "USD Coin",
+      "symbol": "USDC",
+      "denomination": 6,
+      "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
+      "primaryNets": [
+        "eth",
+        "bsc"
+      ],
+      "addresses": {
+        "amb": "0x6C5750Be93De7a4A3072bA10A6610C23e8399df1",
+        "eth": "0xE4d4f9897E54Ca5bE8060365033a8b665F2cA63e",
+        "bsc": "0x32fac62b1196E03Ed3644a40DbFbe5728e31599A"
+      },
+      "nativeAnalog": ""
     }
   }
 }

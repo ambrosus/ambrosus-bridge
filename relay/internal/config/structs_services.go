@@ -10,6 +10,7 @@ type (
 
 	SubmitterAura struct {
 		VSContractAddr            string `mapstructure:"vsContractAddr"`
+		FinalizeServiceUrl        string `mapstructure:"finalizeServiceUrl"`
 		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 	SubmitterPoW struct {

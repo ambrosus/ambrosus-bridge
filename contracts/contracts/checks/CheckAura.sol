@@ -13,7 +13,7 @@ contract CheckAura is Initializable {
 
     address[] public validatorSet;
     address validatorSetAddress;
-    bytes32 public lastProcessedBlock; // actually latest processed (finalized) *vs change event* block
+    bytes32 public lastProcessedBlock; // actually latest processed block in which *vs change event* emitted
     uint public minSafetyBlocksValidators;
 
 
@@ -90,7 +90,6 @@ contract CheckAura is Initializable {
 
         bytes32 parentHash;
         bytes32 receiptHash;
-        bytes32 lastProcessedBlockTemp;
 
         // auraProof can be without transfer event when we have to many vsChanges and transfer doesn't fit into proof
         if (auraProof.transfer.eventId != 0) {
@@ -137,17 +136,13 @@ contract CheckAura is Initializable {
                 receiptHash = calcValidatorSetReceiptHash(vsProof.receiptProof, validatorSetAddress, validatorSet);
                 require(auraProof.blocks[vsProof.eventBlock].receiptHash == receiptHash, "Wrong VS receipt hash");
                 require(i - vsProof.eventBlock >= minSafetyBlocksValidators, "Few safety blocks validators");
-
-
-                // save finalization block hash to `lastProcessedBlock`
-                lastProcessedBlockTemp = parentHash;
             }
 
         }
 
-        // saving in temp variable cost lower than saving in global `lastProcessedBlock`
-        if (lastProcessedBlockTemp != bytes32(0)) {
-            lastProcessedBlock = lastProcessedBlockTemp;
+        // save block.parentHash in which latest processed vsChange event emitted
+        if (auraProof.vsChanges.length > 0) {
+            lastProcessedBlock = auraProof.blocks[auraProof.vsChanges[auraProof.vsChanges.length - 1].eventBlock].parentHash;
         }
     }
 
