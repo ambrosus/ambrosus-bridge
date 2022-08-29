@@ -45,6 +45,9 @@ type (
 		PrivateKey         string  `mapstructure:"privateKey"`
 		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
 		DefaultTransferFee string  `mapstructure:"defaultTransferFeeWei"`
+
+		ExplorerURL          string `mapstructure:"explorerURL"`
+		TransferFeeRecipient string `mapstructure:"transferFeeRecipient"`
 	}
 )
 

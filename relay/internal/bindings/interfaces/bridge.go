@@ -3,13 +3,12 @@
 package interfaces
 
 import (
-	"math/big"
-
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/event"
+	"math/big"
 )
 
 // BridgeContract is an interface generated for "github.com/ambrosus/ambrosus-bridge/relay/internal/bindings.Bridge".

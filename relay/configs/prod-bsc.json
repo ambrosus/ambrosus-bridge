@@ -39,12 +39,16 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "defaultTransferFeeWei": "1000000000000000000",
+            "explorerURL": "https://explorer-api.ambrosus.io",
+            "transferFeeRecipient": "0x"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "defaultTransferFeeWei": "10000000000000000",
+            "explorerURL": "https://api.bscscan.io/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
+            "transferFeeRecipient": "0x"
         }
     },
 

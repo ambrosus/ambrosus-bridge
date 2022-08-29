@@ -27,6 +27,7 @@ type CommonBridge struct {
 
 	Client, WsClient     ethclients.ClientInterface
 	Contract, WsContract interfaces.BridgeContract
+	ContractAddress      common.Address
 	Auth                 *bind.TransactOpts
 
 	Logger zerolog.Logger
@@ -38,6 +39,7 @@ type CommonBridge struct {
 
 func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.Name = name
+	b.ContractAddress = common.HexToAddress(cfg.ContractAddr)
 
 	origin := GetAmbrosusOrigin()
 
@@ -49,7 +51,7 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 	b.Client = common_ethclient.NewClient(rpcHTTPClient)
 
 	// Creating a new bridge contract instance.
-	b.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.Client)
+	b.Contract, err = bindings.NewBridge(b.ContractAddress, b.Client)
 	if err != nil {
 		return b, fmt.Errorf("create contract http: %w", err)
 	}
@@ -62,7 +64,7 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 		}
 		b.WsClient = common_ethclient.NewClient(rpcWSClient)
 
-		b.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), b.WsClient)
+		b.WsContract, err = bindings.NewBridge(b.ContractAddress, b.WsClient)
 		if err != nil {
 			return b, fmt.Errorf("create contract ws: %w", err)
 		}
@@ -136,4 +138,12 @@ func (b *CommonBridge) GetName() string {
 
 func (b *CommonBridge) GetAuth() *bind.TransactOpts {
 	return b.Auth
+}
+
+func (b *CommonBridge) GetContractAddress() common.Address {
+	return b.ContractAddress
+}
+
+func (b *CommonBridge) GetRelayAddress() common.Address {
+	return b.Auth.From
 }
