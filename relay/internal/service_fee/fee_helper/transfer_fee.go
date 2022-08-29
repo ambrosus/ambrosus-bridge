@@ -103,7 +103,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	// get events batch requests
 	transfers, err := getTransfersByIds(p.bridge.GetContract(), eventIds)
 	if err != nil {
-		return fmt.Errorf("get transfers by ids: %v", err)
+		return fmt.Errorf("get transfers by ids: %w", err)
 	}
 
 	// get side bridge txs from explorer
