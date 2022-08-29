@@ -51,6 +51,18 @@ contract CheckUntrustless {
         return res;
     }
 
+
+    function isRelay(address relay) public view returns (bool){
+        for (uint i = 0; i < relays.length; i++)
+            if (relays[i] == relay)
+                return true;
+        return false;
+    }
+
+    function getRelays() public view returns (address[] memory) {
+        return relays;
+    }
+
     function transfersHash(uint eventId, CommonStructs.Transfer[] calldata transfers) public pure returns (bytes32) {
         bytes memory payload = abi.encodePacked(eventId);
 
@@ -67,6 +79,7 @@ contract CheckUntrustless {
             _removeRelay(toRemove[i]);
         for (uint i = 0; i < toAdd.length; i++)
             _addRelay(toAdd[i]);
+
         if (confirmationsThreshold != _confirmations) {
             confirmationsThreshold = _confirmations;
             emit ThresholdChange(_confirmations);
@@ -87,16 +100,8 @@ contract CheckUntrustless {
 
     function _addRelay(address relay) internal {
         require(!isRelay(relay), "Already relay");
-
         relays.push(relay);
         emit RelayAdd(relay);
-    }
-
-    function isRelay(address relay) public view returns (bool){
-        for (uint i = 0; i < relays.length; i++)
-            if (relays[i] == relay)
-                return true;
-        return false;
     }
 
     uint256[15] private ___gap;

@@ -20,20 +20,23 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       minSafetyBlocks: 10,
     },
     [
-      isMainNet ? 13_000_000_000 : 0  // minimum difficulty
+      1,
+      ["0x295C2707319ad4BecA6b5bb4086617fD6F240CfE"]
     ],
   )
 
   // Upgrade PoW to untrustless
-  // optionsWithOnUpgrade.proxy.execute.onUpgrade = {
-  //   methodName: "upgrade",
-  //   args: [
-  //     2,
-  //     ["0x295C2707319ad4BecA6b5bb4086617fD6F240CfE",
-  //       "0x1111111111111111111111111111111111111111",
-  //     ]
-  //   ]
-  // };
+  // todo CHANGE WHEN UPGRADING PROD
+  optionsWithOnUpgrade.estimateGasExtra = 1000 // extra gas for onUpgrade
+  optionsWithOnUpgrade.proxy.execute.onUpgrade = {
+    methodName: "upgrade",
+    args: [
+      2,
+      ["0x295C2707319ad4BecA6b5bb4086617fD6F240CfE",
+        "0x1111111111111111111111111111111111111111",
+      ]
+    ]
+  };
 
 
   const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
