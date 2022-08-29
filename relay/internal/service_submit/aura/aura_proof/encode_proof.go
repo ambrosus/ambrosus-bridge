@@ -26,8 +26,6 @@ type AuraEncoder struct {
 
 	vsContract              *c.Vs
 	parityClient            *parity.Client
-	vsContract              *c.Vs
-	parityClient            *parity.Client
 	finalizeService         finalizeService
 	receiverBridgeMaxTxSize uint64
 
