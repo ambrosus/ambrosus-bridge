@@ -19,7 +19,8 @@
         "enable": true,
         "aura": {
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin"
+            "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin",
+            "receiverBridgeMaxTxSizeKB": 128
         },
         "pow": {
             "ethashDir": "/root/ethash",
