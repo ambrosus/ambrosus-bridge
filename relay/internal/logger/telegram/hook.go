@@ -51,7 +51,7 @@ func BuildMessage(l *logger.ExtLog) string {
 		msg += fmt.Sprintf(fieldsFormat, "service", replacer.Replace(l.Service))
 	}
 	for _, field := range fields {
-		msg += fmt.Sprintf(fieldsFormat, field, replacer.Replace(l.Rest[field].(string)))
+		msg += fmt.Sprintf(fieldsFormat, field, replacer.Replace(fmt.Sprintf("%v", l.Rest[field])))
 	}
 	if l.Error != "" {
 		msg += fmt.Sprintf(fieldsFormat, "error", replacer.Replace(l.Error))

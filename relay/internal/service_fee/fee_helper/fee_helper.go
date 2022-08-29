@@ -16,8 +16,8 @@ import (
 type FeeHelper struct {
 	networks.Bridge
 
-	minBridgeFee       decimal.Decimal
-	defaultTransferFee decimal.Decimal
+	minBridgeFee           decimal.Decimal
+	sideDefaultTransferFee *big.Int
 
 	wrapperAddress common.Address
 	privateKey     *ecdsa.PrivateKey
@@ -25,7 +25,7 @@ type FeeHelper struct {
 	transferFeeTracker *transferFeeTracker
 }
 
-func NewFeeHelper(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) (*FeeHelper, error) {
+func NewFeeHelper(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork, sideCfg config.FeeApiNetwork) (*FeeHelper, error) {
 	wrapperAddress, err := bridge.GetContract().WrapperAddress(nil)
 	if err != nil {
 		return nil, err
@@ -41,18 +41,18 @@ func NewFeeHelper(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork) 
 		return nil, err
 	}
 
-	defaultTransferFee, err := decimal.NewFromString(cfg.DefaultTransferFee)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse defaultTransferFee (%s)", cfg.DefaultTransferFee)
+	sideDefaultTransferFee, ok := new(big.Int).SetString(sideCfg.DefaultTransferFee, 10)
+	if !ok {
+		return nil, fmt.Errorf("failed to parse sideDefaultTransferFee (%s)", cfg.DefaultTransferFee)
 	}
 
 	return &FeeHelper{
-		Bridge:             bridge,
-		minBridgeFee:       decimal.NewFromFloat(cfg.MinBridgeFee),
-		defaultTransferFee: defaultTransferFee,
-		privateKey:         privateKey,
-		wrapperAddress:     wrapperAddress,
-		transferFeeTracker: transferFee,
+		Bridge:                 bridge,
+		minBridgeFee:           decimal.NewFromFloat(cfg.MinBridgeFee),
+		sideDefaultTransferFee: sideDefaultTransferFee,
+		privateKey:             privateKey,
+		wrapperAddress:         wrapperAddress,
+		transferFeeTracker:     transferFee,
 	}, nil
 }
 
@@ -72,6 +72,6 @@ func (b *FeeHelper) GetMinBridgeFee() decimal.Decimal {
 	return b.minBridgeFee
 }
 
-func (b *FeeHelper) GetDefaultTransferFee() decimal.Decimal {
-	return b.defaultTransferFee
+func (b *FeeHelper) GetDefaultTransferFee() *big.Int {
+	return b.sideDefaultTransferFee
 }

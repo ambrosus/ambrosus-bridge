@@ -11,6 +11,7 @@ import {ethers} from "ethers";
 dotenv.config();
 // 0x295C2707319ad4BecA6b5bb4086617fD6F240CfE, used instead of empty PK
 const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
+const bscScanApiKey = "NFH875QU828E37MQD7XB3QHFBE4XTC2AKH"
 
 const config: HardhatUserConfig = {
 
@@ -34,17 +35,20 @@ const config: HardhatUserConfig = {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
-      gasPrice: 9000000000
+      gasPrice: 9000000000,
+      accounts: [devPK],
     },
     "test/eth": {
       url: "https://ropsten.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "testnet"],
       companionNetworks: {amb: 'test/amb'},
+      accounts: [devPK],
     },
     "main/eth": {
       url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "mainnet"],
       companionNetworks: {amb: 'main/amb'},
+      accounts: [process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero],
     },
     "integr/eth": {
       url: "http://127.0.0.1:8502",
@@ -58,18 +62,21 @@ const config: HardhatUserConfig = {
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
+      accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero], // todo devPk
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'test/eth', bsc: 'test/bsc'},
+      accounts: [devPK],
     },
     "main/amb": {
       url: "https://network.ambrosus.io",
       tags: ["amb", "mainnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'main/eth', bsc: 'main/bsc'},
+      accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero],
     },
     "integr/amb": {
       url: "http://127.0.0.1:8545",
@@ -83,32 +90,39 @@ const config: HardhatUserConfig = {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
+      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
+      verify: {
+        etherscan: {
+          apiKey: bscScanApiKey
+        }
+      },
     },
     "test/bsc": {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
       tags: ["bsc", "testnet"],
       companionNetworks: {amb: 'test/amb'},
+      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
+      verify: {
+        etherscan: {
+          apiKey: bscScanApiKey
+        }
+      },
     },
     "main/bsc": {
       url: "https://bsc-dataseed1.binance.org/",
-      tags: ["bsc", "devnet"],
+      tags: ["bsc", "mainnet"],
       companionNetworks: {amb: 'main/amb'},
+      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero],
+      verify: {
+        etherscan: {
+          apiKey: bscScanApiKey
+        }
+      },
     },
   },
 
   namedAccounts: {
-    // random pk for hardhat network
-    // dev pk for test networks
-    // env vars pk or address for main network
-    owner: {
-      default: "privatekey://" + devPK,
-      "main/amb": "privatekey://" + process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero,
-      "main/eth": "privatekey://" + process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero,
-      "main/bsc": "privatekey://" + process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero,
-      hardhat: 0,
-    },
-
-    // used only for local hardhat tests
+    owner: 0,
     admin: 1,
     relay: 2,
     bridge: 3,

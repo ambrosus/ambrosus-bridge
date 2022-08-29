@@ -81,7 +81,7 @@ func (ec *Client) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]typ
 		}
 
 		result = append(result, logs...)
-		time.Sleep(1) // don't spam the node
+		time.Sleep(time.Second) // don't spam the node
 	}
 
 	return result, nil
