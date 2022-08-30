@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/rs/zerolog"
@@ -39,5 +40,7 @@ func (b *SubmitterUntrustless) SendEvent(event *bindings.BridgeTransfer, safetyB
 	if err != nil {
 		return fmt.Errorf("SubmitTransferUntrustless: %w", err)
 	}
+
+	metric.AddWithdrawalsCountMetric(b, len(event.Queue))
 	return nil
 }
