@@ -103,19 +103,16 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 }
 
 func (b *UnlockTransfers) unlockTransfers() error {
-	// Make tx without sending it for getting the gas limit.
-	authNoSend := *b.bridge.GetAuth()
-	authNoSend.NoSend = true
-	tx, err := b.bridge.GetContract().UnlockTransfersBatch(&authNoSend)
+	// Send the tx with the gas limit 60% more than the estimated gas limit.
+	// todo: make the multiplier configurable
+	authChangedGasLimit, err := cb.GetMultipliedEstimatedGasLimit(*b.bridge.GetAuth(), 1.60, func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.bridge.GetContract().UnlockTransfersBatch(opts)
+	})
 	if err != nil {
-		return fmt.Errorf("NoSend: %w", err)
+		return fmt.Errorf("get multiplied estimated gas limit: %w", err)
 	}
 
-	// Send the tx with the gas limit 60% more than the estimated gas limit.
-	customGas := uint64(float64(tx.Gas()) * 1.60) // todo: make the multiplier configurable
-	authCustomGas := *b.bridge.GetAuth()
-	authCustomGas.GasLimit = customGas
-	return b.bridge.ProcessTx("unlockTransfersBatch", &authCustomGas, func(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return b.bridge.ProcessTx("unlockTransfersBatch", authChangedGasLimit, func(opts *bind.TransactOpts) (*types.Transaction, error) {
 		return b.bridge.GetContract().UnlockTransfersBatch(opts)
 	})
 }
