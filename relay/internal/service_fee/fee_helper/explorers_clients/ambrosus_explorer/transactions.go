@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	maxTxListResponse = 5_000
+	maxTxListResponse        = 5_000
+	txByAddressRequestFormat = "accounts/%s/transactions"
 )
 
 // errors
@@ -19,27 +20,31 @@ var (
 	ErrTxsNotFound = errors.New("No results found")
 )
 
-type TxValue struct {
-	Wei *BigIntString `json:"wei"`
+type txListByAddressResponse struct {
+	Data       []txResponse `json:"data"`
+	Meta       meta         `json:"meta"`
+	Pagination pagination   `json:"pagination"`
 }
-
-type TxResponse struct {
+type txResponse struct {
 	BlockNumber uint64   `json:"blockNumber"`
 	Hash        string   `json:"hash"`
 	From        string   `json:"from"`
 	To          string   `json:"to"`
 	GasPrice    *big.Int `json:"gasPrice"`
 	GasUsed     uint64   `json:"gasUsed"`
-	Value       TxValue  `json:"value"`
 }
 
-type TxListByAddressResponse struct {
-	Data       []TxResponse `json:"data"`
-	Meta       Meta         `json:"meta"`
-	Pagination Pagination   `json:"pagination"`
+type meta struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"` // when request is unsuccessful
+}
+type pagination struct {
+	HasNext     bool `json:"hasNext"`
+	HasPrevious bool `json:"hasPrevious"`
+	Previous    int  `json:"previous"`
 }
 
-func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, page int) (*TxListByAddressResponse, error) {
+func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, page int) (*txListByAddressResponse, error) {
 	u := e.apiUrl.JoinPath(fmt.Sprintf(txByAddressRequestFormat, address))
 	q := u.Query()
 	q.Set("limit", fmt.Sprint(limit))
@@ -52,7 +57,7 @@ func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, pa
 	}
 	defer resp.Body.Close()
 
-	var respData TxListByAddressResponse
+	var respData txListByAddressResponse
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
 		return nil, fmt.Errorf("decode response: %w", err)
 	}
@@ -113,7 +118,7 @@ func (e *AmbrosusExplorer) TxListByFromToAddressesUntilTxHash(from string, to st
 	return res, nil
 }
 
-func toOurTxType(txs []TxResponse) []*explorers_clients.Transaction {
+func toOurTxType(txs []txResponse) []*explorers_clients.Transaction {
 	var mappedTxs []*explorers_clients.Transaction
 
 	for i := 0; i < len(txs); i++ {
@@ -125,7 +130,6 @@ func toOurTxType(txs []TxResponse) []*explorers_clients.Transaction {
 			To:          tx.To,
 			GasPrice:    tx.GasPrice,
 			GasUsed:     tx.GasUsed,
-			Value:       tx.Value.Wei.Int(),
 		})
 	}
 	return mappedTxs

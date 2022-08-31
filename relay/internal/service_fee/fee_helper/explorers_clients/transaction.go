@@ -16,7 +16,6 @@ type Transaction struct {
 	To          string
 	GasPrice    *big.Int
 	GasUsed     uint64
-	Value       *big.Int
 }
 
 func FilterTxsByFromToAddresses(txs []*Transaction, from string, to string) []*Transaction {

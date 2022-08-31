@@ -85,7 +85,6 @@ func toOurTxType(txs []etherscan.NormalTx) []*explorers_clients.Transaction {
 			To:          tx.To,
 			GasPrice:    tx.GasPrice.Int(),
 			GasUsed:     uint64(tx.GasUsed),
-			Value:       tx.Value.Int(),
 		})
 	}
 	return mappedTxs
