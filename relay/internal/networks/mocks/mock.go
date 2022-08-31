@@ -11,6 +11,7 @@ import (
 	networks "github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	ethclients "github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	bind "github.com/ethereum/go-ethereum/accounts/abi/bind"
+	common "github.com/ethereum/go-ethereum/common"
 	gomock "github.com/golang/mock/gomock"
 	zerolog "github.com/rs/zerolog"
 )
@@ -78,6 +79,20 @@ func (m *MockBridge) GetContract() interfaces.BridgeContract {
 func (mr *MockBridgeMockRecorder) GetContract() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContract", reflect.TypeOf((*MockBridge)(nil).GetContract))
+}
+
+// GetContractAddress mocks base method.
+func (m *MockBridge) GetContractAddress() common.Address {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetContractAddress")
+	ret0, _ := ret[0].(common.Address)
+	return ret0
+}
+
+// GetContractAddress indicates an expected call of GetContractAddress.
+func (mr *MockBridgeMockRecorder) GetContractAddress() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContractAddress", reflect.TypeOf((*MockBridge)(nil).GetContractAddress))
 }
 
 // GetLogger mocks base method.

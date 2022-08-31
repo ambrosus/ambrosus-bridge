@@ -24,13 +24,13 @@ type FeeHelper struct {
 	transferFeeTracker *transferFeeTracker
 }
 
-func NewFeeHelper(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork, sideCfg config.FeeApiNetwork) (*FeeHelper, error) {
+func NewFeeHelper(bridge, sideBridge networks.Bridge, explorer, sideExplorer explorerClient, cfg config.FeeApiNetwork, sideCfg config.FeeApiNetwork) (*FeeHelper, error) {
 	wrapperAddress, err := bridge.GetContract().WrapperAddress(nil)
 	if err != nil {
 		return nil, err
 	}
 
-	transferFee, err := newTransferFeeTracker(bridge, sideBridge)
+	transferFee, err := newTransferFeeTracker(bridge, sideBridge, explorer, sideExplorer)
 	if err != nil {
 		return nil, err
 	}
