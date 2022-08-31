@@ -21,10 +21,10 @@ var bigZero = big.NewInt(0)
 
 type explorerClient interface {
 	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
-	TxListByFromToAddresses(from, to string) (explorers_clients.Transactions, error)
+	TxListByFromToAddresses(from, to string) ([]*explorers_clients.Transaction, error)
 
 	// TxListByFromToAddressesUntilTxHash should return all transactions in desc sort filtering by `from` and `to` fields until the `untilTxHash` is reached NOT INCLUDING
-	TxListByFromToAddressesUntilTxHash(from, to string, untilTxHash string) (explorers_clients.Transactions, error)
+	TxListByFromToAddressesUntilTxHash(from, to string, untilTxHash string) ([]*explorers_clients.Transaction, error)
 }
 
 type transferFeeTracker struct {
@@ -104,7 +104,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get side bridge txs from explorer (for submit/unlock methods)
-	var sideBridgeTxList explorers_clients.Transactions
+	var sideBridgeTxList []*explorers_clients.Transaction
 	var latestProcessedTxHash common.Hash
 	if (p.latestProcessedTxHash == common.Hash{}) {
 		sideBridgeTxList, err = p.sideExplorer.TxListByFromToAddresses(
@@ -125,7 +125,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// todo this bridge tx (for triggerTransfers method)
-	thisBridgeTxList := make([]explorers_clients.Transaction, 0)
+	thisBridgeTxList := make([]*explorers_clients.Transaction, 0)
 
 	// calc total gas
 	totalSideGas := new(big.Int)

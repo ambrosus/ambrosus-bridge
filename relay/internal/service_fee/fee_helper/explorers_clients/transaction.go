@@ -19,22 +19,8 @@ type Transaction struct {
 	Value       *big.Int
 }
 
-type Transactions []*Transaction
-
-func RemoveTransactionsDups(m Transactions) Transactions {
-	keys := make(map[string]bool)
-	list := Transactions{}
-	for _, entry := range m {
-		if _, ok := keys[entry.Hash]; !ok {
-			keys[entry.Hash] = true
-			list = append(list, entry)
-		}
-	}
-	return list
-}
-
-func FilterTxsByFromToAddresses(txs Transactions, from string, to string) Transactions {
-	var res Transactions
+func FilterTxsByFromToAddresses(txs []*Transaction, from string, to string) []*Transaction {
+	var res []*Transaction
 	for i := 0; i < len(txs); i++ {
 		tx := txs[i]
 		if tx.From == from && tx.To == to {
@@ -42,4 +28,15 @@ func FilterTxsByFromToAddresses(txs Transactions, from string, to string) Transa
 		}
 	}
 	return res
+}
+
+func TakeTxsUntilTxHash(txs []*Transaction, untilTxHash *string) (res []*Transaction, isReachedTheTxHash bool) {
+	if untilTxHash != nil {
+		for i, tx := range txs {
+			if tx.Hash == *untilTxHash {
+				return txs[:i], true
+			}
+		}
+	}
+	return txs, false
 }

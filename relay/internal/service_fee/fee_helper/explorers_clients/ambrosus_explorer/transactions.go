@@ -7,6 +7,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 )
 
 const (
@@ -66,89 +67,34 @@ func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, pa
 	return &respData, nil
 }
 
-func (e *AmbrosusExplorer) TxListByAddress(address string) (explorers_clients.Transactions, error) {
-	var txs []TxResponse
+func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+	var txs []*explorers_clients.Transaction
+
 	var currentPage = 1
-
-	firstPageTxs, err := e.txListByAddressWithMeta(address, maxTxListResponse, currentPage)
-	if err != nil {
-		return nil, err
-	}
-	txs = append(txs, firstPageTxs.Data...)
-
-	var currentTxsWithMeta = firstPageTxs
 	for {
-		// TODO: when "limit" is big enough (>1000), "hasNext" is false, but there's the next page, should check the next page like etherscan client
-		if !currentTxsWithMeta.Pagination.HasNext {
-			break
-		}
-
-		currentPage++
-		currentTxsWithMeta, err = e.txListByAddressWithMeta(address, maxTxListResponse, currentPage)
+		pageTxs, err := e.txListByAddressWithMeta(address, maxTxListResponse, currentPage)
 		if err != nil {
 			return nil, err
 		}
-		txs = append(txs, currentTxsWithMeta.Data...)
+		currentPage++
+
+		ourTypeTx := toOurTxType(pageTxs.Data)
+		txsUntilTxHash, isReachedTheTxHash := explorers_clients.TakeTxsUntilTxHash(ourTypeTx, untilTxHash)
+		txs = append(txs, txsUntilTxHash...)
+
+		// TODO: when "limit" is big enough (>1000), "hasNext" is false, but there's the next page, should check the next page like etherscan client
+		if !pageTxs.Pagination.HasNext || isReachedTheTxHash {
+			break
+		}
 	}
 
-	mappedTxs := mapTxs(txs)
-	txsWithoutDups := explorers_clients.RemoveTransactionsDups(mappedTxs)
-
+	txsWithoutDups := helpers.Unique(txs)
 	return txsWithoutDups, nil
 
 }
 
-func (e *AmbrosusExplorer) TxListByAddressUntilTxHash(address string, untilTxHash string) (explorers_clients.Transactions, error) {
-	var txs []TxResponse
-	var currentPage = 1
-
-	firstPageTxs, err := e.txListByAddressWithMeta(address, maxTxListResponse, currentPage)
-	if err != nil {
-		return nil, err
-	}
-	txsUntilTxHash, isReachedTheTxHash := getTxsUntilTxHash(firstPageTxs.Data, untilTxHash)
-	txs = append(txs, txsUntilTxHash...)
-
-	if !isReachedTheTxHash {
-		var currentTxsWithMeta = firstPageTxs
-		for {
-			if isReachedTheTxHash {
-				break
-			}
-			// TODO: when "limit" is big enough (>1000), "hasNext" is false, but there's the next page, should check the next page like etherscan client
-			if !currentTxsWithMeta.Pagination.HasNext {
-				return nil, nil
-			}
-
-			currentPage++
-			currentTxsWithMeta, err = e.txListByAddressWithMeta(address, maxTxListResponse, currentPage)
-			if err != nil {
-				return nil, err
-			}
-			txsUntilTxHash, isReachedTheTxHash = getTxsUntilTxHash(currentTxsWithMeta.Data, untilTxHash)
-			txs = append(txs, txsUntilTxHash...)
-		}
-	}
-
-	mappedTxs := mapTxs(txs)
-	txsWithoutDups := explorers_clients.RemoveTransactionsDups(mappedTxs)
-
-	return txsWithoutDups, nil
-}
-
-func getTxsUntilTxHash(txs []TxResponse, untilTxHash string) (res []TxResponse, isReachedTheTxHash bool) {
-	for _, tx := range txs {
-		if tx.Hash == untilTxHash {
-			return res, true
-		}
-		res = append(res, tx)
-	}
-
-	return res, false
-}
-
-func (e *AmbrosusExplorer) TxListByFromToAddresses(from string, to string) (explorers_clients.Transactions, error) {
-	txs, err := e.TxListByAddress(from)
+func (e *AmbrosusExplorer) TxListByFromToAddresses(from string, to string) ([]*explorers_clients.Transaction, error) {
+	txs, err := e.TxListByAddress(from, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -157,8 +103,8 @@ func (e *AmbrosusExplorer) TxListByFromToAddresses(from string, to string) (expl
 	return res, nil
 }
 
-func (e *AmbrosusExplorer) TxListByFromToAddressesUntilTxHash(from string, to string, untilTxHash string) (explorers_clients.Transactions, error) {
-	txs, err := e.TxListByAddressUntilTxHash(from, untilTxHash)
+func (e *AmbrosusExplorer) TxListByFromToAddressesUntilTxHash(from string, to string, untilTxHash string) ([]*explorers_clients.Transaction, error) {
+	txs, err := e.TxListByAddress(from, &untilTxHash)
 	if err != nil {
 		return nil, err
 	}
@@ -167,8 +113,8 @@ func (e *AmbrosusExplorer) TxListByFromToAddressesUntilTxHash(from string, to st
 	return res, nil
 }
 
-func mapTxs(txs []TxResponse) explorers_clients.Transactions {
-	var mappedTxs explorers_clients.Transactions
+func toOurTxType(txs []TxResponse) []*explorers_clients.Transaction {
+	var mappedTxs []*explorers_clients.Transaction
 
 	for i := 0; i < len(txs); i++ {
 		tx := txs[i]

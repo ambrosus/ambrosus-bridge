@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/nanmu42/etherscan-api"
 )
 
@@ -20,90 +21,39 @@ var (
 // That method wraps etherscan's `NormalTxByAddress` but returns our errors
 func (e *Etherscan) normalTxByAddress(address string, startBlock *int, endBlock *int, page int, offset int, desc bool) (txs []etherscan.NormalTx, err error) {
 	txs, err = e.client.NormalTxByAddress(address, startBlock, endBlock, page, offset, desc)
-	if err != nil {
-		if err.Error() == ErrTxsNotFound.Error() {
-			return nil, explorers_clients.ErrTxsNotFound
-		}
+	if err.Error() == ErrTxsNotFound.Error() {
+		return nil, explorers_clients.ErrTxsNotFound
 	}
 	return
 }
 
-func (e *Etherscan) TxListByAddress(address string) (explorers_clients.Transactions, error) {
-	var txs []etherscan.NormalTx
+func (e *Etherscan) TxListByAddress(address string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+	var txs []*explorers_clients.Transaction
 
-	firstPageTxs, err := e.normalTxByAddress(address, nil, nil, 0, 0, true)
-	if err != nil {
-		return nil, err
-	}
-	txs = append(txs, firstPageTxs...)
-
+	var startBlock *int
 	for {
-		nextPageTxs, err := e.normalTxByAddress(address, &txs[len(txs)-1].BlockNumber, nil, 0, 0, true)
+		pageTxs, err := e.normalTxByAddress(address, startBlock, nil, 0, 0, true)
 		if err != nil {
 			return nil, err
 		}
-		txs = append(txs, nextPageTxs...)
+		startBlock = &pageTxs[len(pageTxs)-1].BlockNumber
 
-		if len(nextPageTxs) != maxTxListResponse {
+		ourTypeTx := toOurTxType(pageTxs)
+		txsUntilTxHash, isReachedTheTxHash := explorers_clients.TakeTxsUntilTxHash(ourTypeTx, untilTxHash)
+		txs = append(txs, txsUntilTxHash...)
+
+		if len(pageTxs) != maxTxListResponse || isReachedTheTxHash {
 			break
 		}
 	}
 
-	mappedTxs := mapTxs(txs)
-	txsWithoutDups := explorers_clients.RemoveTransactionsDups(mappedTxs)
-
+	txsWithoutDups := helpers.Unique(txs)
 	return txsWithoutDups, nil
 }
 
-func (e *Etherscan) TxListByAddressUntilTxHash(address string, untilTxHash string) (explorers_clients.Transactions, error) {
-	var txs []etherscan.NormalTx
-
-	firstPageTxs, err := e.normalTxByAddress(address, nil, nil, 0, 0, true)
-	if err != nil {
-		return nil, err
-	}
-	txsUntilTxHash, isReachedTheTxHash := getTxsUntilTxHash(firstPageTxs, untilTxHash)
-	txs = append(txs, txsUntilTxHash...)
-
-	if !isReachedTheTxHash {
-		var nextPageTxs = firstPageTxs
-		for {
-			nextPageTxs, err = e.normalTxByAddress(address, &txs[len(txs)-1].BlockNumber, nil, 0, 0, true)
-			if err != nil {
-				return nil, err
-			}
-			txsUntilTxHash, isReachedTheTxHash := getTxsUntilTxHash(nextPageTxs, untilTxHash)
-			txs = append(txs, txsUntilTxHash...)
-
-			if isReachedTheTxHash {
-				break
-			}
-			if len(nextPageTxs) != maxTxListResponse {
-				return nil, nil
-			}
-		}
-	}
-
-	mappedTxs := mapTxs(txs)
-	txsWithoutDups := explorers_clients.RemoveTransactionsDups(mappedTxs)
-
-	return txsWithoutDups, nil
-}
-
-func getTxsUntilTxHash(txs []etherscan.NormalTx, untilTxHash string) (res []etherscan.NormalTx, isReachedTheTxHash bool) {
-	for _, tx := range txs {
-		if tx.Hash == untilTxHash {
-			return res, true
-		}
-		res = append(res, tx)
-	}
-
-	return res, false
-}
-
-func (e *Etherscan) TxListByFromToAddresses(from, to string) (explorers_clients.Transactions, error) {
+func (e *Etherscan) TxListByFromToAddresses(from, to string) ([]*explorers_clients.Transaction, error) {
 	from, to = strings.ToLower(from), strings.ToLower(to)
-	txs, err := e.TxListByAddress(from)
+	txs, err := e.TxListByAddress(from, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -112,9 +62,9 @@ func (e *Etherscan) TxListByFromToAddresses(from, to string) (explorers_clients.
 	return res, nil
 }
 
-func (e *Etherscan) TxListByFromToAddressesUntilTxHash(from, to string, untilTxHash string) (explorers_clients.Transactions, error) {
+func (e *Etherscan) TxListByFromToAddressesUntilTxHash(from, to string, untilTxHash string) ([]*explorers_clients.Transaction, error) {
 	from, to = strings.ToLower(from), strings.ToLower(to)
-	txs, err := e.TxListByAddressUntilTxHash(from, untilTxHash)
+	txs, err := e.TxListByAddress(from, &untilTxHash)
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +73,8 @@ func (e *Etherscan) TxListByFromToAddressesUntilTxHash(from, to string, untilTxH
 	return res, nil
 }
 
-func mapTxs(txs []etherscan.NormalTx) explorers_clients.Transactions {
-	var mappedTxs explorers_clients.Transactions
+func toOurTxType(txs []etherscan.NormalTx) []*explorers_clients.Transaction {
+	var mappedTxs []*explorers_clients.Transaction
 
 	for i := 0; i < len(txs); i++ {
 		tx := txs[i]
