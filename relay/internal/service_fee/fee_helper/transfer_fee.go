@@ -1,22 +1,16 @@
 package fee_helper
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"math/big"
-	"sync"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
-
 	"github.com/ethereum/go-ethereum/common"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -166,53 +160,6 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalSideGas: %d, totalWithdrawsCount: %d", totalSideGas, withdrawsCount, p.totalSideGas, p.totalWithdrawCount)
 
 	return nil
-}
-
-// maybe will be used in including trigger transfers
-func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *big.Int, error) {
-	// fetch transactions and sum gas
-
-	totalGas := new(big.Int)
-	totalGasCost := new(big.Int)
-
-	lock := sync.Mutex{}
-	sem := make(chan interface{}, 10) // max 20 simultaneous requests
-	errGroup := new(errgroup.Group)
-
-	for _, txHash := range txs {
-		txHash := txHash
-		errGroup.Go(func() error {
-			sem <- 0
-			defer func() { <-sem }()
-
-			tx, _, err := client.TransactionByHash(context.Background(), txHash)
-			if err != nil {
-				return fmt.Errorf("get transaction by hash: %w", err)
-			}
-
-			txGasPrice, err := cb.GetTxGasPrice(client, tx)
-			if err != nil {
-				return fmt.Errorf("get tx gas price: %w", err)
-			}
-			receipt, err := client.TransactionReceipt(context.Background(), txHash)
-			if err != nil {
-				return fmt.Errorf("get transaction receipt: %w", err)
-			}
-
-			txCost := new(big.Int).Mul(txGasPrice, big.NewInt(int64(receipt.GasUsed)))
-
-			lock.Lock()
-			totalGas.Add(totalGas, big.NewInt(int64(receipt.GasUsed)))
-			totalGasCost.Add(totalGasCost, txCost)
-			lock.Unlock()
-			return nil
-		})
-	}
-	if err := errGroup.Wait(); err != nil {
-		return nil, nil, fmt.Errorf("calc used gas: %w", err)
-	}
-
-	return totalGasCost, totalGas, nil
 }
 
 // -------------------- watcher --------------------------
