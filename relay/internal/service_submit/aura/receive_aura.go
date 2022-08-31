@@ -16,16 +16,16 @@ type ReceiverAura struct {
 func (b *ReceiverAura) SubmitTransferAura(proof *bindings.CheckAuraAuraProof) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("submitTransferAura", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitTransferAura(b.GetAuth(), *proof)
+	return b.ProcessTx("submitTransferAura", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitTransferAura(opts, *proof)
 	})
 }
 
 func (b *ReceiverAura) SubmitValidatorSetChangesAura(proof *bindings.CheckAuraAuraProof) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("SubmitValidatorSetChangesAura", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitValidatorSetChangesAura(b.GetAuth(), *proof)
+	return b.ProcessTx("SubmitValidatorSetChangesAura", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitValidatorSetChangesAura(opts, *proof)
 	})
 }
 

@@ -115,7 +115,7 @@ func (b *UnlockTransfers) unlockTransfers() error {
 	customGas := uint64(float64(tx.Gas()) * 1.60) // todo: make the multiplier configurable
 	authCustomGas := *b.bridge.GetAuth()
 	authCustomGas.GasLimit = customGas
-	return b.bridge.ProcessTx("unlockTransfersBatch", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.bridge.GetContract().UnlockTransfersBatch(&authCustomGas)
+	return b.bridge.ProcessTx("unlockTransfersBatch", &authCustomGas, func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.bridge.GetContract().UnlockTransfersBatch(opts)
 	})
 }

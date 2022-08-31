@@ -16,9 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-func (b *CommonBridge) ProcessTx(methodName string, txCallback networks.ContractCallFn) error {
+func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, txCallback networks.ContractCallFn) error {
 	// if the transaction get stuck, then retry it with the higher gas price
-	var txOpts = b.Auth
 	var receipt *types.Receipt
 	var tx *types.Transaction
 

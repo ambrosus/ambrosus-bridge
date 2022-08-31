@@ -15,8 +15,8 @@ type ReceiverUntrustless struct {
 func (b *ReceiverUntrustless) SubmitTransferUntrustless(event *bindings.BridgeTransfer) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("submitTransferUntrustless", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitTransferUntrustless(b.GetAuth(), event.EventId, event.Queue)
+	return b.ProcessTx("submitTransferUntrustless", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
 	})
 
 }

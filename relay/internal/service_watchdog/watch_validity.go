@@ -147,8 +147,8 @@ this network locked transfers: %s \n
 side network transfer event: %s \n
 Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 
-	if err := b.bridge.ProcessTx("pause", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.bridge.GetContract().Pause(b.bridge.GetAuth())
+	if err := b.bridge.ProcessTx("pause", b.bridge.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.bridge.GetContract().Pause(opts)
 	}); err != nil {
 		return fmt.Errorf("pausing contract: %w", err)
 	}
