@@ -1,4 +1,4 @@
-package fee_api
+package fee
 
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"

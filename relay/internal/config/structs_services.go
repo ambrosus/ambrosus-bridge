@@ -44,7 +44,7 @@ type (
 	FeeApiNetwork struct {
 		PrivateKey         string  `mapstructure:"privateKey"`
 		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
-		DefaultTransferFee string  `mapstructure:"defaultTransferFeeWei"`
+		DefaultTransferFee float64 `mapstructure:"defaultTransferFeeWei"`
 	}
 )
 
