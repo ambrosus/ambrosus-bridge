@@ -54,8 +54,9 @@ func (b *FeeHelper) Sign(digestHash []byte) ([]byte, error) {
 	return crypto.Sign(digestHash, b.privateKey)
 }
 
-func (b *FeeHelper) GetTransferFee() *big.Int {
-	return b.transferFeeTracker.GasPerWithdraw()
+func (b *FeeHelper) GetTransferFee() (thisGas, sideGas decimal.Decimal) {
+	this, side := b.transferFeeTracker.GasPerWithdraw()
+	return decimal.NewFromBigInt(this, 1), decimal.NewFromBigInt(side, 1)
 }
 
 func (b *FeeHelper) GetWrapperAddress() common.Address {

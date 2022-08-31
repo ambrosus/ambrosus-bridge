@@ -63,14 +63,10 @@ func newTransferFeeTracker(bridge, sideBridge networks.Bridge, explorer, sideExp
 	return p, nil
 }
 
-func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
+func (p *transferFeeTracker) GasPerWithdraw() (thisGas, sideGas *big.Int) {
 	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.totalGas, p.totalWithdrawCount)
-	// if there's no transfers then return nil
-	if p.totalWithdrawCount.Cmp(big.NewInt(0)) == 0 {
-		return nil
-	}
-
-	return new(big.Int).Div(p.totalGas, p.totalWithdrawCount)
+	// TODO calc this gas and side gas
+	return new(big.Int), new(big.Int)
 }
 
 func (p *transferFeeTracker) init() error {
