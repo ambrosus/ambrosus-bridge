@@ -87,15 +87,15 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	// get events batch requests
 	transfers, err := getTransfersByIds(p.bridge.GetContract(), eventIds)
 	if err != nil {
-		return fmt.Errorf("get transfers by ids: %v", err)
+		return fmt.Errorf("get transfers by ids: %w", err)
 	}
 	submits, err := getTransferSubmitsByIds(p.sideBridge.GetContract(), eventIds)
 	if err != nil {
-		return fmt.Errorf("get transfer submits by ids: %v", err)
+		return fmt.Errorf("get transfer submits by ids: %w", err)
 	}
 	unlocks, err := getTransferUnlocksByIds(p.sideBridge.GetContract(), eventIds)
 	if err != nil {
-		return fmt.Errorf("get transfer unlocks by ids: %v", err)
+		return fmt.Errorf("get transfer unlocks by ids: %w", err)
 	}
 
 	// save tx hashes made by (side) relay

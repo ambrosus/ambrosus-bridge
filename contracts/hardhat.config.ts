@@ -101,6 +101,12 @@ const config: HardhatUserConfig = {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
       tags: ["bsc", "testnet"],
       companionNetworks: {amb: 'test/amb'},
+      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
+      verify: {
+        etherscan: {
+          apiKey: bscScanApiKey
+        }
+      },
     },
     "main/bsc": {
       url: "https://bsc-dataseed1.binance.org/",

@@ -1,7 +1,6 @@
 package telegram
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -63,10 +62,6 @@ Ut ultrices orci sed aliquet commodo. Aliquam erat volutpat. Maecenas leo lacus,
 		t.Run(tt.name, func(t *testing.T) {
 			if got := safeSplitText(tt.args.text, tt.args.length, tt.args.separator); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("safeSplitText() = %v, want %v", got, tt.want)
-
-				for _, line := range got {
-					fmt.Printf("%v\n\n\n\n", line)
-				}
 			}
 		})
 	}
