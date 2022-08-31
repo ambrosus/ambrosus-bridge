@@ -61,7 +61,8 @@ func (b *FeeHelper) Sign(digestHash []byte) ([]byte, error) {
 }
 
 func (b *FeeHelper) GetTransferFee() *big.Int {
-	return b.transferFeeTracker.GasPerWithdraw()
+	//return b.transferFeeTracker.GasPerWithdraw()
+	return new(big.Int)
 }
 
 func (b *FeeHelper) GetWrapperAddress() common.Address {
