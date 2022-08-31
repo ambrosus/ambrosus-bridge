@@ -79,7 +79,7 @@ func (b *TriggerTransfers) checkTriggerTransfers() error {
 func (b *TriggerTransfers) triggerTransfers() error {
 	b.logger.Info().Msg("Triggering transfers...")
 
-	return b.bridge.ProcessTx("triggerTransfers", func(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return b.bridge.ProcessTx("triggerTransfers", b.bridge.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
 		return b.bridge.GetContract().TriggerTransfers(opts)
 	})
 }
