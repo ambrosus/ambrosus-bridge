@@ -101,25 +101,6 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 
 }
 
-func (p *Fee) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice decimal.Decimal) (decimal.Decimal, error) {
-	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee"+bridge.GetName(), func() (interface{}, error) {
-		return bridge.GetTransferFee(), nil
-	})
-	if err != nil {
-		return decimal.Decimal{}, err // todo
-	}
-	feeSideNative := feeSideNativeI.(*big.Int)
-
-	if feeSideNative == nil {
-		return bridge.GetDefaultTransferFee(), nil
-	}
-
-	// convert it to native bridge currency
-	feeUsd := coin2Usd(decimal.NewFromBigInt(feeSideNative, 0), sideCoinPrice)
-	feeThisNative := usd2Coin(feeUsd, thisCoinPrice)
-	return feeThisNative, nil
-}
-
 func (p *Fee) getBridges(isAmb bool) (bridge, sideBridge BridgeFeeApi) {
 	if isAmb {
 		return p.amb, p.side
