@@ -11,7 +11,7 @@ func TestGetTxs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r, err := explorer.TxListByFromToAddresses("0x295C2707319ad4BecA6b5bb4086617fD6F240CfE", "0xf7E15b720867747a536137f4EFdAB4309225f8D6")
+	r, err := explorer.TxListByFromToAddresses("0x295C2707319ad4BecA6b5bb4086617fD6F240CfE", "0xf7E15b720867747a536137f4EFdAB4309225f8D6", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
