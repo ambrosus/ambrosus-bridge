@@ -5,12 +5,6 @@ import (
 	nurl "net/url"
 )
 
-const (
-	MainnetAPIBase = "https://explorer-api.ambrosus.io"
-	TestnetAPIBase = "https://explorer-api.ambrosus-test.io"
-	DevnetAPIBase  = "https://explorer-api.ambrosus-dev.io"
-)
-
 type AmbrosusExplorer struct {
 	apiUrl     nurl.URL
 	httpClient *http.Client

@@ -3,6 +3,8 @@ package explorers_clients
 import (
 	"errors"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -16,25 +18,11 @@ type Transaction struct {
 	To          string
 	GasPrice    *big.Int
 	GasUsed     uint64
-	Value       *big.Int
+	Input       string
 }
 
-type Transactions []*Transaction
-
-func RemoveTransactionsDups(m Transactions) Transactions {
-	keys := make(map[string]bool)
-	list := Transactions{}
-	for _, entry := range m {
-		if _, ok := keys[entry.Hash]; !ok {
-			keys[entry.Hash] = true
-			list = append(list, entry)
-		}
-	}
-	return list
-}
-
-func FilterTxsByFromToAddresses(txs Transactions, from string, to string) Transactions {
-	var res Transactions
+func FilterTxsByFromToAddresses(txs []*Transaction, from string, to string) []*Transaction {
+	var res []*Transaction
 	for i := 0; i < len(txs); i++ {
 		tx := txs[i]
 		if tx.From == from && tx.To == to {
@@ -42,4 +30,15 @@ func FilterTxsByFromToAddresses(txs Transactions, from string, to string) Transa
 		}
 	}
 	return res
+}
+
+func TakeTxsUntilTxHash(txs []*Transaction, untilTxHash *common.Hash) (res []*Transaction, isReachedTheTxHash bool) {
+	if untilTxHash != nil {
+		for i, tx := range txs {
+			if tx.Hash == untilTxHash.Hex() {
+				return txs[:i], true
+			}
+		}
+	}
+	return txs, false
 }
