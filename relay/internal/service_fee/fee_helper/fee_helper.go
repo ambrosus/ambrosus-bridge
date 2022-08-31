@@ -2,7 +2,6 @@ package fee_helper
 
 import (
 	"crypto/ecdsa"
-	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
@@ -17,7 +16,7 @@ type FeeHelper struct {
 	networks.Bridge
 
 	minBridgeFee           decimal.Decimal
-	sideDefaultTransferFee *big.Int
+	sideDefaultTransferFee decimal.Decimal
 
 	wrapperAddress common.Address
 	privateKey     *ecdsa.PrivateKey
@@ -41,15 +40,10 @@ func NewFeeHelper(bridge, sideBridge networks.Bridge, cfg config.FeeApiNetwork, 
 		return nil, err
 	}
 
-	sideDefaultTransferFee, ok := new(big.Int).SetString(sideCfg.DefaultTransferFee, 10)
-	if !ok {
-		return nil, fmt.Errorf("failed to parse sideDefaultTransferFee (%s)", cfg.DefaultTransferFee)
-	}
-
 	return &FeeHelper{
 		Bridge:                 bridge,
 		minBridgeFee:           decimal.NewFromFloat(cfg.MinBridgeFee),
-		sideDefaultTransferFee: sideDefaultTransferFee,
+		sideDefaultTransferFee: decimal.NewFromFloat(sideCfg.DefaultTransferFee),
 		privateKey:             privateKey,
 		wrapperAddress:         wrapperAddress,
 		transferFeeTracker:     transferFee,
@@ -72,6 +66,6 @@ func (b *FeeHelper) GetMinBridgeFee() decimal.Decimal {
 	return b.minBridgeFee
 }
 
-func (b *FeeHelper) GetDefaultTransferFee() *big.Int {
+func (b *FeeHelper) GetDefaultTransferFee() decimal.Decimal {
 	return b.sideDefaultTransferFee
 }
