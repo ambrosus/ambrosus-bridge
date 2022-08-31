@@ -98,18 +98,8 @@ func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *string) 
 
 }
 
-func (e *AmbrosusExplorer) TxListByFromToAddresses(from string, to string) ([]*explorers_clients.Transaction, error) {
-	txs, err := e.TxListByAddress(from, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	res := explorers_clients.FilterTxsByFromToAddresses(txs, from, to)
-	return res, nil
-}
-
-func (e *AmbrosusExplorer) TxListByFromToAddressesUntilTxHash(from string, to string, untilTxHash string) ([]*explorers_clients.Transaction, error) {
-	txs, err := e.TxListByAddress(from, &untilTxHash)
+func (e *AmbrosusExplorer) TxListByFromToAddresses(from, to string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+	txs, err := e.TxListByAddress(from, untilTxHash)
 	if err != nil {
 		return nil, err
 	}

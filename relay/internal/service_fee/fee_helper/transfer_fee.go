@@ -21,10 +21,8 @@ var bigZero = big.NewInt(0)
 
 type explorerClient interface {
 	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
-	TxListByFromToAddresses(from, to string) ([]*explorers_clients.Transaction, error)
-
-	// TxListByFromToAddressesUntilTxHash should return all transactions in desc sort filtering by `from` and `to` fields until the `untilTxHash` is reached NOT INCLUDING
-	TxListByFromToAddressesUntilTxHash(from, to string, untilTxHash string) ([]*explorers_clients.Transaction, error)
+	// if `untilTxHash` is not nil, return tx until the `untilTxHash` is reached NOT INCLUDING
+	TxListByFromToAddresses(from, to string, untilTxHash *string) ([]*explorers_clients.Transaction, error)
 }
 
 type transferFeeTracker struct {
@@ -104,18 +102,21 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get side bridge txs from explorer (for submit/unlock methods)
+	// todo refactor this if
 	var sideBridgeTxList []*explorers_clients.Transaction
 	var latestProcessedTxHash common.Hash
 	if (p.latestProcessedTxHash == common.Hash{}) {
 		sideBridgeTxList, err = p.sideExplorer.TxListByFromToAddresses(
 			p.sideBridge.GetAuth().From.Hex(),
 			p.sideBridge.GetContractAddress().Hex(),
+			nil,
 		)
 	} else {
-		sideBridgeTxList, err = p.sideExplorer.TxListByFromToAddressesUntilTxHash(
+		h := p.latestProcessedTxHash.Hex()
+		sideBridgeTxList, err = p.sideExplorer.TxListByFromToAddresses(
 			p.sideBridge.GetAuth().From.Hex(),
 			p.sideBridge.GetContractAddress().Hex(),
-			p.latestProcessedTxHash.Hex(),
+			&h,
 		)
 	}
 	if !errors.Is(err, explorers_clients.ErrTxsNotFound) && len(sideBridgeTxList) != 0 {

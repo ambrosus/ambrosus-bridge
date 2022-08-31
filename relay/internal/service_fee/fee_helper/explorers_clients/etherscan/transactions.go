@@ -51,20 +51,9 @@ func (e *Etherscan) TxListByAddress(address string, untilTxHash *string) ([]*exp
 	return txsWithoutDups, nil
 }
 
-func (e *Etherscan) TxListByFromToAddresses(from, to string) ([]*explorers_clients.Transaction, error) {
+func (e *Etherscan) TxListByFromToAddresses(from, to string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
 	from, to = strings.ToLower(from), strings.ToLower(to)
-	txs, err := e.TxListByAddress(from, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	res := explorers_clients.FilterTxsByFromToAddresses(txs, from, to)
-	return res, nil
-}
-
-func (e *Etherscan) TxListByFromToAddressesUntilTxHash(from, to string, untilTxHash string) ([]*explorers_clients.Transaction, error) {
-	from, to = strings.ToLower(from), strings.ToLower(to)
-	txs, err := e.TxListByAddress(from, &untilTxHash)
+	txs, err := e.TxListByAddress(from, untilTxHash)
 	if err != nil {
 		return nil, err
 	}
