@@ -21,8 +21,8 @@ type BridgeFeeApi interface {
 	Sign(message []byte) ([]byte, error)
 	GetTransferFee() (thisGas, sideGas decimal.Decimal)
 	GetWrapperAddress() common.Address
-	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
-	GetDefaultTransferFee() decimal.Decimal
+	GetMinBridgeFee() decimal.Decimal   // GetMinBridgeFee returns the minimal bridge fee in usd
+	GetMinTransferFee() decimal.Decimal // GetMinTransferFee returns the minimal transfer fee in usd
 }
 
 type Fee struct {
