@@ -129,21 +129,22 @@ export async function getBscValidators(bscNetwork: any): Promise<[number, string
   return [epoch, validators];
 }
 
-export async function getAmbValidators(ambNetwork: any): Promise<[string[], string, string]> {
+export async function getAmbValidators(ambNetwork: any, isMainNet: boolean): Promise<[string[], string, string]> {
   const vsAddress = "0x0000000000000000000000000000000000000F00";
   const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
 
   // check that current validators match with the latest finalized event
-  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange())
+  const fromBlock = isMainNet ? 19470402 : 0;
+  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), fromBlock)
   const latestLog = logs[logs.length-1]
-  const latestSet = vsContract.interface.parseLog(latestLog).args.newSet
-  console.assert(JSON.stringify(latestSet) == JSON.stringify(validators),
+  const latestLogParsed = vsContract.interface.parseLog(latestLog).args
+  console.assert(JSON.stringify(latestLogParsed.newSet) == JSON.stringify(validators),
     `ValidatorSet extracted from ${latestBlock.number} block doesn't equal to 
     ValidatorSet emitted in ${latestLog.blockNumber} block. 
     Probably, latest event doesn't finalized yet and this can cause a trouble.
-    Try again at block ~${latestLog.blockNumber + latestSet.length/2}`)
+    Try again at block ~${latestLog.blockNumber + latestLogParsed.newSet.length/2}`)
 
-  return [validators, vsAddress, latestLog.parentHash]
+  return [validators, vsAddress, latestLogParsed.parentHash]
 }
 
 

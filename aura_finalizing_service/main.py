@@ -66,7 +66,7 @@ def fetch_logs(from_timestamp: int) -> [Log]:
     data_result = r.json()["data"]["result"]
     if not data_result:
         return []
-    return data_result[0]["values"]
+    return [j for i in data_result for j in i["values"]]
 
 
 def parse_loki_log(log: [str, str]) -> Log:

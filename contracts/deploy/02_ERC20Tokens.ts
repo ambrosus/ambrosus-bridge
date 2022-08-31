@@ -5,6 +5,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {parseNet, readConfig_} from "./utils/utils";
+import { isTokenNotBridgeERC20 } from "./utils/config";
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -18,7 +19,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   for (const token of Object.values(configFile.tokens)) {
     if (token.addresses[netName] != "DEPLOY") continue;  // already deployed or shouldn't be deployed
-    if (token.primaryNet == netName) continue;  // it's not bridgeErc20
+    if (isTokenNotBridgeERC20(token, netName)) continue;  // it's not bridgeErc20
 
     const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20",

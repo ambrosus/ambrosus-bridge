@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 )
 
 type requestEditText struct {
@@ -30,9 +29,9 @@ func (t *TgLogger) EditText(msgId uint64, text string) error {
 
 	payloadBuf := new(bytes.Buffer)
 	if err := json.NewEncoder(payloadBuf).Encode(body); err != nil {
-		return fmt.Errorf("json encode requestSend: %w", err)
+		return fmt.Errorf("json encode request: %w", err)
 	}
-	resp, err := http.Post(url, "application/json", payloadBuf)
+	resp, err := t.HttpClient.Post(url, "application/json", payloadBuf)
 	if err != nil {
 		return err
 	}
@@ -40,7 +39,7 @@ func (t *TgLogger) EditText(msgId uint64, text string) error {
 
 	respData := new(responseEditText)
 	if err := json.NewDecoder(resp.Body).Decode(&respData); err != nil {
-		return fmt.Errorf("json decode responseSend: %w", err)
+		return fmt.Errorf("json decode response: %w", err)
 	}
 	if !respData.Ok {
 		return fmt.Errorf(respData.ErrorDescription)
