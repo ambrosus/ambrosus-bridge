@@ -1,6 +1,7 @@
 package fee_helper
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 	"time"
@@ -16,7 +17,11 @@ const (
 	eventsForGasCalc = 20
 )
 
-var bigZero = big.NewInt(0)
+var (
+	bigZero         = big.NewInt(0)
+	bridgeAbi, _    = bindings.BridgeMetaData.GetAbi()
+	triggerMethodID = bridgeAbi.Methods["triggerTransfers"].ID
+)
 
 type explorerClient interface {
 	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
@@ -231,4 +236,8 @@ func calcGasCost(txs []*explorers_clients.Transaction) *big.Int {
 		totalGas = totalGas.Add(totalGas, gas)
 	}
 	return totalGas
+}
+
+func isTrigger(tx explorers_clients.Transaction) bool {
+	return bytes.Equal(common.FromHex(tx.Input), triggerMethodID)
 }

@@ -33,6 +33,7 @@ type txResponse struct {
 	To          string   `json:"to"`
 	GasPrice    *big.Int `json:"gasPrice"`
 	GasUsed     uint64   `json:"gasUsed"`
+	Input       string   `json:"input"`
 }
 
 type meta struct {
@@ -121,6 +122,7 @@ func toOurTxType(txs []txResponse) []*explorers_clients.Transaction {
 			To:          tx.To,
 			GasPrice:    tx.GasPrice,
 			GasUsed:     tx.GasUsed,
+			Input:       tx.Input,
 		})
 	}
 	return mappedTxs
