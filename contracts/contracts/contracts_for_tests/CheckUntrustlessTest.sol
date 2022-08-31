@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../networks/ETH_AmbBridge_Untrustless.sol";
+import "../checks/CheckUntrustless.sol";
 
 contract CheckUntrustlessTest is CheckUntrustless {
     constructor() {}
