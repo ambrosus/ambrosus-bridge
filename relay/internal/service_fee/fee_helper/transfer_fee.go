@@ -23,6 +23,8 @@ const (
 	eventsForGasCalc = 20
 )
 
+var bigZero = big.NewInt(0)
+
 type explorerClient interface {
 	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
 	TxListByFromToAddresses(from, to string) (explorers_clients.Transactions, error)
@@ -42,7 +44,8 @@ type transferFeeTracker struct {
 	latestProcessedTxHash common.Hash
 
 	totalWithdrawCount *big.Int
-	totalGas           *big.Int
+	totalSideGas       *big.Int
+	totalThisGas       *big.Int
 }
 
 func newTransferFeeTracker(bridge, sideBridge networks.Bridge, explorer, sideExplorer explorerClient) (*transferFeeTracker, error) {
@@ -52,7 +55,7 @@ func newTransferFeeTracker(bridge, sideBridge networks.Bridge, explorer, sideExp
 		explorer:           explorer,
 		sideExplorer:       sideExplorer,
 		totalWithdrawCount: big.NewInt(0),
-		totalGas:           big.NewInt(0),
+		totalSideGas:       big.NewInt(0),
 	}
 
 	if err := p.init(); err != nil {
@@ -63,14 +66,14 @@ func newTransferFeeTracker(bridge, sideBridge networks.Bridge, explorer, sideExp
 	return p, nil
 }
 
-func (p *transferFeeTracker) GasPerWithdraw() *big.Int {
-	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalGas: %d, totalWithdrawCount: %d", p.totalGas, p.totalWithdrawCount)
-	// if there's no transfers then return nil
+func (p *transferFeeTracker) GasPerWithdraw() (thisGas, sideGas *big.Int) {
+	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalSideGas: %d, totalThisGas: %d, totalWithdrawCount: %d", p.totalSideGas, p.totalThisGas, p.totalWithdrawCount)
+	// if there's no transfers then return zeroes
 	if p.totalWithdrawCount.Cmp(big.NewInt(0)) == 0 {
-		return nil
+		return bigZero, bigZero
 	}
 
-	return new(big.Int).Div(p.totalGas, p.totalWithdrawCount)
+	return new(big.Int).Div(p.totalThisGas, p.totalWithdrawCount), new(big.Int).Div(p.totalSideGas, p.totalWithdrawCount)
 }
 
 func (p *transferFeeTracker) init() error {
@@ -106,7 +109,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 		return fmt.Errorf("get transfers by ids: %w", err)
 	}
 
-	// get side bridge txs from explorer
+	// get side bridge txs from explorer (for submit/unlock methods)
 	var sideBridgeTxList explorers_clients.Transactions
 	var latestProcessedTxHash common.Hash
 	if (p.latestProcessedTxHash == common.Hash{}) {
@@ -127,11 +130,21 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 		return fmt.Errorf("get side bridge tx list: %w", err)
 	}
 
+	// todo this bridge tx (for triggerTransfers method)
+	thisBridgeTxList := make([]explorers_clients.Transaction, 0)
+
 	// calc total gas
-	totalGas := new(big.Int)
+	totalSideGas := new(big.Int)
 	for _, tx := range sideBridgeTxList {
 		gas := new(big.Int).Mul(tx.GasPrice, new(big.Int).SetUint64(tx.GasUsed))
-		totalGas = totalGas.Add(totalGas, gas)
+		totalSideGas = totalSideGas.Add(totalSideGas, gas)
+	}
+
+	// calc this gas
+	totalThisGas := new(big.Int)
+	for _, tx := range thisBridgeTxList {
+		gas := new(big.Int).Mul(tx.GasPrice, new(big.Int).SetUint64(tx.GasUsed))
+		totalThisGas = totalThisGas.Add(totalThisGas, gas)
 	}
 
 	// calc withdraws count in transfer events
@@ -144,11 +157,13 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 		return nil
 	}
 
-	p.totalGas = p.totalGas.Add(p.totalGas, totalGas)
+	p.totalSideGas = p.totalSideGas.Add(p.totalSideGas, totalSideGas)
+	p.totalThisGas = p.totalSideGas.Add(p.totalThisGas, totalThisGas)
 	p.totalWithdrawCount = p.totalWithdrawCount.Add(p.totalWithdrawCount, big.NewInt(int64(withdrawsCount)))
+
 	p.latestProcessedEvent = newEventId
 	p.latestProcessedTxHash = latestProcessedTxHash
-	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalGas: %d, totalWithdrawsCount: %d", totalGas, withdrawsCount, p.totalGas, p.totalWithdrawCount)
+	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalSideGas: %d, totalWithdrawsCount: %d", totalSideGas, withdrawsCount, p.totalSideGas, p.totalWithdrawCount)
 
 	return nil
 }
