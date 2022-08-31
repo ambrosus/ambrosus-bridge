@@ -1,7 +1,6 @@
 package fee_helper
 
 import (
-	"errors"
 	"fmt"
 	"math/big"
 	"time"
@@ -22,7 +21,7 @@ var bigZero = big.NewInt(0)
 type explorerClient interface {
 	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
 	// if `untilTxHash` is not nil, return tx until the `untilTxHash` is reached NOT INCLUDING
-	TxListByFromToAddresses(from, to string, untilTxHash *string) ([]*explorers_clients.Transaction, error)
+	TxListByFromToAddresses(from, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error)
 }
 
 type transferFeeTracker struct {
@@ -32,8 +31,9 @@ type transferFeeTracker struct {
 	explorer     explorerClient
 	sideExplorer explorerClient
 
-	latestProcessedEvent  uint64
-	latestProcessedTxHash common.Hash
+	latestProcessedEvent      uint64
+	latestSideProcessedTxHash *common.Hash
+	latestThisProcessedTxHash *common.Hash
 
 	totalWithdrawCount *big.Int
 	totalSideGas       *big.Int
@@ -89,75 +89,56 @@ func (p *transferFeeTracker) init() error {
 }
 
 func (p *transferFeeTracker) processEvents(newEventId uint64) error {
-	// get events ids for getting submits, unlocks and transfers for "batch" requests
-	var eventIds []*big.Int
-	for i := p.latestProcessedEvent + 1; i <= newEventId; i++ { // +1 cuz we've already calculated the gas cost for that event
-		eventIds = append(eventIds, big.NewInt(int64(i)))
-	}
-
-	// get events batch requests
-	transfers, err := getTransfersByIds(p.bridge.GetContract(), eventIds)
+	withdrawsCount, err := getWithdrawsCount(p.bridge.GetContract(), p.latestProcessedEvent+1, newEventId)
 	if err != nil {
-		return fmt.Errorf("get transfers by ids: %w", err)
+		return fmt.Errorf("getWithdrawsCount: %w", err)
 	}
-
-	// get side bridge txs from explorer (for submit/unlock methods)
-	// todo refactor this if
-	var sideBridgeTxList []*explorers_clients.Transaction
-	var latestProcessedTxHash common.Hash
-	if (p.latestProcessedTxHash == common.Hash{}) {
-		sideBridgeTxList, err = p.sideExplorer.TxListByFromToAddresses(
-			p.sideBridge.GetAuth().From.Hex(),
-			p.sideBridge.GetContractAddress().Hex(),
-			nil,
-		)
-	} else {
-		h := p.latestProcessedTxHash.Hex()
-		sideBridgeTxList, err = p.sideExplorer.TxListByFromToAddresses(
-			p.sideBridge.GetAuth().From.Hex(),
-			p.sideBridge.GetContractAddress().Hex(),
-			&h,
-		)
-	}
-	if !errors.Is(err, explorers_clients.ErrTxsNotFound) && len(sideBridgeTxList) != 0 {
-		latestProcessedTxHash = common.HexToHash(sideBridgeTxList[0].Hash)
-	} else if err != nil {
-		return fmt.Errorf("get side bridge tx list: %w", err)
-	}
-
-	// todo this bridge tx (for triggerTransfers method)
-	thisBridgeTxList := make([]*explorers_clients.Transaction, 0)
-
-	// calc total gas
-	totalSideGas := new(big.Int)
-	for _, tx := range sideBridgeTxList {
-		gas := new(big.Int).Mul(tx.GasPrice, new(big.Int).SetUint64(tx.GasUsed))
-		totalSideGas = totalSideGas.Add(totalSideGas, gas)
-	}
-
-	// calc this gas
-	totalThisGas := new(big.Int)
-	for _, tx := range thisBridgeTxList {
-		gas := new(big.Int).Mul(tx.GasPrice, new(big.Int).SetUint64(tx.GasUsed))
-		totalThisGas = totalThisGas.Add(totalThisGas, gas)
-	}
-
-	// calc withdraws count in transfer events
-	var withdrawsCount int
-	for _, event := range transfers {
-		withdrawsCount += len(event.Queue)
-	}
-
 	if withdrawsCount == 0 {
 		return nil
 	}
+
+	// get side bridge txs from explorer (for submit/unlock methods)
+	sideBridgeTxList, err := p.sideExplorer.TxListByFromToAddresses(
+		p.sideBridge.GetAuth().From.Hex(),
+		p.sideBridge.GetContractAddress().Hex(),
+		p.latestSideProcessedTxHash,
+	)
+	if err != nil {
+		return fmt.Errorf("get side bridge tx list: %w", err)
+	}
+
+	// get this bridge txs from explorer (for triggerTransfers method)
+	thisBridgeTxList, err := p.sideExplorer.TxListByFromToAddresses(
+		p.sideBridge.GetAuth().From.Hex(),
+		p.sideBridge.GetContractAddress().Hex(),
+		p.latestThisProcessedTxHash,
+	)
+	if err != nil {
+		return fmt.Errorf("get this bridge tx list: %w", err)
+	}
+
+	if len(sideBridgeTxList) != 0 {
+		h := common.HexToHash(sideBridgeTxList[0].Hash)
+		p.latestSideProcessedTxHash = &h
+	}
+	if len(thisBridgeTxList) != 0 {
+		h := common.HexToHash(thisBridgeTxList[0].Hash)
+		p.latestThisProcessedTxHash = &h
+	}
+
+	// calc total gas
+
+	// todo filter by method (NOT trigger)
+	totalSideGas := calcGasCost(sideBridgeTxList)
+	// todo filter by method (ONLY trigger)
+	totalThisGas := calcGasCost(thisBridgeTxList)
 
 	p.totalSideGas = p.totalSideGas.Add(p.totalSideGas, totalSideGas)
 	p.totalThisGas = p.totalSideGas.Add(p.totalThisGas, totalThisGas)
 	p.totalWithdrawCount = p.totalWithdrawCount.Add(p.totalWithdrawCount, big.NewInt(int64(withdrawsCount)))
 
 	p.latestProcessedEvent = newEventId
-	p.latestProcessedTxHash = latestProcessedTxHash
+
 	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalSideGas: %d, totalWithdrawsCount: %d", totalSideGas, withdrawsCount, p.totalSideGas, p.totalWithdrawCount)
 
 	return nil
@@ -219,4 +200,35 @@ func getTransfersByIds(contract interfaces.BridgeContract, eventIds []*big.Int) 
 		}
 	}
 	return transfers, nil
+}
+
+//
+
+func getWithdrawsCount(contract interfaces.BridgeContract, fromEvent, toEvent uint64) (int, error) {
+	// get events ids for getting submits, unlocks and transfers for "batch" requests
+	var eventIds []*big.Int
+	for i := fromEvent; i <= toEvent; i++ { // +1 cuz we've already calculated the gas cost for that event
+		eventIds = append(eventIds, big.NewInt(int64(i)))
+	}
+
+	// get events batch requests
+	transfers, err := getTransfersByIds(contract, eventIds)
+	if err != nil {
+		return 0, fmt.Errorf("get transfers by ids: %w", err)
+	}
+	// calc withdraws count in transfer events
+	var withdrawsCount int
+	for _, event := range transfers {
+		withdrawsCount += len(event.Queue)
+	}
+	return withdrawsCount, nil
+}
+
+func calcGasCost(txs []*explorers_clients.Transaction) *big.Int {
+	totalGas := new(big.Int)
+	for _, tx := range txs {
+		gas := new(big.Int).Mul(tx.GasPrice, new(big.Int).SetUint64(tx.GasUsed))
+		totalGas = totalGas.Add(totalGas, gas)
+	}
+	return totalGas
 }

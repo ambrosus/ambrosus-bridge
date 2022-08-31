@@ -6,6 +6,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/nanmu42/etherscan-api"
 )
 
@@ -27,7 +28,7 @@ func (e *Etherscan) normalTxByAddress(address string, startBlock *int, endBlock 
 	return
 }
 
-func (e *Etherscan) TxListByAddress(address string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+func (e *Etherscan) TxListByAddress(address string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
 	var txs []*explorers_clients.Transaction
 
 	var startBlock *int
@@ -51,7 +52,7 @@ func (e *Etherscan) TxListByAddress(address string, untilTxHash *string) ([]*exp
 	return txsWithoutDups, nil
 }
 
-func (e *Etherscan) TxListByFromToAddresses(from, to string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+func (e *Etherscan) TxListByFromToAddresses(from, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
 	from, to = strings.ToLower(from), strings.ToLower(to)
 	txs, err := e.TxListByAddress(from, untilTxHash)
 	if err != nil {

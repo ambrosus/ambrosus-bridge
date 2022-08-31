@@ -8,6 +8,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
+	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
@@ -72,7 +73,7 @@ func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, pa
 	return &respData, nil
 }
 
-func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
 	var txs []*explorers_clients.Transaction
 
 	var currentPage = 1
@@ -98,7 +99,7 @@ func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *string) 
 
 }
 
-func (e *AmbrosusExplorer) TxListByFromToAddresses(from, to string, untilTxHash *string) ([]*explorers_clients.Transaction, error) {
+func (e *AmbrosusExplorer) TxListByFromToAddresses(from, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
 	txs, err := e.TxListByAddress(from, untilTxHash)
 	if err != nil {
 		return nil, err

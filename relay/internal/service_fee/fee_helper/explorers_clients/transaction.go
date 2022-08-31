@@ -3,6 +3,8 @@ package explorers_clients
 import (
 	"errors"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
 )
 
 var (
@@ -29,10 +31,10 @@ func FilterTxsByFromToAddresses(txs []*Transaction, from string, to string) []*T
 	return res
 }
 
-func TakeTxsUntilTxHash(txs []*Transaction, untilTxHash *string) (res []*Transaction, isReachedTheTxHash bool) {
+func TakeTxsUntilTxHash(txs []*Transaction, untilTxHash *common.Hash) (res []*Transaction, isReachedTheTxHash bool) {
 	if untilTxHash != nil {
 		for i, tx := range txs {
-			if tx.Hash == *untilTxHash {
+			if tx.Hash == untilTxHash.Hex() {
 				return txs[:i], true
 			}
 		}
