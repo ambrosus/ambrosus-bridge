@@ -42,3 +42,16 @@ func TakeTxsUntilTxHash(txs []*Transaction, untilTxHash *common.Hash) (res []*Tr
 	}
 	return txs, false
 }
+
+// RemoveTransactionsDups keep the order of the txs, unlike `helpers.Unique`
+func RemoveTransactionsDups(m []*Transaction) []*Transaction {
+	keys := make(map[string]bool)
+	var list []*Transaction
+	for _, entry := range m {
+		if _, ok := keys[entry.Hash]; !ok {
+			keys[entry.Hash] = true
+			list = append(list, entry)
+		}
+	}
+	return list
+}

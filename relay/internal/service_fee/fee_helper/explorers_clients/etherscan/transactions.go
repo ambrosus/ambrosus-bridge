@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/nanmu42/etherscan-api"
 )
@@ -48,7 +47,7 @@ func (e *Etherscan) TxListByAddress(address string, untilTxHash *common.Hash) ([
 		}
 	}
 
-	txsWithoutDups := helpers.Unique(txs)
+	txsWithoutDups := explorers_clients.RemoveTransactionsDups(txs)
 	return txsWithoutDups, nil
 }
 

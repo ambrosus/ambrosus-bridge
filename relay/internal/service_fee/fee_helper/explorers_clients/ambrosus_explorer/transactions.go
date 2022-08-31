@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -95,7 +94,7 @@ func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *common.H
 		}
 	}
 
-	txsWithoutDups := helpers.Unique(txs)
+	txsWithoutDups := explorers_clients.RemoveTransactionsDups(txs)
 	return txsWithoutDups, nil
 
 }
