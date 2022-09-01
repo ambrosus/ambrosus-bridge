@@ -19,11 +19,11 @@ func main() {
 		log.Fatal().Err(err).Msg("error loading monitoring config")
 	}
 	monitoringCfg := new(service_monitoring.MonitoringConfig)
-	if err = monitoringCfgViper.Unmarshal(cfg); err != nil {
+	if err = monitoringCfgViper.Unmarshal(monitoringCfg); err != nil {
 		log.Fatal().Err(err).Msg("error initialize monitoring config")
 	}
 
-	baseLogger := cmd.CreateLogger(monitoringCfg.LogTo).With().Str("service", "SubmitterAura").Logger()
+	baseLogger := cmd.CreateLogger(cfg.ExtLoggers).With().Str("service", "SubmitterAura").Logger()
 
 	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, baseLogger)
 	if err != nil {
