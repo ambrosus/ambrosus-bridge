@@ -35,7 +35,7 @@ func BuildMessage(l *logger.ExtLog) string {
 	case zerolog.LevelFatalValue:
 		msg += fmt.Sprintf("<b>%s</b>\n", "Fatal!")
 	default:
-		return ""
+		msg += fmt.Sprintf("<b>%s</b>\n", "Log")
 	}
 
 	var fields = make([]string, 0, len(l.Rest))

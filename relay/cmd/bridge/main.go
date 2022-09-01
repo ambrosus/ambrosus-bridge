@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
+	loggermiddlewares "github.com/ambrosus/ambrosus-bridge/relay/internal/logger/middlewares"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram/antidouble"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
@@ -39,10 +40,9 @@ func createLogger(cfg *config.ExternalLoggers) zerolog.Logger {
 	var tgLoggerHook logger.Hook
 	if tg := cfg.Telegram; tg.Enable {
 		tgLogger := telegram.NewLogger(tg.Token, tg.ChatId, nil)
-		antiDoubleTgLogger := antidouble.NewAntiDoubleTgLogger(tgLogger)
-
-		// plug middlewares
-		tgLoggerHook = antiDoubleTgLogger
+		tgLoggerHook = antidouble.NewAntiDoubleTgLogger(tgLogger)
+		tgLoggerHook = loggermiddlewares.NewOnlyLevels(tgLoggerHook, loggermiddlewares.DefaultOnlyLevels)
+		tgLoggerHook = loggermiddlewares.NewSkipSubstrings(tgLoggerHook, loggermiddlewares.DefaultSkipSubstrings)
 	}
 	return logger.NewLoggerWithHook(tgLoggerHook)
 }
