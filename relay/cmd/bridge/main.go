@@ -16,7 +16,7 @@ import (
 
 func main() {
 	// Initialize bridge config.
-	cfg, err := config.LoadConfig()
+	cfg, err := config.LoadDefaultConfig()
 	if err != nil {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
