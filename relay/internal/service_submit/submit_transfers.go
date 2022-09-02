@@ -30,7 +30,7 @@ func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers
 }
 
 func (b *SubmitTransfers) Run() {
-	cb.ShouldHavePk(b.submitter)
+	cb.ShouldHavePk(b.receiver)
 
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
