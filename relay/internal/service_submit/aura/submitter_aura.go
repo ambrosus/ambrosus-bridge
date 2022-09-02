@@ -44,6 +44,10 @@ func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.Receiv
 	}, nil
 }
 
+func (b *SubmitterAura) Receiver() service_submit.Receiver {
+	return b.auraReceiver
+}
+
 func (b *SubmitterAura) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	for {
 

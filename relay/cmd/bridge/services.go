@@ -31,7 +31,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		if err != nil {
 			logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
 		}
-		go service_submit.NewSubmitTransfers(auraSubmitter, sideBridge).Run()
+		go service_submit.NewSubmitTransfers(auraSubmitter).Run()
 	}
 
 	if cfg.SideToAmb {
@@ -47,7 +47,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 			logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
 		}
 
-		go service_submit.NewSubmitTransfers(sideBridgeSubmitter, ambBridge).Run()
+		go service_submit.NewSubmitTransfers(sideBridgeSubmitter).Run()
 	}
 }
 

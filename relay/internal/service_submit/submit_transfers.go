@@ -19,12 +19,12 @@ type SubmitTransfers struct {
 	logger    *zerolog.Logger
 }
 
-func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers {
+func NewSubmitTransfers(submitter Submitter) *SubmitTransfers {
 	logger := submitter.GetLogger().With().Str("service", "SubmitTransfers").Logger()
 
 	return &SubmitTransfers{
 		submitter: submitter,
-		receiver:  receiver,
+		receiver:  submitter.Receiver(),
 		logger:    &logger,
 	}
 }

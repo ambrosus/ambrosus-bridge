@@ -10,6 +10,7 @@ import (
 type Submitter interface {
 	networks.Bridge
 	SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error
+	Receiver() Receiver
 }
 
 type Receiver interface {
