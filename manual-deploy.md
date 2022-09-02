@@ -27,9 +27,8 @@ TODO: Info about private key generation?
 These are required environment variables to run relay. To apply them, simply put them in `env.list` file, which should be located in the same directory from where you start relay. The content of `env.list` file:
 <pre>
 STAGE=&lt;dev/test/prod>
-NETWORK=eth
+NETWORK=eth-untrustless
 NETWORKS_AMB_PRIVATEKEY=&lt;amb private key>
-NETWORKS_ETH_PRIVATEKEY=&lt;eth private key>
 </pre>
 After container is started you can remove this file.
 
