@@ -23,7 +23,7 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 echo "Please enter your private key"
 
 read -sp 'Ambrosus private key: ' amb_private_key
-printf "\n"
+echo -e "\n"
 if [ ${#amb_private_key} -ne 64 ];
 then read -sp 'Key length should be 64 characters, type again: ' amb_private_key ; exit
 fi
