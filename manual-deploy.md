@@ -15,14 +15,6 @@ Create an account and log in. Press 'Droplets' and then 'Create Droplet'. Use th
 
 TODO: Info about private key generation?
 
-### Configuration
-
-These are required environment variables to run relay. To apply them, simply put them in `env.list` file, which should be located in the same directory from where you start relay. The content of `env.list` file:
-<pre>
-STAGE=&lt;dev/test/prod>
-NETWORK=eth-untrustless
-NETWORKS_AMB_PRIVATEKEY=&lt;amb private key>
-</pre>
 After container is started you can remove this file.
 
 ### Run
@@ -30,9 +22,7 @@ After container is started you can remove this file.
 Command to run eth-relay:
 
 <pre>
-docker run -d \
---name eth-relay \
---restart unless-stopped \
---env-file ./env.list \
-ghcr.io/ambrosus/ambrosus-bridge
+curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/manual-deploy/relay.sh > relay.sh && sudo chmod +x relay.sh && sudo ./relay.sh
 </pre>
+
+If any pop-ups occur, select "ok".  
