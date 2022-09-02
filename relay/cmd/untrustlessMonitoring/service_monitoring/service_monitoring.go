@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
+	loggermiddlewares "github.com/ambrosus/ambrosus-bridge/relay/internal/logger/middlewares"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/telegram/antidouble"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -58,6 +59,7 @@ func createMonitoringLogger(cfg *config.ExternalLoggers) zerolog.Logger {
 	if tg := cfg.Telegram; tg.Enable {
 		tgLogger := telegram.NewLogger(tg.Token, tg.ChatId, nil)
 		tgLoggerHook = antidouble.NewAntiDoubleTgLogger(tgLogger)
+		tgLoggerHook = loggermiddlewares.NewOnlyLevels(tgLoggerHook, []string{zerolog.LevelInfoValue})
 	}
 	return logger.NewLoggerWithHook(tgLoggerHook)
 }
