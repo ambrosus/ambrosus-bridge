@@ -102,7 +102,7 @@ func (m *Monitoring) isEventOldEnough(event *bindings.BridgeTransfer) (bool, err
 		return false, fmt.Errorf("TransactionByHash(%v): %w", event.Raw.TxHash, err)
 	}
 	isOldEnough := time.Unix(int64(block.Time()), 0).
-		Add(-time.Duration(m.cfg.ConfirmationTime) * time.Second).
+		Add(time.Duration(m.cfg.ConfirmationTime) * time.Second).
 		Before(time.Now())
 	return isOldEnough, nil
 }
