@@ -24,6 +24,10 @@ echo "Please enter your private key"
 
 read -sp 'Ambrosus private key: ' amb_private_key
 
+if [ ${#amb_private_key} -ne 64 ];
+then read -sp 'Key length should be 64 characters, type again: ' amb_private_key ; exit
+fi
+
 set +e
 docker rm -f eth-relay
 set -e
