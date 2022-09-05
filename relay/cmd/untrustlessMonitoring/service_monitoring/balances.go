@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/shopspring/decimal"
 )
 
 func (m *Monitoring) balanceLoop() {
@@ -31,7 +32,7 @@ func (m *Monitoring) sendLowBalances() error {
 
 	text := "Low balances:\n"
 	for addr, balance := range lowBalances {
-		text += fmt.Sprintf(" - %s: %v\n", m.formatAddress(addr), balance)
+		text += fmt.Sprintf(" - %s: %v\n", m.formatAddress(addr), decimal.NewFromBigInt(balance, 0).Div(decimal.NewFromFloat(1e18)))
 	}
 	m.monitoringLogger.Info().Msg(text)
 	return nil
