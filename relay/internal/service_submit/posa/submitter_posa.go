@@ -36,6 +36,10 @@ func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.Receiv
 	}, nil
 }
 
+func (b *SubmitterPoSA) Receiver() service_submit.Receiver {
+	return b.posaReceiver
+}
+
 func (b *SubmitterPoSA) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	saveCache := false
 	for {

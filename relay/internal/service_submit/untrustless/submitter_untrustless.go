@@ -26,6 +26,10 @@ func NewSubmitterUntrustless(bridge networks.Bridge, untrustlessReceiver service
 	}, nil
 }
 
+func (b *SubmitterUntrustless) Receiver() service_submit.Receiver {
+	return b.untrustlessReceiver
+}
+
 func (b *SubmitterUntrustless) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	// check is already confirmed by relay
 	if isEventAlreadyConfirmed, err := b.untrustlessReceiver.IsEventAlreadyConfirmed(event); err != nil {

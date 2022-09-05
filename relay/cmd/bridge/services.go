@@ -26,24 +26,29 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		return
 	}
 
-	auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
+	if cfg.AmbToSide {
+		auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
+		if err != nil {
+			logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
+		}
+		go service_submit.NewSubmitTransfers(auraSubmitter).Run()
 	}
 
-	var sideBridgeSubmitter service_submit.Submitter
-	switch sideBridge.(type) {
-	case *eth.Bridge:
-		sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
-	case *bsc.Bridge:
-		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
-	}
-	if err != nil {
-		logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
-	}
+	if cfg.SideToAmb {
+		var err error
+		var sideBridgeSubmitter service_submit.Submitter
+		switch sideBridge.(type) {
+		case *eth.Bridge:
+			sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
+		case *bsc.Bridge:
+			sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
+		}
+		if err != nil {
+			logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
+		}
 
-	go service_submit.NewSubmitTransfers(auraSubmitter, sideBridge).Run()
-	go service_submit.NewSubmitTransfers(sideBridgeSubmitter, ambBridge).Run()
+		go service_submit.NewSubmitTransfers(sideBridgeSubmitter).Run()
+	}
 }
 
 func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
