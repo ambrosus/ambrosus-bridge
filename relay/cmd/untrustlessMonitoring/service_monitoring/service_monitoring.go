@@ -2,6 +2,7 @@ package service_monitoring
 
 import (
 	"fmt"
+	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
@@ -18,17 +19,19 @@ type Monitoring struct {
 	bridge, sideBridge       networks.Bridge
 	logger, monitoringLogger zerolog.Logger
 	relayNames               map[common.Address]string
+	minimumRequiredBalance   *big.Int
 }
 
 type MonitoringConfig struct {
-	RelayNames            map[string]string       `json:"relayNames"`
-	BalanceCheckTime      int                     `json:"balanceCheckTime"`
-	ConfirmationCheckTime int                     `json:"confirmationCheckTime"`
-	ConfirmationTime      int                     `json:"confirmationTime"`
-	LogTo                 *config.ExternalLoggers `mapstructure:"externalLogger"`
+	RelayNames                map[string]string       `json:"relayNames"`
+	BalanceCheckTime          int                     `json:"balanceCheckTime"`
+	ConfirmationCheckTime     int                     `json:"confirmationCheckTime"`
+	ConfirmationTime          int                     `json:"confirmationTime"`
+	MinimumRequiredBalanceWei string                  `json:"minimumRequiredBalanceWei"`
+	LogTo                     *config.ExternalLoggers `mapstructure:"externalLogger"`
 }
 
-func NewMonitoring(cfg *MonitoringConfig, ambBridge, ethBridge networks.Bridge, logger zerolog.Logger) *Monitoring {
+func NewMonitoring(cfg *MonitoringConfig, ambBridge, ethBridge networks.Bridge, logger zerolog.Logger) (*Monitoring, error) {
 	relayNames := make(map[common.Address]string)
 	for addr, name := range cfg.RelayNames {
 		if !common.IsHexAddress(addr) {
@@ -38,14 +41,20 @@ func NewMonitoring(cfg *MonitoringConfig, ambBridge, ethBridge networks.Bridge, 
 	}
 	monitoringLogger := createMonitoringLogger(cfg.LogTo)
 
-	return &Monitoring{
-		cfg:              cfg,
-		bridge:           ambBridge,
-		sideBridge:       ethBridge,
-		logger:           logger,
-		monitoringLogger: monitoringLogger,
-		relayNames:       relayNames,
+	minimumRequiredBalance, ok := new(big.Int).SetString(cfg.MinimumRequiredBalanceWei, 10)
+	if !ok {
+		return nil, fmt.Errorf("failed to convert minimum required balance to big int (%s)", cfg.MinimumRequiredBalanceWei)
 	}
+
+	return &Monitoring{
+		cfg:                    cfg,
+		bridge:                 ambBridge,
+		sideBridge:             ethBridge,
+		logger:                 logger,
+		monitoringLogger:       monitoringLogger,
+		relayNames:             relayNames,
+		minimumRequiredBalance: minimumRequiredBalance,
+	}, nil
 }
 
 func (m *Monitoring) Run() {

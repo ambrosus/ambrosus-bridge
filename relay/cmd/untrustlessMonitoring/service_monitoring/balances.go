@@ -11,7 +11,7 @@ import (
 
 func (m *Monitoring) balanceLoop() {
 	for {
-		err := m.sendBalances()
+		err := m.sendLowBalances()
 		if err != nil {
 			m.logger.Error().Err(err).Msg("error sending balances")
 		}
@@ -19,13 +19,18 @@ func (m *Monitoring) balanceLoop() {
 	}
 }
 
-func (m *Monitoring) sendBalances() error {
+func (m *Monitoring) sendLowBalances() error {
 	balances, err := m.getBalances()
 	if err != nil {
 		return fmt.Errorf("getBalances: %w", err)
 	}
-	text := "Balances:\n"
-	for addr, balance := range balances {
+	lowBalances := m.getLowBalances(balances)
+	if len(lowBalances) == 0 {
+		return nil
+	}
+
+	text := "Low balances:\n"
+	for addr, balance := range lowBalances {
 		text += fmt.Sprintf(" - %s: %v\n", m.formatAddress(addr), balance)
 	}
 	m.monitoringLogger.Info().Msg(text)
@@ -47,4 +52,18 @@ func (m *Monitoring) getBalances() (map[common.Address]*big.Int, error) {
 	}
 	return balances, nil
 
+}
+
+func (m *Monitoring) getLowBalances(balances map[common.Address]*big.Int) map[common.Address]*big.Int {
+	lowBalances := make(map[common.Address]*big.Int)
+	for relay, balance := range balances {
+		if m.isBalanceLow(balance) {
+			lowBalances[relay] = balance
+		}
+	}
+	return lowBalances
+}
+
+func (m *Monitoring) isBalanceLow(balance *big.Int) bool {
+	return balance.Cmp(m.minimumRequiredBalance) <= 0
 }

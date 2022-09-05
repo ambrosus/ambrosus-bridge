@@ -33,5 +33,9 @@ func main() {
 		log.Fatal().Msg("side bridge is not eth bridge")
 	}
 
-	service_monitoring.NewMonitoring(monitoringCfg, ambBridge, sideBridge, baseLogger).Run()
+	monitoringService, err := service_monitoring.NewMonitoring(monitoringCfg, ambBridge, sideBridge, baseLogger)
+	if err != nil {
+		log.Fatal().Err(err).Msg("error creating monitoring service")
+	}
+	monitoringService.Run()
 }

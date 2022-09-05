@@ -11,6 +11,6 @@
     },
     "balanceCheckTime": 18000,
     "confirmationCheckTime": 600,
-    "confirmationTime": 600
-
+    "confirmationTime": 600,
+    "minimumRequiredBalanceWei": "1000000000000000000"
 }
