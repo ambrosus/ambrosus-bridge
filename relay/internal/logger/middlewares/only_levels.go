@@ -9,6 +9,7 @@ var DefaultOnlyLevels = []string{
 	zerolog.LevelErrorValue,
 	zerolog.LevelWarnValue,
 	zerolog.LevelFatalValue,
+	logger.ImportantInfoLevel.String(),
 }
 
 type OnlyLevels struct {
