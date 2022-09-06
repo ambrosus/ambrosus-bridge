@@ -58,6 +58,21 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.eth.side, hre)
 
   // add new tokens
+
+  // BUGFIX
+  // todo remove this after redeploy and register bugged tokens
+  if (parseNet(hre.network).stage === "dev") {
+    tokenPairs["0x17429a725830792532493517d22F65d4E2E0681c"] = "0x0000000000000000000000000000000000000000"
+    tokenPairs["0x6C5750Be93De7a4A3072bA10A6610C23e8399df1"] = "0x0000000000000000000000000000000000000000"
+  } else if (parseNet(hre.network).stage === "test") {
+    tokenPairs["0xA9646A0281996fDcB88f8f6f01Af52BB0268c494"] = "0x0000000000000000000000000000000000000000"
+    tokenPairs["0x63B825C40a78e2e9A7aeaC83027215A022b37B93"] = "0x0000000000000000000000000000000000000000"
+  } else if (parseNet(hre.network).stage === "main") {
+    tokenPairs["0xe7c3607474E235Ec8deF1f0a63Ea983538eea182"] = "0x0000000000000000000000000000000000000000"
+  }
+  console.log(tokenPairs);
+  // END OF BUGFIX
+
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
