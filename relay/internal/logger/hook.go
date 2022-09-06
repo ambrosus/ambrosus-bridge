@@ -35,5 +35,6 @@ func (h hook) Write(p []byte) (n int, err error) {
 	delete(extLog.Rest, "message")
 	delete(extLog.Rest, "error")
 
+	h.hook.Log(extLog)
 	return len(p), nil
 }
