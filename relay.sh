@@ -53,7 +53,7 @@ docker run -d \
 -e STAGE=$stage \
 -e NETWORK=eth-untrustless \
 -e NETWORKS_AMB_PRIVATEKEY=$amb_private_key \
-ghcr.io/ambrosus/ambrosus-bridge >> /dev/null
+ghcr.io/ambrosus/ambrosus-bridge:dev >> /dev/null
 
 sleep 10
 docker logs eth-relay
