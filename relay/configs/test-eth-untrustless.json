@@ -34,7 +34,9 @@
     },
     "externalLogger": {
         "telegram": {
-            "enable": false
+            "enable": true,
+            "token": "5379706864:AAGnnmtbDgCTX-6a1ij5CIdS23oVIcA7CB4",
+            "chatId": "-1001753338316"
         }
 },
     "prometheus": {
