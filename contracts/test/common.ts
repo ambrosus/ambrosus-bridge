@@ -63,6 +63,9 @@ describe("Common tests", () => {
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
+
+    // amount of tokens "locked on side bridge", so this bridge can receive withdraws for this amount
+    await mockERC20.changeBridgeBalance(commonBridge.address, 10000);
   });
 
   // todo move to another test file?

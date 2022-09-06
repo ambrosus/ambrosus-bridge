@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 contract BridgeERC20 is ERC20, AccessControl {
-    mapping (address => uint) public bridgeBalances;
+    mapping (address => uint) public bridgeBalances;  // locked tokens on the bridge
     bytes32 public constant BRIDGE_ROLE = keccak256("BRIDGE_ROLE");
     uint8 _decimals;
 
@@ -30,28 +30,21 @@ contract BridgeERC20 is ERC20, AccessControl {
         }
     }
 
-    function _mint(address recipient, uint256 amount) internal virtual override {
-        super._mint(recipient, amount);
-
-        bridgeBalances[recipient] += amount;
-    }
-
-    function _burn(address sender, uint256 amount) internal virtual override {
-        require(bridgeBalances[sender] >= amount, "amount is bigger than balance");
-
-        bridgeBalances[sender] -= amount;
-
-        super._burn(sender, amount);
-    }
-
     function _transfer(
         address sender,
         address recipient,
         uint amount
     ) internal virtual override {
         if (hasRole(BRIDGE_ROLE, sender)) {
+            // bridge mint money to user; same amount locked on side bridge
+            bridgeBalances[sender] += amount;
+
             _mint(recipient, amount);
         } else if (hasRole(BRIDGE_ROLE, recipient)) {
+            // user burn tokens; side bridge must have enough tokens to send
+            require(bridgeBalances[recipient] >= amount, "not enough locked tokens on bridge");
+            bridgeBalances[recipient] -= amount;
+
             _burn(sender, amount);
         } else {
             super._transfer(sender, recipient, amount);
