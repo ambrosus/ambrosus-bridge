@@ -8,7 +8,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger/middlewares"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/rs/zerolog"
@@ -32,10 +32,9 @@ func NewSubmitTransfers(submitter Submitter) *SubmitTransfers {
 	}
 }
 
-
 func (b *SubmitTransfers) Run() {
 	cb.ShouldHavePk(b.receiver)
-	b.logger.WithLevel(middlewares.TgLevel).Msg("Relay has been started!")
+	b.logger.WithLevel(logger.ImportantInfoLevel).Msg("Relay has been started!")
 
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused

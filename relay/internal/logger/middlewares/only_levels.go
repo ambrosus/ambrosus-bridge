@@ -5,13 +5,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const TgLevel zerolog.Level = 99
-
 var DefaultOnlyLevels = []string{
 	zerolog.LevelErrorValue,
 	zerolog.LevelWarnValue,
 	zerolog.LevelFatalValue,
-	TgLevel.String(),
+	logger.ImportantInfoLevel.String(),
 }
 
 type OnlyLevels struct {
