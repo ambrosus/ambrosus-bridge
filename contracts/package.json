@@ -15,6 +15,7 @@
     "verify": "hardhat etherscan-verify --network 'test/eth'",
     "sourcify": "hardhat sourcify --network 'test/amb' --endpoint https://sourcify.ambrosus.io/",
     "test_gas_changes": "hardhat run scripts/gasChanges.ts",
+    "clear_solcInputs": "ts-node ./scripts/clear_solcInputs.ts",
     "integr_deploy": "./deploy.sh eth integr",
     "integr_test": "hardhat test scripts/integration_tests.ts",
     "deploy_menu": "hardhat run scripts/dialog.ts"
