@@ -1,6 +1,6 @@
 ## This is manual to deploy temporary relay instance for AMB-ETH bridge.
 
-## Installation
+### Installation
 
 ##### Creating a Droplet
 
@@ -12,10 +12,10 @@ Our brief instructions:
 
 Create an account and log in. Press 'Droplets' and then 'Create Droplet'. Use the OS Ubuntu and then choose what machine preferences and which data center suits you. Then either create a SSH key which you will use to access the instance or if you do not choose one you will get a password to your email. Write a hostname that suits you and launch the instance.
 
+### Obtaining private key
 
-TODO: Info about private key generation?
-
-After container is started you can remove this file.
+You can export the private key from your metamask wallet using this guide:
+https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-account-s-private-key
 
 ### Run
 
