@@ -46,6 +46,11 @@ set +e
 docker rm -f eth-relay
 set -e
 
+IMAGE=ghcr.io/ambrosus/ambrosus-bridge
+TAG=dev
+
+docker pull $IMAGE:$TAG
+
 echo "Starting relay..."
 docker run -d \
 --name eth-relay \
@@ -53,7 +58,7 @@ docker run -d \
 -e STAGE=$stage \
 -e NETWORK=eth-untrustless \
 -e NETWORKS_AMB_PRIVATEKEY=$amb_private_key \
-ghcr.io/ambrosus/ambrosus-bridge:dev >> /dev/null
+$IMAGE:$TAG >> /dev/null
 
 sleep 10
 docker logs eth-relay
