@@ -22,7 +22,7 @@ type SubmitTransfers struct {
 
 func NewSubmitTransfers(submitter Submitter) *SubmitTransfers {
 	logger := submitter.GetLogger().With().
-		Str("relay", submitter.GetAuth().From.Hex()).
+		Str("relay", submitter.Receiver().GetAuth().From.Hex()).
 		Str("service", "SubmitTransfers").Logger()
 
 	return &SubmitTransfers{
