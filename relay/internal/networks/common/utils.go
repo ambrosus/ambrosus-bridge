@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"golang.org/x/sync/errgroup"
@@ -173,4 +174,18 @@ func WaitForNextBlock(wsClient ethclients.ClientInterface) error {
 	}
 
 	return WaitForBlock(wsClient, latestBlock+1)
+}
+
+func GetMultipliedEstimatedGasLimit(auth bind.TransactOpts, multiplier float64, txCallback networks.ContractCallFn) (*bind.TransactOpts, error) {
+	var authChangedGasLimit = auth
+	// Make tx without sending it for getting the gas limit.
+	auth.NoSend = true
+	tx, err := txCallback(&auth)
+	if err != nil {
+		return nil, err
+	}
+
+	changedGasLimit := uint64(float64(tx.Gas()) * multiplier)
+	authChangedGasLimit.GasLimit = changedGasLimit
+	return &authChangedGasLimit, nil
 }

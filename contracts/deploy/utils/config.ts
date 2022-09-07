@@ -11,7 +11,7 @@ interface Token {
   symbol: string;
   denomination: number;
   addresses: { [net: string]: string }
-  primaryNet: string;
+  primaryNets: string[];
   nativeAnalog: string | null;
 }
 
@@ -38,6 +38,9 @@ export function readConfig(stage: string): Config {
   return config;
 }
 
+export function isTokenNotBridgeERC20(token: Token, netName: string): boolean {
+    return token.primaryNets.includes(netName)
+}
 
 
 function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { [k: string]: string } {
@@ -50,7 +53,7 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
 
     tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
 
-    if (token.primaryNet === sideNet && token.nativeAnalog)   // native token for sideNet
+    if (token.primaryNets.includes(sideNet) && token.nativeAnalog)   // native token for sideNet
       tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];
 
   }
