@@ -22,7 +22,7 @@ https://metamask.zendesk.com/hc/en-us/articles/360015289632-How-to-export-an-acc
 Command to run eth-relay:
 
 <pre>
-curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/dev/relay.sh > relay.sh && sudo chmod +x relay.sh && sudo ./relay.sh
+curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay.sh > relay.sh && sudo chmod +x relay.sh && sudo ./relay.sh
 </pre>
 
 If any pop-ups occur, select "ok".  
