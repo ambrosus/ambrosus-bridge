@@ -33,7 +33,7 @@ do
 done
 
 
-echo "\nPlease enter your token (issued by the bridge developers)"
+echo -e "\nPlease enter your token (issued by the bridge developers)"
 
 read -sp 'Token: ' EXTERNALLOGGER_TELEGRAM_TOKEN
 while true;
