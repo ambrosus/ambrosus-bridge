@@ -20,24 +20,14 @@ echo \
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
-read -p "Please choose your network(dev/test/prod): " stage;
-while true;
-do
-    echo -e "\n"
-    if [[ "$stage" =~ ^(dev|test|prod)$ ]];
-        then break
-        else read -p "You entered incorect network. Please choose your network(dev/test/prod): " stage
-    fi
-done
-
 echo "Please enter your private key"
 
-read -sp 'Ambrosus private key: ' amb_private_key
+read -sp 'Ambrosus private key: ' AMB_PRIVATE_KEY
 while true;
 do
     echo -e "\n"
-    if [ ${#amb_private_key} -ne 64 ];
-        then read -sp 'Key length should be 64 characters, type again: ' amb_private_key;
+    if [ ${#AMB_PRIVATE_KEY} -ne 64 ];
+        then read -sp 'Key length should be 64 characters, type again: ' AMB_PRIVATE_KEY;
         else break
     fi
 done
@@ -47,7 +37,8 @@ docker rm -f eth-relay
 set -e
 
 IMAGE=ghcr.io/ambrosus/ambrosus-bridge
-TAG=dev
+TAG=latest
+STAGE=prod
 
 docker pull $IMAGE:$TAG
 
@@ -55,9 +46,9 @@ echo "Starting relay..."
 docker run -d \
 --name eth-relay \
 --restart unless-stopped \
--e STAGE=$stage \
+-e STAGE=$STAGE \
 -e NETWORK=eth-untrustless \
--e NETWORKS_AMB_PRIVATEKEY=$amb_private_key \
+-e NETWORKS_AMB_PRIVATEKEY=$AMB_PRIVATE_KEY \
 $IMAGE:$TAG >> /dev/null
 
 sleep 10
