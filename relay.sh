@@ -32,6 +32,21 @@ do
     fi
 done
 
+
+echo "Please enter your token (issued by the bridge developers)"
+
+read -sp 'Token: ' EXTERNALLOGGER_TELEGRAM_TOKEN
+while true;
+do
+    echo -e "\n"
+    if [ ${#EXTERNALLOGGER_TELEGRAM_TOKEN} -ne 46 ];
+        then read -sp 'Token length should be 46 characters, type again: ' EXTERNALLOGGER_TELEGRAM_TOKEN;
+        else break
+    fi
+done
+
+
+
 set +e
 docker rm -f eth-relay
 set -e
@@ -49,6 +64,7 @@ docker run -d \
 -e STAGE=$STAGE \
 -e NETWORK=eth-untrustless \
 -e NETWORKS_AMB_PRIVATEKEY=$AMB_PRIVATE_KEY \
+-e EXTERNALLOGGER_TELEGRAM_TOKEN=$EXTERNALLOGGER_TELEGRAM_TOKEN \
 $IMAGE:$TAG >> /dev/null
 
 sleep 10
