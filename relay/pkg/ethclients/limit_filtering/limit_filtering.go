@@ -16,33 +16,34 @@ type Client struct {
 	c *rpc.Client
 
 	defaultFilterLogsFromBlock int64
+	limit                      int64
 }
 
 // Dial connects a client to the given URL.
-func Dial(rawurl string, defaultFilterLogsFromBlock int64) (*Client, error) {
-	return DialContext(context.Background(), rawurl, defaultFilterLogsFromBlock)
+func Dial(rawurl string, defaultFilterLogsFromBlock int64, limit int64) (*Client, error) {
+	return DialContext(context.Background(), rawurl, defaultFilterLogsFromBlock, limit)
 }
 
-func DialContext(ctx context.Context, rawurl string, defaultFilterLogsFromBlock int64) (*Client, error) {
+func DialContext(ctx context.Context, rawurl string, defaultFilterLogsFromBlock int64, limit int64) (*Client, error) {
 	c, err := rpc.DialContext(ctx, rawurl)
 	if err != nil {
 		return nil, err
 	}
-	return NewClient(c, defaultFilterLogsFromBlock), nil
+	return NewClient(c, defaultFilterLogsFromBlock, limit), nil
 }
 
 // NewClient creates a client that uses the given RPC client.
-func NewClient(c *rpc.Client, defaultFilterLogsFromBlock int64) (client *Client) {
+func NewClient(c *rpc.Client, defaultFilterLogsFromBlock int64, limit int64) (client *Client) {
 	return &Client{
 		Client:                     *common_ethclient.NewClient(c),
 		c:                          c,
 		defaultFilterLogsFromBlock: defaultFilterLogsFromBlock,
+		limit:                      limit,
 	}
 }
 
 // FilterLogs executes a filter query.
 func (ec *Client) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]types.Log, error) {
-	var limit = int64(49999)
 	var result []types.Log
 
 	if q.FromBlock.Cmp(big.NewInt(0)) == 0 {
@@ -58,9 +59,9 @@ func (ec *Client) FilterLogs(ctx context.Context, q ethereum.FilterQuery) ([]typ
 		q.ToBlock = big.NewInt(int64(currBlockNum))
 	}
 
-	for offset := int64(0); ; offset += limit {
+	for offset := int64(0); ; offset += ec.limit {
 		fromBlock := new(big.Int).Add(q.FromBlock, big.NewInt(offset))
-		toBlock := new(big.Int).Add(fromBlock, big.NewInt(limit))
+		toBlock := new(big.Int).Add(fromBlock, big.NewInt(ec.limit))
 		offset += 1
 
 		if toBlock.Cmp(q.ToBlock) > 0 {
