@@ -48,6 +48,7 @@ docker run -d \
 --restart unless-stopped \
 -e STAGE=$STAGE \
 -e NETWORK=eth-untrustless \
+-e BSC_FILTER_LOGS_LIMIT_BLOCKS=49999 \
 -e NETWORKS_AMB_PRIVATEKEY=$AMB_PRIVATE_KEY \
 $IMAGE:$TAG >> /dev/null
 
