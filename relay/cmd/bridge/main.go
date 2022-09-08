@@ -17,7 +17,7 @@ func main() {
 
 	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, baseLogger)
 	if err != nil {
-		log.Fatal().Err(err).Msg("error creating bridges")
+		baseLogger.Fatal().Err(err).Msg("error creating bridges")
 	}
 
 	go runSubmitters(cfg.Submitters, ambBridge, sideBridge, baseLogger)
