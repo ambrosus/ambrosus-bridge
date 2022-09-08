@@ -19,6 +19,7 @@ contract CommonBridgeTest is CommonBridge {
     }
 
     function lockTransfersTest(CommonStructs.Transfer[] calldata events, uint eventId) public {
+        checkEventId(eventId);  // now its more like submitTransferTest
         lockTransfers(events, eventId);
     }
 

@@ -191,13 +191,17 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         oldestLockedEventId = eventId;
     }
 
-    // delete transfers with passed eventId and all after it
+    // delete transfers with passed eventId **and all after it**
     function removeLockedTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
-        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
+        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");  // can't undo unlocked :(
+        require(eventId <= inputEventId, "eventId must be <= inputEventId");
+
+        // now waiting for submitting a new transfer with `eventId` id
+        inputEventId = eventId - 1;
+
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
-        inputEventId = eventId - 1;
-        // pretend like we don't receive that event
+
     }
 
     // views

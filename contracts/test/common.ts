@@ -351,18 +351,6 @@ describe("Common tests", () => {
       await expect(commonBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
     });
 
-    it("unlock native coins", async () => {
-      const wrapperAddress = await commonBridge.wrapperAddress();
-
-      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, 50);
-      await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: transferFee + bridgeFee + 50});  // lock some SAMB tokens on bridge
-      await commonBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
-      await nextTimeframe();
-
-      await expect(() => commonBridge.unlockTransfers(1))
-        .to.changeEtherBalance(userS, 25);
-    });
-
     it("trigger transfers event check", async () => {
       const beforeEventOutputEventId = await commonBridge.getOutputEventId();
       await commonBridge.addElementToQueue();
@@ -382,6 +370,20 @@ describe("Common tests", () => {
           .to.be.revertedWith("Queue is empty");
     });
   });
+  it("unlock native coins", async () => { // separate from previous describe block coz of hindering `beforeEach`
+    const wrapperAddress = await commonBridge.wrapperAddress();
+
+    // lock some SAMB tokens on bridge
+    const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, 50);
+    await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: transferFee + bridgeFee + 50});
+
+    await commonBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
+    await nextTimeframe();
+
+    await expect(() => commonBridge.unlockTransfers(1))
+      .to.changeEtherBalance(userS, 25);
+  });
+
 
 
   it('Test calcTransferReceiptsHash', async () => {
