@@ -26,6 +26,7 @@ func main() {
 	go runTriggers(cfg.Triggers, ambBridge, sideBridge, baseLogger)
 	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, baseLogger)
 	go runPrometheus(cfg.Prometheus, baseLogger)
+	go runHealth(":80", baseLogger)
 
 	select {}
 
