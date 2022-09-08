@@ -32,6 +32,18 @@ func FilterTxsByFromToAddresses(txs []*Transaction, from string, to string) []*T
 	return res
 }
 
+func FilterTxsByCallback(txs []*Transaction, filterCallback func(tx *Transaction) bool) []*Transaction {
+	res := []*Transaction{}
+
+	for _, tx := range txs {
+		if filterCallback(tx) {
+			res = append(res, tx)
+		}
+	}
+
+	return res
+}
+
 func TakeTxsUntilTxHash(txs []*Transaction, untilTxHash *common.Hash) (res []*Transaction, isReachedTheTxHash bool) {
 	if untilTxHash != nil {
 		for i, tx := range txs {

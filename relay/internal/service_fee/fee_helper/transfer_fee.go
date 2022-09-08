@@ -134,10 +134,8 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 
 	// calc total gas
 
-	// todo filter by method (NOT trigger)
-	totalSideGas := calcGasCost(sideBridgeTxList)
-	// todo filter by method (ONLY trigger)
-	totalThisGas := calcGasCost(thisBridgeTxList)
+	totalSideGas := calcGasCost(filterTxsWithoutTriggers(sideBridgeTxList))
+	totalThisGas := calcGasCost(filterTxsWithTriggers(thisBridgeTxList))
 
 	p.totalSideGas = p.totalSideGas.Add(p.totalSideGas, totalSideGas)
 	p.totalThisGas = p.totalSideGas.Add(p.totalThisGas, totalThisGas)
@@ -239,6 +237,14 @@ func calcGasCost(txs []*explorers_clients.Transaction) *big.Int {
 	return totalGas
 }
 
-func isTrigger(tx explorers_clients.Transaction) bool {
+func isTrigger(tx *explorers_clients.Transaction) bool {
 	return bytes.Equal(common.FromHex(tx.Input), triggerMethodID)
+}
+
+func filterTxsWithTriggers(txs []*explorers_clients.Transaction) []*explorers_clients.Transaction {
+	return explorers_clients.FilterTxsByCallback(txs, func(tx *explorers_clients.Transaction) bool { return isTrigger(tx) })
+}
+
+func filterTxsWithoutTriggers(txs []*explorers_clients.Transaction) []*explorers_clients.Transaction {
+	return explorers_clients.FilterTxsByCallback(txs, func(tx *explorers_clients.Transaction) bool { return !isTrigger(tx) })
 }
