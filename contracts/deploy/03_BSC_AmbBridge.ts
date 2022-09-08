@@ -22,32 +22,38 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const [initialEpoch, initialValidators] = await getBscValidators(bscNet);
   const chainId = await bscNet.getChainId();
 
-  const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
-    contract: BRIDGE_NAME,
-    ...await options(hre, BRIDGE_NAME, tokenPairs,
-      {
-        sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-        wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-        timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-        lockTime: isMainNet ? 60 * 10 : 60,
-        minSafetyBlocks: 10,
-      },
-      [
-        initialValidators,
-        initialEpoch,
-        parseInt(chainId),
-      ],
-    )
-  });
+  if (isMainNet) {
+    console.log("To update prod contract remove this if statement :)");
 
-  configFile.bridges.bsc.amb = deployResult.address;
-  configFile.save()
+  }  else {
 
-  if (deployResult.newlyDeployed) {
-    console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
-    return;
+    const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
+      contract: BRIDGE_NAME,
+      ...await options(hre, BRIDGE_NAME, tokenPairs,
+        {
+          sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+          wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
+          timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+          lockTime: isMainNet ? 60 * 10 : 60,
+          minSafetyBlocks: 10,
+        },
+        [
+          initialValidators,
+          initialEpoch,
+          parseInt(chainId),
+        ],
+      )
+    });
+
+    configFile.bridges.bsc.amb = deployResult.address;
+    configFile.save()
+
+    if (deployResult.newlyDeployed) {
+      console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
+      return;
+    }
+
   }
-
 
   // set sideBridgeAddress
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.bsc.side, hre)
