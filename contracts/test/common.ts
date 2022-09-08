@@ -293,8 +293,8 @@ describe("Common tests", () => {
     });
 
     it("locked correctly", async () => {
-      const d1 = await commonBridge.getLockedTransferTest(1);
-      const d2 = await commonBridge.getLockedTransferTest(2);
+      const d1 = await commonBridge.getLockedTransfers(1);
+      const d2 = await commonBridge.getLockedTransfers(2);
 
       expect(d1.transfers[0].amount).eq(10)
       expect(d2.transfers[0].amount).eq(20)
@@ -331,8 +331,8 @@ describe("Common tests", () => {
       await commonBridge.pause();
       await commonBridge.removeLockedTransfers(1);
 
-      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.be.empty;
-      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(1)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(2)).transfers).to.be.empty;
       expect(await commonBridge.oldestLockedEventId()).to.be.eq(1);
       expect(await commonBridge.inputEventId()).to.be.eq(0);
     });
@@ -341,8 +341,8 @@ describe("Common tests", () => {
       await commonBridge.pause();
       await commonBridge.removeLockedTransfers(2);
 
-      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
-      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(1)).transfers).to.not.be.empty;
+      expect((await commonBridge.getLockedTransfers(2)).transfers).to.be.empty;
       expect(await commonBridge.oldestLockedEventId()).to.be.eq(1);
       expect(await commonBridge.inputEventId()).to.be.eq(1);
     });
@@ -354,8 +354,8 @@ describe("Common tests", () => {
       await commonBridge.pause();
       await commonBridge.removeLockedTransfers(2);
 
-      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.be.empty; // coz unlocked
-      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(1)).transfers).to.be.empty; // coz unlocked
+      expect((await commonBridge.getLockedTransfers(2)).transfers).to.be.empty;
       expect(await commonBridge.oldestLockedEventId()).to.be.eq(2);
       expect(await commonBridge.inputEventId()).to.be.eq(1);
     });
