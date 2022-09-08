@@ -374,14 +374,14 @@ describe("Common tests", () => {
     });
 
     it("trigger transfers event check", async () => {
-      const beforeEventOutputEventId = await commonBridge.getOutputEventId();
+      const beforeEventOutputEventId = await commonBridge.outputEventId();
       await commonBridge.addElementToQueue();
 
       const tx = await commonBridge.triggerTransfers();
       const receipt = await tx.wait();
       const events = await getEvents(receipt);
 
-      const afterEventOutputEventId = await commonBridge.getOutputEventId();
+      const afterEventOutputEventId = await commonBridge.outputEventId();
 
       expect(events[0].event).eq("Transfer");
       expect(beforeEventOutputEventId.add("0x1")).eq(afterEventOutputEventId);

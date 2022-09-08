@@ -23,10 +23,6 @@ contract CommonBridgeTest is CommonBridge {
         lockTransfers(events, eventId);
     }
 
-    function getOutputEventId() public view returns (uint) {
-        return outputEventId;
-    }
-
     function addElementToQueue() public {
         queue.push(CommonStructs.Transfer(address(0), address(0), 100));
     }

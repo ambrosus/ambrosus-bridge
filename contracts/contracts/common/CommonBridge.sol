@@ -36,8 +36,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     address public wrapperAddress;
 
     // addresses that will receive fees
-    address payable transferFeeRecipient;
-    address payable bridgeFeeRecipient;
+    address payable public transferFeeRecipient;
+    address payable public bridgeFeeRecipient;
 
     address public sideBridgeAddress;  // transfer events from side networks must be created by this address
     uint public minSafetyBlocks;  // proof must contains at least `minSafetyBlocks` blocks after block with transfer
@@ -45,7 +45,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     uint public lockTime;  // transfers received from side networks can be unlocked after `lockTime` seconds
 
     uint public inputEventId; // last processed event from side network
-    uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
+    uint public outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint public lastTimeframe; // timestamp / `timeframeSeconds` of latest withdraw
 
