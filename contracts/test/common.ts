@@ -391,6 +391,18 @@ describe("Common tests", () => {
       await expect(commonBridge.triggerTransfers())
           .to.be.revertedWith("Queue is empty");
     });
+
+
+    it("skip transfers", async () => {
+      await commonBridge.pause();
+      await commonBridge.skipTransfers(4);
+
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(4);
+      expect(await commonBridge.inputEventId()).to.be.eq(3);
+    });
+
+
+
   });
   it("unlock native coins", async () => { // separate from previous describe block coz of hindering `beforeEach`
     const wrapperAddress = await commonBridge.wrapperAddress();

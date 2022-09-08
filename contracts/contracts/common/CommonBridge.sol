@@ -204,6 +204,16 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     }
 
+    // pretend like bridge already receive and process all transfers up to `eventId` id
+    // BIG WARNING: CAN'T BE UNDONE coz of security reasons
+    function skipTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
+        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId"); // can't undo unlocked :(
+
+        inputEventId = eventId - 1; // now waiting for submitting a new transfer with `eventId` id
+        oldestLockedEventId = eventId;  // and no need to unlock previous transfers
+    }
+
+
     // views
 
     // returns locked transfers from another network

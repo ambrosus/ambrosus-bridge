@@ -955,6 +955,19 @@
         "internalType": "uint256",
         "name": "eventId",
         "type": "uint256"
+      }
+    ],
+    "name": "skipTransfers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
       },
       {
         "components": [
@@ -1168,6 +1181,24 @@
   {
     "inputs": [],
     "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_confirmations",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_relays",
+        "type": "address[]"
+      }
+    ],
+    "name": "upgrade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
