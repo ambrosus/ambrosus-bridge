@@ -333,6 +333,8 @@ describe("Common tests", () => {
 
       expect((await commonBridge.getLockedTransferTest(1)).transfers).to.be.empty;
       expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(1);
+      expect(await commonBridge.inputEventId()).to.be.eq(0);
     });
 
     it("remove transfers from 2", async () => {
@@ -341,6 +343,21 @@ describe("Common tests", () => {
 
       expect((await commonBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
       expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(1);
+      expect(await commonBridge.inputEventId()).to.be.eq(1);
+    });
+
+    it("remove transfers from 2 when have unlocked transfer 1", async () => {
+      await nextTimeframe();
+      await commonBridge.unlockTransfers(1);
+
+      await commonBridge.pause();
+      await commonBridge.removeLockedTransfers(2);
+
+      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.be.empty; // coz unlocked
+      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(2);
+      expect(await commonBridge.inputEventId()).to.be.eq(1);
     });
 
     it("remove unlocked", async () => {
@@ -349,6 +366,11 @@ describe("Common tests", () => {
 
       await commonBridge.pause();
       await expect(commonBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
+    });
+
+    it("remove not locked", async () => {
+      await commonBridge.pause();
+      await expect(commonBridge.removeLockedTransfers(3)).to.be.revertedWith("eventId must be <= inputEventId");
     });
 
     it("trigger transfers event check", async () => {
