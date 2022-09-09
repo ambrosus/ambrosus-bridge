@@ -63,6 +63,9 @@ describe("Common tests", () => {
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
+
+    // amount of tokens "locked on side bridge", so this bridge can receive withdraws for this amount
+    await mockERC20.changeBridgeBalance(commonBridge.address, 10000);
   });
 
   // todo move to another test file?
@@ -290,8 +293,8 @@ describe("Common tests", () => {
     });
 
     it("locked correctly", async () => {
-      const d1 = await commonBridge.getLockedTransferTest(1);
-      const d2 = await commonBridge.getLockedTransferTest(2);
+      const d1 = await commonBridge.getLockedTransfers(1);
+      const d2 = await commonBridge.getLockedTransfers(2);
 
       expect(d1.transfers[0].amount).eq(10)
       expect(d2.transfers[0].amount).eq(20)
@@ -328,16 +331,33 @@ describe("Common tests", () => {
       await commonBridge.pause();
       await commonBridge.removeLockedTransfers(1);
 
-      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.be.empty;
-      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(1)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(2)).transfers).to.be.empty;
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(1);
+      expect(await commonBridge.inputEventId()).to.be.eq(0);
     });
 
     it("remove transfers from 2", async () => {
       await commonBridge.pause();
       await commonBridge.removeLockedTransfers(2);
 
-      expect((await commonBridge.getLockedTransferTest(1)).transfers).to.not.be.empty;
-      expect((await commonBridge.getLockedTransferTest(2)).transfers).to.be.empty;
+      expect((await commonBridge.getLockedTransfers(1)).transfers).to.not.be.empty;
+      expect((await commonBridge.getLockedTransfers(2)).transfers).to.be.empty;
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(1);
+      expect(await commonBridge.inputEventId()).to.be.eq(1);
+    });
+
+    it("remove transfers from 2 when have unlocked transfer 1", async () => {
+      await nextTimeframe();
+      await commonBridge.unlockTransfers(1);
+
+      await commonBridge.pause();
+      await commonBridge.removeLockedTransfers(2);
+
+      expect((await commonBridge.getLockedTransfers(1)).transfers).to.be.empty; // coz unlocked
+      expect((await commonBridge.getLockedTransfers(2)).transfers).to.be.empty;
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(2);
+      expect(await commonBridge.inputEventId()).to.be.eq(1);
     });
 
     it("remove unlocked", async () => {
@@ -348,27 +368,20 @@ describe("Common tests", () => {
       await expect(commonBridge.removeLockedTransfers(1)).to.be.revertedWith("eventId must be >= oldestLockedEventId");
     });
 
-    it("unlock native coins", async () => {
-      const wrapperAddress = await commonBridge.wrapperAddress();
-
-      const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, 50);
-      await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: transferFee + bridgeFee + 50});  // lock some SAMB tokens on bridge
-      await commonBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
-      await nextTimeframe();
-
-      await expect(() => commonBridge.unlockTransfers(1))
-        .to.changeEtherBalance(userS, 25);
+    it("remove not locked", async () => {
+      await commonBridge.pause();
+      await expect(commonBridge.removeLockedTransfers(3)).to.be.revertedWith("eventId must be <= inputEventId");
     });
 
     it("trigger transfers event check", async () => {
-      const beforeEventOutputEventId = await commonBridge.getOutputEventId();
+      const beforeEventOutputEventId = await commonBridge.outputEventId();
       await commonBridge.addElementToQueue();
 
       const tx = await commonBridge.triggerTransfers();
       const receipt = await tx.wait();
       const events = await getEvents(receipt);
 
-      const afterEventOutputEventId = await commonBridge.getOutputEventId();
+      const afterEventOutputEventId = await commonBridge.outputEventId();
 
       expect(events[0].event).eq("Transfer");
       expect(beforeEventOutputEventId.add("0x1")).eq(afterEventOutputEventId);
@@ -378,7 +391,33 @@ describe("Common tests", () => {
       await expect(commonBridge.triggerTransfers())
           .to.be.revertedWith("Queue is empty");
     });
+
+
+    it("skip transfers", async () => {
+      await commonBridge.pause();
+      await commonBridge.skipTransfers(4);
+
+      expect(await commonBridge.oldestLockedEventId()).to.be.eq(4);
+      expect(await commonBridge.inputEventId()).to.be.eq(3);
+    });
+
+
+
   });
+  it("unlock native coins", async () => { // separate from previous describe block coz of hindering `beforeEach`
+    const wrapperAddress = await commonBridge.wrapperAddress();
+
+    // lock some SAMB tokens on bridge
+    const signature = await getSignature(relayS, wrapperAddress, START_TIMESTAMP, 50);
+    await commonBridge.wrapWithdraw(user, signature, transferFee, bridgeFee, {value: transferFee + bridgeFee + 50});
+
+    await commonBridge.lockTransfersTest([[ethers.constants.AddressZero, user, 25]], 1);
+    await nextTimeframe();
+
+    await expect(() => commonBridge.unlockTransfers(1))
+      .to.changeEtherBalance(userS, 25);
+  });
+
 
 
   it('Test calcTransferReceiptsHash', async () => {

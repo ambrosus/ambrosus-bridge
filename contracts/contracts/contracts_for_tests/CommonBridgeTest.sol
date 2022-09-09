@@ -14,16 +14,9 @@ contract CommonBridgeTest is CommonBridge {
         _setupRole(RELAY_ROLE, address(0x295C2707319ad4BecA6b5bb4086617fD6F240CfE));
     }
 
-    function getLockedTransferTest(uint eventId) public view returns (CommonStructs.LockedTransfers memory) {
-        return lockedTransfers[eventId];
-    }
-
     function lockTransfersTest(CommonStructs.Transfer[] calldata events, uint eventId) public {
+        checkEventId(eventId);  // now its more like submitTransferTest
         lockTransfers(events, eventId);
-    }
-
-    function getOutputEventId() public view returns (uint) {
-        return outputEventId;
     }
 
     function addElementToQueue() public {

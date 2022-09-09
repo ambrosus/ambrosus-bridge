@@ -17,6 +17,8 @@
 
     "submitters": {
         "enable": true,
+        "sideToAmb": true,
+        "ambToSide": true,
         "aura": {
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "finalizeServiceUrl": "https://finalizing-api.ambrosus.io/logs.bin"

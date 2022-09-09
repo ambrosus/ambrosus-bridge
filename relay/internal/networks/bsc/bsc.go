@@ -37,13 +37,19 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 	}
 	commonBridge.Logger.Info().Msgf("Set BSC_FILTER_LOGS_FROM_BLOCK to %d", filterLogsFromBlock)
 
+	filterLogsLimitBlocks, err := strconv.Atoi(os.Getenv("BSC_FILTER_LOGS_LIMIT_BLOCKS"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid BSC_FILTER_LOGS_LIMIT_BLOCKS: %w", err)
+	}
+	commonBridge.Logger.Info().Msgf("Set BSC_FILTER_LOGS_LIMIT_BLOCKS to %d", filterLogsLimitBlocks)
+
 	rpcHTTPClient, err := rpc.DialHTTP(cfg.HttpURL)
 	if err != nil {
 		return nil, fmt.Errorf("dial http: %w", err)
 	}
 	rpcHTTPClient.SetHeader("Origin", origin)
 
-	limitFilteringClient := limit_filtering.NewClient(rpcHTTPClient, int64(filterLogsFromBlock))
+	limitFilteringClient := limit_filtering.NewClient(rpcHTTPClient, int64(filterLogsFromBlock), int64(filterLogsLimitBlocks))
 	commonBridge.Client = limitFilteringClient
 
 	// Creating a new bridge contract instance.
@@ -58,7 +64,7 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 		if err != nil {
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
-		commonBridge.WsClient = limit_filtering.NewClient(rpcWSClient, int64(filterLogsFromBlock))
+		commonBridge.WsClient = limit_filtering.NewClient(rpcWSClient, int64(filterLogsFromBlock), int64(filterLogsLimitBlocks))
 
 		commonBridge.WsContract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.WsClient)
 		if err != nil {

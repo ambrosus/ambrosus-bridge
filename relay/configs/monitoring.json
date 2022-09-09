@@ -1,0 +1,16 @@
+{
+    "relayNames": {
+        "0x295C2707319ad4BecA6b5bb4086617fD6F240CfE": "test wallet"
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
+            "chatId": "-1001732781392"
+        }
+    },
+    "balanceCheckTime": 18000,
+    "confirmationCheckTime": 600,
+    "confirmationTime": 600,
+    "minimumRequiredBalanceWei": "1000000000000000000"
+}

@@ -4,7 +4,7 @@
     "adminAddress": "0x203F8dCBce61d9BFa48A95F588152Da073d9c693",
     "relayAddress": "0xDE99F453d76D5f485d90244319593b12D5eeDe8B",
     "transferFeeRecipient": "0xba971570E4352a700de3ca57Fe882E2d4C70F42F",
-    "bridgeFeeRecipient": "0xba971570E4352a700de3ca57Fe882E2d4C70F42F",
+    "bridgeFeeRecipient": "0x893dF80919D7e89A56ED2668466ad4EB84C367a0",
     "multisig": {
       "admins": [
         "0xf3cb1e06e72233e0350F7588D11a2585B268C7AD",
@@ -23,7 +23,7 @@
     "adminAddress": "0x3602541a2015A7867532EEF7e3A4eB2ED436a715",
     "relayAddress": "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8",
     "transferFeeRecipient": "0x90268508333A15BC932f63faD95E40B7a251eFB1",
-    "bridgeFeeRecipient": "0x90268508333A15BC932f63faD95E40B7a251eFB1",
+    "bridgeFeeRecipient": "0x4CD40e00eBD87acbA000071439B647Aaa2810683",
     "multisig": {
       "admins": [
         "0xf3cb1e06e72233e0350F7588D11a2585B268C7AD",
@@ -43,7 +43,7 @@
     "adminAddress": "0x203F8dCBce61d9BFa48A95F588152Da073d9c693",
     "relayAddress": "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE",
     "transferFeeRecipient": "0xba971570E4352a700de3ca57Fe882E2d4C70F42F",
-    "bridgeFeeRecipient": "0xba971570E4352a700de3ca57Fe882E2d4C70F42F",
+    "bridgeFeeRecipient": "0xD3bd2Ac57e3FE109BF29dF67b251E1BfC96DA7b8",
     "multisig": {
       "admins": [
         "0xf3cb1e06e72233e0350F7588D11a2585B268C7AD",
@@ -62,7 +62,7 @@
     "adminAddress": "0xb6db3c082d25C0dC26602334B5F3D270091DC422",
     "relayAddress": "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded",
     "transferFeeRecipient": "0x0BD1dD0F45f0F180001e6BD84477B985e8Ce7295",
-    "bridgeFeeRecipient": "0x0BD1dD0F45f0F180001e6BD84477B985e8Ce7295",
+    "bridgeFeeRecipient": "0x3f3DA18920Ca95bC55353E8e4Fd3C1123D3A07B4",
     "multisig": {
       "admins": [
         "0xf3cb1e06e72233e0350F7588D11a2585B268C7AD",

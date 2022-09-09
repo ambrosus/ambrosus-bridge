@@ -18,16 +18,16 @@ type ReceiverPoW struct {
 func (b *ReceiverPoW) SubmitTransferPoW(proof *bindings.CheckPoWPoWProof) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("submitTransferPoW", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitTransferPoW(b.GetAuth(), *proof)
+	return b.ProcessTx("submitTransferPoW", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitTransferPoW(opts, *proof)
 	})
 }
 
 func (b *ReceiverPoW) SubmitEpochData(epochData *ethash.EpochData) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("setEpochData", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SetEpochData(b.GetAuth(),
+	return b.ProcessTx("setEpochData", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SetEpochData(opts,
 			epochData.Epoch, epochData.FullSizeIn128Resolution, epochData.BranchDepth, epochData.MerkleNodes)
 	})
 }

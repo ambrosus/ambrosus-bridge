@@ -40,5 +40,5 @@ type Bridge interface {
 	GetAuth() *bind.TransactOpts
 	GetContractAddress() common.Address
 
-	ProcessTx(methodName string, txCallback ContractCallFn) error
+	ProcessTx(methodName string, txOpts *bind.TransactOpts, txCallback ContractCallFn) error
 }

@@ -172,6 +172,7 @@ const config: HardhatUserConfig = {
       "sAMB",
       "IWrapper",
       ":ERC20$",
+      "ProxyMultiSig$"
     ]
   }
 };

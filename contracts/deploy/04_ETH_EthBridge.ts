@@ -34,19 +34,24 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   //   args: ["0x1111111111111111111111111111111111111111111111111111111111111111"]
   // };
 
+  if (isMainNet) {
+    console.log("To update prod contract remove this if statement :)");
 
-  const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
-    contract: BRIDGE_NAME,
-    ...optionsWithOnUpgrade
-  });
+  }  else {
+
+    const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
+      contract: BRIDGE_NAME,
+      ...optionsWithOnUpgrade
+    });
 
 
-  configFile.bridges.eth.side = deployResult.address;
-  configFile.save()
+    configFile.bridges.eth.side = deployResult.address;
+    configFile.save()
 
-  if (deployResult.newlyDeployed) {
-    console.log('Call this cmd second time to update tokens')
-    return;
+    if (deployResult.newlyDeployed) {
+      console.log('Call this cmd second time to update tokens')
+      return;
+    }
   }
 
   // add new tokens

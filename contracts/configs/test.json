@@ -34,7 +34,7 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0xA9646A0281996fDcB88f8f6f01Af52BB0268c494",
+        "amb": "0x608EDeEfA8C63823519B89bAb865E83773FAA46d",
         "eth": "0x52d026B38b3382Fe1b8a28EA55895aF875191750",
         "bsc": ""
       },
@@ -49,7 +49,7 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x4798Cbd108e3D7b531ef2f3d67E7fFabdEe29867",
+        "amb": "0x1Cc332c401fD2777C2c6bAE25097A910dFB0BC80",
         "eth": "",
         "bsc": "0x9436CEC90DC41F03c7b679779D3B55dca5a02382"
       },
@@ -65,7 +65,7 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x63B825C40a78e2e9A7aeaC83027215A022b37B93",
+        "amb": "0x1242BDB8DD53f8ca7126d46271Dc59FD7C71C856",
         "eth": "0x9e1E75d505279eA07734157498318A3615d4E241",
         "bsc": "0xA9646A0281996fDcB88f8f6f01Af52BB0268c494"
       },

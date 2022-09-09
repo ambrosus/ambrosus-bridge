@@ -17,16 +17,16 @@ type ReceiverPoSA struct {
 func (b *ReceiverPoSA) SubmitTransferPoSA(proof *bindings.CheckPoSAPoSAProof) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("submitTransferPoSA", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitTransferPoSA(b.GetAuth(), *proof)
+	return b.ProcessTx("submitTransferPoSA", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitTransferPoSA(opts, *proof)
 	})
 }
 
 func (b *ReceiverPoSA) SubmitValidatorSetChangesPoSA(proof *bindings.CheckPoSAPoSAProof) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("SubmitValidatorSetChangesPoSA", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitValidatorSetChangesPoSA(b.GetAuth(), *proof)
+	return b.ProcessTx("SubmitValidatorSetChangesPoSA", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitValidatorSetChangesPoSA(opts, *proof)
 	})
 }
 

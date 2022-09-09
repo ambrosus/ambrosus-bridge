@@ -36,6 +36,10 @@ func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.Receiver
 	}, nil
 }
 
+func (b *SubmitterPoW) Receiver() service_submit.Receiver {
+	return b.powReceiver
+}
+
 func (b *SubmitterPoW) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	powProof, err := b.powEncoder.EncodePoWProof(event, safetyBlocks)
 	if err != nil {

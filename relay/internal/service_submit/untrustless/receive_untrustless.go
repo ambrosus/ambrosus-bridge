@@ -1,8 +1,11 @@
 package untrustless
 
 import (
+	"fmt"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
+	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -15,8 +18,16 @@ type ReceiverUntrustless struct {
 func (b *ReceiverUntrustless) SubmitTransferUntrustless(event *bindings.BridgeTransfer) error {
 	defer metric.SetRelayBalanceMetric(b)
 
-	return b.ProcessTx("submitTransferUntrustless", func(opts *bind.TransactOpts) (*types.Transaction, error) {
-		return b.GetContract().SubmitTransferUntrustless(b.GetAuth(), event.EventId, event.Queue)
+	// todo: make the multiplier configurable
+	authChangedGasLimit, err := cb.GetMultipliedEstimatedGasLimit(*b.GetAuth(), 3, func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
+	})
+	if err != nil {
+		return fmt.Errorf("get multiplied estimated gas limit: %w", err)
+	}
+
+	return b.ProcessTx("submitTransferUntrustless", authChangedGasLimit, func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
 	})
 
 }
