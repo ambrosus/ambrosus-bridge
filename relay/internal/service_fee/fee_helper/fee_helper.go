@@ -55,7 +55,7 @@ func (b *FeeHelper) Sign(digestHash []byte) ([]byte, error) {
 
 func (b *FeeHelper) GetTransferFee() (thisGas, sideGas decimal.Decimal) {
 	this, side := b.transferFeeTracker.GasPerWithdraw()
-	return decimal.NewFromBigInt(this, 1), decimal.NewFromBigInt(side, 1)
+	return decimal.NewFromBigInt(this, 0), decimal.NewFromBigInt(side, 0)
 }
 
 func (b *FeeHelper) GetWrapperAddress() common.Address {
