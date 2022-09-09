@@ -114,9 +114,9 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get this bridge txs from explorer (for triggerTransfers method)
-	thisBridgeTxList, err := p.sideExplorer.TxListByFromToAddresses(
-		p.sideBridge.GetAuth().From.Hex(),
-		p.sideBridge.GetContractAddress().Hex(),
+	thisBridgeTxList, err := p.explorer.TxListByFromToAddresses(
+		p.bridge.GetAuth().From.Hex(),
+		p.bridge.GetContractAddress().Hex(),
 		p.latestThisProcessedTxHash,
 	)
 	if err != nil {
