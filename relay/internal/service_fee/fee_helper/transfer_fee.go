@@ -13,10 +13,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 )
 
-const (
-	eventsForGasCalc = 20
-)
-
 var (
 	bigZero         = big.NewInt(0)
 	bridgeAbi, _    = bindings.BridgeMetaData.GetAbi()
@@ -85,12 +81,7 @@ func (p *transferFeeTracker) init() error {
 		return nil
 	}
 
-	latestProcessedEvent := latestEventId.Int64() - eventsForGasCalc - 1 // -1 cuz in `processEvents` we'll +1 to it
-	if latestProcessedEvent < 0 {
-		latestProcessedEvent = 0
-	}
-
-	p.latestProcessedEvent = uint64(latestProcessedEvent)
+	p.latestProcessedEvent = 0                         // 0 cuz in `processEvents` we'll +1 to it
 	return p.processEvents(latestEventId.Uint64() - 1) // -1 cuz we need latest unlocked instead of locked event id
 }
 
@@ -138,7 +129,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	totalThisGas := calcGasCost(filterTxsWithTriggers(thisBridgeTxList))
 
 	p.totalSideGas = p.totalSideGas.Add(p.totalSideGas, totalSideGas)
-	p.totalThisGas = p.totalSideGas.Add(p.totalThisGas, totalThisGas)
+	p.totalThisGas = p.totalThisGas.Add(p.totalThisGas, totalThisGas)
 	p.totalWithdrawCount = p.totalWithdrawCount.Add(p.totalWithdrawCount, big.NewInt(int64(withdrawsCount)))
 
 	p.latestProcessedEvent = newEventId
