@@ -55,6 +55,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // add new tokens
+
+  // DISABLE WETH TOKEN ( will be along with enabling USDC coin for gas economy :) )
+  // todo remove this after call
+  if (parseNet(hre.network).stage === "main") {
+    tokenPairs["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"] = "0x0000000000000000000000000000000000000000"
+  }
+  console.log(tokenPairs);
+  // END
+
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
