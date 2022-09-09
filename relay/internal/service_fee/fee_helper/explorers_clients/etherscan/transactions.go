@@ -21,8 +21,10 @@ var (
 // That method wraps etherscan's `NormalTxByAddress` but returns our errors
 func (e *Etherscan) normalTxByAddress(address string, startBlock *int, endBlock *int, page int, offset int, desc bool) (txs []etherscan.NormalTx, err error) {
 	txs, err = e.client.NormalTxByAddress(address, startBlock, endBlock, page, offset, desc)
-	if err.Error() == ErrTxsNotFound.Error() {
-		return nil, explorers_clients.ErrTxsNotFound
+	if err != nil {
+		if err.Error() == ErrTxsNotFound.Error() {
+			return nil, explorers_clients.ErrTxsNotFound
+		}
 	}
 	return
 }
