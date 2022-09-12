@@ -31,17 +31,22 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   optionsWithOnUpgrade.proxy.execute.onUpgrade = {
     methodName: "upgrade",
     args: [
-      2,
-      ["0x295C2707319ad4BecA6b5bb4086617fD6F240CfE",
-        "0x1111111111111111111111111111111111111111",
+      5,
+      [
+        "0x260cfE305cA40CaE1a32Ba7611137eF4d7146233", // Kevin
+        "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a", // Lang"
+        "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8", // Rory"
+        "0xb017DcCC473499C83f1b553bE564f3CeAf002254", // Andrey"
+        "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE", // Master"
       ]
     ]
   };
 
-  if (isMainNet) {
-    console.log("To update prod contract remove this if statement :)");
-
-  }  else {
+  // todo note that i'm commented that out!!!
+  // if (isMainNet) {
+  //   console.log("To update prod contract remove this if statement :)");
+  //
+  // }  else {
 
     const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
       contract: BRIDGE_NAME,
@@ -56,7 +61,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       console.log('Call this cmd second time to set sideBridgeAddress or update tokens')
       return;
     }
-  }
+
+  // }
 
   // set sideBridgeAddress
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.eth.side, hre)
