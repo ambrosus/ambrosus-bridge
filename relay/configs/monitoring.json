@@ -1,6 +1,11 @@
 {
     "relayNames": {
-        "0x295C2707319ad4BecA6b5bb4086617fD6F240CfE": "test wallet"
+        "0x295C2707319ad4BecA6b5bb4086617fD6F240CfE": "test wallet",
+        "0x260cfE305cA40CaE1a32Ba7611137eF4d7146233": "Kevin",
+        "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a": "Lang",
+        "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8": "Rory",
+        "0xb017DcCC473499C83f1b553bE564f3CeAf002254": "Andrey",
+        "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE": "Master"
     },
     "externalLogger": {
         "telegram": {

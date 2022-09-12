@@ -60,19 +60,13 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // add new tokens
 
-  // BUGFIX
-  // todo remove this after redeploy and register bugged tokens
-  if (parseNet(hre.network).stage === "dev") {
-    tokenPairs["0x2FA390265Fd43c996f6335293ad60446494c621B"] = "0x0000000000000000000000000000000000000000"
-    tokenPairs["0x6C5750Be93De7a4A3072bA10A6610C23e8399df1"] = "0x0000000000000000000000000000000000000000"
-  } else if (parseNet(hre.network).stage === "test") {
-    tokenPairs["0x4798Cbd108e3D7b531ef2f3d67E7fFabdEe29867"] = "0x0000000000000000000000000000000000000000"
-    tokenPairs["0x63B825C40a78e2e9A7aeaC83027215A022b37B93"] = "0x0000000000000000000000000000000000000000"
-  } else if (parseNet(hre.network).stage === "main") {
+  // DISABLE WBNB TOKEN ( will be along with enabling USDC coin for gas economy :) )
+  // todo remove this after call
+  if (parseNet(hre.network).stage === "main") {
     tokenPairs["0xA96C522fA8Df99BB73A6E317A1afb0E3FA13b735"] = "0x0000000000000000000000000000000000000000"
   }
   console.log(tokenPairs);
-  // END OF BUGFIX
+  // END
 
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
