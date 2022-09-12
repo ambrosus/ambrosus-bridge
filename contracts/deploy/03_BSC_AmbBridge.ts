@@ -59,7 +59,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.bsc.side, hre)
 
   // add new tokens
-   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
+  await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
 
