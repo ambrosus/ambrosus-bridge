@@ -59,15 +59,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.bsc.side, hre)
 
   // add new tokens
-
-  // DISABLE WBNB TOKEN ( will be along with enabling USDC coin for gas economy :) )
-  // todo remove this after call
-  if (parseNet(hre.network).stage === "main") {
-    tokenPairs["0xA96C522fA8Df99BB73A6E317A1afb0E3FA13b735"] = "0x0000000000000000000000000000000000000000"
-  }
-  console.log(tokenPairs);
-  // END
-
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
