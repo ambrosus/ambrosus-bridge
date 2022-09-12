@@ -36,8 +36,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     address public wrapperAddress;
 
     // addresses that will receive fees
-    address payable transferFeeRecipient;
-    address payable bridgeFeeRecipient;
+    address payable public transferFeeRecipient;
+    address payable public bridgeFeeRecipient;
 
     address public sideBridgeAddress;  // transfer events from side networks must be created by this address
     uint public minSafetyBlocks;  // proof must contains at least `minSafetyBlocks` blocks after block with transfer
@@ -45,7 +45,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     uint public lockTime;  // transfers received from side networks can be unlocked after `lockTime` seconds
 
     uint public inputEventId; // last processed event from side network
-    uint outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
+    uint public outputEventId;  // last created event in this network. start from 1 coz 0 consider already processed
 
     uint public lastTimeframe; // timestamp / `timeframeSeconds` of latest withdraw
 
@@ -191,14 +191,28 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         oldestLockedEventId = eventId;
     }
 
-    // delete transfers with passed eventId and all after it
+    // delete transfers with passed eventId **and all after it**
     function removeLockedTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
-        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");
+        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId");  // can't undo unlocked :(
+        require(eventId <= inputEventId, "eventId must be <= inputEventId");
+
+        // now waiting for submitting a new transfer with `eventId` id
+        inputEventId = eventId - 1;
+
         for (; lockedTransfers[eventId].endTimestamp != 0; eventId++)
             delete lockedTransfers[eventId];
-        inputEventId = eventId - 1;
-        // pretend like we don't receive that event
+
     }
+
+    // pretend like bridge already receive and process all transfers up to `eventId` id
+    // BIG WARNING: CAN'T BE UNDONE coz of security reasons
+    function skipTransfers(uint eventId) public onlyRole(ADMIN_ROLE) whenPaused {
+        require(eventId >= oldestLockedEventId, "eventId must be >= oldestLockedEventId"); // can't undo unlocked :(
+
+        inputEventId = eventId - 1; // now waiting for submitting a new transfer with `eventId` id
+        oldestLockedEventId = eventId;  // and no need to unlock previous transfers
+    }
+
 
     // views
 

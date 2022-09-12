@@ -17,7 +17,7 @@ func main() {
 
 	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, baseLogger)
 	if err != nil {
-		log.Fatal().Err(err).Msg("error creating bridges")
+		baseLogger.Fatal().Err(err).Msg("error creating bridges")
 	}
 
 	go runSubmitters(cfg.Submitters, ambBridge, sideBridge, baseLogger)
@@ -26,6 +26,7 @@ func main() {
 	go runTriggers(cfg.Triggers, ambBridge, sideBridge, baseLogger)
 	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, baseLogger)
 	go runPrometheus(cfg.Prometheus, baseLogger)
+	go runHealth(":80", baseLogger)
 
 	select {}
 

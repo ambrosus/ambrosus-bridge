@@ -1,6 +1,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -114,4 +116,16 @@ func runPrometheus(cfg *config.Prometheus, logger zerolog.Logger) {
 	if err := metric.ServeEndpoint(cfg.Ip, cfg.Port); err != nil {
 		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
 	}
+}
+
+func runHealth(addr string, logger zerolog.Logger) {
+	// it's actually not /health but * instead :)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Health endpoint)")
+	}
+
 }
