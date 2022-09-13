@@ -1,14 +1,14 @@
 FROM golang:1.19-alpine
-RUN apk add build-base
+# RUN apk add build-base
 
-WORKDIR /app
-COPY ./go.mod ./go.sum ./
-RUN go mod download
+# WORKDIR /app
+# COPY ./go.mod ./go.sum ./
+# RUN go mod download
 
-COPY . .
+# COPY . .
 
-RUN go build ./cmd/bridge
-EXPOSE 9090
-EXPOSE 8080
+# RUN go build ./cmd/bridge
+# EXPOSE 9090
+# EXPOSE 8080
 
-CMD ["/app/bridge"]
+# CMD ["/app/bridge"]
