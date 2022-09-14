@@ -117,8 +117,12 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
   const bridgesDecimals = [];
 
   for (const [netName, {amb: address}] of Object.entries(configFile.bridges)) {
+    if (address == "") {
+      continue
+    }
+
     // if decimals not specified for side net, use token.decimals
-    const sideNetDecimals = token.decimals[netName] || token.decimals;
+    const sideNetDecimals = (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
     bridgesAddresses.push(address);
     bridgesDecimals.push(sideNetDecimals);
   }
