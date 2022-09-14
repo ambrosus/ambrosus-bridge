@@ -122,7 +122,7 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
     }
 
     // if decimals not specified for side net, use token.decimals
-    const sideNetDecimals = token.decimals[netName] || token.decimals;
+    const sideNetDecimals = (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
     bridgesAddresses.push(address);
     bridgesDecimals.push(sideNetDecimals);
   }
