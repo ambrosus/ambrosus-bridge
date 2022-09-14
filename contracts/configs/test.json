@@ -29,15 +29,19 @@
       "name": "USD Coin",
       "symbol": "USDC",
       "denomination": 6,
+      "decimals": {
+        "eth": 6,
+        "bsc": 18
+      },
       "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
       "primaryNets": [
         "eth",
         "bsc"
       ],
       "addresses": {
-        "amb": "0x1242BDB8DD53f8ca7126d46271Dc59FD7C71C856",
+        "amb": "0x38A9718978E8321bdeE3E93E1D3570E7d558ff21",
         "eth": "0x9e1E75d505279eA07734157498318A3615d4E241",
-        "bsc": "0xA9646A0281996fDcB88f8f6f01Af52BB0268c494"
+        "bsc": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a"
       },
       "nativeAnalog": ""
     }
