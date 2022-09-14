@@ -6,13 +6,14 @@ import { isAddress } from "ethers/lib/utils";
 
 
 
-interface Token {
+export interface Token {
   name: string;
   symbol: string;
   denomination: number;
   addresses: { [net: string]: string }
   primaryNets: string[];
   nativeAnalog: string | null;
+  decimals: { [net: string]: number }
 }
 
 
@@ -22,7 +23,6 @@ export interface Config {
 
   save(): void;
   getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }
-  bridgesInNet(net: string): string[]
 }
 
 
@@ -33,7 +33,6 @@ export function readConfig(stage: string): Config {
 
   config.save = () => fs.writeFileSync(tokenPath, JSON.stringify(config, null, 2));
   config.getTokenPairs = (thisNet: string, sideNet: string) => getTokenPairs(thisNet, sideNet, config)
-  config.bridgesInNet = (net: string) => bridgesInNet(net, config)
 
   return config;
 }
@@ -59,15 +58,4 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
   }
 
   return tokenPair;
-}
-
-
-// get all deployed bridges in `net` network;
-// for amb it's array of amb addresses for each network pair (such "amb-eth" or "amb-bsc")
-// for other networks is array of one address
-function bridgesInNet(net: string, configFile: Config): string[] {
-  const bridges = (net == "amb") ?
-    Object.values(configFile.bridges).map(i => i.amb) :
-    [configFile.bridges[net].side];
-  return bridges.filter(i => !!i);  // filter out empty strings
 }

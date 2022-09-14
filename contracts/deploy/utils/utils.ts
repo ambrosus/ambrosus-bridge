@@ -4,7 +4,7 @@ import {DeployOptions} from "hardhat-deploy/types";
 import {ethers} from "ethers";
 import vsAbi from "../../abi/ValidatorSet.json";
 import {Block} from "@ethersproject/abstract-provider";
-import {Config, readConfig} from "./config";
+import {Config, readConfig, Token} from "./config";
 import {getAddresses} from "./prod_addresses";
 
 export function readConfig_(network: Network): Config {
@@ -109,6 +109,24 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
     log: true
   }
 }
+
+
+// get bridges and decimals for BridgeERC20_Amb contract
+export function getBridgesDecimals(configFile: Config, token: Token) {
+  const bridgesAddresses = [];
+  const bridgesDecimals = [];
+
+  for (const [netName, {amb: address}] of Object.entries(configFile.bridges)) {
+    // if decimals not specified for side net, use token.decimals
+    const sideNetDecimals = token.decimals[netName] || token.decimals;
+    bridgesAddresses.push(address);
+    bridgesDecimals.push(sideNetDecimals);
+  }
+
+  return {bridgesAddresses, bridgesDecimals};
+}
+
+
 
 // valildators
 

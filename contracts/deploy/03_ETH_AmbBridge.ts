@@ -73,6 +73,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.eth.side, hre)
 
   // add new tokens
+
+  // DISABLE OLD USDC TOKEN ( will be along with enabling new USDC coin for gas economy :) )
+  // todo remove this after call
+  if (parseNet(hre.network).stage === "main") {
+    tokenPairs["0x290998B7B5589AFdc4E3f3c7eF817F05dcDEC947"] = "0x0000000000000000000000000000000000000000"
+  }
+  console.log(tokenPairs);
+  // END
+
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
