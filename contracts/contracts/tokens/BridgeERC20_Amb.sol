@@ -22,7 +22,7 @@ contract BridgeERC20_Amb is ERC20, Ownable {
         string memory name_, string memory symbol_, uint8 decimals_,
         address[] memory bridgeAddresses_, uint8[] sideTokenDecimals_
     ) ERC20(name_, symbol_) Ownable() {
-        _setBridgeAddressesRole(bridgeAddresses_, sideTokenDecimals_);
+        _setSideTokenDecimals(bridgeAddresses_, sideTokenDecimals_);
         _decimals = decimals_;
     }
 
@@ -30,12 +30,12 @@ contract BridgeERC20_Amb is ERC20, Ownable {
         return _decimals;
     }
 
-    function sideTokenDecimals(address[] memory bridgeAddresses) public onlyOwner() {
-        _setBridgeAddressesRole(bridgeAddresses);
+    function setSideTokenDecimals(address[] memory bridgeAddresses_, uint8[] sideTokenDecimals_) public onlyOwner() {
+        _setSideTokenDecimals(bridgeAddresses_, sideTokenDecimals_);
     }
 
-
-    function _setBridgeAddressesRole(address[] memory bridgeAddresses_, uint8[] sideTokenDecimals_) private {
+    // todo check if we need this func
+    function _setSideTokenDecimals(address[] memory bridgeAddresses_, uint8[] sideTokenDecimals_) private {
         require(bridgeAddresses_.length == sideTokenDecimals_.length, "wrong array lengths");
         for (uint i = 0; i < bridgeAddresses_.length; i++)
             sideTokenDecimals[bridgeAddresses_[i]] = sideTokenDecimals_[i];

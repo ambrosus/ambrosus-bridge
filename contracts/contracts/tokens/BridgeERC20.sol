@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BridgeERC20 is ERC20, Ownable {
-    uint public bridgeAddress; // address of bridge contract on this network
+    address public bridgeAddress; // address of bridge contract on this network
     uint public bridgeBalance;  // locked tokens on the bridge
 
     uint8 _decimals;
