@@ -9,7 +9,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: owner,
         args: [
             "Mock", "Mock", 18,
+            ethers.constants.AddressZero, // bridgeAddress
+        ],
+    });
+    await hre.deployments.deploy("BridgeERC20_AmbTest", {
+        from: owner,
+        args: [
+            "Mock", "Mock", 18,
             [ethers.constants.AddressZero], // bridgeAddresses
+            [0], // bridgeDecimals
         ],
     });
 

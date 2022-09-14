@@ -29,7 +29,7 @@ describe("BridgeERC20", () => {
   beforeEach(async () => {
     await deployments.fixture(["for_tests"]); // reset contracts state
 
-    await mockERC20.setBridgeAddressesRole([bridge]);
+    await mockERC20.setBridgeAddress(bridge);
     // await mockERC20.mint(owner, 1000);
     // await mockERC20.increaseAllowance(owner, 1000);
     // await mockERC20.connect(bridgeS).increaseAllowance(bridge, 1000);

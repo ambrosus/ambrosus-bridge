@@ -2,17 +2,18 @@
 pragma solidity 0.8.6;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract BridgeERC20 is ERC20, AccessControl {
-    mapping (address => uint) public bridgeBalances;  // locked tokens on the bridge
-    bytes32 public constant BRIDGE_ROLE = keccak256("BRIDGE_ROLE");
+contract BridgeERC20 is ERC20, Ownable {
+    address public bridgeAddress; // address of bridge contract on this network
+    uint public bridgeBalance;  // locked tokens on the bridge
+
     uint8 _decimals;
 
-    constructor(string memory name_, string memory symbol_, uint8 decimals_, address[] memory bridgeAddresses)
-    ERC20(name_, symbol_) {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setBridgeAddressesRole(bridgeAddresses);
+    constructor(string memory name_, string memory symbol_, uint8 decimals_, address bridgeAddress_)
+    ERC20(name_, symbol_)
+    Ownable() {
+        bridgeAddress = bridgeAddress_;
         _decimals = decimals_;
     }
 
@@ -20,14 +21,8 @@ contract BridgeERC20 is ERC20, AccessControl {
         return _decimals;
     }
 
-    function setBridgeAddressesRole(address[] memory bridgeAddresses) public onlyRole(DEFAULT_ADMIN_ROLE) {
-        _setBridgeAddressesRole(bridgeAddresses);
-    }
-
-    function _setBridgeAddressesRole(address[] memory bridgeAddresses) private {
-        for (uint i = 0; i < bridgeAddresses.length; i++) {
-            _setupRole(BRIDGE_ROLE, bridgeAddresses[i]);
-        }
+    function setBridgeAddress(address bridgeAddress_) public onlyOwner() {
+        bridgeAddress = bridgeAddress_;
     }
 
     function _transfer(
@@ -35,15 +30,19 @@ contract BridgeERC20 is ERC20, AccessControl {
         address recipient,
         uint amount
     ) internal virtual override {
-        if (hasRole(BRIDGE_ROLE, sender)) {
-            // bridge mint money to user; same amount locked on side bridge
-            bridgeBalances[sender] += amount;
+        if (sender == bridgeAddress) {
+            // user transfer tokens to ambrosus => need to mint it
+
+            // same amount locked on side bridge
+            bridgeBalance += amount;
 
             _mint(recipient, amount);
-        } else if (hasRole(BRIDGE_ROLE, recipient)) {
-            // user burn tokens; side bridge must have enough tokens to send
-            require(bridgeBalances[recipient] >= amount, "not enough locked tokens on bridge");
-            bridgeBalances[recipient] -= amount;
+        } else if (recipient == bridgeAddress) {
+            // user withdraw tokens from ambrosus => need to burn it
+
+            // side bridge must have enough tokens to send
+            require(bridgeBalance >= amount, "not enough locked tokens on bridge");
+            bridgeBalance -= amount;
 
             _burn(sender, amount);
         } else {

@@ -26,6 +26,16 @@ func (p *Fee) getPrices(bridge, sideBridge BridgeFeeApi, tokenAddress common.Add
 		err = fmt.Errorf("getTokenPrice native sideBridge: %w", err)
 		return
 	}
+
+	if bridge == p.amb { // if bridge is amb, then we must use token address from sideBridge
+		tokenAddress, err = bridge.GetContract().TokenAddresses(nil, tokenAddress)
+		if err != nil {
+			err = fmt.Errorf("TokenAddresses: %w", err)
+			return
+		}
+		bridge = p.side
+	}
+
 	tokenUsdPrice, err = p.getTokenPrice(bridge, tokenAddress)
 	if err != nil {
 		err = fmt.Errorf("getTokenPrice %v: %w", tokenAddress, err)
