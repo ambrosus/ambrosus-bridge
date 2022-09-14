@@ -56,9 +56,9 @@ contract BridgeERC20_Amb is ERC20, Ownable {
 
 
             // bridge mint money to user; same amount locked on side bridge
-            bridgeBalances[sender] += amount;
+            bridgeBalances[sender] += amount_this;
 
-            _mint(recipient, amount);
+            _mint(recipient, amount_this);
         } else if (sideTokenDecimals[recipient] != 0) { // recipient is bridge
             // user withdraw tokens from ambrosus => need to burn it
 
@@ -68,10 +68,10 @@ contract BridgeERC20_Amb is ERC20, Ownable {
 
 
             // user burn tokens; side bridge must have enough tokens to send
-            require(bridgeBalances[recipient] >= amount, "not enough locked tokens on bridge");
-            bridgeBalances[recipient] -= amount;
+            require(bridgeBalances[recipient] >= amount_this, "not enough locked tokens on bridge");
+            bridgeBalances[recipient] -= amount_this;
 
-            _burn(sender, amount);
+            _burn(sender, amount_this);
         } else {
             super._transfer(sender, recipient, amount);
         }
