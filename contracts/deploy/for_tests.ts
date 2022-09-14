@@ -9,7 +9,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: owner,
         args: [
             "Mock", "Mock", 18,
-            [ethers.constants.AddressZero], // bridgeAddresses
+            ethers.constants.AddressZero, // bridgeAddress
         ],
     });
 
