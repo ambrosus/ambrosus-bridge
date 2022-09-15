@@ -17,6 +17,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig_(hre.network);
 
   const usdc = configFile.tokens.USDC;
+
+  if (usdc === undefined) {
+    console.log("USDC is not in config")
+    return
+  }
   if (isAddress(usdc.addresses[netName])) {
     console.log("USDC already deployed on", netName);
     return;
