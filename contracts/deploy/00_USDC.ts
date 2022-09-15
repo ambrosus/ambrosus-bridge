@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {parseNet, readConfig_} from "./utils/utils";
+import {getSideNetDecimalsOrTokenDenomination, parseNet, readConfig_} from "./utils/utils";
 import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -30,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployResult = await hre.deployments.deploy(usdc.symbol, {
     contract: "MintableERC20",
     from: owner,
-    args: [usdc.name, usdc.symbol, usdc.denomination],
+    args: [usdc.name, usdc.symbol, getSideNetDecimalsOrTokenDenomination(usdc, netName)],
     log: true,
   });
 
