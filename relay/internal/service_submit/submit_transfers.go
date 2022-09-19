@@ -8,7 +8,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/rs/zerolog"
@@ -20,18 +20,21 @@ type SubmitTransfers struct {
 	logger    *zerolog.Logger
 }
 
-func NewSubmitTransfers(submitter Submitter, receiver Receiver) *SubmitTransfers {
-	logger := submitter.GetLogger().With().Str("service", "SubmitTransfers").Logger()
+func NewSubmitTransfers(submitter Submitter) *SubmitTransfers {
+	logger := submitter.GetLogger().With().
+		Str("relay", submitter.Receiver().GetAuth().From.Hex()).
+		Str("service", "SubmitTransfers").Logger()
 
 	return &SubmitTransfers{
 		submitter: submitter,
-		receiver:  receiver,
+		receiver:  submitter.Receiver(),
 		logger:    &logger,
 	}
 }
 
 func (b *SubmitTransfers) Run() {
-	cb.ShouldHavePk(b.submitter)
+	cb.ShouldHavePk(b.receiver)
+	b.logger.WithLevel(logger.ImportantInfoLevel).Msg("Relay has been started!")
 
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
@@ -119,7 +122,6 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	metric.AddWithdrawalsCountMetric(b.submitter, len(event.Queue))
 	return nil
 }
 

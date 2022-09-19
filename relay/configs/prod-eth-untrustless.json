@@ -1,0 +1,45 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "ETH",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus.io",
+            "wsUrl": "wss://network.ambrosus.io/ws",
+            "contractAddr": "0x19caBC1E34Ab0CC5C62DaA1394f6022B38b75c78",
+            "privateKey": "in env"
+        },
+        "ETH": {
+            "httpUrl": "https://mainnet.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://mainnet.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208",
+            "privateKey": ""
+        }
+    },
+
+    "submitters": {
+        "enable": true,
+        "sideToAmb": true,
+        "ambToSide": false
+    },
+    "watchdogs":  {
+        "enable": false
+    },
+    "triggers":  {
+        "enable": false
+    },
+    "unlockers":  {
+        "enable": false
+    },
+    "feeApi":  {
+        "enable": false
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "in env",
+            "chatId": "-1001601672753"
+        }
+},
+    "prometheus": {
+        "enable": false
+    }
+}

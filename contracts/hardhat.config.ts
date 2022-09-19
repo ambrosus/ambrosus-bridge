@@ -62,7 +62,7 @@ const config: HardhatUserConfig = {
       tags: ["amb", "devnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
-      accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero], // todo devPk
+      accounts: [devPK], // todo devPk
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
@@ -90,7 +90,7 @@ const config: HardhatUserConfig = {
       url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
       tags: ["bsc", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
-      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
+      accounts: [devPK],
       verify: {
         etherscan: {
           apiKey: bscScanApiKey
@@ -167,10 +167,12 @@ const config: HardhatUserConfig = {
     flat: true,
     only: [
       "Bridge$",
+      "Bridge_",
       ":ValidatorSet$",
       "sAMB",
       "IWrapper",
       ":ERC20$",
+      "ProxyMultiSig$"
     ]
   }
 };

@@ -1,18 +1,21 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_api"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/pow"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
@@ -25,24 +28,29 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		return
 	}
 
-	auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
+	if cfg.AmbToSide {
+		auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
+		if err != nil {
+			logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
+		}
+		go service_submit.NewSubmitTransfers(auraSubmitter).Run()
 	}
 
-	var sideBridgeSubmitter service_submit.Submitter
-	switch sideBridge.(type) {
-	case *eth.Bridge:
-		sideBridgeSubmitter, err = pow.NewSubmitterPoW(sideBridge, &pow.ReceiverPoW{Receiver: ambBridge}, cfg.Pow)
-	case *bsc.Bridge:
-		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge}, cfg.Posa)
-	}
-	if err != nil {
-		logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
-	}
+	if cfg.SideToAmb {
+		var err error
+		var sideBridgeSubmitter service_submit.Submitter
+		switch sideBridge.(type) {
+		case *eth.Bridge:
+			sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
+		case *bsc.Bridge:
+			sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge}, cfg.Posa)
+		}
+		if err != nil {
+			logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
+		}
 
-	go service_submit.NewSubmitTransfers(auraSubmitter, sideBridge).Run()
-	go service_submit.NewSubmitTransfers(sideBridgeSubmitter, ambBridge).Run()
+		go service_submit.NewSubmitTransfers(sideBridgeSubmitter).Run()
+	}
 }
 
 func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
@@ -92,8 +100,11 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		logger.Fatal().Err(err).Msg("feeSide not created")
 	}
 
-	feeApi := fee_api.NewFeeAPI(feeAmb, feeSide, logger)
-	feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port)
+	feeService := fee.NewFee(feeAmb, feeSide)
+	feeApi := &api.FeeAPI{Service: feeService}
+	if err = feeApi.Run(cfg.Endpoint, cfg.Ip, cfg.Port, &logger); err != nil {
+		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Fee Api endpoint)")
+	}
 }
 
 func runPrometheus(cfg *config.Prometheus, logger zerolog.Logger) {
@@ -105,4 +116,16 @@ func runPrometheus(cfg *config.Prometheus, logger zerolog.Logger) {
 	if err := metric.ServeEndpoint(cfg.Ip, cfg.Port); err != nil {
 		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Prometheus endpoint)")
 	}
+}
+
+func runHealth(addr string, logger zerolog.Logger) {
+	// it's actually not /health but * instead :)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+
+	if err := http.ListenAndServe(addr, handler); err != nil {
+		logger.Fatal().Err(err).Msg("failed to serve HTTP server (Health endpoint)")
+	}
+
 }

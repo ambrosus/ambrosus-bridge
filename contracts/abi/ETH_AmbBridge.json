@@ -17,6 +17,57 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "address",
+        "name": "relay",
+        "type": "address"
+      }
+    ],
+    "name": "RelayAdd",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "sender",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "hash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RelayConfirmation",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "relay",
+        "type": "address"
+      }
+    ],
+    "name": "RelayRemove",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "bytes32",
         "name": "role",
         "type": "bytes32"
@@ -85,6 +136,19 @@
       }
     ],
     "name": "RoleRevoked",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newThreshold",
+        "type": "uint256"
+      }
+    ],
+    "name": "ThresholdChange",
     "type": "event"
   },
   {
@@ -251,6 +315,19 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "bridgeFeeRecipient",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "internalType": "address payable",
@@ -331,6 +408,62 @@
   {
     "inputs": [
       {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "confirmations",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "confirmationsThreshold",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "hash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "confirmedCount",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "eventId",
         "type": "uint256"
@@ -371,6 +504,19 @@
         "internalType": "struct CommonStructs.LockedTransfers",
         "name": "",
         "type": "tuple"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getRelays",
+    "outputs": [
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -503,8 +649,13 @@
       },
       {
         "internalType": "uint256",
-        "name": "minimumDifficulty",
+        "name": "_confirmations",
         "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_relays",
+        "type": "address[]"
       }
     ],
     "name": "initialize",
@@ -528,12 +679,39 @@
   {
     "inputs": [
       {
+        "internalType": "address",
+        "name": "relay",
+        "type": "address"
+      },
+      {
         "internalType": "uint256",
-        "name": "epochIndex",
+        "name": "eventId",
         "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "tokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "toAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.Transfer[]",
+        "name": "transfers",
+        "type": "tuple[]"
       }
     ],
-    "name": "isEpochDataSet",
+    "name": "isConfirmedByRelay",
     "outputs": [
       {
         "internalType": "bool",
@@ -547,6 +725,25 @@
   {
     "inputs": [],
     "name": "isQueueEmpty",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "relay",
+        "type": "address"
+      }
+    ],
+    "name": "isRelay",
     "outputs": [
       {
         "internalType": "bool",
@@ -630,6 +827,19 @@
   },
   {
     "inputs": [],
+    "name": "outputEventId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "pause",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -643,6 +853,25 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "relays",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
@@ -700,27 +929,22 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "epochNum",
-        "type": "uint256"
+        "internalType": "address[]",
+        "name": "toRemove",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "toAdd",
+        "type": "address[]"
       },
       {
         "internalType": "uint256",
-        "name": "fullSizeIn128Resultion",
+        "name": "_confirmations",
         "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "branchDepth",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256[]",
-        "name": "merkleNodes",
-        "type": "uint256[]"
       }
     ],
-    "name": "setEpochData",
+    "name": "setRelaysAndConfirmations",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -754,130 +978,47 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "components": [
-              {
-                "internalType": "bytes3",
-                "name": "p0WithNonce",
-                "type": "bytes3"
-              },
-              {
-                "internalType": "bytes3",
-                "name": "p0WithoutNonce",
-                "type": "bytes3"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p1",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes32",
-                "name": "parentOrReceiptHash",
-                "type": "bytes32"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p2",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "difficulty",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p3",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "number",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p4",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p5",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "nonce",
-                "type": "bytes"
-              },
-              {
-                "internalType": "bytes",
-                "name": "p6",
-                "type": "bytes"
-              },
-              {
-                "internalType": "uint256[]",
-                "name": "dataSetLookup",
-                "type": "uint256[]"
-              },
-              {
-                "internalType": "uint256[]",
-                "name": "witnessForLookup",
-                "type": "uint256[]"
-              }
-            ],
-            "internalType": "struct CheckPoW.BlockPoW[]",
-            "name": "blocks",
-            "type": "tuple[]"
-          },
-          {
-            "components": [
-              {
-                "internalType": "bytes[]",
-                "name": "receiptProof",
-                "type": "bytes[]"
-              },
-              {
-                "internalType": "uint256",
-                "name": "eventId",
-                "type": "uint256"
-              },
-              {
-                "components": [
-                  {
-                    "internalType": "address",
-                    "name": "tokenAddress",
-                    "type": "address"
-                  },
-                  {
-                    "internalType": "address",
-                    "name": "toAddress",
-                    "type": "address"
-                  },
-                  {
-                    "internalType": "uint256",
-                    "name": "amount",
-                    "type": "uint256"
-                  }
-                ],
-                "internalType": "struct CommonStructs.Transfer[]",
-                "name": "transfers",
-                "type": "tuple[]"
-              }
-            ],
-            "internalType": "struct CommonStructs.TransferProof",
-            "name": "transfer",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct CheckPoW.PoWProof",
-        "name": "powProof",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
       }
     ],
-    "name": "submitTransferPoW",
+    "name": "skipTransfers",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "tokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "toAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.Transfer[]",
+        "name": "transfers",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "submitTransferUntrustless",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -997,6 +1138,60 @@
   },
   {
     "inputs": [],
+    "name": "transferFeeRecipient",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "address",
+            "name": "tokenAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "toAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "internalType": "struct CommonStructs.Transfer[]",
+        "name": "transfers",
+        "type": "tuple[]"
+      }
+    ],
+    "name": "transfersHash",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "triggerTransfers",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1025,6 +1220,24 @@
   {
     "inputs": [],
     "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_confirmations",
+        "type": "uint256"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_relays",
+        "type": "address[]"
+      }
+    ],
+    "name": "upgrade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

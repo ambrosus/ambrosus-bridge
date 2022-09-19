@@ -2,10 +2,13 @@ package config
 
 type (
 	Submitters struct {
-		enable `mapstructure:",squash"`
-		Aura   *SubmitterAura `mapstructure:"aura"`
-		Pow    *SubmitterPoW  `mapstructure:"pow"`
-		Posa   *SubmitterPoSA `mapstructure:"posa"`
+		enable    `mapstructure:",squash"`
+		AmbToSide bool `mapstructure:"ambToSide"`
+		SideToAmb bool `mapstructure:"sideToAmb"`
+
+		Aura *SubmitterAura `mapstructure:"aura"`
+		Pow  *SubmitterPoW  `mapstructure:"pow"`
+		Posa *SubmitterPoSA `mapstructure:"posa"`
 	}
 
 	SubmitterAura struct {
@@ -48,7 +51,7 @@ type (
 	FeeApiNetwork struct {
 		PrivateKey         string  `mapstructure:"privateKey"`
 		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
-		DefaultTransferFee string  `mapstructure:"defaultTransferFeeWei"`
+		DefaultTransferFee float64 `mapstructure:"defaultTransferFeeWei"`
 	}
 )
 

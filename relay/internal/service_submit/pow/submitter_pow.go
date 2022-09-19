@@ -7,6 +7,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/pow/pow_proof"
@@ -35,6 +36,10 @@ func NewSubmitterPoW(bridge networks.Bridge, powReceiver service_submit.Receiver
 	}, nil
 }
 
+func (b *SubmitterPoW) Receiver() service_submit.Receiver {
+	return b.powReceiver
+}
+
 func (b *SubmitterPoW) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	powProof, err := b.powEncoder.EncodePoWProof(event, safetyBlocks)
 	if err != nil {
@@ -52,6 +57,8 @@ func (b *SubmitterPoW) SendEvent(event *bindings.BridgeTransfer, safetyBlocks ui
 	if err != nil {
 		return fmt.Errorf("SubmitTransferPoW: %w", err)
 	}
+
+	metric.AddWithdrawalsCountMetric(b, len(event.Queue))
 	return nil
 }
 

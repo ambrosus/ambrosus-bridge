@@ -14,8 +14,14 @@
       "name": "Synthetic Amber",
       "symbol": "SAMB",
       "denomination": 18,
+      "decimals": {
+        "eth": 18,
+        "bsc": 18
+      },
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
-      "primaryNet": "amb",
+      "primaryNets": [
+        "amb"
+      ],
       "addresses": {
         "amb": "0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F",
         "eth": "0x278a8c33Ef2A7D7C682f458C85E9447ce3645188",
@@ -23,31 +29,25 @@
       },
       "nativeAnalog": "AMB"
     },
-    "WETH": {
-      "name": "Wrapped Ether",
-      "symbol": "WETH",
+    "USDC": {
+      "name": "USD Coin",
+      "symbol": "USDC",
       "denomination": 18,
-      "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
-      "primaryNet": "eth",
-      "addresses": {
-        "amb": "0xe7c3607474E235Ec8deF1f0a63Ea983538eea182",
-        "eth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-        "bsc": ""
+      "decimals": {
+        "eth": 6,
+        "bsc": 18
       },
-      "nativeAnalog": "ETH"
-    },
-    "WBNB": {
-      "name": "Wrapped BNB",
-      "symbol": "WBNB",
-      "denomination": 18,
-      "logo": "https://bscscan.com/token/images/binance_32.png",
-      "primaryNet": "bsc",
+      "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
+      "primaryNets": [
+        "eth",
+        "bsc"
+      ],
       "addresses": {
-        "amb": "0xA96C522fA8Df99BB73A6E317A1afb0E3FA13b735",
-        "eth": "",
-        "bsc": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
+        "amb": "0xd8dd0273D31c1cd9Dba104DaCA7C1dfEE4f7b805",
+        "eth": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+        "bsc": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d"
       },
-      "nativeAnalog": "BNB"
+      "nativeAnalog": ""
     }
   }
 }

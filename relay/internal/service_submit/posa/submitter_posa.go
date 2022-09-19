@@ -7,6 +7,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa/posa_proof"
@@ -36,6 +37,10 @@ func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.Receiv
 	}, nil
 }
 
+func (b *SubmitterPoSA) Receiver() service_submit.Receiver {
+	return b.posaReceiver
+}
+
 func (b *SubmitterPoSA) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint64) error {
 	saveCache := false
 	for {
@@ -61,7 +66,10 @@ func (b *SubmitterPoSA) SendEvent(event *bindings.BridgeTransfer, safetyBlocks u
 		if err != nil {
 			return fmt.Errorf("SubmitTransferPoSA: %w", err)
 		}
-		return nil
+		break
 
 	}
+
+	metric.AddWithdrawalsCountMetric(b, len(event.Queue))
+	return nil
 }

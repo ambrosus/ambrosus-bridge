@@ -15,7 +15,9 @@ def main():
     already_used = []
 
     for network_abi in abis:
-        for i in network_abi[1:-1]:  # skip "constructor" and "receive" func
+        for i in network_abi:
+            if i["type"] in ("constructor", "receive", "fallback"):
+                continue
             if i["name"] in already_used:
                 continue
             res.append(i)
