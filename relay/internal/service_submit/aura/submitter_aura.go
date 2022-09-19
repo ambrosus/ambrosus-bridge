@@ -39,7 +39,7 @@ func NewSubmitterAura(bridge networks.Bridge, auraReceiver service_submit.Receiv
 	return &SubmitterAura{
 		Bridge:       bridge,
 		auraReceiver: auraReceiver,
-		auraEncoder:  aura_proof.NewAuraEncoder(bridge, auraReceiver, vsContract, parityClient, fializeService),
+		auraEncoder:  aura_proof.NewAuraEncoder(bridge, auraReceiver, vsContract, parityClient, fializeService, cfg.ReceiverBridgeMaxTxSizeKB),
 		logger:       &logger,
 	}, nil
 }
@@ -52,7 +52,7 @@ func (b *SubmitterAura) SendEvent(event *bindings.BridgeTransfer, safetyBlocks u
 	for {
 
 		auraProof, err := b.auraEncoder.EncodeAuraProof(event, safetyBlocks)
-		if errors.Is(err, aura_proof.ProofTooBig) {
+		if errors.Is(err, bindings.ErrProofTooBig) {
 
 			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit size-reduced transfer Aura...")
 			err = b.auraReceiver.SubmitValidatorSetChangesAura(auraProof)

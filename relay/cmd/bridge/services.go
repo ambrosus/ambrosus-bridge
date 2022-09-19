@@ -43,7 +43,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		case *eth.Bridge:
 			sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
 		case *bsc.Bridge:
-			sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
+			sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge}, cfg.Posa)
 		}
 		if err != nil {
 			logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
