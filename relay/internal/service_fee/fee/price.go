@@ -2,6 +2,7 @@ package fee
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
@@ -78,5 +79,7 @@ func (*priceGetterS) tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address
 	if err != nil {
 		return decimal.Decimal{}, fmt.Errorf("get token price: %w", err)
 	}
+
+	bridge.GetLogger().Debug().Msgf("fetched %s price: %f", tokenSymbol, tokenPrice * math.Pow10(int(tokenDecimals)))
 	return decimal.NewFromFloat(tokenPrice), nil
 }
