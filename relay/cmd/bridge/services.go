@@ -59,8 +59,14 @@ func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
-	go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+	if cfg.EnableForAmb {
+		go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+	}
+
+	if cfg.EnableForSide {
+		go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+	}
+
 }
 
 func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
