@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/cmd"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/rs/zerolog/log"
 )
 
@@ -27,6 +28,8 @@ func main() {
 	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, baseLogger)
 	go runPrometheus(cfg.Prometheus, baseLogger)
 	go runHealth(":80", baseLogger)
+
+	baseLogger.WithLevel(logger.ImportantInfoLevel).Msg("Relay has been started!")
 
 	select {}
 
