@@ -3,8 +3,8 @@ package config
 type (
 	Submitters struct {
 		enable    `mapstructure:",squash"`
-		AmbToSide bool `mapstructure:"ambToSide"`
-		SideToAmb bool `mapstructure:"sideToAmb"`
+		AmbToSide string `mapstructure:"ambToSide"`
+		SideToAmb string `mapstructure:"sideToAmb"`
 
 		Aura *SubmitterAura `mapstructure:"aura"`
 		Pow  *SubmitterPoW  `mapstructure:"pow"`
