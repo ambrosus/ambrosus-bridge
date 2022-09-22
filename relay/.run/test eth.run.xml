@@ -1,0 +1,19 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test eth" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="relay" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="NETWORK" value="eth" />
+      <env name="STAGE" value="test" />
+      <env name="NETWORKS_AMB_PRIVATEKEY" value="PASTE_PRIVATE_KEY_HERE" />
+      <env name="NETWORKS_ETH_PRIVATEKEY" value="PASTE_PRIVATE_KEY_HERE" />
+      <env name="FEEAPI_AMB_PRIVATEKEY" value="PASTE_PRIVATE_KEY_HERE" />
+      <env name="FEEAPI_SIDE_PRIVATEKEY" value="PASTE_PRIVATE_KEY_HERE" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="github.com/ambrosus/ambrosus-bridge/relay/cmd/bridge" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/cmd/bridge/main.go" />
+    <method v="2" />
+  </configuration>
+</component>
