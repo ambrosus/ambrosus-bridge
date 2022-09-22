@@ -17,15 +17,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const optionsWithOnUpgrade: any = await options(hre, BRIDGE_NAME, tokenPairs,
     {
       sideBridgeAddress: ambBridge.address,
-      wrappingTokenAddress: configFile.tokens.WETH.addresses.eth,
+      wrappingTokenAddress: ethers.constants.AddressZero, // todo WETH address
       timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
       lockTime: isMainNet ? 60 * 10 : 60,
       minSafetyBlocks: isMainNet ? 10 : 2,
-    },
-    [
-      ...(await getAmbValidators(ambNet, isMainNet)),
-      isMainNet ? 10 : 2, // minSafetyBlocksValidators
-    ]
+    }, []
   )
 
   // Uncomment when updateLastProcessedBlock is needed
@@ -44,6 +40,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       ...optionsWithOnUpgrade
     });
 
+    console.log(deployResult)
 
     configFile.bridges.eth.side = deployResult.address;
     configFile.save()

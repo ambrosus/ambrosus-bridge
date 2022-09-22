@@ -3,8 +3,8 @@ package config
 type (
 	Submitters struct {
 		enable    `mapstructure:",squash"`
-		AmbToSide bool `mapstructure:"ambToSide"`
-		SideToAmb bool `mapstructure:"sideToAmb"`
+		AmbToSide string `mapstructure:"ambToSide"`
+		SideToAmb string `mapstructure:"sideToAmb"`
 
 		Aura *SubmitterAura `mapstructure:"aura"`
 		Pow  *SubmitterPoW  `mapstructure:"pow"`
@@ -28,7 +28,9 @@ type (
 
 type (
 	Watchdogs struct {
-		enable `mapstructure:",squash"`
+		enable        `mapstructure:",squash"`
+		EnableForAmb  bool `mapstructure:"enableForAmb"`
+		EnableForSide bool `mapstructure:"enableForSide"`
 	}
 	Triggers struct {
 		enable `mapstructure:",squash"`

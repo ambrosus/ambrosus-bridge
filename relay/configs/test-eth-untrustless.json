@@ -16,12 +16,15 @@
     },
 
     "submitters": {
-        "enable": true,
-        "sideToAmb": true,
-        "ambToSide": false
+        "enable": false,
+        "sideToAmb": "",
+        "ambToSide": ""
     },
     "watchdogs":  {
-        "enable": false
+        "enable": true,
+        "enableForAmb": false,
+        "enableForSide": true,
+        "__description__": "user relay for untrustless2 will only check that transfers pushed into side network (eth) are valid"
     },
     "triggers":  {
         "enable": false

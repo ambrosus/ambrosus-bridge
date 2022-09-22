@@ -7,8 +7,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
@@ -16,6 +14,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless2"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
@@ -28,29 +27,44 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		return
 	}
 
-	if cfg.AmbToSide {
-		auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
-		if err != nil {
-			logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
-		}
-		go service_submit.NewSubmitTransfers(auraSubmitter).Run()
+	var err error
+
+	// create amb->side submitter
+	var ambSubmitter service_submit.Submitter
+	switch cfg.AmbToSide {
+	case "aura":
+		ambSubmitter, err = aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
+	case "untrustless2":
+		ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: sideBridge})
+	default:
+		logger.Info().Msg("amb->side submitter is disabled")
+	}
+	if err != nil {
+		logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created")
 	}
 
-	if cfg.SideToAmb {
-		var err error
-		var sideBridgeSubmitter service_submit.Submitter
-		switch sideBridge.(type) {
-		case *eth.Bridge:
-			sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
-		case *bsc.Bridge:
-			sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge}, cfg.Posa)
-		}
-		if err != nil {
-			logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
-		}
+	// create side->amb submitter
+	var sideBridgeSubmitter service_submit.Submitter
+	switch cfg.SideToAmb {
+	case "posa":
+		sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge}, cfg.Posa)
+	case "untrustless":
+		sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
+	default:
+		logger.Info().Msg("side->amb submitter is disabled")
+	}
+	if err != nil {
+		logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
+	}
 
+	// run submitters
+	if ambSubmitter != nil {
+		go service_submit.NewSubmitTransfers(ambSubmitter).Run()
+	}
+	if sideBridgeSubmitter != nil {
 		go service_submit.NewSubmitTransfers(sideBridgeSubmitter).Run()
 	}
+
 }
 
 func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
@@ -59,8 +73,14 @@ func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
-	go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+	if cfg.EnableForAmb {
+		go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+	}
+
+	if cfg.EnableForSide {
+		go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+	}
+
 }
 
 func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {

@@ -17,8 +17,8 @@
 
     "submitters": {
         "enable": true,
-        "sideToAmb": true,
-        "ambToSide": false
+        "sideToAmb": "",
+        "ambToSide": ""
     },
     "watchdogs":  {
         "enable": false
