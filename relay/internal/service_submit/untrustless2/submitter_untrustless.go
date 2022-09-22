@@ -12,11 +12,11 @@ import (
 
 type SubmitterUntrustless2 struct {
 	networks.Bridge
-	untrustlessReceiver service_submit.ReceiverUntrustless
+	untrustlessReceiver service_submit.ReceiverUntrustless2
 	logger              *zerolog.Logger
 }
 
-func NewSubmitterUntrustless(bridge networks.Bridge, untrustlessReceiver service_submit.ReceiverUntrustless) (*SubmitterUntrustless2, error) {
+func NewSubmitterUntrustless(bridge networks.Bridge, untrustlessReceiver service_submit.ReceiverUntrustless2) (*SubmitterUntrustless2, error) {
 	logger := bridge.GetLogger().With().Str("service", "SubmitterUntrustless2").Logger()
 
 	return &SubmitterUntrustless2{
