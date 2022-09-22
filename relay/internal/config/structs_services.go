@@ -28,7 +28,9 @@ type (
 
 type (
 	Watchdogs struct {
-		enable `mapstructure:",squash"`
+		enable        `mapstructure:",squash"`
+		EnableForAmb  bool `mapstructure:"enableForAmb"`
+		EnableForSide bool `mapstructure:"enableForSide"`
 	}
 	Triggers struct {
 		enable `mapstructure:",squash"`

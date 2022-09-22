@@ -29,7 +29,9 @@
         }
     },
     "watchdogs":  {
-        "enable": true
+        "enable": true,
+        "enableForAmb": true,
+        "enableForSide": true
     },
     "triggers":  {
         "enable": true
