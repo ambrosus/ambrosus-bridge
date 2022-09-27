@@ -239,7 +239,33 @@
   },
   {
     "inputs": [],
+    "name": "FEE_PROVIDER_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "RELAY_ROLE",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WATCHDOG_ROLE",
     "outputs": [
       {
         "internalType": "bytes32",
@@ -916,6 +942,24 @@
   {
     "inputs": [],
     "name": "unpause",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "_watchdogs",
+        "type": "address[]"
+      },
+      {
+        "internalType": "address",
+        "name": "_fee_provider",
+        "type": "address"
+      }
+    ],
+    "name": "upgrade",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
