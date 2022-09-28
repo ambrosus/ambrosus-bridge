@@ -2,6 +2,7 @@ package tss_wrap
 
 import (
 	"crypto/ecdsa"
+	"encoding/json"
 	"fmt"
 	"math/big"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/crypto/secp256k1"
+	"github.com/rs/zerolog"
 )
 
 // todo tests
@@ -20,6 +22,7 @@ type Mpc struct {
 	partyIDsMap map[string]*tss.PartyID
 	threshold   int
 	share       *keygen.LocalPartySaveData // share for local peer
+	logger      zerolog.Logger
 }
 
 type MpcConfig struct {
@@ -28,13 +31,13 @@ type MpcConfig struct {
 	threshold int
 }
 
-func NewMpc(cfg *MpcConfig) *Mpc {
+func NewMpc(cfg *MpcConfig, logger zerolog.Logger) *Mpc {
 	partyIDsMap, party := createParty(cfg.partyLen)
 	return &Mpc{
 		me:          partyIDsMap[fmt.Sprint(cfg.meID)],
 		party:       party,
 		partyIDsMap: partyIDsMap,
-		threshold:   cfg.threshold,
+		logger:      logger,
 	}
 }
 
@@ -45,17 +48,29 @@ func (m *Mpc) MyID() string {
 	return m.me.Id
 }
 
-func (m *Mpc) Share() []byte {
-	// todo export share for saving
-	panic("not implemented")
+func (m *Mpc) Share() ([]byte, error) {
+	return json.Marshal(m.share)
+}
+
+func (m *Mpc) SetShare(share []byte) error {
+	err := json.Unmarshal(share, &m.share)
+	if err != nil {
+		return err
+	}
+	if !m.share.ValidateWithProof() {
+		return fmt.Errorf("invalid share")
+	}
+	return nil
 }
 
 // createParty party of partyLen participant; context == party
 func createParty(partyLen int) (partyIDsMap map[string]*tss.PartyID, party *tss.PeerContext) {
-	unsortedParty := make([]*tss.PartyID, partyLen)
+	unsortedParty := make([]*tss.PartyID, 0, partyLen)
+	partyIDsMap = make(map[string]*tss.PartyID)
+
 	for id := 0; id < partyLen; id++ {
 		stringID := fmt.Sprint(id)
-		peer := tss.NewPartyID(stringID, stringID, big.NewInt(int64(id)))
+		peer := tss.NewPartyID(stringID, stringID, big.NewInt(int64(id+1)))
 		unsortedParty = append(unsortedParty, peer)
 		partyIDsMap[stringID] = unsortedParty[id]
 	}
