@@ -109,6 +109,16 @@ func (e *AmbrosusExplorer) TxListByFromToAddresses(from, to string, untilTxHash 
 	return res, nil
 }
 
+func (e *AmbrosusExplorer) TxListByFromListToAddresses(fromList []string, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
+	txs, err := e.TxListByAddress(to, untilTxHash)
+	if err != nil {
+		return nil, err
+	}
+
+	res := explorers_clients.FilterTxsByFromToAddresses(txs, fromList, to)
+	return res, nil
+}
+
 func toOurTxType(txs []txResponse) []*explorers_clients.Transaction {
 	var mappedTxs []*explorers_clients.Transaction
 
