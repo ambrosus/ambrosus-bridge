@@ -20,9 +20,9 @@ var (
 )
 
 type explorerClient interface {
-	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
+	// TxListByFromListToAddresses should return all transactions in desc sort filtering by `fromList` and `to` fields
 	// if `untilTxHash` is not nil, return tx until the `untilTxHash` is reached NOT INCLUDING
-	TxListByFromToAddresses(from, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error)
+	TxListByFromListToAddresses(from []string, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error)
 }
 
 type transferFeeTracker struct {
@@ -31,6 +31,9 @@ type transferFeeTracker struct {
 
 	explorer     explorerClient
 	sideExplorer explorerClient
+
+	transferFeeIncludedTxsFromAddresses     []string
+	sideTransferFeeIncludedTxsFromAddresses []string
 
 	latestProcessedEvent      uint64
 	latestSideProcessedTxHash *common.Hash
@@ -41,15 +44,21 @@ type transferFeeTracker struct {
 	totalThisGas       *big.Int
 }
 
-func newTransferFeeTracker(bridge, sideBridge networks.Bridge, explorer, sideExplorer explorerClient) (*transferFeeTracker, error) {
+func newTransferFeeTracker(
+	bridge, sideBridge networks.Bridge,
+	explorer, sideExplorer explorerClient,
+	transferFeeIncludedTxsFromAddresses []string, sideTransferFeeIncludedTxsFromAddresses []string,
+) (*transferFeeTracker, error) {
 	p := &transferFeeTracker{
-		bridge:             bridge,
-		sideBridge:         sideBridge,
-		explorer:           explorer,
-		sideExplorer:       sideExplorer,
-		totalWithdrawCount: big.NewInt(0),
-		totalSideGas:       big.NewInt(0),
-		totalThisGas:       big.NewInt(0),
+		bridge:                                  bridge,
+		sideBridge:                              sideBridge,
+		explorer:                                explorer,
+		sideExplorer:                            sideExplorer,
+		transferFeeIncludedTxsFromAddresses:     transferFeeIncludedTxsFromAddresses,
+		sideTransferFeeIncludedTxsFromAddresses: sideTransferFeeIncludedTxsFromAddresses,
+		totalWithdrawCount:                      big.NewInt(0),
+		totalSideGas:                            big.NewInt(0),
+		totalThisGas:                            big.NewInt(0),
 	}
 
 	if err := p.init(); err != nil {
@@ -95,8 +104,8 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get side bridge txs from explorer (for submit/unlock methods)
-	sideBridgeTxList, err := p.sideExplorer.TxListByFromToAddresses(
-		p.sideBridge.GetAuth().From.Hex(),
+	sideBridgeTxList, err := p.sideExplorer.TxListByFromListToAddresses(
+		p.sideTransferFeeIncludedTxsFromAddresses,
 		p.sideBridge.GetContractAddress().Hex(),
 		p.latestSideProcessedTxHash,
 	)
@@ -105,8 +114,8 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get this bridge txs from explorer (for triggerTransfers method)
-	thisBridgeTxList, err := p.explorer.TxListByFromToAddresses(
-		p.bridge.GetAuth().From.Hex(),
+	thisBridgeTxList, err := p.explorer.TxListByFromListToAddresses(
+		p.transferFeeIncludedTxsFromAddresses,
 		p.bridge.GetContractAddress().Hex(),
 		p.latestThisProcessedTxHash,
 	)
