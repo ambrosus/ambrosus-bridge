@@ -14,7 +14,6 @@
             "privateKey": "in env"
         }
     },
-
     "submitters": {
         "enable": true,
         "sideToAmb": true,
@@ -24,16 +23,16 @@
             "finalizeServiceUrl": "https://finalizing-api.ambrosus-dev.io/logs.bin"
         }
     },
-    "watchdogs":  {
+    "watchdogs": {
         "enable": true
     },
-    "triggers":  {
+    "triggers": {
         "enable": true
     },
-    "unlockers":  {
+    "unlockers": {
         "enable": true
     },
-    "feeApi":  {
+    "feeApi": {
         "enable": true,
         "ip": "",
         "port": "8080",
@@ -43,17 +42,22 @@
             "minBridgeFeeUSD": 5,
             "minTransferFeeUSD": 10,
             "explorerURL": "https://explorer-api.ambrosus-dev.io",
-            "transferFeeRecipient": "0x"
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ]
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "minTransferFeeUSD": 0.5,
             "explorerURL": "https://api-testnet.bscscan.io/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
-            "transferFeeRecipient": "0x"
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ]
         }
     },
-
     "externalLogger": {
         "telegram": {
             "enable": true,

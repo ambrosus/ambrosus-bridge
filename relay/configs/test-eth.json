@@ -48,14 +48,21 @@
             "minBridgeFeeUSD": 5,
             "minTransferFeeUSD": 10,
             "explorerURL": "https://explorer-api.ambrosus-test.io",
-            "transferFeeRecipient": "0x"
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xb017DcCC473499C83f1b553bE564f3CeAf002254",
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ]
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "minTransferFeeUSD": 0.5,
             "explorerURL": "https://api-ropsten.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
-            "transferFeeRecipient": "0x"
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ]
         }
     },
 
