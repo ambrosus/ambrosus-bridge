@@ -79,13 +79,17 @@ func createParty(partyLen int) (partyIDsMap map[string]*tss.PartyID, party *tss.
 }
 
 func (m *Mpc) GetAddress() (common.Address, error) {
+	pubKey, err := m.GetPublicKey()
+	return crypto.PubkeyToAddress(*pubKey), err
+}
+
+func (m *Mpc) GetPublicKey() (*ecdsa.PublicKey, error) {
 	if m.share == nil {
-		return common.Address{}, fmt.Errorf("peer has no share")
+		return nil, fmt.Errorf("peer has no share")
 	}
-	pubKey := ecdsa.PublicKey{
+	return &ecdsa.PublicKey{
 		Curve: secp256k1.S256(),
 		X:     m.share.ECDSAPub.X(),
 		Y:     m.share.ECDSAPub.Y(),
-	}
-	return crypto.PubkeyToAddress(pubKey), nil
+	}, nil
 }
