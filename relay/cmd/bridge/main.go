@@ -23,6 +23,7 @@ func main() {
 
 	go runSubmitters(cfg.Submitters, ambBridge, sideBridge, baseLogger)
 	go runValidityWatchdogs(cfg.ValidityWatchdogs, ambBridge, sideBridge, baseLogger)
+	go runPauseUnpauseWatchdogs(cfg.PauseUnpauseWatchdogs, ambBridge, sideBridge, baseLogger)
 	go runUnlockers(cfg.Unlockers, ambBridge, sideBridge, baseLogger)
 	go runTriggers(cfg.Triggers, ambBridge, sideBridge, baseLogger)
 	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, baseLogger)

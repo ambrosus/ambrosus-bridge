@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_pause_unpause_watchdog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
@@ -80,6 +81,17 @@ func runValidityWatchdogs(cfg *config.ValidityWatchdogs, ambBridge *amb.Bridge, 
 	if cfg.EnableForSide {
 		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
 	}
+
+}
+
+func runPauseUnpauseWatchdogs(cfg *config.PauseUnpauseWatchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "pause unpause watchdogs").Bool("enabled", cfg.Enable).Send()
+	if !cfg.Enable {
+		return
+	}
+
+	go service_pause_unpause_watchdog.NewWatchPauseUnpauseBridgeContract(ambBridge).Run()
+	go service_pause_unpause_watchdog.NewWatchPauseUnpauseBridgeContract(sideBridge).Run()
 
 }
 
