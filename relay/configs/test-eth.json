@@ -25,6 +25,9 @@
         "enableForAmb": true,
         "enableForSide": true
     },
+    "pauseUnpauseWatchdogs": {
+        "enable": true
+    },
     "triggers":  {
         "enable": true
     },

@@ -23,6 +23,9 @@
     "validityWatchdogs":  {
         "enable": false
     },
+    "pauseUnpauseWatchdogs": {
+        "enable": false
+    },
     "triggers":  {
         "enable": false
     },
