@@ -10,37 +10,37 @@ import (
 )
 
 const (
-	MsgContractHasBeenPaused   = "Contract has been paused!"
-	MsgContractHasBeenUnpaused = "Contract has been unpaused!"
+	MsgPaused   = "Contract has been paused!"
+	MsgUnpaused = "Contract has been unpaused!"
 )
 
-type WatchPauseUnpauseBridgeContract struct {
+type WatchPauseUnpause struct {
 	bridge networks.Bridge
 	logger *zerolog.Logger
 
 	lastPausedStatus bool
 }
 
-func NewWatchPauseUnpauseBridgeContract(bridge networks.Bridge) *WatchPauseUnpauseBridgeContract {
-	logger := bridge.GetLogger().With().Str("service", "WatchPauseUnpauseBridgeContract").Logger()
+func NewWatchPauseUnpause(bridge networks.Bridge) *WatchPauseUnpause {
+	logger := bridge.GetLogger().With().Str("service", "WatchPauseUnpause").Logger()
 
-	return &WatchPauseUnpauseBridgeContract{
+	return &WatchPauseUnpause{
 		bridge:           bridge,
 		logger:           &logger,
 		lastPausedStatus: false, // if the contract is paused at the relay startup - log that
 	}
 }
 
-func (b *WatchPauseUnpauseBridgeContract) Run() {
+func (b *WatchPauseUnpause) Run() {
 	for {
-		if err := b.watchPauseUnpauseBridgeContract(); err != nil {
+		if err := b.watchPauseUnpause(); err != nil {
 			b.logger.Error().Err(err).Msg("")
 			time.Sleep(1 * time.Minute)
 		}
 	}
 }
 
-func (b *WatchPauseUnpauseBridgeContract) watchPauseUnpauseBridgeContract() error {
+func (b *WatchPauseUnpause) watchPauseUnpause() error {
 	paused, err := b.bridge.GetContract().Paused(nil)
 	if err != nil {
 		return fmt.Errorf("Paused: %w", err)
@@ -48,9 +48,9 @@ func (b *WatchPauseUnpauseBridgeContract) watchPauseUnpauseBridgeContract() erro
 	if paused != b.lastPausedStatus {
 		var msg string
 		if paused {
-			msg = MsgContractHasBeenPaused
+			msg = MsgPaused
 		} else {
-			msg = MsgContractHasBeenUnpaused
+			msg = MsgUnpaused
 		}
 
 		b.logger.Warn().Msg(msg)
@@ -58,19 +58,19 @@ func (b *WatchPauseUnpauseBridgeContract) watchPauseUnpauseBridgeContract() erro
 	}
 
 	if paused {
-		if err := b.waitForUnpauseContract(); err != nil {
-			return fmt.Errorf("waitForUnpauseContract: %w", err)
+		if err := b.waitForUnpause(); err != nil {
+			return fmt.Errorf("waitForUnpause: %w", err)
 		}
 	} else {
-		if err := b.waitForPauseContract(); err != nil {
-			return fmt.Errorf("waitForPauseContract: %w", err)
+		if err := b.waitForPause(); err != nil {
+			return fmt.Errorf("waitForPause: %w", err)
 		}
 	}
 
 	return nil
 }
 
-func (b *WatchPauseUnpauseBridgeContract) waitForPauseContract() error {
+func (b *WatchPauseUnpause) waitForPause() error {
 	eventCh := make(chan *bindings.BridgePaused)
 	eventSub, err := b.bridge.GetWsContract().WatchPaused(nil, eventCh)
 	if err != nil {
@@ -87,14 +87,14 @@ func (b *WatchPauseUnpauseBridgeContract) waitForPauseContract() error {
 				continue
 			}
 
-			b.logger.Warn().Msg(MsgContractHasBeenPaused)
+			b.logger.Warn().Msg(MsgPaused)
 			b.lastPausedStatus = true
 			return nil
 		}
 	}
 }
 
-func (b *WatchPauseUnpauseBridgeContract) waitForUnpauseContract() error {
+func (b *WatchPauseUnpause) waitForUnpause() error {
 	eventCh := make(chan *bindings.BridgeUnpaused)
 	eventSub, err := b.bridge.GetWsContract().WatchUnpaused(nil, eventCh)
 	if err != nil {
@@ -111,7 +111,7 @@ func (b *WatchPauseUnpauseBridgeContract) waitForUnpauseContract() error {
 				continue
 			}
 
-			b.logger.Warn().Msg(MsgContractHasBeenUnpaused)
+			b.logger.Warn().Msg(MsgUnpaused)
 			b.lastPausedStatus = false
 			return nil
 		}

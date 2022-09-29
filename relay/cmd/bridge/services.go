@@ -90,8 +90,8 @@ func runPauseUnpauseWatchdogs(cfg *config.PauseUnpauseWatchdogs, ambBridge *amb.
 		return
 	}
 
-	go service_pause_unpause_watchdog.NewWatchPauseUnpauseBridgeContract(ambBridge).Run()
-	go service_pause_unpause_watchdog.NewWatchPauseUnpauseBridgeContract(sideBridge).Run()
+	go service_pause_unpause_watchdog.NewWatchPauseUnpause(ambBridge).Run()
+	go service_pause_unpause_watchdog.NewWatchPauseUnpause(sideBridge).Run()
 
 }
 
