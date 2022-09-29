@@ -84,7 +84,7 @@ func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge netwo
 }
 
 func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
-	logger.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
+	logger.Info().Str("service", "unlockers").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
