@@ -7,7 +7,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
@@ -15,11 +15,11 @@ import (
 
 type UnlockTransfers struct {
 	bridge        networks.Bridge
-	watchValidity *service_watchdog.WatchTransfersValidity
+	watchValidity *service_validity_watchdog.WatchTransfersValidity
 	logger        *zerolog.Logger
 }
 
-func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_watchdog.WatchTransfersValidity) *UnlockTransfers {
+func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_validity_watchdog.WatchTransfersValidity) *UnlockTransfers {
 	logger := bridge.GetLogger().With().Str("service", "UnlockTransfers").Logger()
 
 	return &UnlockTransfers{

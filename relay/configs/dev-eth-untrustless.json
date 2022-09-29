@@ -20,7 +20,10 @@
         "sideToAmb": "",
         "ambToSide": ""
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
+        "enable": false
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": false
     },
     "triggers":  {
