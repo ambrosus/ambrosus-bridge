@@ -1,4 +1,4 @@
-package service_watchdog
+package service_validity_watchdog
 
 import (
 	"bytes"

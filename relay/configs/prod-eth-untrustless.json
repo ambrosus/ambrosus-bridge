@@ -20,7 +20,7 @@
         "sideToAmb": "",
         "ambToSide": ""
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
         "enable": false
     },
     "triggers":  {

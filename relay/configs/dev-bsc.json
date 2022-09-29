@@ -28,7 +28,7 @@
             "receiverBridgeMaxTxSizeKB": 300
         }
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
         "enable": true,
         "enableForAmb": true,
         "enableForSide": true

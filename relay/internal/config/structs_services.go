@@ -27,7 +27,7 @@ type (
 )
 
 type (
-	Watchdogs struct {
+	ValidityWatchdogs struct {
 		enable        `mapstructure:",squash"`
 		EnableForAmb  bool `mapstructure:"enableForAmb"`
 		EnableForSide bool `mapstructure:"enableForSide"`

@@ -17,7 +17,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless2"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
 	"github.com/rs/zerolog"
 )
 
@@ -67,18 +67,18 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 
 }
 
-func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
-	logger.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
+func runValidityWatchdogs(cfg *config.ValidityWatchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "validity watchdogs").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
 	if cfg.EnableForAmb {
-		go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+		go service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
 	}
 
 	if cfg.EnableForSide {
-		go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
 	}
 
 }
@@ -89,8 +89,8 @@ func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	ambWatchdog := service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
-	sideWatchdog := service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
+	ambWatchdog := service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
+	sideWatchdog := service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
 	go service_unlock.NewUnlockTransfers(ambBridge, ambWatchdog).Run()
 	go service_unlock.NewUnlockTransfers(sideBridge, sideWatchdog).Run()
 }

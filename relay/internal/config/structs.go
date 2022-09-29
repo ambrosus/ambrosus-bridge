@@ -4,11 +4,11 @@ type (
 	Config struct {
 		Networks *Networks `mapstructure:"networks"`
 
-		Submitters *Submitters `mapstructure:"submitters"`
-		Watchdogs  *Watchdogs  `mapstructure:"watchdogs"`
-		Triggers   *Triggers   `mapstructure:"triggers"`
-		Unlockers  *Unlockers  `mapstructure:"unlockers"`
-		FeeApi     *FeeApi     `mapstructure:"feeApi"`
+		Submitters        *Submitters        `mapstructure:"submitters"`
+		ValidityWatchdogs *ValidityWatchdogs `mapstructure:"validityWatchdogs"`
+		Triggers          *Triggers          `mapstructure:"triggers"`
+		Unlockers         *Unlockers         `mapstructure:"unlockers"`
+		FeeApi            *FeeApi            `mapstructure:"feeApi"`
 
 		ExtLoggers *ExternalLoggers `mapstructure:"externalLogger"`
 		Prometheus *Prometheus      `mapstructure:"prometheus"`
