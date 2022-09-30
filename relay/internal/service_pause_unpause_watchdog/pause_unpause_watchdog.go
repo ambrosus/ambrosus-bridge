@@ -12,7 +12,12 @@ import (
 const (
 	MsgPaused   = "Contract has been paused!"
 	MsgUnpaused = "Contract has been unpaused!"
+	MsgWithDateFormat = "%s\n%s"
 )
+
+func msgWithDate(msg string) string {
+	return fmt.Sprintf(MsgWithDateFormat, msg, time.Now().Format(time.UnixDate))
+}
 
 type WatchPauseUnpause struct {
 	bridge networks.Bridge
@@ -87,7 +92,7 @@ func (b *WatchPauseUnpause) waitForPause() error {
 				continue
 			}
 
-			b.logger.Warn().Msg(MsgPaused)
+			b.logger.Warn().Msg(msgWithDate(MsgPaused))
 			b.lastPausedStatus = true
 			return nil
 		}
@@ -111,7 +116,7 @@ func (b *WatchPauseUnpause) waitForUnpause() error {
 				continue
 			}
 
-			b.logger.Warn().Msg(MsgUnpaused)
+			b.logger.Warn().Msg(msgWithDate(MsgUnpaused))
 			b.lastPausedStatus = false
 			return nil
 		}
