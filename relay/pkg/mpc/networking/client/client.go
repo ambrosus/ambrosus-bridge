@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 	"github.com/gorilla/websocket"
@@ -14,9 +15,9 @@ var keygenOperation = []byte("keygen")
 
 type Client struct {
 	sync.Mutex // locked while signing
-	Logger     *zerolog.Logger
+	logger     *zerolog.Logger
 
-	tss       *tss_wrap.Mpc
+	Tss       *tss_wrap.Mpc
 	operation operation
 
 	serverURL string
@@ -42,29 +43,89 @@ type operation struct {
 
 const chSize = 10
 
-func (s *Client) Sign(msg []byte) ([]byte, error) {
-	if err := s.startOperation(msg); err != nil {
-		return nil, err
+func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Client {
+	s := &Client{
+		Tss:       tss,
+		serverURL: serverURL,
+		logger:    logger,
 	}
-	// sync operation, wait for sign
-	// todo if threshold < partyLen, do we need to provide current party or use full party?
-	// todo client doesn't know about current part of party
-	sign, err := s.tss.Sign(s.operation.inCh, s.operation.outCh, msg)
-	return sign, err
+	return s
+}
 
-	// todo stop Sign function if websocket error happened by context
-
-	// todo disconnect clients
+func (s *Client) Sign(msg []byte) ([]byte, error) {
+	for {
+		sig, err := s.sign(msg)
+		if err == nil {
+			return sig, nil
+		}
+		s.logger.Error().Err(err).Msg("sign error")
+		time.Sleep(time.Second)
+	}
 }
 
 func (s *Client) Keygen() error {
+	for {
+		err := s.keygen()
+		if err == nil {
+			return nil
+		}
+		s.logger.Error().Err(err).Msg("keygen error")
+		time.Sleep(time.Second)
+	}
+}
+
+func (s *Client) sign(msg []byte) ([]byte, error) {
+	if err := s.startOperation(msg); err != nil {
+		return nil, err
+	}
+	defer s.stopOperation()
+
+	conn, _, err := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer conn.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 10)
+	var signature []byte
+
+	go s.sendMsgs(ctx, conn, errCh)
+	go s.Tss.Sign(ctx, s.operation.inCh, s.operation.outCh, errCh, msg, &signature)
+
+	err = <-errCh
+	return signature, err
+
+	// todo close channels (hope this stop gourotines)
+	// todo disconnect
+}
+
+func (s *Client) keygen() error {
 	if err := s.startOperation(keygenOperation); err != nil {
 		return err
 	}
+	defer s.stopOperation()
 
-	// sync operation, wait
-	err := s.tss.Keygen(s.operation.inCh, s.operation.outCh)
+	conn, _, err := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 10)
+
+	go s.sendMsgs(ctx, conn, errCh)
+	go s.Tss.Keygen(ctx, s.operation.inCh, s.operation.outCh, errCh)
+
+	err = <-errCh
 	return err
+
+	// todo close channels (hope this stop gourotines)
 	// todo disconnect clients
 }
 
@@ -85,52 +146,59 @@ func (s *Client) startOperation(msg []byte) error {
 
 	return nil
 }
+func (s *Client) stopOperation() {
+	s.operation.started = false
+	close(s.operation.inCh)
+	close(s.operation.outCh)
+}
 
-func (s *Client) sendMsg(ctx context.Context, operation []byte) error {
-	conn, _, err := websocket.DefaultDialer.Dial(s.serverURL, nil)
-	if err != nil {
-		return fmt.Errorf("dial: %w", err)
+func (s *Client) sendMsgs(ctx context.Context, conn *websocket.Conn, errCh chan error) {
+
+	if err := conn.WriteMessage(websocket.BinaryMessage, []byte(s.Tss.MyID())); err != nil {
+		errCh <- fmt.Errorf("write 1 message: %w", err)
+		return
 	}
 
-	if err := conn.WriteMessage(websocket.BinaryMessage, []byte(s.tss.MyID())); err != nil {
-		return fmt.Errorf("write 1 message: %w", err)
-	}
-
-	if err := conn.WriteMessage(websocket.BinaryMessage, operation); err != nil {
-		return fmt.Errorf("write 2 message: %w", err)
+	if err := conn.WriteMessage(websocket.BinaryMessage, s.operation.signMsg); err != nil {
+		errCh <- fmt.Errorf("write 2 message: %w", err)
+		return
 	}
 
 	// protocol begins
 
-	// todo goroutines for receiver and transmitter
-
-	// server -> tss
+	// server -> Tss
 	go func() {
-		// todo how to stop this (if error somewhere else happened)?
+		// breaks when connection closed
 		for {
 			// todo is cycle break on disconnect?
 			_, msgBytes, err := conn.ReadMessage()
 			if err != nil {
-				return fmt.Errorf("read protocol message: %w", err)
+				errCh <- fmt.Errorf("read message: %w", err)
+				return
 			}
 
 			s.operation.inCh <- msgBytes
 		}
 	}()
 
-	// tss -> server
+	// Tss -> server
 	go func() {
 		for {
 			select {
 			case msg := <-s.operation.outCh:
-				if err := conn.WriteMessage(websocket.BinaryMessage, msg.Message); err != nil {
+				msgBytes, err := msg.Marshall()
+				if err != nil {
+					errCh <- fmt.Errorf("marshal message: %w", err)
+					return
+				}
+				if err := conn.WriteMessage(websocket.BinaryMessage, msgBytes); err != nil {
 					// todo retry
-					return fmt.Errorf("write protocol message: %w", err)
+					errCh <- fmt.Errorf("write message: %w", err)
+					return
 				}
 			case <-ctx.Done():
-				return fmt.Errorf("context done: %w", ctx.Err())
+				return
 			}
 		}
 	}()
-
 }

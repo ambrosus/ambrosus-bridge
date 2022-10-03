@@ -26,11 +26,8 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Server error")
 
-		errText := make([]byte, 120) // maxControlFramePayloadSize
-		copy(errText, err.Error())
-
 		if err = conn.WriteMessage(websocket.CloseMessage,
-			websocket.FormatCloseMessage(websocket.CloseInternalServerErr, string(errText))); err != nil {
+			websocket.FormatCloseMessage(websocket.CloseInternalServerErr, err.Error())); err != nil {
 			s.logger.Error().Err(err).Msg("During sending error to client another error happened")
 		}
 	}
@@ -48,18 +45,18 @@ func (s *Server) handler(conn *websocket.Conn) (err error) {
 	defer s.clientDisconnected(clientID)
 
 	// ask client for operation
-	_, msg, err := conn.ReadMessage()
+	_, opMsg, err := conn.ReadMessage()
 	if err != nil {
 		return fmt.Errorf("read message 2: %w", err)
 	}
 
-	if bytes.Equal(msg, keygenOperation) {
+	if bytes.Equal(opMsg, keygenOperation) {
 		s.logger.Info().Msg("Client wants to start keygen")
 	} else {
 		s.logger.Info().Msg("Client wants to start signing")
 	}
 
-	if !bytes.Equal(s.operation.signMsg, keygenOperation) || !s.operation.started {
+	if !bytes.Equal(s.operation.signMsg, opMsg) || !s.operation.started {
 		return fmt.Errorf("This operation doesn't stated by server")
 	}
 

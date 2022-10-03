@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -11,7 +12,7 @@ import (
 
 type Server struct {
 	sync.Mutex
-	tss       *tss_wrap.Mpc
+	Tss       *tss_wrap.Mpc
 	operation operation
 
 	connections  map[string]*websocket.Conn
@@ -39,9 +40,9 @@ const chSize = 100
 // NewServer create and start new server
 func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 	s := &Server{
-		tss:          tss,
+		Tss:          tss,
 		connections:  make(map[string]*websocket.Conn),
-		connChangeCh: make(chan byte),
+		connChangeCh: make(chan byte, 1000),
 		logger:       logger,
 	}
 	return s
@@ -52,29 +53,49 @@ func (s *Server) Run() {
 	s.msgSender()
 }
 
+// todo if threshold < partyLen, do we need to provide current party or use full party? client doesn't know about current part of party
+// todo defer (stop operation; disconnect clients) after keygen/sign finished
+
 func (s *Server) Sign(msg []byte) ([]byte, error) {
 	if err := s.startOperation(msg); err != nil {
 		return nil, err
 	}
-	// todo defer stop operation
+	s.logger.Info().Msg("Start sign operation")
+	s.logger.Debug().Msg("Wait for connections")
+	s.waitForConnections()
+	s.logger.Debug().Msg("All connections established")
 
-	// sync operation, wait for sign
-	// todo if threshold < partyLen, do we need to provide current party or use full party?
-	sign, err := s.tss.Sign(s.operation.inCh, s.operation.outCh, msg)
-	return sign, err
-	// todo disconnect clients
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 10)
+	var signature []byte
+
+	go s.Tss.Sign(ctx, s.operation.inCh, s.operation.outCh, errCh, msg, &signature)
+
+	err := <-errCh
+
+	return signature, err
 }
 
 func (s *Server) Keygen() error {
 	if err := s.startOperation(keygenOperation); err != nil {
 		return err
 	}
-	// todo defer stop operation
+	s.logger.Info().Msg("Start keygen operation")
+	s.logger.Debug().Msg("Wait for connections")
+	s.waitForConnections()
+	s.logger.Debug().Msg("All connections established")
 
-	// sync operation, wait
-	err := s.tss.Keygen(s.operation.inCh, s.operation.outCh)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errCh := make(chan error, 10)
+
+	go s.Tss.Keygen(ctx, s.operation.inCh, s.operation.outCh, errCh)
+
+	err := <-errCh
 	return err
-	// todo disconnect clients
 }
 
 func (s *Server) startOperation(msg []byte) error {
@@ -93,7 +114,6 @@ func (s *Server) startOperation(msg []byte) error {
 		signMsg: msg,
 	}
 
-	s.waitForConnections()
 	return nil
 }
 
@@ -110,12 +130,12 @@ func (s *Server) msgSender() {
 	}
 }
 
-// sendMsg send message to own tss or to another client(s)
+// sendMsg send message to own Tss or to another client(s)
 func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 	for _, id := range msg.SendToIds {
 
 		// send to own tss
-		if id == s.tss.MyID() {
+		if id == s.Tss.MyID() {
 			s.operation.inCh <- msg.Message
 			continue
 		}
@@ -123,7 +143,8 @@ func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 		// send to another client
 		conn, ok := s.connections[id]
 		if !ok {
-			return fmt.Errorf("connection not found")
+			s.logger.Warn().Msgf("Connection with id %s not found, ", id)
+			return fmt.Errorf("connection %v not found", id)
 			// todo maybe call waitForConnections on this error
 		}
 		if err := conn.WriteMessage(websocket.BinaryMessage, msg.Message); err != nil {
