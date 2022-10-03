@@ -60,7 +60,7 @@ func createServer(serverID int) *server.Server {
 		MeID:      0,
 		PartyLen:  5,
 		Threshold: 5,
-	}, serverLogger), &serverLogger)
+	}, &serverLogger), &serverLogger)
 	err := server_.Tss.SetShare(fixtures.GetShare(0))
 	if err != nil {
 		panic(err)
@@ -81,7 +81,7 @@ func createClients(serverID int, partyLen int, url string) []*client.Client {
 			MeID:      i,
 			PartyLen:  5,
 			Threshold: 5,
-		}, clientLogger), url, &clientLogger)
+		}, &clientLogger), url, &clientLogger)
 		err := client_.Tss.SetShare(fixtures.GetShare(i))
 		if err != nil {
 			panic(err)

@@ -153,7 +153,7 @@ func createPeers(count int) map[string]*testPeer {
 				MeID:      i,
 				PartyLen:  count,
 				Threshold: count,
-			}, log.Logger),
+			}, &log.Logger),
 			inCh: make(chan []byte, 100),
 		}
 
