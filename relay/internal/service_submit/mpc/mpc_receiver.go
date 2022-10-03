@@ -36,10 +36,10 @@ func NewMpcReceiver(receiver service_submit.Receiver, mpcSigner MpcSigner) (*Mpc
 }
 
 func (b *MpcReceiver) GetAuth() *bind.TransactOpts {
-	originalAuth := b.Receiver.GetAuth() // todo return copy
+	originalAuth := *b.Receiver.GetAuth()
 	originalAuth.Signer = b.MpcSign
 	// todo set originalAuth.Address to b.mpgSigner.GetAddress()
-	return originalAuth
+	return &originalAuth
 }
 
 func (b *MpcReceiver) MpcSign(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
