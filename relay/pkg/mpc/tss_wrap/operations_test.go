@@ -157,9 +157,9 @@ func createPeers(count int) map[string]*testPeer {
 	for i := 0; i < count; i++ {
 		peer := &testPeer{
 			peer: NewMpc(&MpcConfig{
-				meID:      i,
-				partyLen:  count,
-				threshold: count,
+				MeID:      i,
+				PartyLen:  count,
+				Threshold: count,
 			}, log.Logger),
 			inCh: make(chan []byte, 100),
 		}

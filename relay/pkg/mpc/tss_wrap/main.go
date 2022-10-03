@@ -26,15 +26,15 @@ type Mpc struct {
 }
 
 type MpcConfig struct {
-	meID      int
-	partyLen  int
-	threshold int
+	MeID      int
+	PartyLen  int
+	Threshold int
 }
 
 func NewMpc(cfg *MpcConfig, logger zerolog.Logger) *Mpc {
-	partyIDsMap, party := createParty(cfg.partyLen)
+	partyIDsMap, party := createParty(cfg.PartyLen)
 	return &Mpc{
-		me:          partyIDsMap[fmt.Sprint(cfg.meID)],
+		me:          partyIDsMap[fmt.Sprint(cfg.MeID)],
 		party:       party,
 		partyIDsMap: partyIDsMap,
 		logger:      logger,
