@@ -22,6 +22,15 @@ type Client struct {
 	serverURL string
 }
 
+func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Client {
+	s := &Client{
+		tss:       tss,
+		serverURL: serverURL,
+		Logger:    logger,
+	}
+	return s
+}
+
 type operation struct {
 	started bool
 	// will be sent to tss
