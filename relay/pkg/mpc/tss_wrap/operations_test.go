@@ -1,6 +1,7 @@
 package tss_wrap
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sync"
@@ -33,10 +34,7 @@ func TestKeygen(t *testing.T) {
 			defer wg.Done()
 			fmt.Println("starting keygen", p.peer.MyID())
 
-			preParams := p.peer.share.LocalPreParams // load pre params
-			p.peer.share = nil                       // clear share
-
-			err := p.peer.Keygen(p.inCh, outCh, preParams)
+			err := p.keygen(outCh)
 			fmt.Println("keygen done", p.peer.MyID())
 			if err != nil {
 				t.Error(err)
@@ -44,11 +42,15 @@ func TestKeygen(t *testing.T) {
 		}(peer)
 	}
 
+	// messaging
+
 	fmt.Println("starting messaging")
 	go messaging(outCh, peers)
 
 	wg.Wait()
 	close(outCh)
+
+	// checks
 
 	address0, err := peers["0"].peer.GetAddress()
 	if err != nil {
@@ -87,7 +89,7 @@ func TestSign(t *testing.T) {
 			defer wg.Done()
 			fmt.Println("starting signing", p.peer.MyID())
 
-			signature, err := p.peer.Sign(p.inCh, outCh, msg)
+			signature, err := p.sign(outCh, msg)
 			fmt.Println("signing done", p.peer.MyID())
 			if err != nil {
 				t.Error(p.peer.MyID(), err)
@@ -97,11 +99,15 @@ func TestSign(t *testing.T) {
 		}(peer)
 	}
 
+	// messaging
+
 	fmt.Println("starting messaging")
 	go messaging(outCh, peers)
 
 	wg.Wait()
 	close(outCh)
+
+	// checks
 
 	for _, signature := range signatures {
 		assert.Equal(t, signatures["0"], signature)
@@ -151,11 +157,30 @@ func createPeers(count int) map[string]*testPeer {
 			inCh: make(chan []byte, 100),
 		}
 
-		if err := peer.peer.SetShare(fixtures.GetShare(peer.peer.me.Index)); err != nil {
-			panic(err)
-		}
-
 		peers[peer.peer.MyID()] = peer
 	}
 	return peers
+}
+
+func (p *testPeer) sign(outCh chan *OutputMessage, msg []byte) ([]byte, error) {
+	if err := p.peer.SetShare(fixtures.GetShare(p.peer.me.Index)); err != nil {
+		return nil, err
+	}
+
+	var signature []byte
+	errCh := make(chan error, 1000)
+
+	go p.peer.Sign(context.Background(), p.inCh, outCh, errCh, msg, &signature)
+
+	err := <-errCh
+	return signature, err
+}
+
+func (p *testPeer) keygen(outCh chan *OutputMessage) error {
+	errCh := make(chan error, 1000)
+
+	go p.peer.Keygen(context.Background(), p.inCh, outCh, errCh, fixtures.GetPreParams(p.peer.me.Index))
+
+	err := <-errCh
+	return err
 }
