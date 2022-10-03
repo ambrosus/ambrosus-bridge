@@ -22,7 +22,7 @@ type Mpc struct {
 	partyIDsMap map[string]*tss.PartyID
 	threshold   int
 	share       *keygen.LocalPartySaveData // share for local peer
-	logger      zerolog.Logger
+	logger      *zerolog.Logger
 }
 
 type MpcConfig struct {
@@ -31,7 +31,7 @@ type MpcConfig struct {
 	Threshold int
 }
 
-func NewMpc(cfg *MpcConfig, logger zerolog.Logger) *Mpc {
+func NewMpc(cfg *MpcConfig, logger *zerolog.Logger) *Mpc {
 	partyIDsMap, party := createParty(cfg.PartyLen)
 	return &Mpc{
 		me:          partyIDsMap[fmt.Sprint(cfg.MeID)],
