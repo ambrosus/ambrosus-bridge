@@ -1,7 +1,6 @@
 package fixtures
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 
 	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
@@ -30,9 +29,9 @@ func GetPreParams(id int) keygen.LocalPreParams {
 }
 
 func Message() []byte {
-	// mandatory. msg should be 32 byte
-	msgInitial := sha256.Sum256([]byte("testdata"))
+	// msg should be 32 byte
+	msgInitial := []byte("testdata")
 	msg := make([]byte, 32)
-	copy(msgInitial[:], msg)
+	copy(msg, msgInitial)
 	return msg
 }
