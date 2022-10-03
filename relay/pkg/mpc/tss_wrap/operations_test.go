@@ -2,14 +2,11 @@ package tss_wrap
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/fixtures"
-	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -121,18 +118,6 @@ func TestSign(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, pubkey, sigPublicKey)
-}
-
-func TestGeneratePreParams(t *testing.T) {
-	pp, err := keygen.GeneratePreParams(5 * time.Minute)
-	if err != nil {
-		t.Fatal(err)
-	}
-	marshalled, err := json.Marshal(pp)
-	if err != nil {
-		t.Fatal(err)
-	}
-	fmt.Print(string(marshalled))
 }
 
 func messaging(outCh chan *OutputMessage, peers map[string]*testPeer) {
