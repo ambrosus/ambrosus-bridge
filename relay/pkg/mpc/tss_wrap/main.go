@@ -37,6 +37,7 @@ func NewMpc(cfg *MpcConfig, logger *zerolog.Logger) *Mpc {
 		me:          partyIDsMap[fmt.Sprint(cfg.MeID)],
 		party:       party,
 		partyIDsMap: partyIDsMap,
+		threshold:   cfg.Threshold,
 		logger:      logger,
 	}
 }

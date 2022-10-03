@@ -4,7 +4,7 @@ import "github.com/gorilla/websocket"
 
 func (s *Server) waitForConnections() {
 	for {
-		if len(s.connections) < s.tss.Threshold() {
+		if len(s.connections) < s.Tss.Threshold()-1 { // -1 coz server
 			<-s.connChangeCh // wait for new connections
 			continue
 		}
