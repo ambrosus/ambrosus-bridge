@@ -1,4 +1,4 @@
-package untrustless2
+package mpc
 
 import (
 	"context"
