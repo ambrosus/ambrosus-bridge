@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -11,8 +12,6 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
 )
-
-var keygenOperation = []byte("keygen")
 
 type Client struct {
 	sync.Mutex
@@ -29,6 +28,7 @@ func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Cli
 		Tss:       tss,
 		serverURL: serverURL,
 		logger:    logger,
+		operation: common.NewOperation(),
 	}
 	return s
 }
@@ -56,6 +56,8 @@ func (s *Client) Keygen() error {
 }
 
 func (s *Client) sign(msg []byte) ([]byte, error) {
+	s.logger.Info().Msg("Start sign operation")
+
 	if err := s.startOperation(msg); err != nil {
 		return nil, err
 	}
@@ -64,24 +66,28 @@ func (s *Client) sign(msg []byte) ([]byte, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, s.serverURL, nil)
+	conn, err := s.connect(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("ws connect: %w", err)
+		return nil, err
 	}
-	defer conn.Close()
+	defer conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 
 	errCh := make(chan error, 10)
 	var signature []byte
 
 	go s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
-	go s.sendMsgs(ctx, conn, errCh)
+
+	go func() { errCh <- s.receiver(conn) }()         // server -> Tss
+	go func() { errCh <- s.transmitter(ctx, conn) }() // Tss -> server
 
 	err = <-errCh
 	return signature, err
 }
 
 func (s *Client) keygen() error {
-	if err := s.startOperation(keygenOperation); err != nil {
+	s.logger.Info().Msg("Start keygen operation")
+
+	if err := s.startOperation(common.KeygenOperation); err != nil {
 		return err
 	}
 	defer s.stopOperation()
@@ -89,16 +95,18 @@ func (s *Client) keygen() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	conn, _, err := websocket.DefaultDialer.DialContext(ctx, s.serverURL, nil)
+	conn, err := s.connect(ctx)
 	if err != nil {
-		return fmt.Errorf("ws connect: %w", err)
+		return err
 	}
 	defer conn.Close()
 
 	errCh := make(chan error, 10)
 
 	go s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
-	go s.sendMsgs(ctx, conn, errCh)
+
+	go func() { errCh <- s.receiver(conn) }()         // server -> Tss
+	go func() { errCh <- s.transmitter(ctx, conn) }() // Tss -> server
 
 	err = <-errCh
 	return err
@@ -107,47 +115,28 @@ func (s *Client) keygen() error {
 func (s *Client) startOperation(msg []byte) error {
 	s.Lock()
 	defer s.Unlock()
-
-	if s.operation.Started {
-		return fmt.Errorf("already doing something")
-	}
-	s.operation = common.NewOperation(msg)
-
-	return nil
+	return s.operation.Start(msg)
 }
 func (s *Client) stopOperation() {
 	s.operation.Stop()
 }
 
-func (s *Client) sendMsgs(ctx context.Context, conn *websocket.Conn, errCh chan error) {
-	if err := s.sendStartMsgs(conn); err != nil {
-		errCh <- err
-		return
+func (s *Client) connect(ctx context.Context) (*websocket.Conn, error) {
+	headers := make(http.Header)
+	headers.Add(common.HeaderTssID, s.Tss.MyID())
+	headers.Add(common.HeaderTssOperation, fmt.Sprintf("%x", s.operation.SignMsg)) // as hex
+
+	s.logger.Debug().Msg("Connecting to server")
+
+	conn, httpResp, err := websocket.DefaultDialer.DialContext(ctx, s.serverURL, headers)
+	if err != nil {
+		return nil, fmt.Errorf("ws connect: %w. http resp: %v", err, httpResp.Status)
+		// todo here may be error about "This operation doesn't started by server", maybe sleep and retry here?
 	}
 
-	// protocol begins
+	s.logger.Debug().Msg("Connected to server")
 
-	// server -> Tss
-	go func() {
-		errCh <- s.receiver(conn)
-	}()
-
-	// Tss -> server
-	go func() {
-		errCh <- s.transmitter(ctx, conn)
-	}()
-}
-
-func (s *Client) sendStartMsgs(conn *websocket.Conn) error {
-	// send ID
-	if err := conn.WriteMessage(websocket.BinaryMessage, []byte(s.Tss.MyID())); err != nil {
-		return fmt.Errorf("write 1 message: %w", err)
-	}
-	// send operation (keygen or sign msg)
-	if err := conn.WriteMessage(websocket.BinaryMessage, s.operation.SignMsg); err != nil {
-		return fmt.Errorf("write 2 message: %w", err)
-	}
-	return nil
+	return conn, nil
 }
 
 func (s *Client) receiver(conn *websocket.Conn) error {

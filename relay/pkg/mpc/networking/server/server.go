@@ -28,6 +28,7 @@ func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 		Tss:          tss,
 		connections:  make(map[string]*websocket.Conn),
 		connChangeCh: make(chan byte, 1000),
+		operation:    common.NewOperation(),
 		logger:       logger,
 	}
 	return s
@@ -43,10 +44,14 @@ func (s *Server) Run() {
 
 func (s *Server) Sign(msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
+
 	if err := s.startOperation(msg); err != nil {
 		return nil, err
 	}
+	defer s.operation.Stop()
+
 	s.waitForConnections()
+	defer s.disconnectAll()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -57,16 +62,24 @@ func (s *Server) Sign(msg []byte) ([]byte, error) {
 	go s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
 
 	err := <-errCh
-
+	if err != nil {
+		s.logger.Error().Err(err).Msg("Sign failed")
+	} else {
+		s.logger.Info().Msg("Sign successfully finished")
+	}
 	return signature, err
 }
 
 func (s *Server) Keygen() error {
 	s.logger.Info().Msg("Start keygen operation")
-	if err := s.startOperation(keygenOperation); err != nil {
+
+	if err := s.startOperation(common.KeygenOperation); err != nil {
 		return err
 	}
+	defer s.operation.Stop()
+
 	s.waitForConnections()
+	defer s.disconnectAll()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -76,25 +89,26 @@ func (s *Server) Keygen() error {
 	go s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
 
 	err := <-errCh
+	if err != nil {
+		s.logger.Error().Err(err).Msg("Keygen failed")
+	} else {
+		s.logger.Info().Msg("Keygen successfully finished")
+	}
 	return err
 }
 
 func (s *Server) startOperation(msg []byte) error {
-	// todo don't sure if we need locks
 	s.Lock()
 	defer s.Unlock()
-
-	if s.operation.Started {
-		return fmt.Errorf("already doing something")
-	}
-	s.operation = common.NewOperation(msg)
-	return nil
+	return s.operation.Start(msg)
 }
 
 func (s *Server) msgSender() {
+	s.logger.Debug().Msg("Start msgSender")
 	for {
 		select {
 		case msg := <-s.operation.OutCh:
+			s.logger.Debug().Msg("Got message from Tss")
 			err := s.sendMsg(msg)
 			if err != nil {
 				s.logger.Error().Err(err).Msg("Failed to send message")
@@ -106,6 +120,10 @@ func (s *Server) msgSender() {
 
 // sendMsg send message to own Tss or to another client(s)
 func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
+	if msg == nil || msg.SendToIds == nil {
+		return fmt.Errorf("nil message")
+	}
+
 	for _, id := range msg.SendToIds {
 
 		// send to own tss
@@ -121,9 +139,11 @@ func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 			return fmt.Errorf("connection %v not found", id)
 			// todo maybe call waitForConnections on this error
 		}
+		s.logger.Debug().Msg("Send message to client")
 		if err := conn.WriteMessage(websocket.BinaryMessage, msg.Message); err != nil {
 			return fmt.Errorf("writeMessage: %w", err)
 		}
+		s.logger.Debug().Msg("Send message to client sucessfully")
 	}
 
 	return nil

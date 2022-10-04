@@ -1,6 +1,17 @@
 package common
 
-import "github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+import (
+	"fmt"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+)
+
+// todo move to another file? or rename this file? or pohuy?
+var (
+	KeygenOperation    = []byte("keygen")
+	HeaderTssID        = "X-TSS-ID"
+	HeaderTssOperation = "X-TSS-Operation"
+)
 
 type Operation struct {
 	Started bool
@@ -13,17 +24,23 @@ type Operation struct {
 
 const chSize = 10
 
-func NewOperation(msg []byte) Operation {
+func NewOperation() Operation {
 	return Operation{
-		Started: true,
+		Started: false,
 		InCh:    make(chan []byte, chSize),
 		OutCh:   make(chan *tss_wrap.OutputMessage, chSize),
-		SignMsg: msg,
 	}
 }
 
-func (o Operation) Stop() {
+func (o *Operation) Start(msg []byte) error {
+	if o.Started {
+		return fmt.Errorf("already started")
+	}
+	o.SignMsg = msg
+	o.Started = true
+	return nil
+}
+
+func (o *Operation) Stop() {
 	o.Started = false
-	close(o.InCh)
-	close(o.OutCh)
 }

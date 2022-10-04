@@ -2,14 +2,14 @@ package server
 
 import (
 	"bytes"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 	"github.com/gorilla/websocket"
 )
-
-var keygenOperation = []byte("keygen")
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  65536,
@@ -17,6 +17,26 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug().Str("addr", r.RemoteAddr).Msg("New http connection")
+
+	clientID, operation, err := parseHeaders(r)
+	if err != nil {
+		s.logger.Error().Err(err).Msg("parse headers error")
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+
+	if bytes.Equal(operation, common.KeygenOperation) {
+		s.logger.Info().Msg("Client wants to start keygen")
+	} else {
+		s.logger.Info().Msg("Client wants to start signing")
+	}
+
+	if !bytes.Equal(s.operation.SignMsg, operation) || !s.operation.Started {
+		s.logger.Info().Msg("This operation doesn't started by server")
+		http.Error(w, "This operation doesn't started by server", http.StatusTooEarly)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Failed to upgrade connection to websocket")
@@ -24,47 +44,33 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
-	s.logger.Info().Str("address", conn.RemoteAddr().String()).Msg("New websocket connection")
-
-	err = s.handler(conn)
-
-	if err != nil {
-		s.logger.Error().Err(err).Msg("Server error")
-
-		if err = conn.WriteMessage(websocket.CloseMessage,
-			websocket.FormatCloseMessage(websocket.CloseInternalServerErr, err.Error())); err != nil {
-			s.logger.Error().Err(err).Msg("During sending error to client another error happened")
-		}
-	}
-}
-
-func (s *Server) handler(conn *websocket.Conn) (err error) {
-	// ask client for ID
-	_, clientIDBytes, err := conn.ReadMessage()
-	if err != nil {
-		return fmt.Errorf("read message 1: %w", err)
-	}
-	clientID := string(clientIDBytes)
-	// register connection
+	// register connection (now ready for protocol)
 	s.clientConnected(clientID, conn)
 	defer s.clientDisconnected(clientID)
 
-	// ask client for operation
-	_, opMsg, err := conn.ReadMessage()
+	err = s.receiveMsgs(conn)
 	if err != nil {
-		return fmt.Errorf("read message 2: %w", err)
+		s.logger.Error().Err(err).Msg("Server error")
+		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInternalServerErr, err.Error()))
+	}
+}
+
+func parseHeaders(r *http.Request) (string, []byte, error) {
+	clientID := r.Header.Get(common.HeaderTssID)
+	if clientID == "" {
+		return "", nil, fmt.Errorf("wrong clientID header")
 	}
 
-	if bytes.Equal(opMsg, keygenOperation) {
-		s.logger.Info().Msg("Client wants to start keygen")
-	} else {
-		s.logger.Info().Msg("Client wants to start signing")
+	operation, err := hex.DecodeString(r.Header.Get(common.HeaderTssOperation))
+	if err != nil {
+		return "", nil, fmt.Errorf("wrong operation header: %w", err)
 	}
 
-	if !bytes.Equal(s.operation.SignMsg, opMsg) || !s.operation.Started {
-		return fmt.Errorf("This operation doesn't stated by server")
-	}
+	return clientID, operation, err
+}
 
+// todo this func should gracefully shutdown when protocol finished
+func (s *Server) receiveMsgs(conn *websocket.Conn) error {
 	for {
 		_, msgBytes, err := conn.ReadMessage()
 		if err != nil {

@@ -14,6 +14,12 @@ func (s *Server) waitForConnections() {
 	}
 }
 
+func (s *Server) disconnectAll() {
+	for _, conn := range s.connections {
+		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	}
+}
+
 func (s *Server) clientConnected(id string, conn *websocket.Conn) {
 	s.Lock()
 	defer s.Unlock()
