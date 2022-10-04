@@ -3,11 +3,13 @@ package server
 import "github.com/gorilla/websocket"
 
 func (s *Server) waitForConnections() {
+	s.logger.Debug().Msg("Wait for connections")
 	for {
 		if len(s.connections) < s.Tss.Threshold()-1 { // -1 coz server
 			<-s.connChangeCh // wait for new connections
 			continue
 		}
+		s.logger.Debug().Msg("All connections established")
 		return
 	}
 }

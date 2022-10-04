@@ -11,6 +11,11 @@ import (
 
 var keygenOperation = []byte("keygen")
 
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  65536,
+	WriteBufferSize: 65536,
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -56,13 +61,11 @@ func (s *Server) handler(conn *websocket.Conn) (err error) {
 		s.logger.Info().Msg("Client wants to start signing")
 	}
 
-	if !bytes.Equal(s.operation.signMsg, opMsg) || !s.operation.started {
+	if !bytes.Equal(s.operation.SignMsg, opMsg) || !s.operation.Started {
 		return fmt.Errorf("This operation doesn't stated by server")
 	}
 
 	for {
-		// todo is cycle break when client disconnect?
-
 		_, msgBytes, err := conn.ReadMessage()
 		if err != nil {
 			return fmt.Errorf("read protocol message: %w", err)
@@ -74,7 +77,7 @@ func (s *Server) handler(conn *websocket.Conn) (err error) {
 		}
 
 		// send client message to out sender service
-		s.operation.outCh <- msg
+		s.operation.OutCh <- msg
 	}
 
 }
