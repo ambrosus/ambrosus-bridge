@@ -31,8 +31,9 @@ func (m *Mpc) Keygen(
 	}()
 
 	share, err := m.messaging(ctx, keygenParty, inCh, outCh, outChTss, endCh, nil)
-	m.share = share.(*keygen.LocalPartySaveData)
-
+	if share != nil {
+		m.share = share.(*keygen.LocalPartySaveData)
+	}
 	errCh <- err
 }
 
@@ -61,8 +62,11 @@ func (m *Mpc) Sign(
 	}()
 
 	signature, err := m.messaging(ctx, signParty, inCh, outCh, outChTss, nil, endCh)
+	if signature != nil {
+		*result = tssSignToECDSA(signature.(*common.SignatureData))
+	}
 	errCh <- err
-	*result = tssSignToECDSA(signature.(*common.SignatureData))
+
 }
 
 // messaging is a generic function for receiving and transmitting messages.
