@@ -6,9 +6,11 @@ type (
 		AmbToSide string `mapstructure:"ambToSide"`
 		SideToAmb string `mapstructure:"sideToAmb"`
 
-		Aura *SubmitterAura `mapstructure:"aura"`
-		Pow  *SubmitterPoW  `mapstructure:"pow"`
-		Posa *SubmitterPoSA `mapstructure:"posa"`
+		Aura      *SubmitterAura      `mapstructure:"aura"`
+		Pow       *SubmitterPoW       `mapstructure:"pow"`
+		Posa      *SubmitterPoSA      `mapstructure:"posa"`
+		MpcClient *SubmitterMpcClient `mapstructure:"mpcClient"`
+		MpcServer *SubmitterMpcServer `mapstructure:"mpcServer"`
 	}
 
 	SubmitterAura struct {
@@ -23,6 +25,18 @@ type (
 	}
 	SubmitterPoSA struct {
 		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
+	}
+	SubmitterMpcClient struct {
+		MeID      uint64 `mapstructure:"meID"`
+		PartyLen  uint64 `mapstructure:"partyLen"`
+		Threshold uint64 `mapstructure:"threshold"`
+		ServerURL string `mapstructure:"serverURL"`
+	}
+	SubmitterMpcServer struct {
+		MeID      uint64 `mapstructure:"meID"`
+		PartyLen  uint64 `mapstructure:"partyLen"`
+		Threshold uint64 `mapstructure:"threshold"`
+		Port      uint64 `mapstructure:"port"`
 	}
 )
 
