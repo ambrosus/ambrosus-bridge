@@ -130,7 +130,11 @@ func (s *Client) connect(ctx context.Context) (*websocket.Conn, error) {
 
 	conn, httpResp, err := websocket.DefaultDialer.DialContext(ctx, s.serverURL, headers)
 	if err != nil {
-		return nil, fmt.Errorf("ws connect: %w. http resp: %v", err, httpResp.Status)
+		if httpResp != nil {
+			return nil, fmt.Errorf("ws connect: %w. http resp: %v", err, httpResp.Status)
+		} else {
+			return nil, fmt.Errorf("ws connect: %w", err)
+		}
 		// todo here may be error about "This operation doesn't started by server", maybe sleep and retry here?
 	}
 
