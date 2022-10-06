@@ -42,12 +42,12 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "defaultTransferFeeWei": "10000000000000000"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "defaultTransferFeeWei": "1000000000000000000"
         }
     },
 
