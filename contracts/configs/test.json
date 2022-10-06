@@ -29,7 +29,6 @@
       },
       "nativeAnalog": "AMB"
     },
-    "WETH": {
     "USDC": {
       "name": "USD Coin",
       "symbol": "USDC",
