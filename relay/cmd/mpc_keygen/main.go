@@ -1,13 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/rs/zerolog/log"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/cmd"
-	"github.com/ambrosus/ambrosus-bridge/relay/cmd/mpc_keygen/mpc_keygen"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/client"
@@ -21,38 +19,40 @@ func main() {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
 
-	logger := cmd.CreateLogger(cfg.ExtLoggers)
-	cfgSubmitters := cfg.Submitters
+	logger := log.Logger
+	mpcc := tss_wrap.NewMpc(cfg.Submitters.Mpc.MeID, cfg.Submitters.Mpc.PartyLen, &logger)
 
-	switch cfg.Submitters.AmbToSide {
-	case "untrustless-mpc-server":
-		mpcc := tss_wrap.NewMpc(&tss_wrap.MpcConfig{MeID: int(cfgSubmitters.MpcServer.MeID), PartyLen: int(cfgSubmitters.MpcServer.PartyLen), Threshold: int(cfgSubmitters.MpcServer.Threshold)}, &logger)
+	if cfg.Submitters.Mpc.IsServer {
 		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(fmt.Sprintf(":%d", cfg.Submitters.MpcServer.Port), server_)
+		go http.ListenAndServe(cfg.Submitters.Mpc.ServerURL, server_)
 		go server_.Run()
 
 		err := server_.Keygen()
 		if err != nil {
 			logger.Fatal().Err(err).Msg("error on untrustless mpc server keygen")
 		}
+	} else {
+		client_ := client.NewClient(mpcc, cfg.Submitters.Mpc.ServerURL, &logger)
 
-		_, err = mpc_keygen.GetAndSaveServerShare(server_.Tss, &logger)
-		if err != nil {
-			logger.Fatal().Err(err).Msg("error on getting and saving share")
-		}
-
-	case "untrustless-mpc-client":
-		mpcc := tss_wrap.NewMpc(&tss_wrap.MpcConfig{MeID: int(cfgSubmitters.MpcClient.MeID), PartyLen: int(cfgSubmitters.MpcClient.PartyLen), Threshold: int(cfgSubmitters.MpcClient.Threshold)}, &logger)
-		client := client.NewClient(mpcc, cfgSubmitters.MpcClient.ServerURL, &logger)
-
-		err := client.Keygen()
+		err := client_.Keygen()
 		if err != nil {
 			logger.Err(err).Msg("error on untrustless mpc client keygen")
 		}
+	}
+	saveShare(mpcc)
 
-		_, err = mpc_keygen.GetAndSaveClientShare(client.Tss, &logger)
-		if err != nil {
-			logger.Fatal().Err(err).Msg("error on getting and saving share")
-		}
+	logger.Info().Msg("mpc keygen finished")
+}
+
+func saveShare(tss *tss_wrap.Mpc) {
+	share, err := tss.Share()
+	if err != nil {
+		panic(err)
+	}
+
+	sharePath := os.Getenv("SHARE_PATH")
+	err = os.WriteFile(sharePath, share, 0644)
+	if err != nil {
+		panic(err)
 	}
 }

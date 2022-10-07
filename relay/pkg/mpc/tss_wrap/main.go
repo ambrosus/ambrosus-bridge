@@ -14,8 +14,6 @@ import (
 	"github.com/rs/zerolog"
 )
 
-// todo tests
-
 type Mpc struct {
 	me          *tss.PartyID
 	party       *tss.PeerContext
@@ -25,19 +23,19 @@ type Mpc struct {
 	logger      *zerolog.Logger
 }
 
-type MpcConfig struct {
-	MeID      int
-	PartyLen  int
-	Threshold int
+func NewMpcWithShare(meID, partyLen int, share []byte, logger *zerolog.Logger) (*Mpc, error) {
+	mpc := NewMpc(meID, partyLen, logger)
+	err := mpc.SetShare(share)
+	return mpc, err
 }
 
-func NewMpc(cfg *MpcConfig, logger *zerolog.Logger) *Mpc {
-	partyIDsMap, party := createParty(cfg.PartyLen)
+func NewMpc(meID, partyLen int, logger *zerolog.Logger) *Mpc {
+	partyIDsMap, party := createParty(partyLen)
 	return &Mpc{
-		me:          partyIDsMap[fmt.Sprint(cfg.MeID)],
+		me:          partyIDsMap[fmt.Sprint(meID)],
 		party:       party,
 		partyIDsMap: partyIDsMap,
-		threshold:   cfg.Threshold,
+		threshold:   partyLen,
 		logger:      logger,
 	}
 }

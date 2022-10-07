@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
+	"os"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/cmd/mpc_keygen/mpc_keygen"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
@@ -42,69 +41,30 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		ambSubmitter, err = aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
 	case "untrustless2":
 		ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: sideBridge})
-	case "untrustless-mpc-server":
-		mpcc := tss_wrap.NewMpc(&tss_wrap.MpcConfig{MeID: int(cfg.MpcServer.MeID), PartyLen: int(cfg.MpcServer.PartyLen), Threshold: int(cfg.MpcServer.Threshold)}, &logger)
-		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(fmt.Sprintf(":%d", cfg.MpcServer.Port), server_)
-
-		var share []byte
-		if mpc_keygen.IsServerShareExist() {
-			share, err = mpc_keygen.ReadServerShare()
-			if err != nil {
-				logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't read server's share")
-			}
-		} else {
-			err = server_.Keygen()
-			if err != nil {
-				logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't do keygen")
-			}
-
-			share, err = mpc_keygen.GetAndSaveServerShare(server_.Tss, &logger)
-			if err != nil {
-				logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't get and save server's share")
-			}
-		}
-
-		err = server_.Tss.SetShare(share)
+	case "untrustless-mpc":
+		share, err := os.ReadFile(os.Getenv("SHARE_PATH"))
 		if err != nil {
-			logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't set server's share")
+			logger.Fatal().Err(err).Msg("can't read share")
 		}
-
-		receiver, err := mpc.NewMpcReceiver(sideBridge, server_)
-		if err == nil {
-			ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: receiver})
-		}
-	case "untrustless-mpc-client":
-		mpcc := tss_wrap.NewMpc(&tss_wrap.MpcConfig{MeID: int(cfg.MpcClient.MeID), PartyLen: int(cfg.MpcClient.PartyLen), Threshold: int(cfg.MpcClient.Threshold)}, &logger)
-		client := client.NewClient(mpcc, cfg.MpcClient.ServerURL, &logger)
-
-		var share []byte
-		if mpc_keygen.IsClientShareExist() {
-			share, err = mpc_keygen.ReadClientShare()
-			if err != nil {
-				logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't read client's share")
-			}
-		} else {
-			err = client.Keygen()
-			if err != nil {
-				logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't do keygen")
-			}
-
-			share, err = mpc_keygen.GetAndSaveClientShare(client.Tss, &logger)
-			if err != nil {
-				logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't get and save client's share")
-			}
-		}
-
-		err = client.Tss.SetShare(share)
+		mpcc, err := tss_wrap.NewMpcWithShare(cfg.Mpc.MeID, cfg.Mpc.PartyLen, share, &logger)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created: can't set client's share")
+			logger.Fatal().Err(err).Msg("failed to create MPC client")
 		}
 
-		receiver, err := mpc.NewMpcReceiver(sideBridge, client)
-		if err == nil {
-			ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: receiver})
+		var mpcSigner mpc.MpcSigner
+		if cfg.Mpc.IsServer {
+			server_ := server.NewServer(mpcc, &logger)
+			go server_.Run()
+			go http.ListenAndServe(cfg.Mpc.ServerURL, server_)
+			mpcSigner = server_
+		} else {
+			client_ := client.NewClient(mpcc, cfg.Mpc.ServerURL, &logger)
+			mpcSigner = client_
 		}
+
+		receiver, err := mpc.NewMpcReceiver(sideBridge, mpcSigner)
+		ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: receiver})
+
 	default:
 		logger.Info().Msg("amb->side submitter is disabled")
 	}

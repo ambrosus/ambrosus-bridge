@@ -61,3 +61,12 @@ func getConfigPath() string {
 		return defaultConfigPath
 	}
 }
+
+// In Go, the predefined init() function sets off a piece of code to run before any other part of your package.
+func init() {
+	if os.Getenv("SHARE_PATH") == "" {
+		os.Setenv("SHARE_PATH", "./share.json")
+	}
+
+	// and so on...
+}
