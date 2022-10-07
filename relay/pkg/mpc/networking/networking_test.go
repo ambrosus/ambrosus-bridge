@@ -56,16 +56,11 @@ func TestNetworkingSigning(t *testing.T) {
 
 func createServer(serverID int) *server.Server {
 	serverLogger := logger.With().Int("server", serverID).Logger()
-	server_ := server.NewServer(tss_wrap.NewMpc(&tss_wrap.MpcConfig{
-		MeID:      0,
-		PartyLen:  5,
-		Threshold: 5,
-	}, &serverLogger), &serverLogger)
-	err := server_.Tss.SetShare(fixtures.GetShare(0))
+	mpc, err := tss_wrap.NewMpcWithShare(0, 5, fixtures.GetShare(0), &serverLogger)
 	if err != nil {
 		panic(err)
 	}
-	return server_
+	return server.NewServer(mpc, &serverLogger)
 }
 
 func createClients(serverID int, partyLen int, url string) []*client.Client {
@@ -77,16 +72,12 @@ func createClients(serverID int, partyLen int, url string) []*client.Client {
 		}
 
 		clientLogger := logger.With().Int("client", i).Logger()
-		client_ := client.NewClient(tss_wrap.NewMpc(&tss_wrap.MpcConfig{
-			MeID:      i,
-			PartyLen:  5,
-			Threshold: 5,
-		}, &clientLogger), url, &clientLogger)
-		err := client_.Tss.SetShare(fixtures.GetShare(i))
+		mpc, err := tss_wrap.NewMpcWithShare(i, 5, fixtures.GetShare(i), &clientLogger)
 		if err != nil {
 			panic(err)
 		}
 
+		client_ := client.NewClient(mpc, url, &clientLogger)
 		clients = append(clients, client_)
 	}
 	return clients
