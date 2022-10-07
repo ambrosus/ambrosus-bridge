@@ -20,11 +20,14 @@
         "sideToAmb": "",
         "ambToSide": ""
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
         "enable": true,
         "enableForAmb": false,
         "enableForSide": true,
         "__description__": "user relay for untrustless2 will only check that transfers pushed into side network (eth) are valid"
+    },
+    "pauseUnpauseWatchdogs": {
+        "enable": false
     },
     "triggers":  {
         "enable": false

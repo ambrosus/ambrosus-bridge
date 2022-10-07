@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0x073F6D7a999aa5F9172f4Fe1AB4604268ecbFd0E",
+            "contractAddr": "0xbE379d21770674aF3897aA6C442eDc890Fc0692a",
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a",
+            "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "0xea3011C9Efeb1e2A63A0c6cb23a0e0314970735F",
             "privateKey": "in env"
         }
     },
@@ -20,10 +20,13 @@
         "sideToAmb": "untrustless",
         "ambToSide": "untrustless2"
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
         "enable": true,
         "enableForAmb": true,
         "enableForSide": true
+    },
+    "pauseUnpauseWatchdogs": {
+        "enable": true
     },
     "triggers":  {
         "enable": true
@@ -39,12 +42,12 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "defaultTransferFeeWei": "10000000000000000"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "defaultTransferFeeWei": "1000000000000000000"
         }
     },
 
