@@ -29,25 +29,6 @@
       },
       "nativeAnalog": "AMB"
     },
-    "WETH": {
-      "name": "Wrapped Ether",
-      "symbol": "WETH",
-      "denomination": 18,
-      "decimals": {
-        "amb": 18,
-        "bsc": 18
-      },
-      "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
-      "primaryNets": [
-        "eth"
-      ],
-      "addresses": {
-        "amb": "0x83E0fF82175A660e5972A1C0497e1CbEF94eD5F0",
-        "eth": "0x8c33e9D24eBf3918D37eC2F26BaE044C9fD30Ea9",
-        "bsc": ""
-      },
-      "nativeAnalog": "ETH"
-    },
     "USDC": {
       "name": "USD Coin",
       "symbol": "USDC",
