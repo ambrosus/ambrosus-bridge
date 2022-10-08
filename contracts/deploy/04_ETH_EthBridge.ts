@@ -15,6 +15,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const ambNet = hre.companionNetworks['amb']
   const ambBridge = await ambNet.deployments.get('ETH_AmbBridge');
 
+  let {owner} = await hre.getNamedAccounts();
   const optionsWithOnUpgrade: any = await options(hre, BRIDGE_NAME, tokenPairs,
     {
       sideBridgeAddress: ambBridge.address,
@@ -22,7 +23,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
       lockTime: isMainNet ? 60 * 10 : 60,
       minSafetyBlocks: isMainNet ? 10 : 2,
-    }, []
+    },
+    [
+      // watchdogs TODO: get watchdogs from config?
+      isMainNet ? [] : [owner],
+      isMainNet ? "" : owner, // fee provider TODO: get fee provider from config?
+    ]
   )
 
   // Uncomment when upgrade is needed
