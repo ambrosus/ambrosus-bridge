@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
@@ -20,7 +21,7 @@ type SubmitterPoSA struct {
 	logger       *zerolog.Logger
 }
 
-func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.ReceiverPoSA) (*SubmitterPoSA, error) {
+func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.ReceiverPoSA, cfg *config.SubmitterPoSA) (*SubmitterPoSA, error) {
 	chainId, err := bridge.GetClient().ChainID(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("chain id: %w", err)
@@ -31,7 +32,7 @@ func NewSubmitterPoSA(bridge networks.Bridge, posaReceiver service_submit.Receiv
 	return &SubmitterPoSA{
 		Bridge:       bridge,
 		posaReceiver: posaReceiver,
-		posaEncoder:  posa_proof.NewPoSAEncoder(bridge, posaReceiver, chainId),
+		posaEncoder:  posa_proof.NewPoSAEncoder(bridge, posaReceiver, chainId, cfg.ReceiverBridgeMaxTxSizeKB),
 		logger:       &logger,
 	}, nil
 }
@@ -46,7 +47,7 @@ func (b *SubmitterPoSA) SendEvent(event *bindings.BridgeTransfer, safetyBlocks u
 
 		posaProof, err := b.posaEncoder.EncodePoSAProof(event, safetyBlocks, saveCache)
 
-		if errors.Is(err, posa_proof.ProofTooBig) {
+		if errors.Is(err, bindings.ErrProofTooBig) {
 
 			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Submit size-reduced transfer PoSA...")
 			err = b.posaReceiver.SubmitValidatorSetChangesPoSA(posaProof)

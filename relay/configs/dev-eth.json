@@ -17,11 +17,12 @@
 
     "submitters": {
         "enable": true,
-        "sideToAmb": true,
-        "ambToSide": true,
+        "sideToAmb": "untrustless",
+        "ambToSide": "aura",
         "aura": {
             "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "finalizeServiceUrl": "https://finalizing-api.ambrosus-dev.io/logs.bin"
+            "finalizeServiceUrl": "https://finalizing-api.ambrosus-dev.io/logs.bin",
+            "receiverBridgeMaxTxSizeKB": 128
         },
         "pow": {
             "ethashDir": "/root/ethash",
@@ -29,7 +30,12 @@
             "ethashGenNextEpochs": 0
         }
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
+        "enable": true,
+        "enableForAmb": true,
+        "enableForSide": true
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": true
     },
     "triggers":  {

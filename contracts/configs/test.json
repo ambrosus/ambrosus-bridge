@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x073F6D7a999aa5F9172f4Fe1AB4604268ecbFd0E",
-      "side": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a"
+      "amb": "0xbE379d21770674aF3897aA6C442eDc890Fc0692a",
+      "side": "0xea3011C9Efeb1e2A63A0c6cb23a0e0314970735F"
     },
     "bsc": {
       "amb": "0x91c2F6725a1e076929E1fDECCfD72209D0694af0",
@@ -24,7 +24,7 @@
       ],
       "addresses": {
         "amb": "0x55C402b5F9C2c3DfE3d866B36598f0Fd53e03B89",
-        "eth": "0xe208a39e3F988f1565628457F17E9Aa469B78F76",
+        "eth": "0x8c33e9D24eBf3918D37eC2F26BaE044C9fD30Ea9",
         "bsc": "0x132827Ee051b7276a2f85D6964F6182974aa243c"
       },
       "nativeAnalog": "AMB"
@@ -32,7 +32,7 @@
     "USDC": {
       "name": "USD Coin",
       "symbol": "USDC",
-      "denomination": 6,
+      "denomination": 18,
       "decimals": {
         "eth": 6,
         "bsc": 18
@@ -43,8 +43,8 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0xAdBf34fB8cAaE133B9C1a023F4f706ADd8A9C9C4",
-        "eth": "0x9e1E75d505279eA07734157498318A3615d4E241",
+        "amb": "0xD6e04093c3419D977D4945a5FabD9bb4b290c6a8",
+        "eth": "0x096B5914C95C34Df19500DAff77470C845EC749D",
         "bsc": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a"
       },
       "nativeAnalog": ""

@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	EthUrl = NetworkUrl("https://api.0x.org/swap/v1/price?sellToken=%s&buyToken=USDT&sellAmount=%d")
-	BscUrl = NetworkUrl("https://bsc.api.0x.org/swap/v1/price?sellToken=%s&buyToken=BUSD&sellAmount=%d")
+	EthUrl = NetworkUrl("https://api.0x.org/swap/v1/price?sellToken=%s&buyToken=USDT&buyAmount=1000000")                 // USDT has 6 decimals
+	BscUrl = NetworkUrl("https://bsc.api.0x.org/swap/v1/price?sellToken=%s&buyToken=BUSD&buyAmount=1000000000000000000") // BUSD has 18 decimals
 )
 
 var NetworkUrls = []NetworkUrl{EthUrl, BscUrl}
@@ -28,7 +28,7 @@ func Get0x(token *TokenInfo) (price float64, err error) {
 	amount := math.Pow10(int(token.Decimals))
 
 	for _, url := range NetworkUrls {
-		price, err = doRequest(url, token.Symbol, uint(amount))
+		price, err = doRequest(url, token.Symbol)
 
 		// when token not found - try next url
 		if err != nil && err.Error() == ErrValidationFailed.Error() {
@@ -42,11 +42,11 @@ func Get0x(token *TokenInfo) (price float64, err error) {
 		break
 	}
 
-	return price / amount, err
+	return 1 / price / amount, err
 }
 
-func doRequest(urlFormat NetworkUrl, sellToken string, amount uint) (float64, error) {
-	url := fmt.Sprintf(string(urlFormat), sellToken, amount)
+func doRequest(urlFormat NetworkUrl, sellToken string) (float64, error) {
+	url := fmt.Sprintf(string(urlFormat), sellToken)
 
 	resp, err := http.Get(url)
 	if err != nil {

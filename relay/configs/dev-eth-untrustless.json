@@ -17,10 +17,13 @@
 
     "submitters": {
         "enable": true,
-        "sideToAmb": true,
-        "ambToSide": false
+        "sideToAmb": "",
+        "ambToSide": ""
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
+        "enable": false
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": false
     },
     "triggers":  {
