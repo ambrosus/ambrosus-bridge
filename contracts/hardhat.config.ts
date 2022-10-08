@@ -32,7 +32,7 @@ const config: HardhatUserConfig = {
     },
 
     "dev/eth": {
-      url: "https://sepolia.infura.io/v3/" + process.env.INFURA_KEY,
+      url: "https://goerli.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "devnet"],
       companionNetworks: {amb: 'dev/amb'},
       gasPrice: 9000000000,
