@@ -1,6 +1,9 @@
 package server
 
-import "github.com/gorilla/websocket"
+import (
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
+	"github.com/gorilla/websocket"
+)
 
 func (s *Server) waitForConnections() {
 	s.logger.Debug().Msg("Wait for connections")
@@ -16,7 +19,7 @@ func (s *Server) waitForConnections() {
 
 func (s *Server) disconnectAll() {
 	for _, conn := range s.connections {
-		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+		common.NormalClose(conn)
 	}
 }
 

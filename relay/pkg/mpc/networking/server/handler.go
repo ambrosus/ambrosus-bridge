@@ -52,7 +52,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Server error")
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInternalServerErr, err.Error()))
+		return
 	}
+
+	connLogger.Debug().Msg("Client finished protocol")
+	common.NormalClose(conn)
 }
 
 func parseHeaders(r *http.Request) (string, []byte, error) {

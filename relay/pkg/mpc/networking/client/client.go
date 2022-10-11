@@ -99,7 +99,7 @@ func (s *Client) keygen() error {
 	if err != nil {
 		return err
 	}
-	defer conn.Close()
+	defer common.NormalClose(conn)
 
 	errCh := make(chan error, 10)
 
@@ -148,6 +148,9 @@ func (s *Client) receiver(conn *websocket.Conn) error {
 	for {
 		_, msgBytes, err := conn.ReadMessage()
 		if err != nil {
+			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
+				return nil
+			}
 			return fmt.Errorf("read message: %w", err)
 		}
 

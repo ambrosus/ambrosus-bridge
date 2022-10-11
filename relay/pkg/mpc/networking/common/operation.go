@@ -6,13 +6,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 )
 
-// todo move to another file? or rename this file? or pohuy?
-var (
-	KeygenOperation    = []byte("keygen")
-	HeaderTssID        = "X-TSS-ID"
-	HeaderTssOperation = "X-TSS-Operation"
-)
-
 type Operation struct {
 	Started bool
 	// will be sent to tss
