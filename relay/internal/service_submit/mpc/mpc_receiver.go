@@ -26,7 +26,7 @@ func NewMpcReceiver(receiver service_submit.Receiver, mpcSigner MpcSigner) (*Mpc
 	if err != nil {
 		return nil, fmt.Errorf("get chain id: %w", err)
 	}
-	signer := types.NewEIP155Signer(chainID)
+	signer := types.LatestSignerForChainID(chainID)
 
 	return &MpcReceiver{
 		Receiver:  receiver,
