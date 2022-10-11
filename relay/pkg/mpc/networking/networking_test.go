@@ -1,8 +1,10 @@
 package networking
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -16,6 +18,53 @@ import (
 )
 
 var logger = log.Logger
+
+func TestNetworkingKeygen(t *testing.T) {
+	// todo use pre params
+	server_ := createServer(0)
+	ts := httptest.NewServer(server_)
+	defer ts.Close()
+	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+
+	clients := createClients(0, 5, wsURL)
+
+	go server_.Run()
+
+	var wg sync.WaitGroup
+	wg.Add(4)
+	for _, client_ := range clients {
+		go func(client_ *client.Client) {
+			defer wg.Done()
+			time.Sleep(time.Second) // wait for server to start keygen operation
+			err := client_.Keygen()
+			if err != nil {
+				t.Error(err)
+				return
+			}
+		}(client_)
+	}
+
+	err := server_.Keygen()
+	assert.NoError(t, err)
+
+	wg.Wait() // wait for clients
+
+	// checks
+
+	pubkeyServer, err := server_.Tss.GetPublicKey()
+	assert.NoError(t, err)
+	pubkeyClient, err := clients[0].Tss.GetPublicKey()
+	assert.NoError(t, err)
+
+	assert.Equal(t, pubkeyServer, pubkeyClient)
+}
+
+func TestManyNetworkingSigning(t *testing.T) {
+	for {
+		TestNetworkingSigning(t)
+		fmt.Println("===================================================================")
+	}
+}
 
 func TestNetworkingSigning(t *testing.T) {
 	msg := fixtures.Message()
