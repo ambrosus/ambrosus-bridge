@@ -1,8 +1,8 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0xf7E15b720867747a536137f4EFdAB4309225f8D6",
-      "side": "0x5570DF279dA47Fa46aBa4c1e27b55c8e1d6648A1"
+      "amb": "0xA6DA88253D4aBFf6b8aC1E1CD9e66D2081C47851",
+      "side": "0x0c3001D98a02dFFf10814E2e5e1DA5a276C2552a"
     },
     "bsc": {
       "amb": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
@@ -14,13 +14,17 @@
       "name": "Synthetic Amber",
       "symbol": "SAMB",
       "denomination": 18,
+      "decimals": {
+        "eth": 18,
+        "bsc": 18
+      },
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "primaryNets": [
         "amb"
       ],
       "addresses": {
         "amb": "0xBC3422cD37a271C7c388AEEeBC71cCBAD7FE368f",
-        "eth": "0x888eD88b44418e09412DaE1F17d1A0a9FC3681c1",
+        "eth": "0x55Be7dd776fAbe89d93bAC66ed1cf0Ab31bdd6eB",
         "bsc": "0x6d4287E23D544cab6d87518411FeAA2Ee36b26fd"
       },
       "nativeAnalog": "AMB"
@@ -29,14 +33,18 @@
       "name": "USD Coin",
       "symbol": "USDC",
       "denomination": 6,
+      "decimals": {
+        "eth": 6,
+        "bsc": 18
+      },
       "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
       "primaryNets": [
         "eth",
         "bsc"
       ],
       "addresses": {
-        "amb": "0x23df7544b9b29F6A2Cc851a34DEac16573DEB43a",
-        "eth": "0xE4d4f9897E54Ca5bE8060365033a8b665F2cA63e",
+        "amb": "0x2Fb6eeB0C2D6703D18c77426b5E8428f59D2E28d",
+        "eth": "0x096B5914C95C34Df19500DAff77470C845EC749D",
         "bsc": "0x32fac62b1196E03Ed3644a40DbFbe5728e31599A"
       },
       "nativeAnalog": ""
