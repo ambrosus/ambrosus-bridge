@@ -45,35 +45,26 @@ func (s *Server) Run() {
 func (s *Server) Sign(msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
-	if err := s.startOperation(msg); err != nil {
-		return nil, err
-	}
-	defer s.operation.Stop()
-
-	s.waitForConnections()
-	defer s.disconnectAll()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	errCh := make(chan error, 10)
 	var signature []byte
+	err := s.doOperation(msg, func(ctx context.Context, errCh chan error) {
+		s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
+	})
 
-	go s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
-
-	err := <-errCh
-	if err != nil {
-		s.logger.Error().Err(err).Msg("Sign failed")
-	} else {
-		s.logger.Info().Msg("Sign successfully finished")
-	}
 	return signature, err
 }
 
 func (s *Server) Keygen() error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	if err := s.startOperation(common.KeygenOperation); err != nil {
+	err := s.doOperation(common.KeygenOperation, func(ctx context.Context, errCh chan error) {
+		s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+	})
+
+	return err
+}
+
+func (s *Server) doOperation(operation []byte, tssOperation func(ctx context.Context, errCh chan error)) error {
+	if err := s.startOperation(operation); err != nil {
 		return err
 	}
 	defer s.operation.Stop()
@@ -86,14 +77,19 @@ func (s *Server) Keygen() error {
 
 	errCh := make(chan error, 10)
 
-	go s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+	go tssOperation(ctx, errCh)
 
 	err := <-errCh
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Keygen failed")
-	} else {
-		s.logger.Info().Msg("Keygen successfully finished")
+		s.logger.Error().Err(err).Msg("Operation failed")
+		return err
 	}
+	s.logger.Info().Msg("Operation successfully finished")
+
+	// todo read results msg (wait for all clients sends it (how??))
+	// todo check that results the same
+	// todo send "ok" msg to all clients
+
 	return err
 }
 

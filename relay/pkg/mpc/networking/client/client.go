@@ -58,36 +58,26 @@ func (s *Client) Keygen() error {
 func (s *Client) sign(msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
-	if err := s.startOperation(msg); err != nil {
-		return nil, err
-	}
-	defer s.stopOperation()
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	conn, err := s.connect(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-
-	errCh := make(chan error, 10)
 	var signature []byte
+	err := s.doOperation(msg, func(ctx context.Context, errCh chan error) {
+		s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
+	})
 
-	go s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
-
-	go func() { errCh <- s.receiver(conn) }()         // server -> Tss
-	go func() { errCh <- s.transmitter(ctx, conn) }() // Tss -> server
-
-	err = <-errCh
 	return signature, err
 }
 
 func (s *Client) keygen() error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	if err := s.startOperation(common.KeygenOperation); err != nil {
+	err := s.doOperation(common.KeygenOperation, func(ctx context.Context, errCh chan error) {
+		s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+	})
+
+	return err
+}
+
+func (s *Client) doOperation(operation []byte, tssOperation func(ctx context.Context, errCh chan error)) error {
+	if err := s.startOperation(operation); err != nil {
 		return err
 	}
 	defer s.stopOperation()
@@ -103,12 +93,29 @@ func (s *Client) keygen() error {
 
 	errCh := make(chan error, 10)
 
-	go s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+	go tssOperation(ctx, errCh)
 
 	go func() { errCh <- s.receiver(conn) }()         // server -> Tss
 	go func() { errCh <- s.transmitter(ctx, conn) }() // Tss -> server
 
 	err = <-errCh
+
+	if err != nil {
+		return err
+	}
+
+	// todo send result
+
+	// server sends "ok" when all clients send they result;
+	// it's improving security and keep WS connection until all output msg sent by transmitter;
+	// todo
+	//_, okMsg, err := conn.ReadMessage()
+	//if err != nil {
+	//	return fmt.Errorf("ok msg error: %w", err)
+	//} else if bytes.Equal(okMsg, []byte("ok")) {
+	//	return fmt.Errorf("wrong ok msg: %v", okMsg)
+	//}
+
 	return err
 }
 
