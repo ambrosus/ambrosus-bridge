@@ -125,10 +125,12 @@ func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 	}
 
 	for _, id := range msg.SendToIds {
+		s.logger.Debug().Str("To", id).Msg("Send message to client")
 
 		// send to own tss
 		if id == s.Tss.MyID() {
 			s.operation.InCh <- msg.Message
+			s.logger.Debug().Str("To", id).Msg("Send message to myself successfully")
 			continue
 		}
 
@@ -139,11 +141,11 @@ func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 			return fmt.Errorf("connection %v not found", id)
 			// todo maybe call waitForConnections on this error
 		}
-		s.logger.Debug().Msg("Send message to client")
+
 		if err := conn.WriteMessage(websocket.BinaryMessage, msg.Message); err != nil {
 			return fmt.Errorf("writeMessage: %w", err)
 		}
-		s.logger.Debug().Msg("Send message to client sucessfully")
+		s.logger.Debug().Str("To", id).Msg("Send message to client sucessfully")
 	}
 
 	return nil
