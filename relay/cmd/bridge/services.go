@@ -18,6 +18,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless2"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless_mpc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
@@ -64,7 +65,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		}
 
 		receiver, err := mpc.NewMpcReceiver(sideBridge, mpcSigner)
-		ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: receiver})
+		ambSubmitter, err = untrustless_mpc.NewSubmitterUntrustlessMpc(ambBridge, &untrustless_mpc.ReceiverUntrustlessMpc{Receiver: receiver}, cfg.Mpc.IsServer)
 
 	default:
 		logger.Info().Msg("amb->side submitter is disabled")
