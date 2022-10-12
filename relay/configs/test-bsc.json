@@ -14,6 +14,7 @@
             "privateKey": "in env"
         }
     },
+
     "submitters": {
         "enable": true,
         "sideToAmb": "posa",
@@ -35,13 +36,13 @@
     "pauseUnpauseWatchdogs": {
         "enable": true
     },
-    "triggers": {
+    "triggers":  {
         "enable": true
     },
-    "unlockers": {
+    "unlockers":  {
         "enable": true
     },
-    "feeApi": {
+    "feeApi":  {
         "enable": true,
         "ip": "",
         "port": "8080",
@@ -67,6 +68,7 @@
             ]
         }
     },
+
     "externalLogger": {
         "telegram": {
             "enable": true,
