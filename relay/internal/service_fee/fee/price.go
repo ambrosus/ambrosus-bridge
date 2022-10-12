@@ -2,6 +2,7 @@ package fee
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/price"
@@ -26,6 +27,16 @@ func (p *Fee) getPrices(bridge, sideBridge BridgeFeeApi, tokenAddress common.Add
 		err = fmt.Errorf("getTokenPrice native sideBridge: %w", err)
 		return
 	}
+
+	if bridge == p.amb { // if bridge is amb, then we must use token address from sideBridge
+		tokenAddress, err = bridge.GetContract().TokenAddresses(nil, tokenAddress)
+		if err != nil {
+			err = fmt.Errorf("TokenAddresses: %w", err)
+			return
+		}
+		bridge = p.side
+	}
+
 	tokenUsdPrice, err = p.getTokenPrice(bridge, tokenAddress)
 	if err != nil {
 		err = fmt.Errorf("getTokenPrice %v: %w", tokenAddress, err)
@@ -68,5 +79,7 @@ func (*priceGetterS) tokenPrice(bridge BridgeFeeApi, tokenAddress common.Address
 	if err != nil {
 		return decimal.Decimal{}, fmt.Errorf("get token price: %w", err)
 	}
+
+	bridge.GetLogger().Debug().Msgf("fetched %s price: %f", tokenSymbol, tokenPrice * math.Pow10(int(tokenDecimals)))
 	return decimal.NewFromFloat(tokenPrice), nil
 }

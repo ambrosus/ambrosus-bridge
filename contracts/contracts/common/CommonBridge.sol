@@ -12,8 +12,10 @@ import "../checks/SignatureCheck.sol";
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
     // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");  // can change tokens; unpause contract; change params like lockTime, minSafetyBlocks, ...
+    bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");  // can submit transfers
+    bytes32 public constant WATCHDOG_ROLE = keccak256("WATCHDOG_ROLE");  // can pause contract
+    bytes32 public constant FEE_PROVIDER_ROLE = keccak256("FEE_PROVIDER_ROLE");  // fee signatures must be signed by this role
 
     // Signature contains timestamp divided by SIGNATURE_FEE_TIMESTAMP; SIGNATURE_FEE_TIMESTAMP should be the same on relay;
     uint private constant SIGNATURE_FEE_TIMESTAMP = 1800;  // 30 min
@@ -283,7 +285,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     // pause
 
-    function pause() public onlyRole(ADMIN_ROLE) {
+    function pause() public onlyRole(WATCHDOG_ROLE) {
         _pause();
     }
 
@@ -345,7 +347,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
                 ));
 
             signer = ecdsaRecover(messageHash, signature);
-            if (hasRole(RELAY_ROLE, signer))
+            if (hasRole(FEE_PROVIDER_ROLE, signer))
                 return;
             timestampEpoch--;
         }

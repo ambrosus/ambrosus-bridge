@@ -16,6 +16,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig_(hre.network);
 
   const wbnb = configFile.tokens.WBNB;
+
+  if (wbnb === undefined) {
+    console.log("wBNB is not in config")
+    return
+  }
   if (isAddress(wbnb.addresses.bsc)) {
     console.log("wBNB already deployed");
     return;

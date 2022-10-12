@@ -45,3 +45,8 @@ type ReceiverUntrustless interface {
 	SubmitTransferUntrustless(*bindings.BridgeTransfer) error
 	IsEventAlreadyConfirmed(event *bindings.BridgeTransfer) (bool, error)
 }
+
+type ReceiverUntrustless2 interface {
+	Receiver
+	SubmitTransferUntrustless(*bindings.BridgeTransfer) error
+}

@@ -3,27 +3,36 @@ package config
 type (
 	Submitters struct {
 		enable    `mapstructure:",squash"`
-		AmbToSide bool `mapstructure:"ambToSide"`
-		SideToAmb bool `mapstructure:"sideToAmb"`
+		AmbToSide string `mapstructure:"ambToSide"`
+		SideToAmb string `mapstructure:"sideToAmb"`
 
 		Aura *SubmitterAura `mapstructure:"aura"`
 		Pow  *SubmitterPoW  `mapstructure:"pow"`
-		//Posa    *SubmitterPoSA `mapstructure:"posa"`  PoSA doesn't need any cfg
+		Posa *SubmitterPoSA `mapstructure:"posa"`
 	}
 
 	SubmitterAura struct {
-		VSContractAddr     string `mapstructure:"vsContractAddr"`
-		FinalizeServiceUrl string `mapstructure:"finalizeServiceUrl"`
+		VSContractAddr            string `mapstructure:"vsContractAddr"`
+		FinalizeServiceUrl        string `mapstructure:"finalizeServiceUrl"`
+		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 	SubmitterPoW struct {
 		EthashDir            string `mapstructure:"ethashDir"`
 		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
 		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
 	}
+	SubmitterPoSA struct {
+		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
+	}
 )
 
 type (
-	Watchdogs struct {
+	ValidityWatchdogs struct {
+		enable        `mapstructure:",squash"`
+		EnableForAmb  bool `mapstructure:"enableForAmb"`
+		EnableForSide bool `mapstructure:"enableForSide"`
+	}
+	PauseUnpauseWatchdogs struct {
 		enable `mapstructure:",squash"`
 	}
 	Triggers struct {

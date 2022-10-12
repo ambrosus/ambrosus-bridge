@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"strings"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
@@ -60,7 +61,19 @@ func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, t
 		retry.Attempts(2),
 		retry.LastErrorOnly(true),
 	)
+
 	if err != nil {
+
+		// add useful info about insufficient funds error
+		if isInsufficientFundsErr(err) {
+			// bsc returns this info anyway, but I rather add this comment than another if statement
+			balance, err := b.GetClient().BalanceAt(context.Background(), b.GetAuth().From, nil)
+			if err != nil {
+				return fmt.Errorf("get balance error: %w", err)
+			}
+			return fmt.Errorf("%w. (Balance: %v; Require %v)", err, balance, tx.Cost())
+		}
+
 		return err
 	}
 
@@ -120,4 +133,8 @@ func (b *CommonBridge) getFailureReason(tx *types.Transaction) error {
 	}, nil)
 
 	return err
+}
+
+func isInsufficientFundsErr(err error) bool {
+	return strings.Contains(strings.ToLower(err.Error()), "insufficient funds")
 }

@@ -4,23 +4,29 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0x073F6D7a999aa5F9172f4Fe1AB4604268ecbFd0E",
+            "contractAddr": "0xcdea3ECb85D0F386Ea5D498D39c9c127380F254a",
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xd24c6D48726C0e0b15F55Bb1E1D89D875287694a",
+            "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "0xACf183fB8C6382d7cB0D5e9832528AEafC151Fcf",
             "privateKey": ""
         }
     },
 
     "submitters": {
-        "enable": true,
-        "sideToAmb": true,
-        "ambToSide": false
+        "enable": false,
+        "sideToAmb": "",
+        "ambToSide": ""
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
+        "enable": true,
+        "enableForAmb": false,
+        "enableForSide": true,
+        "__description__": "user relay for untrustless2 will only check that transfers pushed into side network (eth) are valid"
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": false
     },
     "triggers":  {

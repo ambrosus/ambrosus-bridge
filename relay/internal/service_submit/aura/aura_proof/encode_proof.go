@@ -2,7 +2,6 @@ package aura_proof
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"math/big"
 
@@ -15,8 +14,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-const maxTxSize = 1024*128 - 10240 // -10KB for extra data in request
-var ProofTooBig = errors.New("proof is too big")
+const gapForExtraData = 1024 * 10
 
 type finalizeService interface {
 	GetBlockWhenFinalize(emitBlockNum uint64) (uint64, error)
@@ -26,9 +24,10 @@ type AuraEncoder struct {
 	bridge       networks.Bridge
 	auraReceiver service_submit.ReceiverAura
 
-	vsContract      *c.Vs
-	parityClient    *parity.Client
-	finalizeService finalizeService
+	vsContract              *c.Vs
+	parityClient            *parity.Client
+	finalizeService         finalizeService
+	receiverBridgeMaxTxSize uint64
 
 	logger *zerolog.Logger
 
@@ -37,16 +36,17 @@ type AuraEncoder struct {
 }
 
 func NewAuraEncoder(bridge networks.Bridge, sideBridge service_submit.ReceiverAura,
-	vSContract *c.Vs, parityClient *parity.Client, finalizeService finalizeService) *AuraEncoder {
+	vSContract *c.Vs, parityClient *parity.Client, finalizeService finalizeService, receiverBridgeMaxTxSizeKB uint64) *AuraEncoder {
 	logger := bridge.GetLogger().With().Str("service", "AuraEncoder").Logger()
 
 	return &AuraEncoder{
-		bridge:          bridge,
-		auraReceiver:    sideBridge,
-		vsContract:      vSContract,
-		parityClient:    parityClient,
-		finalizeService: finalizeService,
-		logger:          &logger,
+		bridge:                  bridge,
+		auraReceiver:            sideBridge,
+		vsContract:              vSContract,
+		parityClient:            parityClient,
+		finalizeService:         finalizeService,
+		receiverBridgeMaxTxSize: receiverBridgeMaxTxSizeKB * 1024,
+		logger:                  &logger,
 	}
 }
 
@@ -111,7 +111,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 		}
 
 		newProof := buildProof()
-		if err = isProofTooBig(newProof); err != nil {
+		if err = c.IsProofTooBig(newProof, e.getMaxAllowedProofSize()); err != nil {
 			proof.TransferEventBlock = ^uint64(0) // max uint64, coz gaps between vsChanges work only BEFORE `TransferEventBlock`
 			return proof, err
 		}
@@ -130,7 +130,7 @@ func (e *AuraEncoder) EncodeAuraProof(transferEvent *c.BridgeTransfer, safetyBlo
 	}
 
 	newProof := buildProof()
-	if err = isProofTooBig(newProof); err != nil {
+	if err = c.IsProofTooBig(newProof, e.getMaxAllowedProofSize()); err != nil {
 		proof.TransferEventBlock = ^uint64(0) // max uint64, coz gaps between vsChanges work only BEFORE `TransferEventBlock`
 		return proof, err
 	}
@@ -158,14 +158,6 @@ func (e *AuraEncoder) fetchBlock(blockNum uint64) (*parity.Header, error) {
 	return e.parityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(blockNum)))
 }
 
-func isProofTooBig(proof *c.CheckAuraAuraProof) error {
-	size, err := proof.Size()
-	if err != nil {
-		return fmt.Errorf("proof.Size(): %w", err)
-	}
-	// todo maxRequestContentLength depends on receiver network
-	if size > maxTxSize {
-		return ProofTooBig
-	}
-	return nil
+func (e *AuraEncoder) getMaxAllowedProofSize() uint64 {
+	return e.receiverBridgeMaxTxSize - gapForExtraData
 }

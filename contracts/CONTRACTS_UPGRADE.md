@@ -17,3 +17,4 @@
 5. Gap is uint256 because the EVM only operates on 32 bytes at a time.
 6. If you rename a variable, then it will keep the same value as before after upgrading. This may be the desired behavior if the new variable is semantically the same as the old one
 7. Mappings and dynamically-sized array occupy only 32 bytes, the elements they contain are stored starting at a different storage slot that is computed using a Keccak-256 hash
+8. It is still ok to define constant state variables, because the compiler does not reserve a storage slot for these variables, and every occurrence is replaced by the respective constant expression.
