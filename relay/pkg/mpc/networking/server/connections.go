@@ -2,9 +2,9 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
-	"github.com/gorilla/websocket"
 )
 
 func (s *Server) waitForConnections(ctx context.Context) {
@@ -25,25 +25,21 @@ func (s *Server) waitForConnections(ctx context.Context) {
 
 func (s *Server) disconnectAll(err error) {
 	for id, conn := range s.connections {
-		if err != nil {
-			conn.WriteMessage(websocket.CloseMessage,
-				websocket.FormatCloseMessage(websocket.CloseProtocolError, err.Error()))
-		} else {
-			common.NormalClose(conn)
-		}
+		conn.Close(err)
+
 		s.Lock()
 		delete(s.connections, id)
 		s.Unlock()
 	}
 }
 
-func (s *Server) clientConnected(id string, conn *websocket.Conn) {
+func (s *Server) clientConnected(id string, conn *common.Conn) {
 	s.Lock()
 	defer s.Unlock()
 
 	// todo validate id
 	if oldCon, ok := s.connections[id]; ok {
-		oldCon.Close()
+		oldCon.Close(fmt.Errorf("new connection with same id"))
 	}
 	s.connections[id] = conn
 	s.connChangeCh <- 1 // todo gourutine for non-blocking channel push?

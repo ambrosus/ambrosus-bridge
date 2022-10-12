@@ -8,7 +8,6 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
-	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
 )
 
@@ -17,7 +16,7 @@ type Server struct {
 	Tss       *tss_wrap.Mpc
 	operation common.Operation
 
-	connections  map[string]*websocket.Conn
+	connections  map[string]*common.Conn
 	connChangeCh chan byte // populates when client connect or disconnect; used for waitForConnections method
 
 	results       map[string][]byte
@@ -30,7 +29,7 @@ type Server struct {
 func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 	s := &Server{
 		Tss:          tss,
-		connections:  make(map[string]*websocket.Conn),
+		connections:  make(map[string]*common.Conn),
 		connChangeCh: make(chan byte, 1000),
 		operation:    common.NewOperation(),
 		logger:       logger,
@@ -125,54 +124,6 @@ func (s *Server) startOperation(msg []byte) error {
 	s.resultsWaiter.Add(s.Tss.Threshold() - 1) // -1 because we don't need to wait for our own result
 
 	return s.operation.Start(msg)
-}
-
-func (s *Server) msgSender() {
-	s.logger.Debug().Msg("Start msgSender")
-	for {
-		select {
-		case msg := <-s.operation.OutCh:
-			s.logger.Debug().Msg("Got message from Tss")
-			err := s.sendMsg(msg)
-			if err != nil {
-				s.logger.Error().Err(err).Msg("Failed to send message")
-				// todo repeat on err
-			}
-		}
-	}
-}
-
-// sendMsg send message to own Tss or to another client(s)
-func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
-	if msg == nil || msg.SendToIds == nil {
-		return fmt.Errorf("nil message")
-	}
-
-	for _, id := range msg.SendToIds {
-		s.logger.Debug().Str("To", id).Msg("Send message to client")
-
-		// send to own tss
-		if id == s.Tss.MyID() {
-			s.operation.InCh <- msg.Message
-			s.logger.Debug().Str("To", id).Msg("Send message to myself successfully")
-			continue
-		}
-
-		// send to another client
-		conn, ok := s.connections[id]
-		if !ok {
-			s.logger.Warn().Msgf("Connection with id %s not found, ", id)
-			return fmt.Errorf("connection %v not found", id)
-			// todo maybe call waitForConnections on this error
-		}
-
-		if err := conn.WriteMessage(websocket.BinaryMessage, msg.Message); err != nil {
-			return fmt.Errorf("writeMessage: %w", err)
-		}
-		s.logger.Debug().Str("To", id).Msg("Send message to client sucessfully")
-	}
-
-	return nil
 }
 
 func checkResults(results map[string][]byte, resultFunc func() ([]byte, error)) error {

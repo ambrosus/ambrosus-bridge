@@ -112,7 +112,7 @@ func (s *Client) doOperation(
 		return err
 	}
 	// if connection don't close normally (at the end of function) disconnect with error
-	defer conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseProtocolError, "some error happened"))
+	defer conn.ErrorClose(websocket.CloseProtocolError, "some error happened")
 
 	tssErrCh := make(chan error, 10)
 	wsErrCh := make(chan error, 10)
@@ -150,7 +150,7 @@ func (s *Client) doOperation(
 		return fmt.Errorf("ws error: %w", err)
 	}
 
-	common.NormalClose(conn)
+	conn.NormalClose()
 	return nil
 }
 
@@ -163,7 +163,7 @@ func (s *Client) stopOperation() {
 	s.operation.Stop()
 }
 
-func (s *Client) connect(ctx context.Context) (*websocket.Conn, error) {
+func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 	headers := make(http.Header)
 	headers.Add(common.HeaderTssID, s.Tss.MyID())
 	headers.Add(common.HeaderTssOperation, fmt.Sprintf("%x", s.operation.SignMsg)) // as hex
@@ -182,13 +182,13 @@ func (s *Client) connect(ctx context.Context) (*websocket.Conn, error) {
 
 	s.logger.Debug().Msg("Connected to server")
 
-	return conn, nil
+	return &common.Conn{Conn: conn}, nil
 }
 
-func (s *Client) receiver(conn *websocket.Conn) error {
+func (s *Client) receiver(conn *common.Conn) error {
 	// breaks when connection closed
 	for {
-		_, msgBytes, err := conn.ReadMessage()
+		msgBytes, err := conn.Read()
 		if err != nil {
 			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
 				return nil
@@ -200,7 +200,7 @@ func (s *Client) receiver(conn *websocket.Conn) error {
 	}
 }
 
-func (s *Client) transmitter(ctx context.Context, conn *websocket.Conn) error {
+func (s *Client) transmitter(ctx context.Context, conn *common.Conn) error {
 	for {
 		select {
 		case msg := <-s.operation.OutCh:
@@ -208,7 +208,7 @@ func (s *Client) transmitter(ctx context.Context, conn *websocket.Conn) error {
 			if err != nil {
 				return fmt.Errorf("marshal message: %w", err)
 			}
-			if err := conn.WriteMessage(websocket.BinaryMessage, msgBytes); err != nil {
+			if err := conn.Write(msgBytes); err != nil {
 				return fmt.Errorf("write message: %w", err)
 			}
 		case <-ctx.Done():
@@ -217,14 +217,14 @@ func (s *Client) transmitter(ctx context.Context, conn *websocket.Conn) error {
 	}
 }
 
-func sendResult(conn *websocket.Conn, resultFunc func() ([]byte, error)) error {
+func sendResult(conn *common.Conn, resultFunc func() ([]byte, error)) error {
 	result, err := resultFunc()
 	if err != nil {
 		return fmt.Errorf("get result: %w", err)
 	}
 	resultMsg := append(common.ResultPrefix, result...)
 	// todo fix concurrent write to conn (this goroutine and transmitter)
-	if err := conn.WriteMessage(websocket.BinaryMessage, resultMsg); err != nil {
+	if err := conn.Write(resultMsg); err != nil {
 		return fmt.Errorf("write result message: %w", err)
 	}
 	return nil

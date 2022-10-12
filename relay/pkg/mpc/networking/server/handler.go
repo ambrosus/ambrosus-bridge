@@ -40,11 +40,13 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn_, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		connLogger.Error().Err(err).Msg("Failed to upgrade connection to websocket")
 		return
 	}
+
+	conn := &common.Conn{Conn: conn_}
 
 	// register connection (now ready for protocol)
 	s.clientConnected(clientID, conn)
@@ -53,7 +55,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	result, err := s.receiveMsgs(conn, connLogger)
 	if err != nil {
 		connLogger.Error().Err(err).Msg("Server error")
-		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInternalServerErr, err.Error()))
+		conn.Close(err)
 		return
 	}
 
@@ -79,9 +81,9 @@ func parseHeaders(r *http.Request) (string, []byte, error) {
 	return clientID, operation, err
 }
 
-func (s *Server) receiveMsgs(conn *websocket.Conn, logger zerolog.Logger) ([]byte, error) {
+func (s *Server) receiveMsgs(conn *common.Conn, logger zerolog.Logger) ([]byte, error) {
 	for {
-		_, msgBytes, err := conn.ReadMessage()
+		msgBytes, err := conn.Read()
 		if err != nil {
 			return nil, fmt.Errorf("read protocol message: %w", err)
 		}
