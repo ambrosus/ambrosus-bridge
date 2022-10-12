@@ -59,9 +59,14 @@ func (s *Client) sign(msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	var signature []byte
-	err := s.doOperation(msg, func(ctx context.Context, errCh chan error) {
-		s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
-	})
+	err := s.doOperation(msg,
+		func(ctx context.Context, errCh chan error) {
+			s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
+		},
+		func() ([]byte, error) {
+			return signature, nil
+		},
+	)
 
 	return signature, err
 }
@@ -69,14 +74,23 @@ func (s *Client) sign(msg []byte) ([]byte, error) {
 func (s *Client) keygen() error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	err := s.doOperation(common.KeygenOperation, func(ctx context.Context, errCh chan error) {
-		s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
-	})
+	err := s.doOperation(common.KeygenOperation,
+		func(ctx context.Context, errCh chan error) {
+			s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+		},
+		func() ([]byte, error) {
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
 
 	return err
 }
 
-func (s *Client) doOperation(operation []byte, tssOperation func(ctx context.Context, errCh chan error)) error {
+func (s *Client) doOperation(operation []byte,
+	tssOperation func(ctx context.Context, errCh chan error),
+	resultFunc func() ([]byte, error),
+) error {
 	if err := s.startOperation(operation); err != nil {
 		return err
 	}
@@ -89,34 +103,47 @@ func (s *Client) doOperation(operation []byte, tssOperation func(ctx context.Con
 	if err != nil {
 		return err
 	}
-	defer common.NormalClose(conn)
+	// if connection don't close normally (at the end of function) disconnect with error
+	defer conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseProtocolError, "some error happened"))
 
-	errCh := make(chan error, 10)
+	tssErrCh := make(chan error, 10)
+	wsErrCh := make(chan error, 10)
 
-	go tssOperation(ctx, errCh)
+	go tssOperation(ctx, tssErrCh)
 
-	go func() { errCh <- s.receiver(conn) }()         // server -> Tss
-	go func() { errCh <- s.transmitter(ctx, conn) }() // Tss -> server
+	go func() { wsErrCh <- s.receiver(conn) }()         // server -> Tss
+	go func() { wsErrCh <- s.transmitter(ctx, conn) }() // Tss -> server
 
-	err = <-errCh
+	// wait for nil in tssErrCh
+	// any value in wsErrCh at this point means error (even nil, coz it means connection closed)
+	select {
+	case err = <-tssErrCh:
+		if err != nil {
+			return err
+		}
+	case err = <-wsErrCh:
+		// ws shouldn't return anything at this point
+		return fmt.Errorf("ws error: %w", err)
+	}
+	// tss operation finished!
 
-	if err != nil {
+	s.logger.Debug().Msg("Tss operation finished")
+
+	// sending result (signature or address) to server
+	if err = sendResult(conn, resultFunc); err != nil {
 		return err
 	}
+	s.logger.Debug().Msg("Result sent")
 
-	// todo send result
+	// server close connection normally when all clients send they result;
+	// wsErrCh got nil (in receiver goroutine) when connection closed normally
+	err = <-wsErrCh
+	if err != nil {
+		return fmt.Errorf("ws error: %w", err)
+	}
 
-	// server sends "ok" when all clients send they result;
-	// it's improving security and keep WS connection until all output msg sent by transmitter;
-	// todo
-	//_, okMsg, err := conn.ReadMessage()
-	//if err != nil {
-	//	return fmt.Errorf("ok msg error: %w", err)
-	//} else if bytes.Equal(okMsg, []byte("ok")) {
-	//	return fmt.Errorf("wrong ok msg: %v", okMsg)
-	//}
-
-	return err
+	common.NormalClose(conn)
+	return nil
 }
 
 func (s *Client) startOperation(msg []byte) error {
@@ -180,4 +207,17 @@ func (s *Client) transmitter(ctx context.Context, conn *websocket.Conn) error {
 			return ctx.Err()
 		}
 	}
+}
+
+func sendResult(conn *websocket.Conn, resultFunc func() ([]byte, error)) error {
+	result, err := resultFunc()
+	if err != nil {
+		return fmt.Errorf("get result: %w", err)
+	}
+	resultMsg := append(common.ResultPrefix, result...)
+	// todo fix concurrent write to conn (this goroutine and transmitter)
+	if err := conn.WriteMessage(websocket.BinaryMessage, resultMsg); err != nil {
+		return fmt.Errorf("write result message: %w", err)
+	}
+	return nil
 }

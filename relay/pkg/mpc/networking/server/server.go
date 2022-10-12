@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"sync"
@@ -18,6 +19,9 @@ type Server struct {
 
 	connections  map[string]*websocket.Conn
 	connChangeCh chan byte // populates when client connect or disconnect; used for waitForConnections method
+
+	results       map[string][]byte
+	resultsWaiter *sync.WaitGroup
 
 	logger *zerolog.Logger
 }
@@ -40,15 +44,19 @@ func (s *Server) Run() {
 }
 
 // todo if threshold < partyLen, do we need to provide current party or use full party? client doesn't know about current part of party
-// todo defer (stop operation; disconnect clients) after keygen/sign finished
 
 func (s *Server) Sign(msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	var signature []byte
-	err := s.doOperation(msg, func(ctx context.Context, errCh chan error) {
-		s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
-	})
+	err := s.doOperation(msg,
+		func(ctx context.Context, errCh chan error) {
+			s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
+		},
+		func() ([]byte, error) {
+			return signature, nil
+		},
+	)
 
 	return signature, err
 }
@@ -56,23 +64,33 @@ func (s *Server) Sign(msg []byte) ([]byte, error) {
 func (s *Server) Keygen() error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	err := s.doOperation(common.KeygenOperation, func(ctx context.Context, errCh chan error) {
-		s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
-	})
+	err := s.doOperation(common.KeygenOperation,
+		func(ctx context.Context, errCh chan error) {
+			s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+		},
+		func() ([]byte, error) {
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
 
 	return err
 }
 
-func (s *Server) doOperation(operation []byte, tssOperation func(ctx context.Context, errCh chan error)) error {
+func (s *Server) doOperation(operation []byte,
+	tssOperation func(ctx context.Context, errCh chan error),
+	resultFunc func() ([]byte, error),
+) error {
 	if err := s.startOperation(operation); err != nil {
 		return err
 	}
 	defer s.operation.Stop()
 
 	s.waitForConnections()
-	defer s.disconnectAll()
+	// if users don't disconnect normally (at the end of function) they will receive this error
+	defer s.disconnectAll(fmt.Errorf("some error happened"))
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background()) // todo get ctx from outside
 	defer cancel()
 
 	errCh := make(chan error, 10)
@@ -81,21 +99,29 @@ func (s *Server) doOperation(operation []byte, tssOperation func(ctx context.Con
 
 	err := <-errCh
 	if err != nil {
-		s.logger.Error().Err(err).Msg("Operation failed")
+		s.logger.Error().Err(err).Msg("Tss operation failed")
 		return err
 	}
-	s.logger.Info().Msg("Operation successfully finished")
+	s.logger.Info().Msg("Tss operation successfully finished")
 
-	// todo read results msg (wait for all clients sends it (how??))
-	// todo check that results the same
-	// todo send "ok" msg to all clients
+	s.resultsWaiter.Wait()
+	if err = checkResults(s.results, resultFunc); err != nil {
+		return err
+	}
 
-	return err
+	// normal finish
+	s.disconnectAll(nil)
+	return nil
 }
 
 func (s *Server) startOperation(msg []byte) error {
 	s.Lock()
 	defer s.Unlock()
+
+	s.results = make(map[string][]byte)
+	s.resultsWaiter = new(sync.WaitGroup)
+	s.resultsWaiter.Add(s.Tss.Threshold() - 1) // -1 because we don't need to wait for our own result
+
 	return s.operation.Start(msg)
 }
 
@@ -144,5 +170,18 @@ func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 		s.logger.Debug().Str("To", id).Msg("Send message to client sucessfully")
 	}
 
+	return nil
+}
+
+func checkResults(results map[string][]byte, resultFunc func() ([]byte, error)) error {
+	ownResult, err := resultFunc()
+	if err != nil {
+		return fmt.Errorf("get result: %w", err)
+	}
+	for _, v := range results {
+		if !bytes.Equal(v, ownResult) {
+			return fmt.Errorf("results not equal")
+		}
+	}
 	return nil
 }

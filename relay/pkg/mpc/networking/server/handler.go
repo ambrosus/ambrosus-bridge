@@ -45,21 +45,24 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		connLogger.Error().Err(err).Msg("Failed to upgrade connection to websocket")
 		return
 	}
-	defer conn.Close()
 
 	// register connection (now ready for protocol)
 	s.clientConnected(clientID, conn)
 	defer s.clientDisconnected(clientID)
 
-	err = s.receiveMsgs(conn, connLogger)
+	result, err := s.receiveMsgs(conn, connLogger)
 	if err != nil {
 		connLogger.Error().Err(err).Msg("Server error")
 		conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseInternalServerErr, err.Error()))
 		return
 	}
 
-	connLogger.Debug().Msg("Client finished protocol")
-	common.NormalClose(conn)
+	s.Lock()
+	s.results[clientID] = result
+	s.Unlock()
+	s.resultsWaiter.Done()
+
+	connLogger.Debug().Hex("result", result).Msg("Client finished protocol")
 }
 
 func parseHeaders(r *http.Request) (string, []byte, error) {
@@ -76,20 +79,22 @@ func parseHeaders(r *http.Request) (string, []byte, error) {
 	return clientID, operation, err
 }
 
-// todo this func should gracefully shutdown when protocol finished
-func (s *Server) receiveMsgs(conn *websocket.Conn, logger zerolog.Logger) error {
+func (s *Server) receiveMsgs(conn *websocket.Conn, logger zerolog.Logger) ([]byte, error) {
 	for {
 		_, msgBytes, err := conn.ReadMessage()
 		if err != nil {
-			if websocket.IsCloseError(err, websocket.CloseNormalClosure) {
-				return nil
-			}
-			return fmt.Errorf("read protocol message: %w", err)
+			return nil, fmt.Errorf("read protocol message: %w", err)
+		}
+
+		// client sends result message (end of protocol)
+		if bytes.Index(msgBytes, common.ResultPrefix) == 0 { // msg starts with result prefix
+			result := msgBytes[len(common.ResultPrefix):]
+			return result, nil
 		}
 
 		msg := new(tss_wrap.OutputMessage)
 		if err := msg.Unmarshal(msgBytes); err != nil {
-			return fmt.Errorf("unmarshal protocol message: %w", err)
+			return nil, fmt.Errorf("unmarshal protocol message: %w", err)
 		}
 
 		// send client message to out sender service

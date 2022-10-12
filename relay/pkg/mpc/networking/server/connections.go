@@ -17,9 +17,17 @@ func (s *Server) waitForConnections() {
 	}
 }
 
-func (s *Server) disconnectAll() {
-	for _, conn := range s.connections {
-		common.NormalClose(conn)
+func (s *Server) disconnectAll(err error) {
+	for id, conn := range s.connections {
+		if err != nil {
+			conn.WriteMessage(websocket.CloseMessage,
+				websocket.FormatCloseMessage(websocket.CloseProtocolError, err.Error()))
+		} else {
+			common.NormalClose(conn)
+		}
+		s.Lock()
+		delete(s.connections, id)
+		s.Unlock()
 	}
 }
 
@@ -32,7 +40,7 @@ func (s *Server) clientConnected(id string, conn *websocket.Conn) {
 		oldCon.Close()
 	}
 	s.connections[id] = conn
-	s.connChangeCh <- 1
+	s.connChangeCh <- 1 // todo gourutine for non-blocking channel push?
 
 	s.logger.Debug().Str("id", id).Msg("Client connected")
 }
