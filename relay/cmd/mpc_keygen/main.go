@@ -28,7 +28,6 @@ func main() {
 	if cfg.Submitters.Mpc.IsServer {
 		server_ := server.NewServer(mpcc, &logger)
 		go http.ListenAndServe(cfg.Submitters.Mpc.ServerURL, server_)
-		go server_.Run()
 
 		err := server_.Keygen(ctx)
 		if err != nil {
