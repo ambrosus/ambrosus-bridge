@@ -510,6 +510,16 @@
           },
           {
             "internalType": "address",
+            "name": "feeProviderAddress",
+            "type": "address"
+          },
+          {
+            "internalType": "address[]",
+            "name": "watchdogsAddresses",
+            "type": "address[]"
+          },
+          {
+            "internalType": "address",
             "name": "wrappingTokenAddress",
             "type": "address"
           },
@@ -749,6 +759,24 @@
       }
     ],
     "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_fee_provider",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_watchdogs",
+        "type": "address[]"
+      }
+    ],
+    "name": "setFeeProviderAndWatchdogs",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
