@@ -69,6 +69,20 @@ func (m *Mpc) Sign(
 
 }
 
+func (m *Mpc) KeygenSync(ctx context.Context, inCh chan []byte, outCh chan *OutputMessage, optionalPreParams ...keygen.LocalPreParams) error {
+	errCh := make(chan error)
+	go m.Keygen(ctx, inCh, outCh, errCh, optionalPreParams...)
+	return <-errCh
+}
+
+func (m *Mpc) SignSync(ctx context.Context, inCh chan []byte, outCh chan *OutputMessage, msg []byte) ([]byte, error) {
+	errCh := make(chan error)
+	var result []byte
+	go m.Sign(ctx, inCh, outCh, errCh, msg, &result)
+	err := <-errCh
+	return result, err
+}
+
 // messaging is a generic function for receiving and transmitting messages.
 // loop ends when: ctx done OR some endCh receive result OR errCh receive error.
 func (m *Mpc) messaging(
