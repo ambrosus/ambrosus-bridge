@@ -42,7 +42,7 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "minTransferFeeUSD": 0.5,
+            "minTransferFeeUSD": 1,
             "explorerURL": "https://explorer-api.ambrosus-dev.io",
             "transferFeeRecipient": "0x"
         },
