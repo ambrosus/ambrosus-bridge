@@ -4,23 +4,26 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-dev.io",
             "wsUrl": "wss://network.ambrosus-dev.io/ws",
-            "contractAddr": "0xf7E15b720867747a536137f4EFdAB4309225f8D6",
+            "contractAddr": "0xA6DA88253D4aBFf6b8aC1E1CD9e66D2081C47851",
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://ropsten.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://ropsten.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x5570DF279dA47Fa46aBa4c1e27b55c8e1d6648A1",
+            "httpUrl": "https://goerli.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://goerli.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "0x0c3001D98a02dFFf10814E2e5e1DA5a276C2552a",
             "privateKey": ""
         }
     },
 
     "submitters": {
         "enable": true,
-        "sideToAmb": true,
-        "ambToSide": false
+        "sideToAmb": "",
+        "ambToSide": ""
     },
-    "watchdogs":  {
+    "validityWatchdogs":  {
+        "enable": false
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": false
     },
     "triggers":  {

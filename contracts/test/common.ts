@@ -8,7 +8,9 @@ export const expect = chai.expect;
 
 const ADMIN_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("ADMIN_ROLE"));
 const RELAY_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("RELAY_ROLE"));
-const BRIDGE_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BRIDGE_ROLE"));
+const WATCHDOG_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("WATCHDOG_ROLE"));
+const FEE_PROVIDER_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("FEE_PROVIDER_ROLE"));
+
 
 const [token1, token2, token3, token4] = [
   "0x0000000000000000000000000000000000000001", "0x0000000000000000000000000000000000000002",
@@ -57,15 +59,17 @@ describe("Common tests", () => {
     }
 
     await commonBridge.grantRole(ADMIN_ROLE, owner);
+    await commonBridge.grantRole(WATCHDOG_ROLE, owner);
     await commonBridge.grantRole(RELAY_ROLE, relay);
+    await commonBridge.grantRole(FEE_PROVIDER_ROLE, relay);
     await commonBridge.tokensAddBatch(Object.keys(tokens), Object.values(tokens));
-    await mockERC20.grantRole(BRIDGE_ROLE, commonBridge.address);
+    await mockERC20.setBridgeAddress(commonBridge.address);
 
     await mockERC20.mint(owner, 10000);
     await mockERC20.increaseAllowance(commonBridge.address, 5000);
 
     // amount of tokens "locked on side bridge", so this bridge can receive withdraws for this amount
-    await mockERC20.changeBridgeBalance(commonBridge.address, 10000);
+    await mockERC20.changeBridgeBalance(10000);
   });
 
   // todo move to another test file?

@@ -25,8 +25,10 @@ func Test_possibleAmountWithoutFees(t *testing.T) {
 		want    decimal.Decimal
 		wantErr bool
 	}{
+
+		// todo readable numbers
 		{
-			name: "$100K in AMB (should take 5%)",
+			name: "$100K in AMB (should take 1%)",
 			args: args{
 				amount:        decimalFromString("13848494031870104170397696"),
 				tokenUsdPrice: decimal.NewFromFloat(0.00000000000000000000722114619610344),
@@ -34,7 +36,7 @@ func Test_possibleAmountWithoutFees(t *testing.T) {
 				transferFee:   decimalFromString("380000000000000000000"),
 				minBridgeFee:  decimal.NewFromFloat(5),
 			},
-			want:    decimalFromString("13188661935114384924195179.3913578384840331"),
+			want:    decimalFromString("13711000229574360564746670.0511020376037148"),
 			wantErr: false,
 		},
 		{
