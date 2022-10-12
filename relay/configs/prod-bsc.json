@@ -58,7 +58,7 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api.bscscan.io/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
+            "explorerURL": "https://api.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
             "transferFeeRecipient": "0x"
         }
     },
