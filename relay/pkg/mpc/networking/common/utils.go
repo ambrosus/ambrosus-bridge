@@ -15,10 +15,12 @@ type OpError struct {
 }
 
 func (e OpError) Check(needType string) error {
-	if e.Type != needType {
-		return fmt.Errorf("not %v error: %w", needType, e.Err)
-	} else if e.Err != nil {
-		return fmt.Errorf("%v error: %w", needType, e.Err)
+	if e.Err != nil {
+		if e.Type != needType {
+			return fmt.Errorf("not %v error: %w", needType, e.Err)
+		} else {
+			return fmt.Errorf("%v error: %w", needType, e.Err)
+		}
 	}
 	return nil
 }
