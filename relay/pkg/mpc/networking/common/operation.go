@@ -13,6 +13,7 @@ type Operation struct {
 	// received from tss or another client; will be sent to own tss or another client
 	OutCh   chan *tss_wrap.OutputMessage
 	SignMsg []byte
+	FullMsg []byte
 }
 
 const chSize = 10

@@ -59,6 +59,9 @@ func (s *Client) Keygen(ctx context.Context) error {
 	}
 }
 
+// just to implement MpcSigner interface
+func (s *Client) SetFullMsg(fullMsg []byte) {}
+
 func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 

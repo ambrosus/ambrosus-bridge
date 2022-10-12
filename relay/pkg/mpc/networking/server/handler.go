@@ -16,7 +16,16 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.registerConnection(w, r)
+	if r.URL.Path == "/" {
+		s.registerConnection(w, r)
+	} else if r.URL.Path == s.fullMsgEndpoint {
+		s.fullMsgHandler(w, r)
+	}
+}
+
+func (s *Server) fullMsgHandler(w http.ResponseWriter, r *http.Request) {
+	s.logger.Debug().Str("addr", r.RemoteAddr).Msg("aaa")
+	w.Write(s.operation.FullMsg)
 }
 
 func (s *Server) registerConnection(w http.ResponseWriter, r *http.Request) {

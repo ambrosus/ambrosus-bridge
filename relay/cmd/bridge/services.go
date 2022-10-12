@@ -14,7 +14,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_pause_unpause_watchdog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/mpc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless2"
@@ -53,9 +52,9 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 			logger.Fatal().Err(err).Msg("failed to create MPC client")
 		}
 
-		var mpcSigner mpc.MpcSigner
+		var mpcSigner untrustless_mpc.MpcSigner
 		if cfg.Mpc.IsServer {
-			server_ := server.NewServer(mpcc, &logger)
+			server_ := server.NewServerWithFullMsgEndpoint(mpcc, "/tx", &logger) // TODO: get full msg endpoint from config?
 			go http.ListenAndServe(cfg.Mpc.ServerURL, server_)
 			mpcSigner = server_
 		} else {
@@ -63,8 +62,8 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 			mpcSigner = client_
 		}
 
-		receiver, err := mpc.NewMpcReceiver(sideBridge, mpcSigner)
-		ambSubmitter, err = untrustless_mpc.NewSubmitterUntrustlessMpc(ambBridge, &untrustless_mpc.ReceiverUntrustlessMpc{Receiver: receiver}, cfg.Mpc.IsServer)
+		receiver, err := untrustless_mpc.NewReceiverUntrustlessMpc(sideBridge, mpcSigner, "http://localhost:8082/tx", nil) // TODO: get serverTxUrl from config?
+		ambSubmitter, err = untrustless_mpc.NewSubmitterUntrustlessMpc(ambBridge, receiver, cfg.Mpc.IsServer)
 
 	default:
 		logger.Info().Msg("amb->side submitter is disabled")

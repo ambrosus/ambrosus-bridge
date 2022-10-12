@@ -15,6 +15,7 @@ type Server struct {
 	sync.Mutex
 	Tss       *tss_wrap.Mpc
 	operation common.Operation
+	fullMsgEndpoint string
 
 	connections  map[string]*common.Conn
 	connChangeCh chan byte // populates when client connect or disconnect; used for waitForConnections method
@@ -37,6 +38,11 @@ func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 	return s
 }
 
+func NewServerWithFullMsgEndpoint(tss *tss_wrap.Mpc, fullMsgEndpoint string, logger *zerolog.Logger) *Server {
+	s := NewServer(tss, logger)
+	s.fullMsgEndpoint = fullMsgEndpoint
+	return s
+}
 // todo if threshold < partyLen, do we need to provide current party or use full party? client doesn't know about current part of party
 
 func (s *Server) Sign(ctx context.Context, msg []byte) ([]byte, error) {
@@ -70,6 +76,10 @@ func (s *Server) Keygen(ctx context.Context) error {
 	)
 
 	return err
+}
+
+func (s *Server) SetFullMsg(fullMsg []byte) {
+	s.operation.FullMsg = fullMsg
 }
 
 func (s *Server) doOperation(
