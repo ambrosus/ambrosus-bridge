@@ -10,6 +10,8 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/ambrosus_explorer"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/etherscan"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_pause_unpause_watchdog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
@@ -123,11 +125,20 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		return
 	}
 
-	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, cfg.Amb, cfg.Side)
+	explorerAmb, err := ambrosus_explorer.NewAmbrosusExplorer(cfg.Amb.ExplorerURL, nil)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("explorerAmb not created")
+	}
+	explorerSide, err := etherscan.NewEtherscan(cfg.Side.ExplorerURL, nil)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("explorerSide not created")
+	}
+
+	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, explorerAmb, explorerSide, cfg.Amb, cfg.Side)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeAmb not created")
 	}
-	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, cfg.Side, cfg.Amb)
+	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, explorerSide, explorerAmb, cfg.Side, cfg.Amb)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeSide not created")
 	}

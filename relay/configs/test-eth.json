@@ -42,12 +42,16 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "minTransferFeeUSD": 1,
+            "explorerURL": "https://explorer-api.ambrosus-test.io",
+            "transferFeeRecipient": "0x"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "minTransferFeeUSD": 0.5,
+            "explorerURL": "https://api-ropsten.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+            "transferFeeRecipient": "0x"
         }
     },
 

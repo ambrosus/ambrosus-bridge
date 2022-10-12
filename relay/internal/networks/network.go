@@ -6,6 +6,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 )
@@ -37,6 +38,7 @@ type Bridge interface {
 	GetLogger() *zerolog.Logger
 	GetName() string
 	GetAuth() *bind.TransactOpts
+	GetContractAddress() common.Address
 
 	ProcessTx(methodName string, txOpts *bind.TransactOpts, txCallback ContractCallFn) error
 }

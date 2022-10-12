@@ -8,7 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
@@ -42,7 +41,7 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 	commonBridge.Client = parityClient
 
 	// Creating a new bridge contract instance.
-	commonBridge.Contract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.Client)
+	commonBridge.Contract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.Client)
 	if err != nil {
 		return nil, fmt.Errorf("create contract http: %w", err)
 	}
@@ -55,7 +54,7 @@ func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
 		}
 		commonBridge.WsClient = parity.NewClient(rpcWSClient)
 
-		commonBridge.WsContract, err = bindings.NewBridge(common.HexToAddress(cfg.ContractAddr), commonBridge.WsClient)
+		commonBridge.WsContract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.WsClient)
 		if err != nil {
 			return nil, fmt.Errorf("create contract ws: %w", err)
 		}
