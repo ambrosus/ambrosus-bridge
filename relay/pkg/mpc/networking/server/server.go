@@ -111,6 +111,7 @@ func (s *Server) doOperation(
 		return err
 	}
 	// tss operation finished successfully
+	s.logger.Info().Msg("Tss operation finished successfully")
 
 	// wait for all clients send results
 	if err := (<-errCh).Check("res"); err != nil {
@@ -120,12 +121,15 @@ func (s *Server) doOperation(
 	if err := checkResults(s.results, resultFunc); err != nil {
 		return err
 	}
+	s.logger.Info().Msg("Results checked successfully")
 
 	// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
 	close(s.operation.OutCh)
 	if err := (<-errCh).Check("tra"); err != nil {
 		return err
 	}
+
+	s.logger.Info().Msg("Operation finished successfully")
 
 	// normal finish
 	s.disconnectAll(nil)

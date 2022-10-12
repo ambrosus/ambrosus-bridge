@@ -127,6 +127,7 @@ func (s *Client) doOperation(
 		return err
 	}
 	// tss operation finished successfully
+	s.logger.Info().Msg("Tss operation finished successfully")
 
 	// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
 	close(s.operation.OutCh)
@@ -139,13 +140,15 @@ func (s *Client) doOperation(
 	if err = sendResult(conn, resultFunc); err != nil {
 		return err
 	}
-	s.logger.Debug().Msg("Result sent")
+	s.logger.Info().Msg("Result sent")
 
 	// server close connection normally when all clients send they result;
 	// receiver returns nil when connection closed normally
 	if err := (<-errCh).Check("res"); err != nil {
 		return err
 	}
+
+	s.logger.Info().Msg("Operation finished successfully")
 
 	conn.NormalClose()
 	return nil

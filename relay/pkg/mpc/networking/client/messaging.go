@@ -55,6 +55,7 @@ func (s *Client) transmitter(conn *common.Conn) error {
 		if err := conn.Write(msgBytes); err != nil {
 			return fmt.Errorf("write message: %w", err)
 		}
+		s.logger.Debug().Msg("Send message to server successfully")
 	}
 	return nil
 }
@@ -65,7 +66,6 @@ func sendResult(conn *common.Conn, resultFunc func() ([]byte, error)) error {
 		return fmt.Errorf("get result: %w", err)
 	}
 	resultMsg := append(common.ResultPrefix, result...)
-	// todo fix concurrent write to conn (this goroutine and transmitter)
 	if err := conn.Write(resultMsg); err != nil {
 		return fmt.Errorf("write result message: %w", err)
 	}

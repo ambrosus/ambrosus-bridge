@@ -15,7 +15,6 @@ import (
 func (s *Server) transmitter(outCh chan *tss_wrap.OutputMessage) error {
 	s.logger.Debug().Msg("Start transmitter")
 	for msg := range outCh {
-		s.logger.Debug().Msg("Got message from Tss")
 		err := s.sendMsg(msg)
 		if err != nil {
 			s.logger.Error().Err(err).Msg("Failed to send message")
@@ -87,7 +86,9 @@ func (s *Server) receiver(ch chan *tss_wrap.OutputMessage) error {
 	return eg.Wait()
 }
 
-func receiver(conn *common.Conn, outCh chan *tss_wrap.OutputMessage) ([]byte, error) {
+func (s *Server) receiveMsgs(clientID string, outCh chan *tss_wrap.OutputMessage) ([]byte, error) {
+	s.logger.Debug().Str("clientID", clientID).Msg("Start receive messages from client")
+	conn := s.connections[clientID]
 	for {
 		msgBytes, err := conn.Read()
 		if err != nil {
@@ -97,8 +98,10 @@ func receiver(conn *common.Conn, outCh chan *tss_wrap.OutputMessage) ([]byte, er
 		// client sends result message (end of protocol)
 		if bytes.Index(msgBytes, common.ResultPrefix) == 0 { // msg starts with result prefix
 			result := msgBytes[len(common.ResultPrefix):]
+			s.logger.Debug().Str("ClientID", clientID).Msg("Receive result message from client")
 			return result, nil
 		}
+		s.logger.Debug().Str("ClientID", clientID).Msg("Receive message from client")
 
 		msg := new(tss_wrap.OutputMessage)
 		if err := msg.Unmarshal(msgBytes); err != nil {
