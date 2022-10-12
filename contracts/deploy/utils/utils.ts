@@ -72,6 +72,8 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
     {
         adminAddress: owner,
         relayAddress: owner,
+        feeProviderAddress: owner,
+        watchdogsAddresses: [owner],
         transferFeeRecipient: owner,
         bridgeFeeRecipient: owner,
         multisig: {
@@ -84,6 +86,8 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
   const reallyCommonArgs = {
     adminAddress: cfg.adminAddress,
     relayAddress: cfg.relayAddress,
+    feeProviderAddress: cfg.feeProviderAddress,
+    watchdogsAddresses: cfg.watchdogsAddresses,
     transferFeeRecipient: cfg.transferFeeRecipient,
     bridgeFeeRecipient: cfg.bridgeFeeRecipient,
 
