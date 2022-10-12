@@ -3,6 +3,7 @@ package mpc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -11,7 +12,7 @@ import (
 )
 
 type MpcSigner interface {
-	Sign([]byte) ([]byte, error)
+	Sign(ctx context.Context, msg []byte) ([]byte, error)
 }
 
 type MpcReceiver struct {
@@ -44,7 +45,8 @@ func (b *MpcReceiver) GetAuth() *bind.TransactOpts {
 
 func (b *MpcReceiver) MpcSign(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
 	hash := b.signer.Hash(tx).Bytes()
-	sig, err := b.mpcSigner.Sign(hash)
+	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+	sig, err := b.mpcSigner.Sign(ctx, hash)
 	if err != nil {
 		return nil, fmt.Errorf("mpcSigner sign: %w", err)
 	}

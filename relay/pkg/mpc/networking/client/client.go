@@ -33,33 +33,39 @@ func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Cli
 	return s
 }
 
-func (s *Client) Sign(msg []byte) ([]byte, error) {
+func (s *Client) Sign(ctx context.Context, msg []byte) ([]byte, error) {
 	for {
-		sig, err := s.sign(msg)
+		sig, err := s.sign(ctx, msg)
 		if err == nil {
 			return sig, nil
 		}
 		s.logger.Error().Err(err).Msg("sign error")
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
 		time.Sleep(time.Second)
 	}
 }
 
-func (s *Client) Keygen() error {
+func (s *Client) Keygen(ctx context.Context) error {
 	for {
-		err := s.keygen()
+		err := s.keygen(ctx)
 		if err == nil {
 			return nil
 		}
 		s.logger.Error().Err(err).Msg("keygen error")
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
 		time.Sleep(time.Second)
 	}
 }
 
-func (s *Client) sign(msg []byte) ([]byte, error) {
+func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	var signature []byte
-	err := s.doOperation(msg,
+	err := s.doOperation(ctx, msg,
 		func(ctx context.Context, errCh chan error) {
 			s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
 		},
@@ -71,10 +77,10 @@ func (s *Client) sign(msg []byte) ([]byte, error) {
 	return signature, err
 }
 
-func (s *Client) keygen() error {
+func (s *Client) keygen(ctx context.Context) error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	err := s.doOperation(common.KeygenOperation,
+	err := s.doOperation(ctx, common.KeygenOperation,
 		func(ctx context.Context, errCh chan error) {
 			s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
 		},
@@ -87,7 +93,9 @@ func (s *Client) keygen() error {
 	return err
 }
 
-func (s *Client) doOperation(operation []byte,
+func (s *Client) doOperation(
+	parentCtx context.Context,
+	operation []byte,
 	tssOperation func(ctx context.Context, errCh chan error),
 	resultFunc func() ([]byte, error),
 ) error {
@@ -96,7 +104,7 @@ func (s *Client) doOperation(operation []byte,
 	}
 	defer s.stopOperation()
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(parentCtx)
 	defer cancel()
 
 	conn, err := s.connect(ctx)

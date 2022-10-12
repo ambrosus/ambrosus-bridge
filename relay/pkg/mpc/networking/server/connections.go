@@ -1,16 +1,22 @@
 package server
 
 import (
+	"context"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/gorilla/websocket"
 )
 
-func (s *Server) waitForConnections() {
+func (s *Server) waitForConnections(ctx context.Context) {
 	s.logger.Debug().Msg("Wait for connections")
 	for {
 		if len(s.connections) < s.Tss.Threshold()-1 { // -1 coz server
-			<-s.connChangeCh // wait for new connections
-			continue
+			select {
+			case <-s.connChangeCh: // wait for new connections
+				continue
+			case <-ctx.Done():
+				return
+			}
 		}
 		s.logger.Debug().Msg("All connections established")
 		return

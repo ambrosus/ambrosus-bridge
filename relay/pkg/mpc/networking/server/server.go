@@ -45,11 +45,11 @@ func (s *Server) Run() {
 
 // todo if threshold < partyLen, do we need to provide current party or use full party? client doesn't know about current part of party
 
-func (s *Server) Sign(msg []byte) ([]byte, error) {
+func (s *Server) Sign(ctx context.Context, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	var signature []byte
-	err := s.doOperation(msg,
+	err := s.doOperation(ctx, msg,
 		func(ctx context.Context, errCh chan error) {
 			s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
 		},
@@ -61,10 +61,10 @@ func (s *Server) Sign(msg []byte) ([]byte, error) {
 	return signature, err
 }
 
-func (s *Server) Keygen() error {
+func (s *Server) Keygen(ctx context.Context) error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	err := s.doOperation(common.KeygenOperation,
+	err := s.doOperation(ctx, common.KeygenOperation,
 		func(ctx context.Context, errCh chan error) {
 			s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
 		},
@@ -77,7 +77,9 @@ func (s *Server) Keygen() error {
 	return err
 }
 
-func (s *Server) doOperation(operation []byte,
+func (s *Server) doOperation(
+	parentCtx context.Context,
+	operation []byte,
 	tssOperation func(ctx context.Context, errCh chan error),
 	resultFunc func() ([]byte, error),
 ) error {
@@ -86,12 +88,12 @@ func (s *Server) doOperation(operation []byte,
 	}
 	defer s.operation.Stop()
 
-	s.waitForConnections()
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
+	s.waitForConnections(ctx)
 	// if users don't disconnect normally (at the end of function) they will receive this error
 	defer s.disconnectAll(fmt.Errorf("some error happened"))
-
-	ctx, cancel := context.WithCancel(context.Background()) // todo get ctx from outside
-	defer cancel()
 
 	errCh := make(chan error, 10)
 

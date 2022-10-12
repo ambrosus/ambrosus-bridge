@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog/log"
 
@@ -22,19 +24,20 @@ func main() {
 	logger := log.Logger
 	mpcc := tss_wrap.NewMpc(cfg.Submitters.Mpc.MeID, cfg.Submitters.Mpc.PartyLen, &logger)
 
+	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 	if cfg.Submitters.Mpc.IsServer {
 		server_ := server.NewServer(mpcc, &logger)
 		go http.ListenAndServe(cfg.Submitters.Mpc.ServerURL, server_)
 		go server_.Run()
 
-		err := server_.Keygen()
+		err := server_.Keygen(ctx)
 		if err != nil {
 			logger.Fatal().Err(err).Msg("error on untrustless mpc server keygen")
 		}
 	} else {
 		client_ := client.NewClient(mpcc, cfg.Submitters.Mpc.ServerURL, &logger)
 
-		err := client_.Keygen()
+		err := client_.Keygen(ctx)
 		if err != nil {
 			logger.Err(err).Msg("error on untrustless mpc client keygen")
 		}

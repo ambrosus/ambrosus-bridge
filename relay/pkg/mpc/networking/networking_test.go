@@ -1,6 +1,7 @@
 package networking
 
 import (
+	"context"
 	"fmt"
 	"net/http/httptest"
 	"strings"
@@ -20,6 +21,9 @@ import (
 var logger = log.Logger
 
 func TestNetworkingKeygen(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	// todo use pre params
 	server_ := createServer(0)
 	ts := httptest.NewServer(server_)
@@ -36,7 +40,7 @@ func TestNetworkingKeygen(t *testing.T) {
 		go func(client_ *client.Client) {
 			defer wg.Done()
 			time.Sleep(time.Second) // wait for server to start keygen operation
-			err := client_.Keygen()
+			err := client_.Keygen(ctx)
 			if err != nil {
 				t.Error(err)
 				return
@@ -44,7 +48,7 @@ func TestNetworkingKeygen(t *testing.T) {
 		}(client_)
 	}
 
-	err := server_.Keygen()
+	err := server_.Keygen(ctx)
 	assert.NoError(t, err)
 
 	wg.Wait() // wait for clients
@@ -67,6 +71,9 @@ func TestManyNetworkingSigning(t *testing.T) {
 }
 
 func TestNetworkingSigning(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
 	msg := fixtures.Message()
 
 	server_ := createServer(0)
@@ -81,7 +88,7 @@ func TestNetworkingSigning(t *testing.T) {
 	for _, client_ := range clients {
 		go func(client_ *client.Client) {
 			time.Sleep(time.Second) // wait for server to start sign operation
-			_, err := client_.Sign(msg)
+			_, err := client_.Sign(ctx, msg)
 			if err != nil {
 				t.Error(err)
 				return
@@ -89,7 +96,7 @@ func TestNetworkingSigning(t *testing.T) {
 		}(client_)
 	}
 
-	signature, err := server_.Sign(msg)
+	signature, err := server_.Sign(ctx, msg)
 	assert.NoError(t, err)
 
 	// checks
