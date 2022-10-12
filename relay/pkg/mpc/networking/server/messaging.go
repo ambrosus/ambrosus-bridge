@@ -65,9 +65,10 @@ func (s *Server) receiver(ch chan *tss_wrap.OutputMessage) error {
 	s.logger.Debug().Msg("Start receiver")
 
 	eg := new(errgroup.Group)
-	for id, conn := range s.connections {
+	for id_ := range s.connections {
+		id := id_
 		eg.Go(func() error {
-			result, err := receiver(conn, ch)
+			result, err := s.receiveMsgs(id, ch)
 			if err != nil {
 				s.logger.Error().Str("clientID", id).Err(err).Msg("Receive message from client error")
 				return fmt.Errorf("receive message from client %s: %w", id, err)
