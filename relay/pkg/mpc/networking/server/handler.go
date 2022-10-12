@@ -7,9 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 	"github.com/gorilla/websocket"
-	"github.com/rs/zerolog"
 )
 
 var upgrader = websocket.Upgrader{
@@ -18,6 +16,10 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.registerConnection(w, r)
+}
+
+func (s *Server) registerConnection(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug().Str("addr", r.RemoteAddr).Msg("New http connection")
 
 	clientID, operation, err := parseHeaders(r)
@@ -40,31 +42,14 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn_, err := upgrader.Upgrade(w, r, nil)
+	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		connLogger.Error().Err(err).Msg("Failed to upgrade connection to websocket")
 		return
 	}
 
-	conn := &common.Conn{Conn: conn_}
-
 	// register connection (now ready for protocol)
-	s.clientConnected(clientID, conn)
-	defer s.clientDisconnected(clientID)
-
-	result, err := s.receiveMsgs(conn, connLogger)
-	if err != nil {
-		connLogger.Error().Err(err).Msg("Server error")
-		conn.Close(err)
-		return
-	}
-
-	s.Lock()
-	s.results[clientID] = result
-	s.Unlock()
-	s.resultsWaiter.Done()
-
-	connLogger.Debug().Hex("result", result).Msg("Client finished protocol")
+	s.clientConnected(clientID, &common.Conn{Conn: conn})
 }
 
 func parseHeaders(r *http.Request) (string, []byte, error) {
@@ -79,29 +64,4 @@ func parseHeaders(r *http.Request) (string, []byte, error) {
 	}
 
 	return clientID, operation, err
-}
-
-func (s *Server) receiveMsgs(conn *common.Conn, logger zerolog.Logger) ([]byte, error) {
-	for {
-		msgBytes, err := conn.Read()
-		if err != nil {
-			return nil, fmt.Errorf("read protocol message: %w", err)
-		}
-
-		// client sends result message (end of protocol)
-		if bytes.Index(msgBytes, common.ResultPrefix) == 0 { // msg starts with result prefix
-			result := msgBytes[len(common.ResultPrefix):]
-			return result, nil
-		}
-
-		msg := new(tss_wrap.OutputMessage)
-		if err := msg.Unmarshal(msgBytes); err != nil {
-			return nil, fmt.Errorf("unmarshal protocol message: %w", err)
-		}
-
-		// send client message to out sender service
-		logger.Debug().Msg("Received msg")
-		s.operation.OutCh <- msg
-	}
-
 }

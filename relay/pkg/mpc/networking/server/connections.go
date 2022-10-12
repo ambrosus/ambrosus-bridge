@@ -46,16 +46,3 @@ func (s *Server) clientConnected(id string, conn *common.Conn) {
 
 	s.logger.Debug().Str("id", id).Msg("Client connected")
 }
-
-func (s *Server) clientDisconnected(id string) {
-	s.Lock()
-	defer s.Unlock()
-
-	if _, ok := s.connections[id]; ok {
-		//oldCon.Close()
-		delete(s.connections, id)
-	}
-	s.connChangeCh <- 1
-
-	s.logger.Debug().Str("id", id).Msg("Client disconnected")
-}

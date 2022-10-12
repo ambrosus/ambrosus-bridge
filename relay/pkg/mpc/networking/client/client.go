@@ -66,8 +66,9 @@ func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
 
 	var signature []byte
 	err := s.doOperation(ctx, msg,
-		func(ctx context.Context, errCh chan error) {
-			s.Tss.Sign(ctx, s.operation.InCh, s.operation.OutCh, errCh, msg, &signature)
+		func(ctx context.Context) (err error) {
+			signature, err = s.Tss.SignSync(ctx, s.operation.InCh, s.operation.OutCh, msg)
+			return err
 		},
 		func() ([]byte, error) {
 			return signature, nil
@@ -81,8 +82,8 @@ func (s *Client) keygen(ctx context.Context) error {
 	s.logger.Info().Msg("Start keygen operation")
 
 	err := s.doOperation(ctx, common.KeygenOperation,
-		func(ctx context.Context, errCh chan error) {
-			s.Tss.Keygen(ctx, s.operation.InCh, s.operation.OutCh, errCh)
+		func(ctx context.Context) error {
+			return s.Tss.KeygenSync(ctx, s.operation.InCh, s.operation.OutCh)
 		},
 		func() ([]byte, error) {
 			addr, err := s.Tss.GetAddress()
@@ -96,7 +97,7 @@ func (s *Client) keygen(ctx context.Context) error {
 func (s *Client) doOperation(
 	parentCtx context.Context,
 	operation []byte,
-	tssOperation func(ctx context.Context, errCh chan error),
+	tssOperation func(ctx context.Context) error,
 	resultFunc func() ([]byte, error),
 ) error {
 	if err := s.startOperation(operation); err != nil {
@@ -114,29 +115,25 @@ func (s *Client) doOperation(
 	// if connection don't close normally (at the end of function) disconnect with error
 	defer conn.ErrorClose(websocket.CloseProtocolError, "some error happened")
 
-	tssErrCh := make(chan error, 10)
-	wsErrCh := make(chan error, 10)
+	errCh := make(chan common.OpError)
 
-	go tssOperation(ctx, tssErrCh)
+	go func() { errCh <- common.OpError{"tss", tssOperation(ctx)} }()
+	go func() { errCh <- common.OpError{"res", s.receiver(conn)} }()    // server -> Tss
+	go func() { errCh <- common.OpError{"tra", s.transmitter(conn)} }() // Tss -> server
 
-	go func() { wsErrCh <- s.receiver(conn) }()         // server -> Tss
-	go func() { wsErrCh <- s.transmitter(ctx, conn) }() // Tss -> server
-
-	// wait for nil in tssErrCh
-	// any value in wsErrCh at this point means error (even nil, coz it means connection closed)
-	select {
-	case err = <-tssErrCh:
-		if err != nil {
-			return err
-		}
-	case err = <-wsErrCh:
-		// ws shouldn't return anything at this point
-		return fmt.Errorf("ws error: %w", err)
+	// wait for nil error in tss operation goroutine; any other error is error!
+	if err := (<-errCh).Check("tss"); err != nil {
+		return err
 	}
-	// tss operation finished!
+	// tss operation finished successfully
 
-	s.logger.Debug().Msg("Tss operation finished")
+	// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
+	close(s.operation.OutCh)
+	if err := (<-errCh).Check("tra"); err != nil {
+		return err
+	}
 
+	// now can send result to server
 	// sending result (signature or address) to server
 	if err = sendResult(conn, resultFunc); err != nil {
 		return err
@@ -144,10 +141,9 @@ func (s *Client) doOperation(
 	s.logger.Debug().Msg("Result sent")
 
 	// server close connection normally when all clients send they result;
-	// wsErrCh got nil (in receiver goroutine) when connection closed normally
-	err = <-wsErrCh
-	if err != nil {
-		return fmt.Errorf("ws error: %w", err)
+	// receiver returns nil when connection closed normally
+	if err := (<-errCh).Check("res"); err != nil {
+		return err
 	}
 
 	conn.NormalClose()
@@ -200,21 +196,17 @@ func (s *Client) receiver(conn *common.Conn) error {
 	}
 }
 
-func (s *Client) transmitter(ctx context.Context, conn *common.Conn) error {
-	for {
-		select {
-		case msg := <-s.operation.OutCh:
-			msgBytes, err := msg.Marshall()
-			if err != nil {
-				return fmt.Errorf("marshal message: %w", err)
-			}
-			if err := conn.Write(msgBytes); err != nil {
-				return fmt.Errorf("write message: %w", err)
-			}
-		case <-ctx.Done():
-			return ctx.Err()
+func (s *Client) transmitter(conn *common.Conn) error {
+	for msg := range s.operation.OutCh {
+		msgBytes, err := msg.Marshall()
+		if err != nil {
+			return fmt.Errorf("marshal message: %w", err)
+		}
+		if err := conn.Write(msgBytes); err != nil {
+			return fmt.Errorf("write message: %w", err)
 		}
 	}
+	return nil
 }
 
 func sendResult(conn *common.Conn, resultFunc func() ([]byte, error)) error {

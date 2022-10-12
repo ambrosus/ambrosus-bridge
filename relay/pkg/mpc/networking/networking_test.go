@@ -32,8 +32,6 @@ func TestNetworkingKeygen(t *testing.T) {
 
 	clients := createClients(0, 5, wsURL)
 
-	go server_.Run()
-
 	var wg sync.WaitGroup
 	wg.Add(4)
 	for _, client_ := range clients {
@@ -82,8 +80,6 @@ func TestNetworkingSigning(t *testing.T) {
 	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
 
 	clients := createClients(0, 5, wsURL)
-
-	go server_.Run()
 
 	for _, client_ := range clients {
 		go func(client_ *client.Client) {
