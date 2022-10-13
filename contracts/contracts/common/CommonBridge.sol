@@ -11,7 +11,7 @@ import "../checks/SignatureCheck.sol";
 
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
-    // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
+    // DEFAULT_ADMIN_ROLE can grants and revokes all roles below; Set to multisig (proxy contract address)
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");  // can change tokens; unpause contract; change params like lockTime, minSafetyBlocks, ...
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");  // can submit transfers
     bytes32 public constant WATCHDOG_ROLE = keccak256("WATCHDOG_ROLE");  // can pause contract
@@ -59,8 +59,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     event TransferFinish(uint indexed eventId);
 
     function __CommonBridge_init(CommonStructs.ConstructorArgs calldata args) internal initializer {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(ADMIN_ROLE, args.adminAddress);
+        _setupRole(DEFAULT_ADMIN_ROLE, address(this));
+        _setupRole(ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
         _setupRoles(WATCHDOG_ROLE, args.watchdogsAddresses);
         _setupRole(FEE_PROVIDER_ROLE, args.feeProviderAddress);
