@@ -7,7 +7,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 )
 
-func (s *Server) waitForConnections(ctx context.Context) {
+func (s *Server) waitForConnections(ctx context.Context) error {
 	s.logger.Debug().Msg("Wait for connections")
 	for {
 		if len(s.connections) < s.Tss.Threshold()-1 { // -1 coz server
@@ -15,11 +15,11 @@ func (s *Server) waitForConnections(ctx context.Context) {
 			case <-s.connChangeCh: // wait for new connections
 				continue
 			case <-ctx.Done():
-				return
+				return ctx.Err()
 			}
 		}
 		s.logger.Debug().Msg("All connections established")
-		return
+		return nil
 	}
 }
 

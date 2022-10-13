@@ -95,8 +95,9 @@ func (s *Server) doOperation(
 	ctx, cancel := context.WithCancel(parentCtx)
 	defer cancel()
 
-	s.waitForConnections(ctx)
-	// if users don't disconnect normally (at the end of function) they will receive this error
+	if err := s.waitForConnections(ctx); err != nil {
+		return fmt.Errorf("wait for connections: %w", err)
+	} // if users don't disconnect normally (at the end of function) they will receive this error
 	defer s.disconnectAll(fmt.Errorf("some error happened"))
 
 	errCh := make(chan common.OpError)
