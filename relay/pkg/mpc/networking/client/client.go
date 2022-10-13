@@ -10,7 +10,6 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
-	"github.com/gorilla/websocket"
 	"github.com/rs/zerolog"
 )
 
@@ -115,7 +114,7 @@ func (s *Client) keygen(ctx context.Context) error {
 }
 
 func (s *Client) doOperation(
-	parentCtx context.Context,
+	ctx context.Context,
 	operation []byte,
 	tssOperation func(ctx context.Context) error,
 	resultFunc func() ([]byte, error),
@@ -125,52 +124,80 @@ func (s *Client) doOperation(
 	}
 	defer s.stopOperation()
 
-	ctx, cancel := context.WithCancel(parentCtx)
-	defer cancel()
-
 	conn, err := s.connect(ctx)
 	if err != nil {
 		return err
 	}
-	// if connection don't close normally (at the end of function) disconnect with error
-	defer conn.ErrorClose(websocket.CloseProtocolError, "some error happened")
 
+	err = s.doOperation_(ctx, conn, tssOperation, resultFunc)
+
+	if err != nil {
+		s.logger.Error().Err(err).Msg("Operation error")
+		conn.Close(fmt.Errorf("client error: %w", err))
+		return err
+	}
+
+	s.logger.Info().Msg("Operation finished successfully")
+	conn.NormalClose()
+	return nil
+}
+
+func (s *Client) doOperation_(
+	ctx context.Context,
+	conn *common.Conn,
+	tssOperation func(ctx context.Context) error,
+	resultFunc func() ([]byte, error),
+) error {
 	errCh := make(chan common.OpError)
+
+	// todo same that in server
 
 	go func() { errCh <- common.OpError{"tss", tssOperation(ctx)} }()
 	go func() { errCh <- common.OpError{"res", s.receiver(conn)} }()    // server -> Tss
 	go func() { errCh <- common.OpError{"tra", s.transmitter(conn)} }() // Tss -> server
 
-	// wait for nil error in tss operation goroutine; any other error is error!
-	if err := (<-errCh).Check("tss"); err != nil {
-		return err
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case err := <-errCh:
+			if err.Err != nil {
+				return fmt.Errorf("%s error: %w", err.Type, err.Err)
+			}
+
+			// if err is nil, it means that some goroutine successfully finished
+
+			if err.Type == "tss" {
+				s.logger.Info().Msg("Tss operation finished successfully")
+
+				// tss operation finished successfully, close connection close outCh so transmitter goroutine will finish
+				close(s.operation.OutCh)
+			}
+
+			if err.Type == "tra" {
+				// transmitter will return nil when s.operation.OutCh channel closed (at the end of tssOperation)
+
+				// all messages sent, now can send result (signature or address) to server
+				if err := sendResult(conn, resultFunc); err != nil {
+					return fmt.Errorf("send result: %w", err)
+				}
+				s.logger.Info().Msg("Result sent")
+
+			}
+
+			if err.Type == "res" {
+				// receiver returns nil when connection closed normally (after server receive all results)
+
+				// server closed connection, all done
+				s.logger.Info().Msg("Receiver finished successfully")
+
+				return nil
+			}
+
+		}
 	}
-	// tss operation finished successfully
-	s.logger.Info().Msg("Tss operation finished successfully")
 
-	// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
-	close(s.operation.OutCh)
-	if err := (<-errCh).Check("tra"); err != nil {
-		return err
-	}
-
-	// now can send result to server
-	// sending result (signature or address) to server
-	if err = sendResult(conn, resultFunc); err != nil {
-		return err
-	}
-	s.logger.Info().Msg("Result sent")
-
-	// server close connection normally when all clients send they result;
-	// receiver returns nil when connection closed normally
-	if err := (<-errCh).Check("res"); err != nil {
-		return err
-	}
-
-	s.logger.Info().Msg("Operation finished successfully")
-
-	conn.NormalClose()
-	return nil
 }
 
 func (s *Client) startOperation(msg []byte) error {

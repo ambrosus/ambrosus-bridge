@@ -82,7 +82,7 @@ func (s *Server) SetFullMsg(fullMsg []byte) {
 }
 
 func (s *Server) doOperation(
-	parentCtx context.Context,
+	ctx context.Context,
 	operation []byte,
 	tssOperation func(ctx context.Context) error,
 	resultFunc func() ([]byte, error),
@@ -92,48 +92,73 @@ func (s *Server) doOperation(
 	}
 	defer s.operation.Stop()
 
-	ctx, cancel := context.WithCancel(parentCtx)
-	defer cancel()
-
 	if err := s.waitForConnections(ctx); err != nil {
 		return fmt.Errorf("wait for connections: %w", err)
-	} // if users don't disconnect normally (at the end of function) they will receive this error
-	defer s.disconnectAll(fmt.Errorf("some error happened"))
-
-	errCh := make(chan common.OpError)
-
-	go func() { errCh <- common.OpError{"tss", tssOperation(ctx)} }()
-	go func() { errCh <- common.OpError{"res", s.receiver(s.operation.OutCh)} }()
-	go func() { errCh <- common.OpError{"tra", s.transmitter(s.operation.OutCh)} }()
-
-	// wait for nil error in tss operation goroutine; any other error is error!
-	if err := (<-errCh).Check("tss"); err != nil {
-		return err
 	}
-	// tss operation finished successfully
-	s.logger.Info().Msg("Tss operation finished successfully")
 
-	// wait for all clients send results
-	if err := (<-errCh).Check("res"); err != nil {
-		return err
-	}
-	// all clients send results, check it
-	if err := checkResults(s.results, resultFunc); err != nil {
-		return err
-	}
-	s.logger.Info().Msg("Results checked successfully")
+	err := s.doOperation_(ctx, tssOperation, resultFunc)
 
-	// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
-	close(s.operation.OutCh)
-	if err := (<-errCh).Check("tra"); err != nil {
+	if err != nil {
+		s.logger.Error().Err(err).Msg("Operation error")
+		s.disconnectAll(fmt.Errorf("server error: %w", err))
 		return err
 	}
 
 	s.logger.Info().Msg("Operation finished successfully")
-
-	// normal finish
 	s.disconnectAll(nil)
 	return nil
+}
+
+func (s *Server) doOperation_(
+	ctx context.Context,
+	tssOperation func(ctx context.Context) error,
+	resultFunc func() ([]byte, error),
+) error {
+
+	errCh := make(chan common.OpError)
+
+	// todo create channels here instead of operation struct
+	// todo make tssOperation returns result
+	go func() { errCh <- common.OpError{"tss", tssOperation(ctx)} }()
+	go func() { errCh <- common.OpError{"res", s.receiver(s.operation.OutCh)} }()
+	go func() { errCh <- common.OpError{"tra", s.transmitter(s.operation.OutCh)} }()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+
+		case err := <-errCh:
+			if err.Err != nil {
+				return fmt.Errorf("%s error: %w", err.Type, err.Err)
+			}
+
+			// if err is nil, it means that some goroutine successfully finished
+
+			if err.Type == "tss" {
+				s.logger.Info().Msg("Tss operation finished successfully")
+			}
+			if err.Type == "res" {
+				// receiver returns nil when all clients send results
+
+				// todo wait for result from tss
+				if err := checkResults(s.results, resultFunc); err != nil {
+					return fmt.Errorf("check results: %w", err)
+				}
+				s.logger.Info().Msg("Results checked successfully")
+
+				// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
+				close(s.operation.OutCh)
+			}
+			if err.Type == "tra" {
+				// transmitter will return nil when s.operation.OutCh channel closed (when all client send results)
+				// at this point we received all results and sends all queued msgs, so finish protocol
+				s.logger.Info().Msg("Transmitter finished successfully")
+				return nil
+			}
+
+		}
+	}
 }
 
 func (s *Server) startOperation(msg []byte) error {
