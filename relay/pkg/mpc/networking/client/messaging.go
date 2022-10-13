@@ -17,7 +17,7 @@ func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 
 	s.logger.Debug().Msg("Connecting to server")
 
-	conn, httpResp, err := websocket.DefaultDialer.DialContext(ctx, s.serverURL, headers)
+	conn, httpResp, err := websocket.DefaultDialer.DialContext(ctx, "ws://"+s.serverURL, headers)
 	if err != nil {
 		if httpResp != nil {
 			return nil, fmt.Errorf("ws connect: %w. http resp: %v", err, httpResp.Status)

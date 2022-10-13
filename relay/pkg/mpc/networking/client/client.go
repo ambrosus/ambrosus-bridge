@@ -72,7 +72,7 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 }
 
 func (s *Client) GetFullMsg() ([]byte, error) {
-	resp, err := s.httpClient.Get(wsToHttpUrl(s.serverURL) + common.EndpointFullMsg)
+	resp, err := s.httpClient.Get("http://" + s.serverURL + common.EndpointFullMsg)
 	if err != nil {
 		return nil, err
 	}
@@ -217,13 +217,4 @@ func (s *Client) stopOperation() {
 	s.Lock()
 	defer s.Unlock()
 	s.operation = nil
-}
-
-func wsToHttpUrl(url string) string {
-	if strings.HasPrefix(url, "wss") {
-		return "https" + url[3:]
-	} else if strings.HasPrefix(url, "ws") {
-		return "http" + url[2:]
-	}
-	return url
 }
