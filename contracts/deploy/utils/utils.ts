@@ -82,9 +82,12 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
         }
     };
 
+  if (owner != cfg.adminAddress) {
+    throw `Deploying from address '${owner}', but config adminAddress is '${cfg.adminAddress}'`;
+  }
+
   // add this args to user args
   const reallyCommonArgs = {
-    adminAddress: cfg.adminAddress,
     relayAddress: cfg.relayAddress,
     feeProviderAddress: cfg.feeProviderAddress,
     watchdogsAddresses: cfg.watchdogsAddresses,

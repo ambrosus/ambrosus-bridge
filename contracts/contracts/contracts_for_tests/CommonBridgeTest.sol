@@ -10,8 +10,8 @@ contract CommonBridgeTest is CommonBridge {
     function constructor_(CommonStructs.ConstructorArgs calldata args) public {
         __CommonBridge_init(args);
 
-        // used for signature check
-        _setupRole(RELAY_ROLE, address(0x295C2707319ad4BecA6b5bb4086617fD6F240CfE));
+        // deployer now can grant roles
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     }
 
     function lockTransfersTest(CommonStructs.Transfer[] calldata events, uint eventId) public {
