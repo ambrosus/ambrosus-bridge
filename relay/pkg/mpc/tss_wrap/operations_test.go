@@ -20,7 +20,7 @@ type testPeer struct {
 func TestKeygen(t *testing.T) {
 	peers := createPeers(5)
 
-	outCh := make(chan *OutputMessage, 1000)
+	outCh := make(chan *Message, 1000)
 
 	var wg sync.WaitGroup
 	wg.Add(5)
@@ -72,7 +72,7 @@ func TestKeygen(t *testing.T) {
 func TestSign(t *testing.T) {
 	peers := createPeers(5)
 
-	outCh := make(chan *OutputMessage, 1000)
+	outCh := make(chan *Message, 1000)
 	msg := fixtures.Message()
 
 	signatures := make(map[string][]byte)
@@ -120,7 +120,7 @@ func TestSign(t *testing.T) {
 	assert.Equal(t, pubkey, sigPublicKey)
 }
 
-func messaging(outCh chan *OutputMessage, peers map[string]*testPeer) {
+func messaging(outCh chan *Message, peers map[string]*testPeer) {
 	for msg := range outCh {
 		for _, id := range msg.SendToIds {
 			//fmt.Println("send to", id)
@@ -143,7 +143,7 @@ func createPeers(count int) map[string]*testPeer {
 	return peers
 }
 
-func (p *testPeer) sign(outCh chan *OutputMessage, msg []byte) ([]byte, error) {
+func (p *testPeer) sign(outCh chan *Message, msg []byte) ([]byte, error) {
 	if err := p.peer.SetShare(fixtures.GetShare(p.peer.me.Index)); err != nil {
 		return nil, err
 	}
@@ -157,7 +157,7 @@ func (p *testPeer) sign(outCh chan *OutputMessage, msg []byte) ([]byte, error) {
 	return signature, err
 }
 
-func (p *testPeer) keygen(outCh chan *OutputMessage) error {
+func (p *testPeer) keygen(outCh chan *Message) error {
 	errCh := make(chan error, 1000)
 
 	go p.peer.Keygen(context.Background(), p.inCh, outCh, errCh, fixtures.GetPreParams(p.peer.me.Index))

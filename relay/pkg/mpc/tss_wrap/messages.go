@@ -7,8 +7,8 @@ import (
 	"github.com/bnb-chain/tss-lib/tss"
 )
 
-// OutputMessage should be sent to another participant(s)
-type OutputMessage struct {
+// Message should be sent to another participant(s)
+type Message struct {
 	SendToIds []string
 	Message   []byte // marshaled inputMessage for another participant(s)
 }
@@ -20,15 +20,15 @@ type inputMessage struct {
 	MsgWireBytes []byte
 }
 
-func (om *OutputMessage) Unmarshal(bytes []byte) error {
+func (om *Message) Unmarshal(bytes []byte) error {
 	return json.Unmarshal(bytes, om)
 }
 
-func (om *OutputMessage) Marshall() ([]byte, error) {
+func (om *Message) Marshall() ([]byte, error) {
 	return json.Marshal(om)
 }
 
-func (m *Mpc) newOutputMsg(msg tss.Message) (*OutputMessage, error) {
+func (m *Mpc) newOutputMsg(msg tss.Message) (*Message, error) {
 	// fetch IDs of all parties that should receive this message
 	var sendToIds []string
 	if msg.IsBroadcast() { // nsg.GetTo will be nil for broadcast messages
@@ -63,7 +63,7 @@ func (m *Mpc) newOutputMsg(msg tss.Message) (*OutputMessage, error) {
 		return nil, fmt.Errorf("json.Marshal: %s", err.Error())
 	}
 
-	return &OutputMessage{
+	return &Message{
 		SendToIds: sendToIds,
 		Message:   bytesToSend,
 	}, nil

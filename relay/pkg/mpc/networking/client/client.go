@@ -90,7 +90,7 @@ func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	signature, err := s.doOperation(ctx, msg,
-		func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.OutputMessage) ([]byte, error) {
+		func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.Message) ([]byte, error) {
 			return s.Tss.SignSync(ctx, inCh, outCh, msg)
 		},
 	)
@@ -102,7 +102,7 @@ func (s *Client) keygen(ctx context.Context) error {
 	s.logger.Info().Msg("Start keygen operation")
 
 	_, err := s.doOperation(ctx, common.KeygenOperation,
-		func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.OutputMessage) ([]byte, error) {
+		func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.Message) ([]byte, error) {
 			err := s.Tss.KeygenSync(ctx, inCh, outCh)
 			if err != nil {
 				return nil, err
@@ -146,7 +146,7 @@ func (s *Client) doOperation_(
 ) (ownResult []byte, err error) {
 
 	inCh := make(chan []byte, 10)
-	outCh := make(chan *tss_wrap.OutputMessage, 10)
+	outCh := make(chan *tss_wrap.Message, 10)
 	errCh := make(chan common.OpError, 3)
 
 	go func() {

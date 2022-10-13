@@ -15,7 +15,7 @@ import (
 func (m *Mpc) Keygen(
 	ctx context.Context,
 	inCh chan []byte,
-	outCh chan *OutputMessage,
+	outCh chan *Message,
 	errCh chan error,
 	optionalPreParams ...keygen.LocalPreParams,
 ) {
@@ -42,7 +42,7 @@ func (m *Mpc) Keygen(
 func (m *Mpc) Sign(
 	ctx context.Context,
 	inCh chan []byte,
-	outCh chan *OutputMessage,
+	outCh chan *Message,
 	errCh chan error,
 	msg []byte,
 	result *[]byte,
@@ -69,13 +69,13 @@ func (m *Mpc) Sign(
 
 }
 
-func (m *Mpc) KeygenSync(ctx context.Context, inCh chan []byte, outCh chan *OutputMessage, optionalPreParams ...keygen.LocalPreParams) error {
+func (m *Mpc) KeygenSync(ctx context.Context, inCh chan []byte, outCh chan *Message, optionalPreParams ...keygen.LocalPreParams) error {
 	errCh := make(chan error)
 	go m.Keygen(ctx, inCh, outCh, errCh, optionalPreParams...)
 	return <-errCh
 }
 
-func (m *Mpc) SignSync(ctx context.Context, inCh chan []byte, outCh chan *OutputMessage, msg []byte) ([]byte, error) {
+func (m *Mpc) SignSync(ctx context.Context, inCh chan []byte, outCh chan *Message, msg []byte) ([]byte, error) {
 	errCh := make(chan error)
 	var result []byte
 	go m.Sign(ctx, inCh, outCh, errCh, msg, &result)
@@ -89,7 +89,7 @@ func (m *Mpc) messaging(
 	ctx context.Context, party tss.Party,
 
 	inCh chan []byte,
-	outCh chan *OutputMessage,
+	outCh chan *Message,
 
 	outChTss chan tss.Message,
 	endChKeygen chan keygen.LocalPartySaveData,

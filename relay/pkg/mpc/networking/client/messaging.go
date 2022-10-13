@@ -47,7 +47,7 @@ func (s *Client) receiver(conn *common.Conn, inCh chan []byte) error {
 	}
 }
 
-func (s *Client) transmitter(conn *common.Conn, outCh chan *tss_wrap.OutputMessage) error {
+func (s *Client) transmitter(conn *common.Conn, outCh chan *tss_wrap.Message) error {
 	for msg := range outCh {
 		msgBytes, err := msg.Marshall()
 		if err != nil {
