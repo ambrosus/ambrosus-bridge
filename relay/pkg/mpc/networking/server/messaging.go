@@ -12,7 +12,7 @@ import (
 // transmitter send messages from outCh to all clients.
 // returns error if any client has error
 // returns nil when outCh is closed
-func (s *Server) transmitter(outCh chan *tss_wrap.Message, inCh chan []byte) error {
+func (s *Server) transmitter(outCh <-chan *tss_wrap.Message, inCh chan<- []byte) error {
 	s.logger.Debug().Msg("Start transmitter")
 	for msg := range outCh {
 		err := s.sendMsg(msg, inCh)
@@ -26,7 +26,7 @@ func (s *Server) transmitter(outCh chan *tss_wrap.Message, inCh chan []byte) err
 }
 
 // sendMsg send message to own Tss or to another client(s)
-func (s *Server) sendMsg(msg *tss_wrap.Message, toMeCh chan []byte) error {
+func (s *Server) sendMsg(msg *tss_wrap.Message, toMeCh chan<- []byte) error {
 	if msg == nil || msg.SendToIds == nil {
 		return fmt.Errorf("nil message")
 	}
@@ -61,7 +61,7 @@ func (s *Server) sendMsg(msg *tss_wrap.Message, toMeCh chan []byte) error {
 // receiver receive messages from all clients.
 // returns error if any client has error
 // returns nil when all clients send result message
-func (s *Server) receiver(ch chan *tss_wrap.Message) error {
+func (s *Server) receiver(ch chan<- *tss_wrap.Message) error {
 	s.logger.Debug().Msg("Start receiver")
 
 	eg := new(errgroup.Group)
@@ -87,7 +87,7 @@ func (s *Server) receiver(ch chan *tss_wrap.Message) error {
 	return eg.Wait()
 }
 
-func (s *Server) receiveMsgs(clientID string, outCh chan *tss_wrap.Message) ([]byte, error) {
+func (s *Server) receiveMsgs(clientID string, outCh chan<- *tss_wrap.Message) ([]byte, error) {
 	s.logger.Debug().Str("clientID", clientID).Msg("Start receive messages from client")
 	conn := s.connections[clientID]
 	for {

@@ -14,9 +14,9 @@ import (
 // Keygen initiate share generation; Set received share to m.share after finishing protocol
 func (m *Mpc) Keygen(
 	ctx context.Context,
-	inCh chan []byte,
-	outCh chan *Message,
-	errCh chan error,
+	inCh <-chan []byte,
+	outCh chan<- *Message,
+	errCh chan<- error,
 	optionalPreParams ...keygen.LocalPreParams,
 ) {
 	params := tss.NewParameters(tss.S256(), m.party, m.me, len(m.party.IDs()), len(m.party.IDs())-1)
@@ -41,9 +41,9 @@ func (m *Mpc) Keygen(
 // nil is sent to encCh when signing is finished successfully
 func (m *Mpc) Sign(
 	ctx context.Context,
-	inCh chan []byte,
-	outCh chan *Message,
-	errCh chan error,
+	inCh <-chan []byte,
+	outCh chan<- *Message,
+	errCh chan<- error,
 	msg []byte,
 	result *[]byte,
 ) {
@@ -69,13 +69,13 @@ func (m *Mpc) Sign(
 
 }
 
-func (m *Mpc) KeygenSync(ctx context.Context, inCh chan []byte, outCh chan *Message, optionalPreParams ...keygen.LocalPreParams) error {
+func (m *Mpc) KeygenSync(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
 	errCh := make(chan error)
 	go m.Keygen(ctx, inCh, outCh, errCh, optionalPreParams...)
 	return <-errCh
 }
 
-func (m *Mpc) SignSync(ctx context.Context, inCh chan []byte, outCh chan *Message, msg []byte) ([]byte, error) {
+func (m *Mpc) SignSync(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, msg []byte) ([]byte, error) {
 	errCh := make(chan error)
 	var result []byte
 	go m.Sign(ctx, inCh, outCh, errCh, msg, &result)
@@ -88,8 +88,8 @@ func (m *Mpc) SignSync(ctx context.Context, inCh chan []byte, outCh chan *Messag
 func (m *Mpc) messaging(
 	ctx context.Context, party tss.Party,
 
-	inCh chan []byte,
-	outCh chan *Message,
+	inCh <-chan []byte,
+	outCh chan<- *Message,
 
 	outChTss chan tss.Message,
 	endChKeygen chan keygen.LocalPartySaveData,

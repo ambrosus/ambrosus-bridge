@@ -19,4 +19,4 @@ type OpError struct {
 	Err  error
 }
 
-type OperationFunc func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.Message) ([]byte, error)
+type OperationFunc func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error)

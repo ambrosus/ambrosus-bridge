@@ -32,7 +32,7 @@ func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 	return &common.Conn{Conn: conn}, nil
 }
 
-func (s *Client) receiver(conn *common.Conn, inCh chan []byte) error {
+func (s *Client) receiver(conn *common.Conn, inCh chan<- []byte) error {
 	// breaks when connection closed
 	for {
 		msgBytes, err := conn.Read()
@@ -47,7 +47,7 @@ func (s *Client) receiver(conn *common.Conn, inCh chan []byte) error {
 	}
 }
 
-func (s *Client) transmitter(conn *common.Conn, outCh chan *tss_wrap.Message) error {
+func (s *Client) transmitter(conn *common.Conn, outCh <-chan *tss_wrap.Message) error {
 	for msg := range outCh {
 		msgBytes, err := msg.Marshall()
 		if err != nil {
