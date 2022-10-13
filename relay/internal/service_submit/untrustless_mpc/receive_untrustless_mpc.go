@@ -73,8 +73,6 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindi
 }
 
 func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcClient(event *bindings.BridgeTransfer) error {
-	defer metric.SetRelayBalanceMetric(b)
-
 	serverTx, err := b.getServerTx()
 	if err != nil {
 		return fmt.Errorf("get server tx: %w", err)
