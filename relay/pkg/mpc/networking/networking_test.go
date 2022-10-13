@@ -131,7 +131,7 @@ func createClients(serverID int, partyLen int, url string) []*client.Client {
 			panic(err)
 		}
 
-		client_ := client.NewClient(mpc, url, &clientLogger)
+		client_ := client.NewClient(mpc, url, nil, &clientLogger)
 		clients = append(clients, client_)
 	}
 	return clients

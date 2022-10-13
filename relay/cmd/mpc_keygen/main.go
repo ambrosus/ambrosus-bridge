@@ -34,7 +34,7 @@ func main() {
 			logger.Fatal().Err(err).Msg("error on untrustless mpc server keygen")
 		}
 	} else {
-		client_ := client.NewClient(mpcc, cfg.Submitters.Mpc.ServerURL, &logger)
+		client_ := client.NewClient(mpcc, cfg.Submitters.Mpc.ServerURL, nil, &logger)
 
 		err := client_.Keygen(ctx)
 		if err != nil {
