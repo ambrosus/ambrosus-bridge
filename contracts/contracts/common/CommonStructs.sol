@@ -20,9 +20,9 @@ library CommonStructs {
     }
 
     struct ConstructorArgs {
-        address sideBridgeAddress; address adminAddress;
-        address relayAddress; address feeProviderAddress;
-        address[] watchdogsAddresses; address wrappingTokenAddress;
+        address sideBridgeAddress; address relayAddress;
+        address[] watchdogsAddresses; address feeProviderAddress;
+        address wrappingTokenAddress;
         address[] tokenThisAddresses; address[] tokenSideAddresses;
         address payable transferFeeRecipient; address payable bridgeFeeRecipient;
         uint timeframeSeconds; uint lockTime; uint minSafetyBlocks;
