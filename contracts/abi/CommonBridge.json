@@ -460,6 +460,24 @@
         "type": "bytes32"
       },
       {
+        "internalType": "address[]",
+        "name": "accounts",
+        "type": "address[]"
+      }
+    ],
+    "name": "grantRoles",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
         "internalType": "address",
         "name": "account",
         "type": "address"
@@ -658,17 +676,17 @@
   {
     "inputs": [
       {
-        "internalType": "address",
-        "name": "_fee_provider",
-        "type": "address"
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
       },
       {
         "internalType": "address[]",
-        "name": "_watchdogs",
+        "name": "accounts",
         "type": "address[]"
       }
     ],
-    "name": "setFeeProviderAndWatchdogs",
+    "name": "revokeRoles",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

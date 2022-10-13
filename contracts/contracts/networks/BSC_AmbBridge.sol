@@ -28,7 +28,7 @@ contract BSC_AmbBridge is CommonBridge, CheckPoSA {
         checkPoSA_(posaProof, minSafetyBlocks, sideBridgeAddress);
     }
 
-    function setSideBridge(address _sideBridgeAddress) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {
         require(sideBridgeAddress == address(0), "sideBridgeAddress already set");
         sideBridgeAddress = _sideBridgeAddress;
     }
