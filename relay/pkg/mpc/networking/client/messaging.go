@@ -6,13 +6,14 @@ import (
 	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 	"github.com/gorilla/websocket"
 )
 
 func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 	headers := make(http.Header)
 	headers.Add(common.HeaderTssID, s.Tss.MyID())
-	headers.Add(common.HeaderTssOperation, fmt.Sprintf("%x", s.operation.SignMsg)) // as hex
+	headers.Add(common.HeaderTssOperation, fmt.Sprintf("%x", s.operation)) // as hex
 
 	s.logger.Debug().Msg("Connecting to server")
 
@@ -31,7 +32,7 @@ func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 	return &common.Conn{Conn: conn}, nil
 }
 
-func (s *Client) receiver(conn *common.Conn) error {
+func (s *Client) receiver(conn *common.Conn, inCh chan []byte) error {
 	// breaks when connection closed
 	for {
 		msgBytes, err := conn.Read()
@@ -42,12 +43,12 @@ func (s *Client) receiver(conn *common.Conn) error {
 			return fmt.Errorf("read message: %w", err)
 		}
 
-		s.operation.InCh <- msgBytes
+		inCh <- msgBytes
 	}
 }
 
-func (s *Client) transmitter(conn *common.Conn) error {
-	for msg := range s.operation.OutCh {
+func (s *Client) transmitter(conn *common.Conn, outCh chan *tss_wrap.OutputMessage) error {
+	for msg := range outCh {
 		msgBytes, err := msg.Marshall()
 		if err != nil {
 			return fmt.Errorf("marshal message: %w", err)
@@ -56,18 +57,6 @@ func (s *Client) transmitter(conn *common.Conn) error {
 			return fmt.Errorf("write message: %w", err)
 		}
 		s.logger.Debug().Msg("Send message to server successfully")
-	}
-	return nil
-}
-
-func sendResult(conn *common.Conn, resultFunc func() ([]byte, error)) error {
-	result, err := resultFunc()
-	if err != nil {
-		return fmt.Errorf("get result: %w", err)
-	}
-	resultMsg := append(common.ResultPrefix, result...)
-	if err := conn.Write(resultMsg); err != nil {
-		return fmt.Errorf("write result message: %w", err)
 	}
 	return nil
 }

@@ -25,11 +25,11 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) fullMsgHandler(w http.ResponseWriter, r *http.Request) {
 	s.logger.Debug().Str("addr", r.RemoteAddr).Msg("Client ask FullMsg")
-	if s.operation.FullMsg == nil {
+	if s.fullMsg == nil {
 		http.Error(w, "full msg not set yet", http.StatusTooEarly)
 		return
 	}
-	w.Write(s.operation.FullMsg)
+	w.Write(s.fullMsg)
 }
 
 func (s *Server) registerConnection(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +49,7 @@ func (s *Server) registerConnection(w http.ResponseWriter, r *http.Request) {
 		connLogger.Info().Msg("Client wants to start signing")
 	}
 
-	if !bytes.Equal(s.operation.SignMsg, operation) || !s.operation.Started {
+	if !bytes.Equal(s.operation, operation) {
 		connLogger.Info().Msg("This operation doesn't started by server")
 		http.Error(w, "This operation doesn't started by server", http.StatusTooEarly)
 		return

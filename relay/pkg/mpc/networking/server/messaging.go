@@ -12,10 +12,10 @@ import (
 // transmitter send messages from outCh to all clients.
 // returns error if any client has error
 // returns nil when outCh is closed
-func (s *Server) transmitter(outCh chan *tss_wrap.OutputMessage) error {
+func (s *Server) transmitter(outCh chan *tss_wrap.OutputMessage, inCh chan []byte) error {
 	s.logger.Debug().Msg("Start transmitter")
 	for msg := range outCh {
-		err := s.sendMsg(msg)
+		err := s.sendMsg(msg, inCh)
 		if err != nil {
 			s.logger.Error().Err(err).Msg("Failed to send message")
 			return err
@@ -26,7 +26,7 @@ func (s *Server) transmitter(outCh chan *tss_wrap.OutputMessage) error {
 }
 
 // sendMsg send message to own Tss or to another client(s)
-func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
+func (s *Server) sendMsg(msg *tss_wrap.OutputMessage, toMeCh chan []byte) error {
 	if msg == nil || msg.SendToIds == nil {
 		return fmt.Errorf("nil message")
 	}
@@ -36,7 +36,7 @@ func (s *Server) sendMsg(msg *tss_wrap.OutputMessage) error {
 
 		// send to own tss
 		if id == s.Tss.MyID() {
-			s.operation.InCh <- msg.Message
+			toMeCh <- msg.Message
 			s.logger.Debug().Str("To", id).Msg("Send message to myself successfully")
 			continue
 		}

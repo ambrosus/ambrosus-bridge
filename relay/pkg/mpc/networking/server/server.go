@@ -13,8 +13,10 @@ import (
 
 type Server struct {
 	sync.Mutex
-	Tss       *tss_wrap.Mpc
-	operation common.Operation
+	Tss *tss_wrap.Mpc
+
+	operation []byte
+	fullMsg   []byte
 
 	connections  map[string]*common.Conn
 	connChangeCh chan byte // populates when client connect or disconnect; used for waitForConnections method
@@ -31,7 +33,6 @@ func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 		Tss:          tss,
 		connections:  make(map[string]*common.Conn),
 		connChangeCh: make(chan byte, 1000),
-		operation:    common.NewOperation(),
 		logger:       logger,
 	}
 	return s
@@ -42,14 +43,9 @@ func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 func (s *Server) Sign(ctx context.Context, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
-	var signature []byte
-	err := s.doOperation(ctx, msg,
-		func(ctx context.Context) (err error) {
-			signature, err = s.Tss.SignSync(ctx, s.operation.InCh, s.operation.OutCh, msg)
-			return err
-		},
-		func() ([]byte, error) {
-			return signature, nil
+	signature, err := s.doOperation(ctx, msg,
+		func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.OutputMessage) ([]byte, error) {
+			return s.Tss.SignSync(ctx, inCh, outCh, msg)
 		},
 	)
 
@@ -59,11 +55,12 @@ func (s *Server) Sign(ctx context.Context, msg []byte) ([]byte, error) {
 func (s *Server) Keygen(ctx context.Context) error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	err := s.doOperation(ctx, common.KeygenOperation,
-		func(ctx context.Context) error {
-			return s.Tss.KeygenSync(ctx, s.operation.InCh, s.operation.OutCh)
-		},
-		func() ([]byte, error) {
+	_, err := s.doOperation(ctx, common.KeygenOperation,
+		func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.OutputMessage) ([]byte, error) {
+			err := s.Tss.KeygenSync(ctx, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
 			addr, err := s.Tss.GetAddress()
 			return addr.Bytes(), err
 		},
@@ -78,59 +75,64 @@ func (s *Server) GetFullMsg() ([]byte, error) {
 }
 
 func (s *Server) SetFullMsg(fullMsg []byte) {
-	s.operation.FullMsg = fullMsg
+	s.fullMsg = fullMsg
 }
 
 func (s *Server) doOperation(
 	ctx context.Context,
 	operation []byte,
-	tssOperation func(ctx context.Context) error,
-	resultFunc func() ([]byte, error),
-) error {
+	tssOperation common.OperationFunc,
+) ([]byte, error) {
 	if err := s.startOperation(operation); err != nil {
-		return err
+		return nil, err
 	}
-	defer s.operation.Stop()
+	defer s.stopOperation()
 
 	if err := s.waitForConnections(ctx); err != nil {
-		return fmt.Errorf("wait for connections: %w", err)
+		return nil, fmt.Errorf("wait for connections: %w", err)
 	}
 
-	err := s.doOperation_(ctx, tssOperation, resultFunc)
+	result, err := s.doOperation_(ctx, tssOperation)
 
 	if err != nil {
 		s.logger.Error().Err(err).Msg("Operation error")
 		s.disconnectAll(fmt.Errorf("server error: %w", err))
-		return err
+		return nil, err
 	}
 
 	s.logger.Info().Msg("Operation finished successfully")
 	s.disconnectAll(nil)
-	return nil
+	return result, nil
 }
 
 func (s *Server) doOperation_(
 	ctx context.Context,
-	tssOperation func(ctx context.Context) error,
-	resultFunc func() ([]byte, error),
-) error {
+	tssOperation common.OperationFunc,
+) (ownResult []byte, err error) {
 
-	errCh := make(chan common.OpError)
+	inCh := make(chan []byte, 10)
+	outCh := make(chan *tss_wrap.OutputMessage, 10)
+	errCh := make(chan common.OpError, 3)
 
-	// todo create channels here instead of operation struct
-	// todo make tssOperation returns result
-	go func() { errCh <- common.OpError{"tss", tssOperation(ctx)} }()
-	go func() { errCh <- common.OpError{"res", s.receiver(s.operation.OutCh)} }()
-	go func() { errCh <- common.OpError{"tra", s.transmitter(s.operation.OutCh)} }()
+	tssWaiter := make(chan interface{}, 1)
+	// todo close channels?
+
+	go func() {
+		ownResult, err = tssOperation(ctx, inCh, outCh)
+		errCh <- common.OpError{"tss", err}
+		tssWaiter <- nil
+	}()
+	go func() { errCh <- common.OpError{"res", s.receiver(outCh)} }()
+	go func() { errCh <- common.OpError{"tra", s.transmitter(outCh, inCh)} }()
 
 	for {
 		select {
 		case <-ctx.Done():
-			return ctx.Err()
+			return nil, ctx.Err()
 
 		case err := <-errCh:
 			if err.Err != nil {
-				return fmt.Errorf("%s error: %w", err.Type, err.Err)
+				return nil, fmt.Errorf("%s error: %w", err.Type, err.Err)
 			}
 
 			// if err is nil, it means that some goroutine successfully finished
@@ -138,23 +140,27 @@ func (s *Server) doOperation_(
 			if err.Type == "tss" {
 				s.logger.Info().Msg("Tss operation finished successfully")
 			}
+
 			if err.Type == "res" {
 				// receiver returns nil when all clients send results
+				s.logger.Info().Msg("All results received")
 
-				// todo wait for result from tss
-				if err := checkResults(s.results, resultFunc); err != nil {
-					return fmt.Errorf("check results: %w", err)
+				// wait for own result
+				<-tssWaiter
+
+				if err := checkResults(s.results, ownResult); err != nil {
+					return nil, fmt.Errorf("check results: %w", err)
 				}
 				s.logger.Info().Msg("Results checked successfully")
 
 				// close outCh so transmitter goroutine will finish (when all queued msgs will be sent)
-				close(s.operation.OutCh)
+				close(outCh)
 			}
 			if err.Type == "tra" {
 				// transmitter will return nil when s.operation.OutCh channel closed (when all client send results)
 				// at this point we received all results and sends all queued msgs, so finish protocol
 				s.logger.Info().Msg("Transmitter finished successfully")
-				return nil
+				return ownResult, nil
 			}
 
 		}
@@ -165,18 +171,25 @@ func (s *Server) startOperation(msg []byte) error {
 	s.Lock()
 	defer s.Unlock()
 
+	if s.operation != nil {
+		return fmt.Errorf("operation already started")
+	}
+
+	s.operation = msg
 	s.results = make(map[string][]byte)
 	s.resultsWaiter = new(sync.WaitGroup)
 	s.resultsWaiter.Add(s.Tss.Threshold() - 1) // -1 because we don't need to wait for our own result
 
-	return s.operation.Start(msg)
+	return nil
 }
 
-func checkResults(results map[string][]byte, resultFunc func() ([]byte, error)) error {
-	ownResult, err := resultFunc()
-	if err != nil {
-		return fmt.Errorf("get result: %w", err)
-	}
+func (s *Server) stopOperation() {
+	s.Lock()
+	defer s.Unlock()
+	s.operation = nil
+}
+
+func checkResults(results map[string][]byte, ownResult []byte) error {
 	for clientID, v := range results {
 		if !bytes.Equal(v, ownResult) {
 			return fmt.Errorf("client %v send different result (%v != %v)", clientID, v, ownResult)

@@ -1,5 +1,11 @@
 package common
 
+import (
+	"context"
+
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+)
+
 var (
 	KeygenOperation    = []byte("keygen")
 	HeaderTssID        = "X-TSS-ID"
@@ -12,3 +18,5 @@ type OpError struct {
 	Type string
 	Err  error
 }
+
+type OperationFunc func(ctx context.Context, inCh chan []byte, outCh chan *tss_wrap.OutputMessage) ([]byte, error)
