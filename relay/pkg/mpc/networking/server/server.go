@@ -152,9 +152,9 @@ func checkResults(results map[string][]byte, resultFunc func() ([]byte, error)) 
 	if err != nil {
 		return fmt.Errorf("get result: %w", err)
 	}
-	for _, v := range results {
+	for clientID, v := range results {
 		if !bytes.Equal(v, ownResult) {
-			return fmt.Errorf("results not equal")
+			return fmt.Errorf("client %v send different result (%v != %v)", clientID, v, ownResult)
 		}
 	}
 	return nil
