@@ -18,7 +18,8 @@ contract ETH_EthBridge is CommonBridge, CheckUntrustless2 {
         address _fee_provider
     ) public {
         require(msg.sender == address(this), "This method require multisig");
-        setFeeProviderAndWatchdogs(_fee_provider, _watchdogs);
+        _setupRoles(WATCHDOG_ROLE, _watchdogs);
+        _setupRole(FEE_PROVIDER_ROLE, _fee_provider);
     }
 
     function submitTransferUntrustless(uint eventId, CommonStructs.Transfer[] calldata transfers) public onlyRole(RELAY_ROLE) whenNotPaused {

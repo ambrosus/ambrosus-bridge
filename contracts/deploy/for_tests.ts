@@ -32,6 +32,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         sideBridgeAddress: ethers.constants.AddressZero,
         adminAddress: ethers.constants.AddressZero,
         relayAddress: ethers.constants.AddressZero,
+        feeProviderAddress: ethers.constants.AddressZero,
+        watchdogsAddresses: [ethers.constants.AddressZero],
         wrappingTokenAddress: wrapperAddr,
         tokenThisAddresses: [],
         tokenSideAddresses: [],
