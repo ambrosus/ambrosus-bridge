@@ -9,6 +9,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
+	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -73,7 +74,7 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindi
 }
 
 func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcClient(event *bindings.BridgeTransfer) error {
-	serverTx, err := b.getServerTx()
+	serverTx, err := b.getServerTxRetryable()
 	if err != nil {
 		return fmt.Errorf("get server tx: %w", err)
 	}
@@ -93,6 +94,20 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcClient(event *bindi
 	//
 	_, err = b.GetContract().SubmitTransferUntrustless(&auth, event.EventId, event.Queue)
 	return err
+}
+
+func (b *ReceiverUntrustlessMpc) getServerTxRetryable() (*types.Transaction, error) {
+	var tx *types.Transaction
+	err := retry.Do(
+		func() (err error) {
+			tx, err = b.getServerTx()
+			return err
+		},
+
+		retry.Delay(2*time.Second),
+		retry.DelayType(retry.FixedDelay),
+	)
+	return tx, err
 }
 
 func (b *ReceiverUntrustlessMpc) getServerTx() (*types.Transaction, error) {
