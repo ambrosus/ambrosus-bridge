@@ -2,7 +2,6 @@ package networking
 
 import (
 	"context"
-	"fmt"
 	"net/http/httptest"
 	"strings"
 	"sync"
@@ -59,13 +58,6 @@ func TestNetworkingKeygen(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, pubkeyServer, pubkeyClient)
-}
-
-func TestManyNetworkingSigning(t *testing.T) {
-	for {
-		TestNetworkingSigning(t)
-		fmt.Println("===================================================================")
-	}
 }
 
 func TestNetworkingSigning(t *testing.T) {
