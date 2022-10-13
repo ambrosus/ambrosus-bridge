@@ -1,7 +1,10 @@
 package client
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"net/http"
 	"sync"
 	"time"
 
@@ -59,8 +62,24 @@ func (s *Client) Keygen(ctx context.Context) error {
 	}
 }
 
-// just to implement MpcSigner interface
-func (s *Client) SetFullMsg(fullMsg []byte) {}
+func (s *Client) SetFullMsg(fullMsg []byte) {
+	// just to implement MpcSigner interface
+}
+
+func (s *Client) GetFullMsg() ([]byte, error) {
+	resp, err := http.Get(s.serverURL + common.EndpointFullMsg)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var buf bytes.Buffer
+	if _, err := buf.ReadFrom(resp.Body); err != nil {
+		return nil, fmt.Errorf("read body to buffer: %w", err)
+	}
+
+	return buf.Bytes(), nil
+}
 
 func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")

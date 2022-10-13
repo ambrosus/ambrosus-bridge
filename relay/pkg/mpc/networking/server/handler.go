@@ -18,13 +18,17 @@ var upgrader = websocket.Upgrader{
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		s.registerConnection(w, r)
-	} else if r.URL.Path == s.fullMsgEndpoint {
+	} else if r.URL.Path == common.EndpointFullMsg {
 		s.fullMsgHandler(w, r)
 	}
 }
 
 func (s *Server) fullMsgHandler(w http.ResponseWriter, r *http.Request) {
-	s.logger.Debug().Str("addr", r.RemoteAddr).Msg("aaa")
+	s.logger.Debug().Str("addr", r.RemoteAddr).Msg("Client ask FullMsg")
+	if s.operation.FullMsg == nil {
+		http.Error(w, "full msg not set yet", http.StatusTooEarly)
+		return
+	}
 	w.Write(s.operation.FullMsg)
 }
 

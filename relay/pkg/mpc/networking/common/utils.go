@@ -7,6 +7,7 @@ var (
 	HeaderTssID        = "X-TSS-ID"
 	HeaderTssOperation = "X-TSS-Operation"
 	ResultPrefix       = []byte("result")
+	EndpointFullMsg    = "/tx"
 )
 
 type OpError struct {

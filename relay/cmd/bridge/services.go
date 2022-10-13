@@ -54,7 +54,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 
 		var mpcSigner untrustless_mpc.MpcSigner
 		if cfg.Mpc.IsServer {
-			server_ := server.NewServerWithFullMsgEndpoint(mpcc, "/tx", &logger) // TODO: get full msg endpoint from config?
+			server_ := server.NewServer(mpcc, &logger)
 			go http.ListenAndServe(cfg.Mpc.ServerURL, server_)
 			mpcSigner = server_
 		} else {
@@ -62,7 +62,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 			mpcSigner = client_
 		}
 
-		receiver, err := untrustless_mpc.NewReceiverUntrustlessMpc(sideBridge, mpcSigner, "http://localhost:8082/tx", nil) // TODO: get serverTxUrl from config?
+		receiver, err := untrustless_mpc.NewReceiverUntrustlessMpc(sideBridge, mpcSigner)
 		ambSubmitter, err = untrustless_mpc.NewSubmitterUntrustlessMpc(ambBridge, receiver, cfg.Mpc.IsServer)
 
 	default:

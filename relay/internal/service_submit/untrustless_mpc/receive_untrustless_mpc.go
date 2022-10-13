@@ -1,11 +1,9 @@
 package untrustless_mpc
 
 import (
-	"bytes"
 	"context"
 	"fmt"
 	"math/big"
-	"net/http"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -19,34 +17,26 @@ import (
 type MpcSigner interface {
 	Sign(ctx context.Context, msg []byte) ([]byte, error)
 	SetFullMsg(fullMsg []byte)
+	GetFullMsg() ([]byte, error)
 }
 
 type ReceiverUntrustlessMpc struct {
 	service_submit.Receiver
 	mpcSigner MpcSigner
 	signer    types.Signer
-
-	serverTxUrl string
-	httpClient  *http.Client
 }
 
-func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSigner, serverTxUrl string, httpClient *http.Client) (*ReceiverUntrustlessMpc, error) {
+func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSigner) (*ReceiverUntrustlessMpc, error) {
 	chainID, err := receiver.GetClient().ChainID(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("get chain id: %w", err)
 	}
 	signer := types.LatestSignerForChainID(chainID)
 
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-
 	return &ReceiverUntrustlessMpc{
-		Receiver:    receiver,
-		mpcSigner:   mpcSigner,
-		signer:      signer,
-		serverTxUrl: serverTxUrl,
-		httpClient:  httpClient,
+		Receiver:  receiver,
+		mpcSigner: mpcSigner,
+		signer:    signer,
 	}, nil
 }
 
@@ -102,23 +92,18 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcClient(event *bindi
 		auth.GasTipCap = serverTx.GasTipCap()
 	}
 
+	//
 	_, err = b.GetContract().SubmitTransferUntrustless(&auth, event.EventId, event.Queue)
 	return err
 }
 
 func (b *ReceiverUntrustlessMpc) getServerTx() (*types.Transaction, error) {
-	resp, err := b.httpClient.Get(b.serverTxUrl)
+	txBytes, err := b.mpcSigner.GetFullMsg()
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-
 	var tx types.Transaction
-	var buf bytes.Buffer
-	if _, err := buf.ReadFrom(resp.Body); err != nil {
-		return nil, fmt.Errorf("read body to buffer: %w", err)
-	}
-	if err := tx.UnmarshalBinary(buf.Bytes()); err != nil {
+	if err := tx.UnmarshalBinary(txBytes); err != nil {
 		return nil, fmt.Errorf("unmarshal binary tx: %w", err)
 	}
 
