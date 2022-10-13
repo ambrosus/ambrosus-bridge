@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0x91c2F6725a1e076929E1fDECCfD72209D0694af0",
+            "contractAddr": "0xa09De74437D2453Df47deF3F5C2d14Cd3f0cF8c0",
             "privateKey": "in env"
         },
         "BSC": {
             "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
-            "contractAddr": "0x090801d716A9d501F57519B1f4bd6aBD2961aa88",
+            "contractAddr": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248",
             "privateKey": "in env"
         }
     },
@@ -50,12 +50,16 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "minTransferFeeUSD": 1,
+            "explorerURL": "https://explorer-api.ambrosus-test.io",
+            "transferFeeRecipient": "0x"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "minTransferFeeUSD": 0.5,
+            "explorerURL": "https://api-testnet.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
+            "transferFeeRecipient": "0x"
         }
     },
 

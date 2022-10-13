@@ -656,6 +656,24 @@
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_fee_provider",
+        "type": "address"
+      },
+      {
+        "internalType": "address[]",
+        "name": "_watchdogs",
+        "type": "address[]"
+      }
+    ],
+    "name": "setFeeProviderAndWatchdogs",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "name": "sideBridgeAddress",
     "outputs": [

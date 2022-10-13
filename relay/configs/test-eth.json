@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0xbE379d21770674aF3897aA6C442eDc890Fc0692a",
+            "contractAddr": "0xcdea3ECb85D0F386Ea5D498D39c9c127380F254a",
             "privateKey": "in env"
         },
         "ETH": {
             "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xea3011C9Efeb1e2A63A0c6cb23a0e0314970735F",
+            "contractAddr": "0xACf183fB8C6382d7cB0D5e9832528AEafC151Fcf",
             "privateKey": "in env"
         }
     },
@@ -42,12 +42,16 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "minTransferFeeUSD": 1,
+            "explorerURL": "https://explorer-api.ambrosus-test.io",
+            "transferFeeRecipient": "0x"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "minTransferFeeUSD": 0.5,
+            "explorerURL": "https://api-ropsten.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+            "transferFeeRecipient": "0x"
         }
     },
 

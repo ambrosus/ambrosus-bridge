@@ -62,6 +62,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
         _setupRole(ADMIN_ROLE, args.adminAddress);
+        setFeeProviderAndWatchdogs(args.feeProviderAddress, args.watchdogsAddresses);
 
         // initialise tokenAddresses with start values
         _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);
@@ -230,6 +231,15 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
 
     // admin setters
+
+    function setFeeProviderAndWatchdogs(
+        address _fee_provider,
+        address[] calldata _watchdogs
+    ) public onlyRole(ADMIN_ROLE) whenNotPaused {
+        _setupRole(FEE_PROVIDER_ROLE, _fee_provider);
+        for (uint i = 0; i < _watchdogs.length; i++)
+            _setupRole(WATCHDOG_ROLE, _watchdogs[i]);
+    }
 
     function changeMinSafetyBlocks(uint minSafetyBlocks_) public onlyRole(ADMIN_ROLE) {
         minSafetyBlocks = minSafetyBlocks_;
