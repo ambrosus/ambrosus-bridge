@@ -20,14 +20,20 @@ type Client struct {
 	Tss       *tss_wrap.Mpc
 	operation []byte
 
-	serverURL string
+	serverURL  string
+	httpClient *http.Client
 }
 
-func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Client {
+func NewClient(tss *tss_wrap.Mpc, serverURL string, httpClient *http.Client, logger *zerolog.Logger) *Client {
+	if httpClient == nil {
+		httpClient = &http.Client{}
+	}
+
 	s := &Client{
-		Tss:       tss,
-		serverURL: serverURL,
-		logger:    logger,
+		Tss:        tss,
+		serverURL:  serverURL,
+		httpClient: httpClient,
+		logger:     logger,
 	}
 	return s
 }
@@ -65,7 +71,7 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 }
 
 func (s *Client) GetFullMsg() ([]byte, error) {
-	resp, err := http.Get(s.serverURL + common.EndpointFullMsg)
+	resp, err := s.httpClient.Get(s.serverURL + common.EndpointFullMsg)
 	if err != nil {
 		return nil, err
 	}

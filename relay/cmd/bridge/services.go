@@ -60,7 +60,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 			go http.ListenAndServe(cfg.Mpc.ServerURL, server_)
 			mpcSigner = server_
 		} else {
-			client_ := client.NewClient(mpcc, cfg.Mpc.ServerURL, &logger)
+			client_ := client.NewClient(mpcc, cfg.Mpc.ServerURL, nil, &logger)
 			mpcSigner = client_
 		}
 
