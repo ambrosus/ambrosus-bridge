@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BridgeERC20 is ERC20, Ownable {
     address public bridgeAddress; // address of bridge contract on this network
-    uint public bridgeBalance;  // locked tokens on the bridge
 
     uint8 _decimals;
 
@@ -32,18 +31,9 @@ contract BridgeERC20 is ERC20, Ownable {
     ) internal virtual override {
         if (sender == bridgeAddress) {
             // user transfer tokens to ambrosus => need to mint it
-
-            // same amount locked on side bridge
-            bridgeBalance += amount;
-
             _mint(recipient, amount);
         } else if (recipient == bridgeAddress) {
             // user withdraw tokens from ambrosus => need to burn it
-
-            // side bridge must have enough tokens to send
-            require(bridgeBalance >= amount, "not enough locked tokens on bridge");
-            bridgeBalance -= amount;
-
             _burn(sender, amount);
         } else {
             super._transfer(sender, recipient, amount);
