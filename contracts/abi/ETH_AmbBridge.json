@@ -593,6 +593,24 @@
         "type": "bytes32"
       },
       {
+        "internalType": "address[]",
+        "name": "accounts",
+        "type": "address[]"
+      }
+    ],
+    "name": "grantRoles",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
         "internalType": "address",
         "name": "account",
         "type": "address"
@@ -620,12 +638,17 @@
           },
           {
             "internalType": "address",
-            "name": "adminAddress",
+            "name": "relayAddress",
             "type": "address"
           },
           {
+            "internalType": "address[]",
+            "name": "watchdogsAddresses",
+            "type": "address[]"
+          },
+          {
             "internalType": "address",
-            "name": "relayAddress",
+            "name": "feeProviderAddress",
             "type": "address"
           },
           {
@@ -948,6 +971,24 @@
       }
     ],
     "name": "revokeRole",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "role",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "address[]",
+        "name": "accounts",
+        "type": "address[]"
+      }
+    ],
+    "name": "revokeRoles",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
