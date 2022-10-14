@@ -1,7 +1,6 @@
 package explorers_clients
 
 import (
-	"errors"
 	"math/big"
 	"strings"
 
@@ -9,9 +8,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var (
-	ErrTxsNotFound = errors.New("transactions not found")
-)
 type TxFilters struct {
 	FromBlock   uint64
 	UntilTxHash *common.Hash

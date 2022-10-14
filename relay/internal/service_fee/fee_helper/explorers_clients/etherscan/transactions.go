@@ -16,12 +16,12 @@ var (
 	ErrTxsNotFound = errors.New("etherscan server: No transactions found")
 )
 
-// That method wraps etherscan's `NormalTxByAddress` but returns our errors
+// That method wraps etherscan's `NormalTxByAddress` but returns empty list at `ErrTxsNotFound`
 func (e *Etherscan) normalTxByAddress(address string, startBlock *int, endBlock *int, page int, offset int, desc bool) (txs []etherscan.NormalTx, err error) {
 	txs, err = e.client.NormalTxByAddress(address, startBlock, endBlock, page, offset, desc)
 	if err != nil {
 		if err.Error() == ErrTxsNotFound.Error() {
-			return nil, explorers_clients.ErrTxsNotFound
+			return txs, nil
 		}
 	}
 	return
@@ -35,6 +35,9 @@ func (e *Etherscan) TxListByAddress(address string, txFilters explorers_clients.
 		pageTxs, err := e.normalTxByAddress(address, &startBlock, nil, 0, 0, true)
 		if err != nil {
 			return nil, err
+		}
+		if len(pageTxs) == 0 {
+			break
 		}
 		startBlock = pageTxs[len(pageTxs)-1].BlockNumber
 

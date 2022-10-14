@@ -63,7 +63,7 @@ func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, pa
 	}
 
 	if respData.Meta.Message == ErrTxsNotFound.Error() {
-		return nil, explorers_clients.ErrTxsNotFound
+		return &respData, nil
 	}
 	if respData.Meta.Message != "" {
 		return nil, fmt.Errorf(respData.Meta.Message)
