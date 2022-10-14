@@ -71,7 +71,11 @@ func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, t
 			if err != nil {
 				return fmt.Errorf("get balance error: %w", err)
 			}
-			return fmt.Errorf("%w. (Balance: %v; Require %v)", err, balance, tx.Cost())
+			if tx == nil {
+				return fmt.Errorf("%w. (Balance: %v; Require unknown)", err, balance)
+			} else {
+				return fmt.Errorf("%w. (Balance: %v; Require %v)", err, balance, tx.Cost())
+			}
 		}
 
 		return err

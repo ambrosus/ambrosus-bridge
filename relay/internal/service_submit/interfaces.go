@@ -50,3 +50,9 @@ type ReceiverUntrustless2 interface {
 	Receiver
 	SubmitTransferUntrustless(*bindings.BridgeTransfer) error
 }
+
+type ReceiverUntrustlessMpc interface {
+	Receiver
+	SubmitTransferUntrustlessMpcServer(*bindings.BridgeTransfer) error
+	SubmitTransferUntrustlessMpcClient(*bindings.BridgeTransfer) error
+}
