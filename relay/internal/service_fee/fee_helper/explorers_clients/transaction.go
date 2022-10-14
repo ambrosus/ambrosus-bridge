@@ -12,6 +12,10 @@ import (
 var (
 	ErrTxsNotFound = errors.New("transactions not found")
 )
+type TxFilters struct {
+	FromBlock   uint64
+	UntilTxHash *common.Hash
+}
 
 type Transaction struct {
 	BlockNumber uint64
@@ -21,6 +25,10 @@ type Transaction struct {
 	GasPrice    *big.Int
 	GasUsed     uint64
 	Input       string
+}
+
+func FilterTxsByFromBlock(txs []*Transaction, fromBlock uint64) []*Transaction {
+	return FilterTxsByCallback(txs, func(tx *Transaction) bool { return tx.BlockNumber >= fromBlock })
 }
 
 func FilterTxsByFromToAddresses[T string | []string](txs []*Transaction, from T, to string) []*Transaction {

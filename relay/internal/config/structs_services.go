@@ -58,9 +58,10 @@ type (
 		MinBridgeFee   float64 `mapstructure:"minBridgeFeeUSD"`
 		MinTransferFee float64 `mapstructure:"minTransferFeeUSD"`
 
-		ExplorerURL                         string `mapstructure:"explorerURL"`
-		TransferFeeRecipient                string `mapstructure:"transferFeeRecipient"`
+		ExplorerURL                         string   `mapstructure:"explorerURL"`
+		TransferFeeRecipient                string   `mapstructure:"transferFeeRecipient"`
 		TransferFeeIncludedTxsFromAddresses []string `mapstructure:"transferFeeIncludedTxsFromAddresses"`
+		TransferFeeTxsFromBlock             uint64   `mapstructure:"transferFeeTxsFromBlock"`
 	}
 )
 

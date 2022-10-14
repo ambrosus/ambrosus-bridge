@@ -33,6 +33,7 @@ func NewFeeHelper(bridge, sideBridge networks.Bridge, explorer, sideExplorer exp
 		bridge, sideBridge,
 		explorer, sideExplorer,
 		cfg.TransferFeeIncludedTxsFromAddresses, sideCfg.TransferFeeIncludedTxsFromAddresses,
+		cfg.TransferFeeTxsFromBlock, sideCfg.TransferFeeTxsFromBlock,
 	)
 	if err != nil {
 		return nil, err

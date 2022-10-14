@@ -58,7 +58,8 @@
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
                 "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ]
+            ],
+            "transferFeeTxsFromBlock": 0
         },
         "side": {
             "privateKey": "in env",
@@ -68,7 +69,8 @@
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
                 "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ]
+            ],
+            "transferFeeTxsFromBlock": 0
         }
     },
 
