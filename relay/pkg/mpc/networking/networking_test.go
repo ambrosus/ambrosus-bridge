@@ -27,7 +27,7 @@ func TestNetworkingKeygen(t *testing.T) {
 	server_ := createServer(0)
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
-	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+	wsURL := strings.TrimPrefix(ts.URL, "http://")
 
 	clients := createClients(0, 5, wsURL)
 
@@ -69,7 +69,7 @@ func TestNetworkingSigning(t *testing.T) {
 	server_ := createServer(0)
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
-	wsURL := "ws" + strings.TrimPrefix(ts.URL, "http")
+	wsURL := strings.TrimPrefix(ts.URL, "http://")
 
 	clients := createClients(0, 5, wsURL)
 
