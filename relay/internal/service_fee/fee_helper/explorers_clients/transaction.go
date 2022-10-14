@@ -24,22 +24,15 @@ type Transaction struct {
 }
 
 func FilterTxsByFromToAddresses[T string | []string](txs []*Transaction, from T, to string) []*Transaction {
-	var fromCheck func(txFrom string) bool
+	var filterCallback func(tx *Transaction) bool
 	switch from := any(from).(type) {
 	case string:
-		fromCheck = func(txFrom string) bool { return txFrom == from }
+		filterCallback = func(tx *Transaction) bool { return tx.From == from && tx.To == to }
 	case []string:
-		fromCheck = func(txFrom string) bool { return slices.Contains(from, txFrom) }
+		filterCallback = func(tx *Transaction) bool { return slices.Contains(from, tx.From) && tx.To == to }
 	}
 
-	var res []*Transaction
-	for i := 0; i < len(txs); i++ {
-		tx := txs[i]
-		if fromCheck(tx.From) && tx.To == to {
-			res = append(res, tx)
-		}
-	}
-	return res
+	return FilterTxsByCallback(txs, filterCallback)
 }
 
 func FilterTxsByCallback(txs []*Transaction, filterCallback func(tx *Transaction) bool) []*Transaction {
