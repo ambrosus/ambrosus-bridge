@@ -44,7 +44,7 @@ contract ETH_AmbBridge is CommonBridge, CheckUntrustless {
         _setRelaysAndConfirmations(toRemove, toAdd, _confirmations);
     }
 
-    function setSideBridge(address _sideBridgeAddress) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {
         require(sideBridgeAddress == address(0), "sideBridgeAddress already set");
         sideBridgeAddress = _sideBridgeAddress;
     }

@@ -4,6 +4,8 @@ import path from "path";
 interface constructorConfig {
   adminAddress: string,
   relayAddress: string,
+  feeProviderAddress: string,
+  watchdogsAddresses: string[],
   transferFeeRecipient: string,
   bridgeFeeRecipient: string,
   multisig: {

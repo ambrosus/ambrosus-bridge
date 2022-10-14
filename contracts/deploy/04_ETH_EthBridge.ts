@@ -24,16 +24,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       lockTime: isMainNet ? 60 * 10 : 60,
       minSafetyBlocks: isMainNet ? 10 : 2,
     },
-    [
-      // watchdogs TODO: get watchdogs from config?
-      isMainNet ? [] : [owner],
-      isMainNet ? "" : owner, // fee provider TODO: get fee provider from config?
-    ]
+    []
   )
 
   // Uncomment when upgrade is needed
   // const prod_addresses = getAddresses(BRIDGE_NAME);
-  // let {owner} = await hre.getNamedAccounts();
   // optionsWithOnUpgrade.proxy.execute.onUpgrade = {
   //   methodName: "upgrade",
   //   args: [
@@ -42,11 +37,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   //       "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a", // Lang
   //       "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8", // Rory
   //       "0xb017DcCC473499C83f1b553bE564f3CeAf002254", // Andrey
-
+  //
   //       isMainNet ? prod_addresses.relayAddress : owner, // Master relay
   //       isMainNet ? prod_addresses.adminAddress : owner, // Admin
   //     ],
   //     isMainNet ? prod_addresses.relayAddress : owner, // fee_provider (relay)
+  //     isMainNet ? prod_addresses.adminAddress : owner, // remove DEFAULT_ADMIN_ROLE from this address
   //   ]
   // };
 
