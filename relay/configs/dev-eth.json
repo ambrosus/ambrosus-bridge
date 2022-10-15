@@ -14,13 +14,16 @@
             "privateKey": "in env"
         }
     },
-
     "submitters": {
         "enable": true,
-        "sideToAmb": "untrustless",
-        "ambToSide": "untrustless2"
+        "sideToAmb": {
+            "variant": "untrustless"
+        },
+        "ambToSide": {
+            "variant": "untrustless2"
+        }
     },
-    "validityWatchdogs":  {
+    "validityWatchdogs": {
         "enable": true,
         "enableForAmb": true,
         "enableForSide": true
@@ -28,13 +31,13 @@
     "pauseUnpauseWatchdogs": {
         "enable": true
     },
-    "triggers":  {
+    "triggers": {
         "enable": true
     },
-    "unlockers":  {
+    "unlockers": {
         "enable": true
     },
-    "feeApi":  {
+    "feeApi": {
         "enable": true,
         "ip": "",
         "port": "8080",
@@ -54,7 +57,6 @@
             "transferFeeRecipient": "0x"
         }
     },
-
     "externalLogger": {
         "telegram": {
             "enable": true,

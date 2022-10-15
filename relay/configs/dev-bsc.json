@@ -14,21 +14,24 @@
             "privateKey": "in env"
         }
     },
-
     "submitters": {
         "enable": true,
-        "sideToAmb": "posa",
-        "ambToSide": "aura",
-        "aura": {
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "finalizeServiceUrl": "https://finalizing-api.ambrosus-dev.io/logs.bin",
-            "receiverBridgeMaxTxSizeKB": 128
+        "sideToAmb": {
+            "variant": "posa",
+            "posa": {
+                "receiverBridgeMaxTxSizeKB": 300
+            }
         },
-        "posa": {
-            "receiverBridgeMaxTxSizeKB": 300
+        "ambToSide": {
+            "variant": "aura",
+            "aura": {
+                "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+                "finalizeServiceUrl": "https://finalizing-api.ambrosus-dev.io/logs.bin",
+                "receiverBridgeMaxTxSizeKB": 128
+            }
         }
     },
-    "validityWatchdogs":  {
+    "validityWatchdogs": {
         "enable": true,
         "enableForAmb": true,
         "enableForSide": true
@@ -36,13 +39,13 @@
     "pauseUnpauseWatchdogs": {
         "enable": true
     },
-    "triggers":  {
+    "triggers": {
         "enable": true
     },
-    "unlockers":  {
+    "unlockers": {
         "enable": true
     },
-    "feeApi":  {
+    "feeApi": {
         "enable": true,
         "ip": "",
         "port": "8080",
@@ -62,7 +65,6 @@
             "transferFeeRecipient": "0x"
         }
     },
-
     "externalLogger": {
         "telegram": {
             "enable": true,
