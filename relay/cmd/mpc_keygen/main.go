@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -21,40 +22,61 @@ func main() {
 		log.Fatal().Err(err).Msg("error initialize config")
 	}
 
+	if !isShareExist(cfg.Submitters.AmbToSide.Mpc.SharePath) {
+		fmt.Println("AmbToSide keygen begin")
+		keygen(cfg.Submitters.AmbToSide.Mpc)
+		fmt.Println("AmbToSide keygen done")
+	} else {
+		fmt.Println("AmbToSide share already exist")
+	}
+
+	if !isShareExist(cfg.Submitters.SideToAmb.Mpc.SharePath) {
+		fmt.Println("SideToAmb keygen begin")
+		keygen(cfg.Submitters.SideToAmb.Mpc)
+		fmt.Println("SideToAmb keygen done")
+	} else {
+		fmt.Println("SideToAmb share already exist")
+	}
+
+}
+
+func keygen(cfg *config.SubmitterMpc) {
 	logger := log.Logger
-	mpcc := tss_wrap.NewMpc(cfg.Submitters.Mpc.MeID, cfg.Submitters.Mpc.PartyLen, &logger)
+	mpcc := tss_wrap.NewMpc(cfg.MeID, cfg.PartyLen, &logger)
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	if cfg.Submitters.Mpc.IsServer {
+	if cfg.IsServer {
 		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(cfg.Submitters.Mpc.ServerURL, server_)
+		go http.ListenAndServe(cfg.ServerURL, server_)
 
 		err := server_.Keygen(ctx)
 		if err != nil {
-			logger.Fatal().Err(err).Msg("error on untrustless mpc server keygen")
+			panic(err)
 		}
 	} else {
-		client_ := client.NewClient(mpcc, cfg.Submitters.Mpc.ServerURL, nil, &logger)
+		client_ := client.NewClient(mpcc, cfg.ServerURL, nil, &logger)
 
 		err := client_.Keygen(ctx)
 		if err != nil {
-			logger.Err(err).Msg("error on untrustless mpc client keygen")
+			panic(err)
 		}
 	}
-	saveShare(mpcc)
-
-	logger.Info().Msg("mpc keygen finished")
+	saveShare(mpcc, cfg.SharePath)
 }
 
-func saveShare(tss *tss_wrap.Mpc) {
+func saveShare(tss *tss_wrap.Mpc, sharePath string) {
 	share, err := tss.Share()
 	if err != nil {
 		panic(err)
 	}
 
-	sharePath := os.Getenv("SHARE_PATH")
 	err = os.WriteFile(sharePath, share, 0644)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func isShareExist(sharePath string) bool {
+	_, err := os.Stat(sharePath)
+	return err == nil
 }
