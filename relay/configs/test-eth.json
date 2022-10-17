@@ -49,7 +49,7 @@
                 "0xb017DcCC473499C83f1b553bE564f3CeAf002254",
                 "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
             ],
-            "transferFeeTxsFromBlock": 0
+            "transferFeeTxsFromBlock": 1439420
         },
         "side": {
             "privateKey": "in env",
@@ -60,7 +60,7 @@
             "transferFeeIncludedTxsFromAddresses": [
                 "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
             ],
-            "transferFeeTxsFromBlock": 0
+            "transferFeeTxsFromBlock": 2085848
         }
     },
 
