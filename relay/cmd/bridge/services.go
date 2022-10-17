@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
@@ -18,9 +19,13 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless2"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless_mpc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/client"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/server"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 	"github.com/rs/zerolog"
 )
 
@@ -39,6 +44,29 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		ambSubmitter, err = aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
 	case "untrustless2":
 		ambSubmitter, err = untrustless2.NewSubmitterUntrustless(ambBridge, &untrustless2.ReceiverUntrustless2{Receiver: sideBridge})
+	case "untrustless-mpc":
+		share, err := os.ReadFile(os.Getenv("SHARE_PATH"))
+		if err != nil {
+			logger.Fatal().Err(err).Msg("can't read share")
+		}
+		mpcc, err := tss_wrap.NewMpcWithShare(cfg.Mpc.MeID, cfg.Mpc.PartyLen, share, &logger)
+		if err != nil {
+			logger.Fatal().Err(err).Msg("failed to create MPC client")
+		}
+
+		var mpcSigner untrustless_mpc.MpcSigner
+		if cfg.Mpc.IsServer {
+			server_ := server.NewServer(mpcc, &logger)
+			go http.ListenAndServe(cfg.Mpc.ServerURL, server_)
+			mpcSigner = server_
+		} else {
+			client_ := client.NewClient(mpcc, cfg.Mpc.ServerURL, nil, &logger)
+			mpcSigner = client_
+		}
+
+		receiver, err := untrustless_mpc.NewReceiverUntrustlessMpc(sideBridge, mpcSigner)
+		ambSubmitter, err = untrustless_mpc.NewSubmitterUntrustlessMpc(ambBridge, receiver, cfg.Mpc.IsServer)
+
 	default:
 		logger.Info().Msg("amb->side submitter is disabled")
 	}

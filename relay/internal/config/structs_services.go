@@ -9,6 +9,7 @@ type (
 		Aura *SubmitterAura `mapstructure:"aura"`
 		Pow  *SubmitterPoW  `mapstructure:"pow"`
 		Posa *SubmitterPoSA `mapstructure:"posa"`
+		Mpc  *SubmitterMpc  `mapstructure:"mpc"`
 	}
 
 	SubmitterAura struct {
@@ -23,6 +24,12 @@ type (
 	}
 	SubmitterPoSA struct {
 		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
+	}
+	SubmitterMpc struct {
+		IsServer  bool   `mapstructure:"isServer"`
+		MeID      int    `mapstructure:"meID"`
+		PartyLen  int    `mapstructure:"partyLen"`
+		ServerURL string `mapstructure:"serverURL"` // client connect to this url; server listen on this url
 	}
 )
 
