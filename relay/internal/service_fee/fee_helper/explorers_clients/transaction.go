@@ -3,8 +3,10 @@ package explorers_clients
 import (
 	"errors"
 	"math/big"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
+	"golang.org/x/exp/slices"
 )
 
 var (
@@ -21,11 +23,19 @@ type Transaction struct {
 	Input       string
 }
 
-func FilterTxsByFromToAddresses(txs []*Transaction, from string, to string) []*Transaction {
+func FilterTxsByFromToAddresses[T string | []string](txs []*Transaction, from T, to string) []*Transaction {
+	var fromCheck func(txFrom string) bool
+	switch from := any(from).(type) {
+	case string:
+		fromCheck = func(txFrom string) bool { return txFrom == from }
+	case []string:
+		fromCheck = func(txFrom string) bool { return slices.Contains(from, txFrom) }
+	}
+
 	var res []*Transaction
 	for i := 0; i < len(txs); i++ {
 		tx := txs[i]
-		if tx.From == from && tx.To == to {
+		if fromCheck(tx.From) && tx.To == to {
 			res = append(res, tx)
 		}
 	}
@@ -66,4 +76,20 @@ func RemoveTransactionsDups(m []*Transaction) []*Transaction {
 		}
 	}
 	return list
+}
+
+func ToLower[T string | []string](from T) (res T) {
+	switch from := any(from).(type) {
+	case string:
+		res = any(strings.ToLower(from)).(T)
+
+	case []string:
+		var sl []string
+		for _, v := range from {
+			sl = append(sl, strings.ToLower(v))
+		}
+		res = any(sl).(T)
+	}
+
+	return res
 }
