@@ -52,9 +52,9 @@ describe("BridgeERC20", () => {
 
   describe("bridge is recipient", () => {
 
-    it("should throw error if sender has insufficient bridgeBalance amount", async () => {
+    it("should throw error if transfer amount > minted amount", async () => {
       await expect(mockERC20.transfer(bridge, 100000))
-        .to.be.revertedWith("not enough locked tokens on bridge");
+        .to.be.revertedWith("ERC20: burn amount exceeds balance");
     });
 
     it("should burn (transfer)", async () => {
