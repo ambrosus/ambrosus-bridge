@@ -166,7 +166,24 @@ func (p *transferFeeTracker) WatchUnlocksLoop() {
 	}
 }
 
+func (p *transferFeeTracker) checkOldUnlocks() error {
+	latestLockedEventId, err := getOldestLockedEventId(p.sideBridge.GetContract())
+	if err != nil {
+		return err
+	}
+	latestUnlockedEventId := latestLockedEventId.Uint64() - 1
+
+	if p.latestProcessedEvent != latestUnlockedEventId {
+		p.sideBridge.GetLogger().Info().Str("event_id", fmt.Sprint(latestUnlockedEventId)).Msg("Process old unlock...")
+		p.processEvents(latestUnlockedEventId)
+	}
+	return nil
+}
+
 func (p *transferFeeTracker) watchUnlocks() error {
+	if err := p.checkOldUnlocks(); err != nil {
+		return fmt.Errorf("checkOldUnlocks: %w", err)
+	}
 
 	eventCh := make(chan *bindings.BridgeTransferFinish)
 	eventSub, err := p.sideBridge.GetWsContract().WatchTransferFinish(nil, eventCh, nil)
