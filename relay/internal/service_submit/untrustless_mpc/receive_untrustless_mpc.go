@@ -113,7 +113,8 @@ func (b *ReceiverUntrustlessMpc) getServerTxRetryable() (*types.Transaction, err
 			return err
 		},
 
-		retry.Delay(2*time.Second),
+		retry.Delay(3*time.Second),
+		retry.Attempts(20),
 		retry.DelayType(retry.FixedDelay),
 	)
 	return tx, err
