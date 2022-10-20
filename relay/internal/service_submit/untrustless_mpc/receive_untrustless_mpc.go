@@ -67,6 +67,7 @@ func (b *ReceiverUntrustlessMpc) MpcSign(address common.Address, tx *types.Trans
 
 func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindings.BridgeTransfer) error {
 	defer metric.SetRelayBalanceMetric(b)
+	defer b.mpcSigner.SetFullMsg(nil)
 
 	return b.ProcessTx("submitTransferUntrustless", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
 		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
