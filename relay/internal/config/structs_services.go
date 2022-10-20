@@ -3,8 +3,12 @@ package config
 type (
 	Submitters struct {
 		enable    `mapstructure:",squash"`
-		AmbToSide string `mapstructure:"ambToSide"`
-		SideToAmb string `mapstructure:"sideToAmb"`
+		AmbToSide SubmitterVariants `mapstructure:"ambToSide"`
+		SideToAmb SubmitterVariants `mapstructure:"sideToAmb"`
+	}
+
+	SubmitterVariants struct {
+		Variant string `mapstructure:"variant"`
 
 		Aura *SubmitterAura `mapstructure:"aura"`
 		Pow  *SubmitterPoW  `mapstructure:"pow"`
@@ -30,6 +34,7 @@ type (
 		MeID      int    `mapstructure:"meID"`
 		PartyLen  int    `mapstructure:"partyLen"`
 		ServerURL string `mapstructure:"serverURL"` // client connect to this url; server listen on this url
+		SharePath string `mapstructure:"sharePath"`
 	}
 )
 

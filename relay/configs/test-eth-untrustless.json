@@ -14,13 +14,10 @@
             "privateKey": ""
         }
     },
-
     "submitters": {
-        "enable": false,
-        "sideToAmb": "",
-        "ambToSide": ""
+        "enable": false
     },
-    "validityWatchdogs":  {
+    "validityWatchdogs": {
         "enable": true,
         "enableForAmb": false,
         "enableForSide": true,
@@ -29,13 +26,13 @@
     "pauseUnpauseWatchdogs": {
         "enable": false
     },
-    "triggers":  {
+    "triggers": {
         "enable": false
     },
-    "unlockers":  {
+    "unlockers": {
         "enable": false
     },
-    "feeApi":  {
+    "feeApi": {
         "enable": false
     },
     "externalLogger": {
@@ -44,7 +41,7 @@
             "token": "5379706864:AAGnnmtbDgCTX-6a1ij5CIdS23oVIcA7CB4",
             "chatId": "-1001753338316"
         }
-},
+    },
     "prometheus": {
         "enable": false
     }
