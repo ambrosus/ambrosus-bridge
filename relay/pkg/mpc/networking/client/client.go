@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	ec "github.com/ethereum/go-ethereum/common"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
 	"github.com/rs/zerolog"
@@ -83,6 +85,10 @@ func (s *Client) GetFullMsg() ([]byte, error) {
 	}
 
 	return buf.Bytes(), nil
+}
+
+func (s *Client) GetTssAddress() (ec.Address, error) {
+	return s.Tss.GetAddress()
 }
 
 func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
