@@ -8,6 +8,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+	ec "github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
 )
 
@@ -76,6 +77,10 @@ func (s *Server) GetFullMsg() ([]byte, error) {
 
 func (s *Server) SetFullMsg(fullMsg []byte) {
 	s.fullMsg = fullMsg
+}
+
+func (s *Server) GetTssAddress() (ec.Address, error) {
+	return s.Tss.GetAddress()
 }
 
 func (s *Server) doOperation(

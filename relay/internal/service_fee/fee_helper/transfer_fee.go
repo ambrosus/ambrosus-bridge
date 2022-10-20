@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -20,9 +21,9 @@ var (
 )
 
 type explorerClient interface {
-	// TxListByFromToAddresses should return all transactions in desc sort filtering by `from` and `to` fields
-	// if `untilTxHash` is not nil, return tx until the `untilTxHash` is reached NOT INCLUDING
-	TxListByFromToAddresses(from, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error)
+	// TxListByFromListToAddresses should return all transactions in desc sort filtering by `fromList` and `to` fields
+	// if `txFilters.untilTxHash` is not nil, return tx until the `untilTxHash` is reached NOT INCLUDING
+	TxListByFromListToAddresses(from []string, to string, txFilters explorers_clients.TxFilters) ([]*explorers_clients.Transaction, error)
 }
 
 type transferFeeTracker struct {
@@ -31,6 +32,12 @@ type transferFeeTracker struct {
 
 	explorer     explorerClient
 	sideExplorer explorerClient
+
+	transferFeeIncludedTxsFromAddresses     []string
+	sideTransferFeeIncludedTxsFromAddresses []string
+
+	transferFeeTxsFromBlock     uint64
+	sideTransferFeeTxsFromBlock uint64
 
 	latestProcessedEvent      uint64
 	latestSideProcessedTxHash *common.Hash
@@ -41,15 +48,24 @@ type transferFeeTracker struct {
 	totalThisGas       *big.Int
 }
 
-func newTransferFeeTracker(bridge, sideBridge networks.Bridge, explorer, sideExplorer explorerClient) (*transferFeeTracker, error) {
+func newTransferFeeTracker(
+	bridge, sideBridge networks.Bridge,
+	explorer, sideExplorer explorerClient,
+	transferFeeIncludedTxsFromAddresses []string, sideTransferFeeIncludedTxsFromAddresses []string,
+	transferFeeTxsFromBlock, sideTransferFeeTxsFromBlock uint64,
+) (*transferFeeTracker, error) {
 	p := &transferFeeTracker{
-		bridge:             bridge,
-		sideBridge:         sideBridge,
-		explorer:           explorer,
-		sideExplorer:       sideExplorer,
-		totalWithdrawCount: big.NewInt(0),
-		totalSideGas:       big.NewInt(0),
-		totalThisGas:       big.NewInt(0),
+		bridge:                                  bridge,
+		sideBridge:                              sideBridge,
+		explorer:                                explorer,
+		sideExplorer:                            sideExplorer,
+		transferFeeIncludedTxsFromAddresses:     transferFeeIncludedTxsFromAddresses,
+		sideTransferFeeIncludedTxsFromAddresses: sideTransferFeeIncludedTxsFromAddresses,
+		transferFeeTxsFromBlock:                 transferFeeTxsFromBlock,
+		sideTransferFeeTxsFromBlock:             sideTransferFeeTxsFromBlock,
+		totalWithdrawCount:                      big.NewInt(0),
+		totalSideGas:                            big.NewInt(0),
+		totalThisGas:                            big.NewInt(0),
 	}
 
 	if err := p.init(); err != nil {
@@ -86,7 +102,7 @@ func (p *transferFeeTracker) init() error {
 }
 
 func (p *transferFeeTracker) processEvents(newEventId uint64) error {
-	withdrawsCount, err := getWithdrawsCount(p.bridge.GetContract(), p.latestProcessedEvent+1, newEventId)
+	withdrawsCount, err := getWithdrawsCount(p.bridge.GetContract(), p.latestProcessedEvent+1, newEventId, &bind.FilterOpts{Start: p.transferFeeTxsFromBlock})
 	if err != nil {
 		return fmt.Errorf("getWithdrawsCount: %w", err)
 	}
@@ -95,20 +111,20 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 	}
 
 	// get side bridge txs from explorer (for submit/unlock methods)
-	sideBridgeTxList, err := p.sideExplorer.TxListByFromToAddresses(
-		p.sideBridge.GetAuth().From.Hex(),
+	sideBridgeTxList, err := p.sideExplorer.TxListByFromListToAddresses(
+		p.sideTransferFeeIncludedTxsFromAddresses,
 		p.sideBridge.GetContractAddress().Hex(),
-		p.latestSideProcessedTxHash,
+		explorers_clients.TxFilters{FromBlock: p.sideTransferFeeTxsFromBlock, UntilTxHash: p.latestSideProcessedTxHash},
 	)
 	if err != nil {
 		return fmt.Errorf("get side bridge tx list: %w", err)
 	}
 
 	// get this bridge txs from explorer (for triggerTransfers method)
-	thisBridgeTxList, err := p.explorer.TxListByFromToAddresses(
-		p.bridge.GetAuth().From.Hex(),
+	thisBridgeTxList, err := p.explorer.TxListByFromListToAddresses(
+		p.transferFeeIncludedTxsFromAddresses,
 		p.bridge.GetContractAddress().Hex(),
-		p.latestThisProcessedTxHash,
+		explorers_clients.TxFilters{FromBlock: p.transferFeeTxsFromBlock, UntilTxHash: p.latestThisProcessedTxHash},
 	)
 	if err != nil {
 		return fmt.Errorf("get this bridge tx list: %w", err)
@@ -150,7 +166,24 @@ func (p *transferFeeTracker) WatchUnlocksLoop() {
 	}
 }
 
+func (p *transferFeeTracker) checkOldUnlocks() error {
+	latestLockedEventId, err := getOldestLockedEventId(p.sideBridge.GetContract())
+	if err != nil {
+		return err
+	}
+	latestUnlockedEventId := latestLockedEventId.Uint64() - 1
+
+	if p.latestProcessedEvent != latestUnlockedEventId {
+		p.sideBridge.GetLogger().Info().Str("event_id", fmt.Sprint(latestUnlockedEventId)).Msg("Process old unlock...")
+		p.processEvents(latestUnlockedEventId)
+	}
+	return nil
+}
+
 func (p *transferFeeTracker) watchUnlocks() error {
+	if err := p.checkOldUnlocks(); err != nil {
+		return fmt.Errorf("checkOldUnlocks: %w", err)
+	}
 
 	eventCh := make(chan *bindings.BridgeTransferFinish)
 	eventSub, err := p.sideBridge.GetWsContract().WatchTransferFinish(nil, eventCh, nil)
@@ -183,8 +216,8 @@ func getOldestLockedEventId(contract interfaces.BridgeContract) (*big.Int, error
 	return contract.OldestLockedEventId(nil)
 }
 
-func getTransfersByIds(contract interfaces.BridgeContract, eventIds []*big.Int) (transfers []*bindings.BridgeTransfer, err error) {
-	logTransfer, err := contract.FilterTransfer(nil, eventIds)
+func getTransfersByIds(contract interfaces.BridgeContract, eventIds []*big.Int, opts *bind.FilterOpts) (transfers []*bindings.BridgeTransfer, err error) {
+	logTransfer, err := contract.FilterTransfer(opts, eventIds)
 	if err != nil {
 		return nil, fmt.Errorf("filter transfer: %w", err)
 	}
@@ -199,7 +232,7 @@ func getTransfersByIds(contract interfaces.BridgeContract, eventIds []*big.Int) 
 
 //
 
-func getWithdrawsCount(contract interfaces.BridgeContract, fromEvent, toEvent uint64) (int, error) {
+func getWithdrawsCount(contract interfaces.BridgeContract, fromEvent, toEvent uint64, opts *bind.FilterOpts) (int, error) {
 	// get events ids for getting submits, unlocks and transfers for "batch" requests
 	var eventIds []*big.Int
 	for i := fromEvent; i <= toEvent; i++ { // +1 cuz we've already calculated the gas cost for that event
@@ -207,7 +240,7 @@ func getWithdrawsCount(contract interfaces.BridgeContract, fromEvent, toEvent ui
 	}
 
 	// get events batch requests
-	transfers, err := getTransfersByIds(contract, eventIds)
+	transfers, err := getTransfersByIds(contract, eventIds, opts)
 	if err != nil {
 		return 0, fmt.Errorf("get transfers by ids: %w", err)
 	}

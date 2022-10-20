@@ -95,38 +95,67 @@ func (m *Mpc) messaging(
 	endChKeygen chan keygen.LocalPartySaveData,
 	endChSign chan common.SignatureData,
 ) (interface{}, error) {
-	for {
-		select {
-		case msgIn := <-inCh:
-			parsedMessage, err := m.unmarshallInputMsg(msgIn)
-			if err != nil {
-				return nil, fmt.Errorf("unmarshallInputMsg: %s", err.Error())
-			}
-			ok, err := party.Update(parsedMessage)
-			if !ok {
-				return nil, fmt.Errorf("party.Update: %s", err.Error())
-			}
-			m.logger.Debug().Msgf("%v received msg from %v %v", m.me.Id, parsedMessage.GetFrom().Id, parsedMessage.Type())
+	// todo hard to read, maybe refactor
 
-		case msgOut := <-outChTss:
+	msgOutErrCh := make(chan error)
+
+	// this goro will stop when outChTss is closed (below)
+	// a separate goro is needed to not stop receiving messages from outChTss after receiving the result
+	go func() {
+		for msgOut := range outChTss {
 			outputMsg, err := m.newOutputMsg(msgOut)
 			if err != nil {
-				return nil, fmt.Errorf("newOutputMsg: %s", err.Error())
+				msgOutErrCh <- fmt.Errorf("newOutputMsg: %s", err.Error())
 			}
 			m.logger.Debug().Msgf("%v send messages to %v %v", m.me.Id, outputMsg.SendToIds, msgOut.Type())
 
 			outCh <- outputMsg
-
-		case result := <-endChKeygen:
-			return &result, nil
-
-		case result := <-endChSign:
-			return &result, nil
-
-		case <-ctx.Done():
-			return nil, ctx.Err()
 		}
+		msgOutErrCh <- nil
+	}()
+
+	result, err := func() (interface{}, error) {
+		for {
+			select {
+			case msgIn := <-inCh:
+				parsedMessage, err := m.unmarshallInputMsg(msgIn)
+				if err != nil {
+					return nil, fmt.Errorf("unmarshallInputMsg: %s", err.Error())
+				}
+				ok, err := party.Update(parsedMessage)
+				if !ok {
+					return nil, fmt.Errorf("party.Update: %s", err.Error())
+				}
+				m.logger.Debug().Msgf("%v received msg from %v %v", m.me.Id, parsedMessage.GetFrom().Id, parsedMessage.Type())
+
+			case result := <-endChKeygen:
+				return &result, nil
+			case result := <-endChSign:
+				return &result, nil
+
+			case <-ctx.Done():
+				return nil, ctx.Err()
+
+			case err := <-msgOutErrCh:
+				if err != nil {
+					return nil, err
+				}
+			}
+		}
+	}()
+
+	close(outChTss) // close outChTss to stop sending messages to outCh
+	if err != nil {
+		return nil, err
 	}
+
+	if err = <-msgOutErrCh; err != nil { // wait for all messages to be sent
+		return nil, err
+	}
+	// it's important to wait for all messages to be sent before returning result
+	// otherwise, outCh may be closed before all messages are sent
+	return result, nil
+
 }
 
 func tssSignToECDSA(signature *common.SignatureData) []byte {

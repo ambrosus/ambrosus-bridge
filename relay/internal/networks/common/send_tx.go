@@ -46,9 +46,16 @@ func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, t
 			return errors.Is(err, context.DeadlineExceeded)
 		}),
 		retry.OnRetry(func(n uint, err error) {
+			var txHash string
+			if tx != nil {
+				txHash = tx.Hash().Hex()
+			} else {
+				txHash = "unknown"
+			}
+
 			b.Logger.Warn().
 				Str("method", methodName).
-				Str("tx_hash", tx.Hash().Hex()).
+				Str("tx_hash", txHash).
 				Msgf("Seems the transaction get stuck, making new tx with higher gas price and the same nonce to replace the old one... (%d/%d)", n+1, 2)
 
 			// set gas price higher by 30%

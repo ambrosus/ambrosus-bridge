@@ -29,7 +29,12 @@ func NewFeeHelper(bridge, sideBridge networks.Bridge, explorer, sideExplorer exp
 		return nil, err
 	}
 
-	transferFee, err := newTransferFeeTracker(bridge, sideBridge, explorer, sideExplorer)
+	transferFee, err := newTransferFeeTracker(
+		bridge, sideBridge,
+		explorer, sideExplorer,
+		cfg.TransferFeeIncludedTxsFromAddresses, sideCfg.TransferFeeIncludedTxsFromAddresses,
+		cfg.TransferFeeTxsFromBlock, sideCfg.TransferFeeTxsFromBlock,
+	)
 	if err != nil {
 		return nil, err
 	}

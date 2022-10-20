@@ -7,7 +7,6 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
-	"github.com/ethereum/go-ethereum/common"
 )
 
 const (
@@ -64,7 +63,7 @@ func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, pa
 	}
 
 	if respData.Meta.Message == ErrTxsNotFound.Error() {
-		return nil, explorers_clients.ErrTxsNotFound
+		return &respData, nil
 	}
 	if respData.Meta.Message != "" {
 		return nil, fmt.Errorf(respData.Meta.Message)
@@ -73,7 +72,7 @@ func (e *AmbrosusExplorer) txListByAddressWithMeta(address string, limit int, pa
 	return &respData, nil
 }
 
-func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
+func (e *AmbrosusExplorer) TxListByAddress(address string, txFilters explorers_clients.TxFilters) ([]*explorers_clients.Transaction, error) {
 	var txs []*explorers_clients.Transaction
 
 	var currentPage = 1
@@ -85,7 +84,7 @@ func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *common.H
 		currentPage++
 
 		ourTypeTx := toOurTxType(pageTxs.Data)
-		txsUntilTxHash, isReachedTheTxHash := explorers_clients.TakeTxsUntilTxHash(ourTypeTx, untilTxHash)
+		txsUntilTxHash, isReachedTheTxHash := explorers_clients.TakeTxsUntilTxHash(ourTypeTx, txFilters.UntilTxHash)
 		txs = append(txs, txsUntilTxHash...)
 
 		// TODO: when "limit" is big enough (>1000), "hasNext" is false, but there's the next page, should check the next page like etherscan client
@@ -94,18 +93,29 @@ func (e *AmbrosusExplorer) TxListByAddress(address string, untilTxHash *common.H
 		}
 	}
 
-	txsWithoutDups := explorers_clients.RemoveTransactionsDups(txs)
-	return txsWithoutDups, nil
+	txs = explorers_clients.RemoveTransactionsDups(txs)
+	txs = explorers_clients.FilterTxsByFromBlock(txs, txFilters.FromBlock)
+	return txs, nil
 
 }
 
-func (e *AmbrosusExplorer) TxListByFromToAddresses(from, to string, untilTxHash *common.Hash) ([]*explorers_clients.Transaction, error) {
-	txs, err := e.TxListByAddress(from, untilTxHash)
+func (e *AmbrosusExplorer) TxListByFromToAddresses(from, to string, txFilters explorers_clients.TxFilters) ([]*explorers_clients.Transaction, error) {
+	txs, err := e.TxListByAddress(from, txFilters)
 	if err != nil {
 		return nil, err
 	}
 
 	res := explorers_clients.FilterTxsByFromToAddresses(txs, from, to)
+	return res, nil
+}
+
+func (e *AmbrosusExplorer) TxListByFromListToAddresses(fromList []string, to string, txFilters explorers_clients.TxFilters) ([]*explorers_clients.Transaction, error) {
+	txs, err := e.TxListByAddress(to, txFilters)
+	if err != nil {
+		return nil, err
+	}
+
+	res := explorers_clients.FilterTxsByFromToAddresses(txs, fromList, to)
 	return res, nil
 }
 

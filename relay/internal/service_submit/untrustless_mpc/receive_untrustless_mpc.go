@@ -19,12 +19,15 @@ type MpcSigner interface {
 	Sign(ctx context.Context, msg []byte) ([]byte, error)
 	SetFullMsg(fullMsg []byte)
 	GetFullMsg() ([]byte, error)
+	GetTssAddress() (common.Address, error)
 }
 
 type ReceiverUntrustlessMpc struct {
 	service_submit.Receiver
 	mpcSigner MpcSigner
 	signer    types.Signer
+
+	fromAddress common.Address
 }
 
 func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSigner) (*ReceiverUntrustlessMpc, error) {
@@ -34,18 +37,23 @@ func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSi
 	}
 	signer := types.LatestSignerForChainID(chainID)
 
+	fromAddress, err := mpcSigner.GetTssAddress()
+	if err != nil {
+		return nil, fmt.Errorf("get tss address: %w", err)
+	}
+
 	return &ReceiverUntrustlessMpc{
-		Receiver:  receiver,
-		mpcSigner: mpcSigner,
-		signer:    signer,
+		Receiver:    receiver,
+		mpcSigner:   mpcSigner,
+		signer:      signer,
+		fromAddress: fromAddress,
 	}, nil
 }
 
 func (b *ReceiverUntrustlessMpc) GetAuth() *bind.TransactOpts {
 	originalAuth := *b.Receiver.GetAuth()
 	originalAuth.Signer = b.MpcSign
-	// originalAuth.
-	// todo set originalAuth.Address to b.mpgSigner.GetAddress()
+	originalAuth.From = b.fromAddress
 	return &originalAuth
 }
 
@@ -67,6 +75,7 @@ func (b *ReceiverUntrustlessMpc) MpcSign(address common.Address, tx *types.Trans
 
 func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindings.BridgeTransfer) error {
 	defer metric.SetRelayBalanceMetric(b)
+	defer b.mpcSigner.SetFullMsg(nil)
 
 	return b.ProcessTx("submitTransferUntrustless", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
 		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
@@ -104,7 +113,8 @@ func (b *ReceiverUntrustlessMpc) getServerTxRetryable() (*types.Transaction, err
 			return err
 		},
 
-		retry.Delay(2*time.Second),
+		retry.Delay(3*time.Second),
+		retry.Attempts(20),
 		retry.DelayType(retry.FixedDelay),
 	)
 	return tx, err
