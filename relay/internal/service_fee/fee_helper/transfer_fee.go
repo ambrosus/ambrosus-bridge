@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/big"
-	"sync"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -14,7 +13,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/common"
-	"golang.org/x/sync/errgroup"
 )
 
 const (
@@ -138,41 +136,26 @@ func usedGas(client ethclients.ClientInterface, txs []common.Hash) (*big.Int, *b
 	totalGas := new(big.Int)
 	totalGasCost := new(big.Int)
 
-	lock := sync.Mutex{}
-	sem := make(chan interface{}, 10) // max 20 simultaneous requests
-	errGroup := new(errgroup.Group)
-
 	for _, txHash := range txs {
 		txHash := txHash
-		errGroup.Go(func() error {
-			sem <- 0
-			defer func() { <-sem }()
+		tx, _, err := client.TransactionByHash(context.Background(), txHash)
+		if err != nil {
+			return nil, nil, fmt.Errorf("get transaction by hash: %w", err)
+		}
 
-			tx, _, err := client.TransactionByHash(context.Background(), txHash)
-			if err != nil {
-				return fmt.Errorf("get transaction by hash: %w", err)
-			}
+		txGasPrice, err := cb.GetTxGasPrice(client, tx)
+		if err != nil {
+			return nil, nil, fmt.Errorf("get tx gas price: %w", err)
+		}
+		receipt, err := client.TransactionReceipt(context.Background(), txHash)
+		if err != nil {
+			return nil, nil, fmt.Errorf("get transaction receipt: %w", err)
+		}
 
-			txGasPrice, err := cb.GetTxGasPrice(client, tx)
-			if err != nil {
-				return fmt.Errorf("get tx gas price: %w", err)
-			}
-			receipt, err := client.TransactionReceipt(context.Background(), txHash)
-			if err != nil {
-				return fmt.Errorf("get transaction receipt: %w", err)
-			}
+		txCost := new(big.Int).Mul(txGasPrice, big.NewInt(int64(receipt.GasUsed)))
 
-			txCost := new(big.Int).Mul(txGasPrice, big.NewInt(int64(receipt.GasUsed)))
-
-			lock.Lock()
-			totalGas.Add(totalGas, big.NewInt(int64(receipt.GasUsed)))
-			totalGasCost.Add(totalGasCost, txCost)
-			lock.Unlock()
-			return nil
-		})
-	}
-	if err := errGroup.Wait(); err != nil {
-		return nil, nil, fmt.Errorf("calc used gas: %w", err)
+		totalGas.Add(totalGas, big.NewInt(int64(receipt.GasUsed)))
+		totalGasCost.Add(totalGasCost, txCost)
 	}
 
 	return totalGasCost, totalGas, nil
