@@ -147,21 +147,9 @@ func (p *testPeer) sign(outCh chan *Message, msg []byte) ([]byte, error) {
 	if err := p.peer.SetShare(fixtures.GetShare(p.peer.me.Index)); err != nil {
 		return nil, err
 	}
-
-	var signature []byte
-	errCh := make(chan error, 1000)
-
-	go p.peer.Sign(context.Background(), p.inCh, outCh, errCh, msg, &signature)
-
-	err := <-errCh
-	return signature, err
+	return p.peer.Sign(context.Background(), p.inCh, outCh, msg)
 }
 
 func (p *testPeer) keygen(outCh chan *Message) error {
-	errCh := make(chan error, 1000)
-
-	go p.peer.Keygen(context.Background(), p.inCh, outCh, errCh, fixtures.GetPreParams(p.peer.me.Index))
-
-	err := <-errCh
-	return err
+	return p.peer.Keygen(context.Background(), p.inCh, outCh, fixtures.GetPreParams(p.peer.me.Index))
 }

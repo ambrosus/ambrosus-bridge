@@ -12,35 +12,26 @@ import (
 )
 
 // Keygen initiate share generation; Set received share to m.share after finishing protocol
-func (m *Mpc) Keygen(
-	ctx context.Context,
-	inCh <-chan []byte,
-	outCh chan<- *Message,
-	errCh chan<- error,
-	optionalPreParams ...keygen.LocalPreParams,
-) {
+func (m *Mpc) Keygen(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
 	params := tss.NewParameters(tss.S256(), m.party, m.me, len(m.party.IDs()), len(m.party.IDs())-1)
 	outChTss := make(chan tss.Message, 100)
 	endCh := make(chan keygen.LocalPartySaveData, 5)
 	keygenParty := keygen.NewLocalParty(params, outChTss, endCh, optionalPreParams...)
 
 	share, err := m.messaging(ctx, keygenParty, inCh, outCh, outChTss, endCh, nil)
-	if share != nil {
-		m.share = share.(*keygen.LocalPartySaveData)
+	if err != nil {
+		return err
 	}
-	errCh <- err
+	if share == nil {
+		return fmt.Errorf("share is nil")
+	}
+	m.share = share.(*keygen.LocalPartySaveData)
+	return nil
 }
 
 // Sign initiate signing msg; Signature will be stored in `result` arg after finishing protocol
 // nil is sent to encCh when signing is finished successfully
-func (m *Mpc) Sign(
-	ctx context.Context,
-	inCh <-chan []byte,
-	outCh chan<- *Message,
-	errCh chan<- error,
-	msg []byte,
-	result *[]byte,
-) {
+func (m *Mpc) Sign(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, msg []byte) ([]byte, error) {
 	bigMsg := new(big.Int).SetBytes(msg)
 	params := tss.NewParameters(tss.S256(), m.party, m.me, len(m.party.IDs()), len(m.party.IDs())-1)
 	outChTss := make(chan tss.Message, 100)
@@ -48,25 +39,13 @@ func (m *Mpc) Sign(
 	signParty := signing.NewLocalParty(bigMsg, params, *m.share, outChTss, endCh)
 
 	signature, err := m.messaging(ctx, signParty, inCh, outCh, outChTss, nil, endCh)
-	if signature != nil {
-		*result = tssSignToECDSA(signature.(*common.SignatureData))
+	if err != nil {
+		return nil, err
 	}
-	errCh <- err
-
-}
-
-func (m *Mpc) KeygenSync(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
-	errCh := make(chan error)
-	go m.Keygen(ctx, inCh, outCh, errCh, optionalPreParams...)
-	return <-errCh
-}
-
-func (m *Mpc) SignSync(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, msg []byte) ([]byte, error) {
-	errCh := make(chan error)
-	var result []byte
-	go m.Sign(ctx, inCh, outCh, errCh, msg, &result)
-	err := <-errCh
-	return result, err
+	if signature == nil {
+		return nil, fmt.Errorf("signature is nil")
+	}
+	return tssSignToECDSA(signature.(*common.SignatureData)), nil
 }
 
 // messaging is a generic function for receiving and transmitting messages.
