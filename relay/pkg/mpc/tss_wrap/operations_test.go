@@ -20,32 +20,14 @@ type testPeer struct {
 func TestKeygen(t *testing.T) {
 	peers := createPeers(5)
 
-	outCh := make(chan *Message, 1000)
-
-	var wg sync.WaitGroup
-	wg.Add(5)
-
-	for _, peer := range peers {
-
-		go func(p *testPeer) {
-			defer wg.Done()
-			fmt.Println("starting keygen", p.peer.MyID())
-
+	doOperation(peers,
+		func(p *testPeer, outCh chan *Message) {
 			err := p.keygen(outCh)
-			fmt.Println("keygen done", p.peer.MyID())
 			if err != nil {
-				t.Error(err)
+				t.Fatal(err)
 			}
-		}(peer)
-	}
-
-	// messaging
-
-	fmt.Println("starting messaging")
-	go messaging(outCh, peers)
-
-	wg.Wait()
-	close(outCh)
+		},
+	)
 
 	// checks
 
@@ -72,37 +54,19 @@ func TestKeygen(t *testing.T) {
 func TestSign(t *testing.T) {
 	peers := createPeers(5)
 
-	outCh := make(chan *Message, 1000)
 	msg := fixtures.Message()
-
 	signatures := make(map[string][]byte)
 
-	var wg sync.WaitGroup
-	wg.Add(5)
-
-	for _, peer := range peers {
-
-		go func(p *testPeer) {
-			defer wg.Done()
-			fmt.Println("starting signing", p.peer.MyID())
-
+	doOperation(peers,
+		func(p *testPeer, outCh chan *Message) {
 			signature, err := p.sign(outCh, msg)
-			fmt.Println("signing done", p.peer.MyID())
 			if err != nil {
-				t.Error(p.peer.MyID(), err)
+				t.Fatal(p.peer.MyID(), err)
 			}
 
 			signatures[p.peer.MyID()] = signature
-		}(peer)
-	}
-
-	// messaging
-
-	fmt.Println("starting messaging")
-	go messaging(outCh, peers)
-
-	wg.Wait()
-	close(outCh)
+		},
+	)
 
 	// checks
 
@@ -118,6 +82,28 @@ func TestSign(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, pubkey, sigPublicKey)
+}
+
+func doOperation(peers map[string]*testPeer, operation func(*testPeer, chan *Message)) {
+	outCh := make(chan *Message, 1000)
+
+	var wg sync.WaitGroup
+	wg.Add(len(peers))
+
+	for _, peer := range peers {
+		go func(p *testPeer) {
+			defer wg.Done()
+			fmt.Println("starting operation", p.peer.MyID())
+			operation(p, outCh)
+			fmt.Println("operation done", p.peer.MyID())
+		}(peer)
+	}
+
+	fmt.Println("starting messaging")
+	go messaging(outCh, peers)
+
+	wg.Wait()
+	close(outCh)
 }
 
 func messaging(outCh chan *Message, peers map[string]*testPeer) {
