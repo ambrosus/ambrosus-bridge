@@ -24,12 +24,6 @@ func (m *Mpc) Keygen(
 	endCh := make(chan keygen.LocalPartySaveData, 5)
 	keygenParty := keygen.NewLocalParty(params, outChTss, endCh, optionalPreParams...)
 
-	go func() {
-		if err := keygenParty.Start(); err != nil {
-			errCh <- fmt.Errorf("keyGen.Start: %s", err.Error())
-		}
-	}()
-
 	share, err := m.messaging(ctx, keygenParty, inCh, outCh, outChTss, endCh, nil)
 	if share != nil {
 		m.share = share.(*keygen.LocalPartySaveData)
@@ -48,18 +42,10 @@ func (m *Mpc) Sign(
 	result *[]byte,
 ) {
 	bigMsg := new(big.Int).SetBytes(msg)
-
 	params := tss.NewParameters(tss.S256(), m.party, m.me, len(m.party.IDs()), len(m.party.IDs())-1)
 	outChTss := make(chan tss.Message, 100)
 	endCh := make(chan common.SignatureData, 5)
-
 	signParty := signing.NewLocalParty(bigMsg, params, *m.share, outChTss, endCh)
-
-	go func() {
-		if err := signParty.Start(); err != nil {
-			errCh <- fmt.Errorf("signParty.Start: %s", err.Error())
-		}
-	}()
 
 	signature, err := m.messaging(ctx, signParty, inCh, outCh, outChTss, nil, endCh)
 	if signature != nil {
@@ -86,7 +72,8 @@ func (m *Mpc) SignSync(ctx context.Context, inCh <-chan []byte, outCh chan<- *Me
 // messaging is a generic function for receiving and transmitting messages.
 // loop ends when: ctx done OR some endCh receive result OR errCh receive error.
 func (m *Mpc) messaging(
-	ctx context.Context, party tss.Party,
+	ctx context.Context,
+	party tss.Party,
 
 	inCh <-chan []byte,
 	outCh chan<- *Message,
@@ -96,6 +83,9 @@ func (m *Mpc) messaging(
 	endChSign chan common.SignatureData,
 ) (interface{}, error) {
 	// todo hard to read, maybe refactor
+
+	partyErrCh := make(chan *tss.Error)
+	go func() { partyErrCh <- party.Start() }()
 
 	msgOutErrCh := make(chan error)
 
@@ -139,6 +129,10 @@ func (m *Mpc) messaging(
 			case err := <-msgOutErrCh:
 				if err != nil {
 					return nil, err
+				}
+			case err := <-partyErrCh:
+				if err != nil {
+					return nil, fmt.Errorf("party.Start: %w", err)
 				}
 			}
 		}
