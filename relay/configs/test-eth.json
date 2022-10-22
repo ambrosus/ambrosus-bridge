@@ -20,7 +20,14 @@
             "variant": "untrustless"
         },
         "ambToSide": {
-            "variant": "untrustless2"
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "sharePath": "share-server.json",
+                "meID": 0,
+                "partyLen": 2,
+                "serverURL": ":6455",
+                "isServer": true
+            }
         }
     },
     "validityWatchdogs": {
