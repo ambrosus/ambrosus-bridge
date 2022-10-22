@@ -17,6 +17,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
+const (
+	attemtpsOnProcessTx = 2
+	attemptsOnWaitMined = 2
+)
+
 func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, txCallback networks.ContractCallFn) error {
 	// if the transaction get stuck, then retry it with the higher gas price
 	var receipt *types.Receipt
@@ -46,17 +51,17 @@ func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, t
 			return errors.Is(err, context.DeadlineExceeded)
 		}),
 		retry.OnRetry(func(n uint, err error) {
-			var txHash string
-			if tx != nil {
-				txHash = tx.Hash().Hex()
-			} else {
-				txHash = "unknown"
+			if tx == nil {
+				b.Logger.Warn().
+					Str("method", methodName).
+					Msgf("Seems the transaction has not created and something makes us wait for long, trying again... (%d/%d)", n+1, attemtpsOnProcessTx)
+				return
 			}
 
 			b.Logger.Warn().
 				Str("method", methodName).
-				Str("tx_hash", txHash).
-				Msgf("Seems the transaction get stuck, making new tx with higher gas price and the same nonce to replace the old one... (%d/%d)", n+1, 2)
+				Str("tx_hash", tx.Hash().Hex()).
+				Msgf("Seems the transaction get stuck, making new tx with higher gas price and the same nonce to replace the old one... (%d/%d)", n+1, attemtpsOnProcessTx)
 
 			// set gas price higher by 30%
 			txOpts.GasPrice, _ = new(big.Float).Mul(
@@ -65,7 +70,7 @@ func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, t
 			).Int(nil)
 			txOpts.Nonce = big.NewInt(int64(tx.Nonce()))
 		}),
-		retry.Attempts(2),
+		retry.Attempts(attemtpsOnProcessTx),
 		retry.LastErrorOnly(true),
 	)
 
@@ -122,9 +127,9 @@ func (b *CommonBridge) waitMined(tx *types.Transaction) (receipt *types.Receipt,
 		retry.OnRetry(func(n uint, err error) {
 			b.Logger.Warn().
 				Str("tx_hash", tx.Hash().Hex()).
-				Msgf("Timeout waiting for tx to be mined, trying again... (%d/%d)", n+1, 2)
+				Msgf("Timeout waiting for tx to be mined, trying again... (%d/%d)", n+1, attemptsOnWaitMined)
 		}),
-		retry.Attempts(2),
+		retry.Attempts(attemptsOnWaitMined),
 		retry.LastErrorOnly(true),
 	)
 	if err != nil {
