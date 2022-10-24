@@ -14,7 +14,6 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
-	"golang.org/x/sync/errgroup"
 )
 
 func ShouldHavePk(b networks.Bridge) {
@@ -109,25 +108,18 @@ func getReceipts(client ethclients.ClientInterface, blockHash common.Hash) ([]*t
 
 	receipts := make([]*types.Receipt, txsCount)
 
-	errGroup := new(errgroup.Group)
 	for i := uint(0); i < txsCount; i++ {
-		i := i // https://golang.org/doc/faq#closures_and_goroutines ¯\_(ツ)_/¯
-		errGroup.Go(func() error {
-			tx, err := client.TransactionInBlock(context.Background(), blockHash, i)
-			if err != nil {
-				return fmt.Errorf("get transaction in block: %w", err)
-			}
-			receipt, err := client.TransactionReceipt(context.Background(), tx.Hash())
-			if err != nil {
-				return fmt.Errorf("get transaction receipt: %w", err)
-			}
-
-			receipts[i] = receipt
-			return nil
-		})
+		tx, err := client.TransactionInBlock(context.Background(), blockHash, i)
+		if err != nil {
+			return nil, fmt.Errorf("get transaction in block: %w", err)
+		}
+		receipts[i], err = client.TransactionReceipt(context.Background(), tx.Hash())
+		if err != nil {
+			return nil, fmt.Errorf("get transaction receipt: %w", err)
+		}
 	}
 
-	return receipts, errGroup.Wait()
+	return receipts, nil
 }
 
 // GetTxGasPrice returns gas price from raw response if transaction's type - DynamicFeeTx
