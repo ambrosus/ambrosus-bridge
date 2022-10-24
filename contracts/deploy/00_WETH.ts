@@ -16,6 +16,11 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig_(hre.network);
 
   const weth = configFile.tokens.WETH;
+
+  if (weth === undefined) {
+    console.log("wETH is not in config")
+    return
+  }
   if (isAddress(weth.addresses.eth)) {
     console.log("wETH already deployed");
     return;

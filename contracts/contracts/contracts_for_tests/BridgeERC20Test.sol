@@ -11,7 +11,4 @@ contract BridgeERC20Test is BridgeERC20 {
         _mint(to, amount);
     }
 
-    function changeBridgeBalance(uint balance) public {
-        bridgeBalance = balance;
-    }
 }

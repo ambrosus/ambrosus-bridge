@@ -30,8 +30,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await hre.deployments.deploy("CommonBridgeTest", {from: owner}); // can't use calldata in normal constructor, so ...
     await hre.deployments.execute("CommonBridgeTest", {from: owner}, "constructor_", {
         sideBridgeAddress: ethers.constants.AddressZero,
-        adminAddress: ethers.constants.AddressZero,
         relayAddress: ethers.constants.AddressZero,
+        feeProviderAddress: ethers.constants.AddressZero,
+        watchdogsAddresses: [ethers.constants.AddressZero],
         wrappingTokenAddress: wrapperAddr,
         tokenThisAddresses: [],
         tokenSideAddresses: [],

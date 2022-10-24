@@ -15,31 +15,30 @@
             "privateKey": "in env"
         }
     },
-
     "submitters": {
         "enable": true,
-        "sideToAmb": true,
-        "ambToSide": true,
-        "aura": {
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "finalizeServiceUrl": "https://finalizing-api.ambrosus.io/logs.bin"
+        "sideToAmb": {
+            "variant": "untrustless"
         },
-        "pow": {
-            "ethashDir": "/root/ethash",
-            "ethashKeepPrevEpochs": 1,
-            "ethashGenNextEpochs": 0
+        "ambToSide": {
+            "variant": "untrustless2"
         }
     },
-    "watchdogs":  {
+    "validityWatchdogs": {
+        "enable": true,
+        "enableForAmb": true,
+        "enableForSide": true
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": true
     },
-    "triggers":  {
+    "triggers": {
         "enable": true
     },
-    "unlockers":  {
+    "unlockers": {
         "enable": true
     },
-    "feeApi":  {
+    "feeApi": {
         "enable": true,
         "ip": "",
         "port": "8080",
@@ -47,15 +46,26 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "minTransferFeeUSD": 10,
+            "explorerURL": "https://explorer-api.ambrosus.io",
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE"
+            ],
+            "transferFeeTxsFromBlock": 0
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "minTransferFeeUSD": 0.5,
+            "explorerURL": "https://api.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded"
+            ],
+            "transferFeeTxsFromBlock": 0
         }
     },
-
     "externalLogger": {
         "telegram": {
             "enable": true,

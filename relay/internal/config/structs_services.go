@@ -3,27 +3,48 @@ package config
 type (
 	Submitters struct {
 		enable    `mapstructure:",squash"`
-		AmbToSide bool `mapstructure:"ambToSide"`
-		SideToAmb bool `mapstructure:"sideToAmb"`
+		AmbToSide SubmitterVariants `mapstructure:"ambToSide"`
+		SideToAmb SubmitterVariants `mapstructure:"sideToAmb"`
+	}
+
+	SubmitterVariants struct {
+		Variant string `mapstructure:"variant"`
 
 		Aura *SubmitterAura `mapstructure:"aura"`
 		Pow  *SubmitterPoW  `mapstructure:"pow"`
-		//Posa    *SubmitterPoSA `mapstructure:"posa"`  PoSA doesn't need any cfg
+		Posa *SubmitterPoSA `mapstructure:"posa"`
+		Mpc  *SubmitterMpc  `mapstructure:"mpc"`
 	}
 
 	SubmitterAura struct {
-		VSContractAddr     string `mapstructure:"vsContractAddr"`
-		FinalizeServiceUrl string `mapstructure:"finalizeServiceUrl"`
+		VSContractAddr            string `mapstructure:"vsContractAddr"`
+		FinalizeServiceUrl        string `mapstructure:"finalizeServiceUrl"`
+		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 	SubmitterPoW struct {
 		EthashDir            string `mapstructure:"ethashDir"`
 		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
 		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
 	}
+	SubmitterPoSA struct {
+		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
+	}
+	SubmitterMpc struct {
+		IsServer  bool   `mapstructure:"isServer"`
+		MeID      int    `mapstructure:"meID"`
+		PartyLen  int    `mapstructure:"partyLen"`
+		ServerURL string `mapstructure:"serverURL"` // client connect to this url; server listen on this url
+		SharePath string `mapstructure:"sharePath"`
+	}
 )
 
 type (
-	Watchdogs struct {
+	ValidityWatchdogs struct {
+		enable        `mapstructure:",squash"`
+		EnableForAmb  bool `mapstructure:"enableForAmb"`
+		EnableForSide bool `mapstructure:"enableForSide"`
+	}
+	PauseUnpauseWatchdogs struct {
 		enable `mapstructure:",squash"`
 	}
 	Triggers struct {
@@ -45,9 +66,14 @@ type (
 		Side FeeApiNetwork `mapstructure:"side"`
 	}
 	FeeApiNetwork struct {
-		PrivateKey         string  `mapstructure:"privateKey"`
-		MinBridgeFee       float64 `mapstructure:"minBridgeFeeUSD"`
-		DefaultTransferFee float64 `mapstructure:"defaultTransferFeeWei"`
+		PrivateKey     string  `mapstructure:"privateKey"`
+		MinBridgeFee   float64 `mapstructure:"minBridgeFeeUSD"`
+		MinTransferFee float64 `mapstructure:"minTransferFeeUSD"`
+
+		ExplorerURL                         string   `mapstructure:"explorerURL"`
+		TransferFeeRecipient                string   `mapstructure:"transferFeeRecipient"`
+		TransferFeeIncludedTxsFromAddresses []string `mapstructure:"transferFeeIncludedTxsFromAddresses"`
+		TransferFeeTxsFromBlock             uint64   `mapstructure:"transferFeeTxsFromBlock"`
 	}
 )
 

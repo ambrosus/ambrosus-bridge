@@ -19,10 +19,10 @@ const (
 type BridgeFeeApi interface {
 	networks.Bridge
 	Sign(message []byte) ([]byte, error)
-	GetTransferFee() *big.Int
+	GetTransferFee() (thisGas, sideGas decimal.Decimal)
 	GetWrapperAddress() common.Address
-	GetMinBridgeFee() decimal.Decimal // GetMinBridgeFee returns the minimal bridge fee that can be used
-	GetDefaultTransferFee() decimal.Decimal
+	GetMinBridgeFee() decimal.Decimal   // GetMinBridgeFee returns the minimal bridge fee in usd
+	GetMinTransferFee() decimal.Decimal // GetMinTransferFee returns the minimal transfer fee in usd
 }
 
 type Fee struct {
@@ -99,25 +99,6 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 
 	return bridgeFee.BigInt(), transferFee.BigInt(), amount.BigInt(), nil
 
-}
-
-func (p *Fee) getTransferFee(bridge BridgeFeeApi, thisCoinPrice, sideCoinPrice decimal.Decimal) (decimal.Decimal, error) {
-	feeSideNativeI, err, _ := p.cache.Memoize("GetTransferFee"+bridge.GetName(), func() (interface{}, error) {
-		return bridge.GetTransferFee(), nil
-	})
-	if err != nil {
-		return decimal.Decimal{}, err // todo
-	}
-	feeSideNative := feeSideNativeI.(*big.Int)
-
-	if feeSideNative == nil {
-		return bridge.GetDefaultTransferFee(), nil
-	}
-
-	// convert it to native bridge currency
-	feeUsd := coin2Usd(decimal.NewFromBigInt(feeSideNative, 0), sideCoinPrice)
-	feeThisNative := usd2Coin(feeUsd, thisCoinPrice)
-	return feeThisNative, nil
 }
 
 func (p *Fee) getBridges(isAmb bool) (bridge, sideBridge BridgeFeeApi) {

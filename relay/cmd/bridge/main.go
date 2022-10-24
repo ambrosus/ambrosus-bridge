@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/cmd"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
 	"github.com/rs/zerolog/log"
 )
 
@@ -21,12 +22,15 @@ func main() {
 	}
 
 	go runSubmitters(cfg.Submitters, ambBridge, sideBridge, baseLogger)
-	go runWatchdogs(cfg.Watchdogs, ambBridge, sideBridge, baseLogger)
+	go runValidityWatchdogs(cfg.ValidityWatchdogs, ambBridge, sideBridge, baseLogger)
+	go runPauseUnpauseWatchdogs(cfg.PauseUnpauseWatchdogs, ambBridge, sideBridge, baseLogger)
 	go runUnlockers(cfg.Unlockers, ambBridge, sideBridge, baseLogger)
 	go runTriggers(cfg.Triggers, ambBridge, sideBridge, baseLogger)
 	go runFeeApi(cfg.FeeApi, ambBridge, sideBridge, baseLogger)
 	go runPrometheus(cfg.Prometheus, baseLogger)
 	go runHealth(":80", baseLogger)
+
+	baseLogger.WithLevel(logger.ImportantInfoLevel).Msg("Relay has been started!")
 
 	select {}
 

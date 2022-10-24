@@ -11,9 +11,11 @@ import "../checks/SignatureCheck.sol";
 
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
-    // OWNER_ROLE must be DEFAULT_ADMIN_ROLE because by default only this role able to grant or revoke other roles
-    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");
+    // DEFAULT_ADMIN_ROLE can grants and revokes all roles below; Set to multisig (proxy contract address)
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");  // can change tokens; unpause contract; change params like lockTime, minSafetyBlocks, ...
+    bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");  // can submit transfers
+    bytes32 public constant WATCHDOG_ROLE = keccak256("WATCHDOG_ROLE");  // can pause contract
+    bytes32 public constant FEE_PROVIDER_ROLE = keccak256("FEE_PROVIDER_ROLE");  // fee signatures must be signed by this role
 
     // Signature contains timestamp divided by SIGNATURE_FEE_TIMESTAMP; SIGNATURE_FEE_TIMESTAMP should be the same on relay;
     uint private constant SIGNATURE_FEE_TIMESTAMP = 1800;  // 30 min
@@ -57,9 +59,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     event TransferFinish(uint indexed eventId);
 
     function __CommonBridge_init(CommonStructs.ConstructorArgs calldata args) internal initializer {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(DEFAULT_ADMIN_ROLE, address(this));
+        _setupRole(ADMIN_ROLE, msg.sender);
         _setupRole(RELAY_ROLE, args.relayAddress);
-        _setupRole(ADMIN_ROLE, args.adminAddress);
+        _setupRoles(WATCHDOG_ROLE, args.watchdogsAddresses);
+        _setupRole(FEE_PROVIDER_ROLE, args.feeProviderAddress);
 
         // initialise tokenAddresses with start values
         _tokensAddBatch(args.tokenThisAddresses, args.tokenSideAddresses);
@@ -228,7 +232,6 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
 
     // admin setters
-
     function changeMinSafetyBlocks(uint minSafetyBlocks_) public onlyRole(ADMIN_ROLE) {
         minSafetyBlocks = minSafetyBlocks_;
     }
@@ -283,12 +286,29 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     // pause
 
-    function pause() public onlyRole(ADMIN_ROLE) {
+    function pause() public onlyRole(WATCHDOG_ROLE) {
         _pause();
     }
 
     function unpause() public onlyRole(ADMIN_ROLE) {
         _unpause();
+    }
+
+    // roles
+
+    function grantRoles(bytes32 role, address[] calldata accounts) public onlyRole(getRoleAdmin(role)) {
+        // check permission to grant role via onlyRole(getRoleAdmin(role))
+        _setupRoles(role, accounts);
+    }
+    function revokeRoles(bytes32 role, address[] calldata accounts) public {
+        // revokeRole will check for permissions
+        for (uint i = 0; i < accounts.length; i++)
+            revokeRole(role, accounts[i]);
+    }
+    function _setupRoles(bytes32 role, address[] calldata accounts) internal {
+        // no permissions check at all
+        for (uint i = 0; i < accounts.length; i++)
+            _setupRole(role, accounts[i]);
     }
 
     // internal
@@ -345,7 +365,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
                 ));
 
             signer = ecdsaRecover(messageHash, signature);
-            if (hasRole(RELAY_ROLE, signer))
+            if (hasRole(FEE_PROVIDER_ROLE, signer))
                 return;
             timestampEpoch--;
         }

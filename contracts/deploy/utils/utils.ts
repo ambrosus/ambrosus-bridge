@@ -72,6 +72,8 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
     {
         adminAddress: owner,
         relayAddress: owner,
+        feeProviderAddress: owner,
+        watchdogsAddresses: [owner],
         transferFeeRecipient: owner,
         bridgeFeeRecipient: owner,
         multisig: {
@@ -80,10 +82,15 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
         }
     };
 
+  if (owner != cfg.adminAddress) {
+    throw `Deploying from address '${owner}', but config adminAddress is '${cfg.adminAddress}'`;
+  }
+
   // add this args to user args
   const reallyCommonArgs = {
-    adminAddress: cfg.adminAddress,
     relayAddress: cfg.relayAddress,
+    feeProviderAddress: cfg.feeProviderAddress,
+    watchdogsAddresses: cfg.watchdogsAddresses,
     transferFeeRecipient: cfg.transferFeeRecipient,
     bridgeFeeRecipient: cfg.bridgeFeeRecipient,
 
@@ -122,12 +129,16 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
     }
 
     // if decimals not specified for side net, use token.decimals
-    const sideNetDecimals = (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
+    const sideNetDecimals = getSideNetDecimalsOrTokenDenomination(token, netName)
     bridgesAddresses.push(address);
     bridgesDecimals.push(sideNetDecimals);
   }
 
   return {bridgesAddresses, bridgesDecimals};
+}
+
+export function getSideNetDecimalsOrTokenDenomination(token: Token, netName: string): number {
+  return (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
 }
 
 

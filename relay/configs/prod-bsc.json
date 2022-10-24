@@ -14,26 +14,38 @@
             "privateKey": "in env"
         }
     },
-
     "submitters": {
         "enable": true,
-        "sideToAmb": true,
-        "ambToSide": true,
-        "aura": {
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-            "finalizeServiceUrl": "https://finalizing-api.ambrosus.io/logs.bin"
+        "sideToAmb": {
+            "variant": "posa",
+            "posa": {
+                "receiverBridgeMaxTxSizeKB": 300
+            }
+        },
+        "ambToSide": {
+            "variant": "aura",
+            "aura": {
+                "vsContractAddr": "0x0000000000000000000000000000000000000F00",
+                "finalizeServiceUrl": "https://finalizing-api.ambrosus.io/logs.bin",
+                "receiverBridgeMaxTxSizeKB": 128
+            }
         }
     },
-    "watchdogs":  {
+    "validityWatchdogs": {
+        "enable": true,
+        "enableForAmb": true,
+        "enableForSide": true
+    },
+    "pauseUnpauseWatchdogs": {
         "enable": true
     },
-    "triggers":  {
+    "triggers": {
         "enable": true
     },
-    "unlockers":  {
+    "unlockers": {
         "enable": true
     },
-    "feeApi":  {
+    "feeApi": {
         "enable": true,
         "ip": "",
         "port": "8080",
@@ -41,15 +53,26 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "1000000000000000000"
+            "minTransferFeeUSD": 10,
+            "explorerURL": "https://explorer-api.ambrosus.io",
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ],
+            "transferFeeTxsFromBlock": 0
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
-            "defaultTransferFeeWei": "10000000000000000"
+            "minTransferFeeUSD": 0.5,
+            "explorerURL": "https://api.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ],
+            "transferFeeTxsFromBlock": 0
         }
     },
-
     "externalLogger": {
         "telegram": {
             "enable": true,

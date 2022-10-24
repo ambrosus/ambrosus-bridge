@@ -7,18 +7,16 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/ambrosus_explorer"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/etherscan"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_pause_unpause_watchdog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_watchdog"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
 	"github.com/rs/zerolog"
 )
 
@@ -28,49 +26,60 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		return
 	}
 
-	if cfg.AmbToSide {
-		auraSubmitter, err := aura.NewSubmitterAura(ambBridge, &aura.ReceiverAura{Receiver: sideBridge}, cfg.Aura)
-		if err != nil {
-			logger.Fatal().Err(err).Msg("auraBridgeSubmitter don't created")
-		}
-		go service_submit.NewSubmitTransfers(auraSubmitter).Run()
+	ambSubmitter, err := createSubmitter(&cfg.AmbToSide, ambBridge, sideBridge)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created")
+	}
+	sideBridgeSubmitter, err := createSubmitter(&cfg.SideToAmb, sideBridge, ambBridge)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
 	}
 
-	if cfg.SideToAmb {
-		var err error
-		var sideBridgeSubmitter service_submit.Submitter
-		switch sideBridge.(type) {
-		case *eth.Bridge:
-			sideBridgeSubmitter, err = untrustless.NewSubmitterUntrustless(sideBridge, &untrustless.ReceiverUntrustless{Receiver: ambBridge})
-		case *bsc.Bridge:
-			sideBridgeSubmitter, err = posa.NewSubmitterPoSA(sideBridge, &posa.ReceiverPoSA{Receiver: ambBridge})
-		}
-		if err != nil {
-			logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
-		}
-
+	// run submitters
+	if ambSubmitter != nil {
+		go service_submit.NewSubmitTransfers(ambSubmitter).Run()
+	}
+	if sideBridgeSubmitter != nil {
 		go service_submit.NewSubmitTransfers(sideBridgeSubmitter).Run()
 	}
+
 }
 
-func runWatchdogs(cfg *config.Watchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
-	logger.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
+func runValidityWatchdogs(cfg *config.ValidityWatchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "validity watchdogs").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
-	go service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
-	go service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+	if cfg.EnableForAmb {
+		go service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+	}
+
+	if cfg.EnableForSide {
+		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+	}
+
+}
+
+func runPauseUnpauseWatchdogs(cfg *config.PauseUnpauseWatchdogs, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
+	logger.Info().Str("service", "pause unpause watchdogs").Bool("enabled", cfg.Enable).Send()
+	if !cfg.Enable {
+		return
+	}
+
+	go service_pause_unpause_watchdog.NewWatchPauseUnpause(ambBridge).Run()
+	go service_pause_unpause_watchdog.NewWatchPauseUnpause(sideBridge).Run()
+
 }
 
 func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge networks.Bridge, logger zerolog.Logger) {
-	logger.Info().Str("service", "watchdog").Bool("enabled", cfg.Enable).Send()
+	logger.Info().Str("service", "unlockers").Bool("enabled", cfg.Enable).Send()
 	if !cfg.Enable {
 		return
 	}
 
-	ambWatchdog := service_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
-	sideWatchdog := service_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
+	ambWatchdog := service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
+	sideWatchdog := service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
 	go service_unlock.NewUnlockTransfers(ambBridge, ambWatchdog).Run()
 	go service_unlock.NewUnlockTransfers(sideBridge, sideWatchdog).Run()
 }
@@ -91,11 +100,20 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		return
 	}
 
-	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, cfg.Amb, cfg.Side)
+	explorerAmb, err := ambrosus_explorer.NewAmbrosusExplorer(cfg.Amb.ExplorerURL, nil)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("explorerAmb not created")
+	}
+	explorerSide, err := etherscan.NewEtherscan(cfg.Side.ExplorerURL, nil)
+	if err != nil {
+		logger.Fatal().Err(err).Msg("explorerSide not created")
+	}
+
+	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, explorerAmb, explorerSide, cfg.Amb, cfg.Side)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeAmb not created")
 	}
-	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, cfg.Side, cfg.Amb)
+	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, explorerSide, explorerAmb, cfg.Side, cfg.Amb)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeSide not created")
 	}
