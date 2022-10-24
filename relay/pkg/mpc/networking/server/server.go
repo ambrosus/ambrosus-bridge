@@ -25,15 +25,18 @@ type Server struct {
 	results       map[string][]byte
 	resultsWaiter *sync.WaitGroup
 
+	accessToken string
+
 	logger *zerolog.Logger
 }
 
 // NewServer create and start new server
-func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
+func NewServer(tss *tss_wrap.Mpc, accessToken string, logger *zerolog.Logger) *Server {
 	s := &Server{
 		Tss:          tss,
 		connections:  make(map[string]*common.Conn),
 		connChangeCh: make(chan byte, 1000),
+		accessToken:  accessToken,
 		logger:       logger,
 	}
 	return s

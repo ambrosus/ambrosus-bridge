@@ -105,7 +105,7 @@ func createServer(serverID int) *server.Server {
 	if err != nil {
 		panic(err)
 	}
-	return server.NewServer(mpc, &serverLogger)
+	return server.NewServer(mpc, "testtoken", &serverLogger)
 }
 
 func createClients(serverID int, partyLen int, url string) []*client.Client {
@@ -123,7 +123,7 @@ func createClients(serverID int, partyLen int, url string) []*client.Client {
 			panic(err)
 		}
 
-		client_ := client.NewClient(mpc, url, nil, &clientLogger)
+		client_ := client.NewClient(mpc, "testtoken", url, nil, &clientLogger)
 		clients = append(clients, client_)
 	}
 	return clients

@@ -22,6 +22,7 @@
                 "sharePath": "share-client.json",
                 "meID": "in env",
                 "partyLen": 2,
+                "accessToken": "in env",
                 "serverURL": "relay-eth.ambrosus.io:6455",
                 "isServer": false
             }

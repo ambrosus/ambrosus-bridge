@@ -46,7 +46,7 @@ func keygen(cfg *config.SubmitterMpc) {
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 	if cfg.IsServer {
-		server_ := server.NewServer(mpcc, &logger)
+		server_ := server.NewServer(mpcc, cfg.AccessToken, &logger)
 		go http.ListenAndServe(cfg.ServerURL, server_)
 
 		err := server_.Keygen(ctx)
@@ -54,7 +54,7 @@ func keygen(cfg *config.SubmitterMpc) {
 			panic(err)
 		}
 	} else {
-		client_ := client.NewClient(mpcc, cfg.ServerURL, nil, &logger)
+		client_ := client.NewClient(mpcc, cfg.AccessToken, cfg.ServerURL, nil, &logger)
 
 		err := client_.Keygen(ctx)
 		if err != nil {

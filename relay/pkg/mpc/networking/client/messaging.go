@@ -14,6 +14,7 @@ func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 	headers := make(http.Header)
 	headers.Add(common.HeaderTssID, s.Tss.MyID())
 	headers.Add(common.HeaderTssOperation, fmt.Sprintf("%x", s.operation)) // as hex
+	headers.Add(common.HeaderAccessToken, s.accessToken)
 
 	url := "ws://" + s.serverURL
 	s.logger.Debug().Str("url", url).Msg("Connecting to server")

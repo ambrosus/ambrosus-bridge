@@ -17,6 +17,10 @@ var upgrader = websocket.Upgrader{
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
+		if !s.isAccessTokenCorrect(&r.Header) {
+			http.Error(w, "wrong access token", http.StatusUnauthorized)
+			return
+		}
 		s.registerConnection(w, r)
 	} else if r.URL.Path == common.EndpointFullMsg {
 		s.fullMsgHandler(w, r)
@@ -77,4 +81,8 @@ func parseHeaders(r *http.Request) (string, []byte, error) {
 	}
 
 	return clientID, operation, err
+}
+
+func (s *Server) isAccessTokenCorrect(h *http.Header) bool {
+	return h.Get(common.HeaderAccessToken) == s.accessToken
 }

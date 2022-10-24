@@ -22,20 +22,22 @@ type Client struct {
 	Tss       *tss_wrap.Mpc
 	operation []byte
 
-	serverURL  string
-	httpClient *http.Client
+	accessToken string
+	serverURL   string
+	httpClient  *http.Client
 }
 
-func NewClient(tss *tss_wrap.Mpc, serverURL string, httpClient *http.Client, logger *zerolog.Logger) *Client {
+func NewClient(tss *tss_wrap.Mpc, accessToken string, serverURL string, httpClient *http.Client, logger *zerolog.Logger) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 
 	s := &Client{
-		Tss:        tss,
-		serverURL:  serverURL,
-		httpClient: httpClient,
-		logger:     logger,
+		Tss:         tss,
+		accessToken: accessToken,
+		serverURL:   serverURL,
+		httpClient:  httpClient,
+		logger:      logger,
 	}
 	return s
 }

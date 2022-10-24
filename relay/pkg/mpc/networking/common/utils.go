@@ -10,6 +10,7 @@ var (
 	KeygenOperation    = []byte("keygen")
 	HeaderTssID        = "X-TSS-ID"
 	HeaderTssOperation = "X-TSS-Operation"
+	HeaderAccessToken  = "X-Access-Token"
 	ResultPrefix       = []byte("result")
 	EndpointFullMsg    = "/tx"
 )
