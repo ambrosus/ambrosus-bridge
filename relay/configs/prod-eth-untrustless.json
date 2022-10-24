@@ -15,10 +15,18 @@
         }
     },
     "submitters": {
-        "enable": false
+        "enable": true,
+        "sideToAmb": {
+            "variant": "untrustless"
+        },
+        "ambToSide": {
+            "variant": ""
+        },
     },
     "validityWatchdogs": {
-        "enable": false
+        "enable": true
+        "enableForAmb": false,
+        "enableForSide": true,
     },
     "pauseUnpauseWatchdogs": {
         "enable": false
