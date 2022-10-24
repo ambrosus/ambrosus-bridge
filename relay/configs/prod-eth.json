@@ -52,7 +52,7 @@
             "transferFeeIncludedTxsFromAddresses": [
                 "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE"
             ],
-            "transferFeeTxsFromBlock": 0
+            "transferFeeTxsFromBlock": 21204114
         },
         "side": {
             "privateKey": "in env",
@@ -63,7 +63,7 @@
             "transferFeeIncludedTxsFromAddresses": [
                 "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded"
             ],
-            "transferFeeTxsFromBlock": 0
+            "transferFeeTxsFromBlock": 15818035
         }
     },
     "externalLogger": {
