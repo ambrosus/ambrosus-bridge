@@ -75,6 +75,27 @@ func (s *Server) Keygen(ctx context.Context, partyIDs []string) error {
 	return err
 }
 
+func (s *Server) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string) error {
+	s.logger.Info().Msg("Start reshare operation")
+
+	if err := s.startOperation(common.ReshareOperation, append(partyIDsOld, partyIDsNew...)); err != nil {
+		return err
+	}
+
+	_, err := s.doOperation(ctx,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
+}
+
 func (s *Server) GetFullMsg() ([]byte, error) {
 	// just to implement MpcSigner interface
 	panic("can be called only on client")

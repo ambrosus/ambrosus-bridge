@@ -68,6 +68,23 @@ func (s *Client) Keygen(ctx context.Context, party []string) error {
 	return err
 }
 
+func (s *Client) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string) error {
+	s.logger.Info().Msg("Start reshare operation")
+
+	_, err := s.doOperation(ctx, common.ReshareOperation,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
+}
+
 func (s *Client) SetFullMsg(fullMsg []byte) {
 	// just to implement MpcSigner interface
 }
