@@ -21,7 +21,7 @@
         },
         "ambToSide": {
             "variant": ""
-        },
+        }
     },
     "validityWatchdogs": {
         "enable": true,
