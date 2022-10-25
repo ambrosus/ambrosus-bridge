@@ -2,69 +2,172 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strings"
 	"time"
-
-	"github.com/rs/zerolog/log"
-
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/client"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/server"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+	zerolog "github.com/rs/zerolog/log"
 )
 
+// examples:
+// keygen server:
+// go run main.go -server -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
+// keygen client:
+// go run main.go -serverUrl http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
+
+// reshare server:
+// go run main.go -reshare -server -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -meIdNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// reshare client:
+// go run main.go -reshare -serverUrl http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -meIdNew B2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+
 func main() {
-	cfg, err := config.LoadDefaultConfig()
-	if err != nil {
-		log.Fatal().Err(err).Msg("error initialize config")
-	}
+	flagOperation := flag.Bool("reshare", false, "do reshare (default: keygen)")
 
-	if !isShareExist(cfg.Submitters.AmbToSide.Mpc.SharePath) {
-		fmt.Println("AmbToSide keygen begin")
-		keygen(cfg.Submitters.AmbToSide.Mpc)
-		fmt.Println("AmbToSide keygen done")
+	flagIsServer := flag.Bool("server", false, "is this server (default: client)")
+	flagServerUrl := flag.String("serverUrl", "", "server url (use ':8080' for server)")
+
+	flagMeID := flag.String("meID", "", "my ID")
+	flagPartyIDs := flag.String("partyIDs", "", "party IDs (space separated)")
+	flagThreshold := flag.Int("threshold", -1, "threshold")
+
+	flagShareDir := flag.String("shareDir", "", "path to directory with shares")
+
+	// for reshare only
+	flagMeIDNew := flag.String("MeIDNew", "", "new my ID (for reshare)")
+	flagPartyIDsNew := flag.String("flagPartyIDsNew", "", "new party IDs (space separated) (for reshare)")
+	flagThresholdNew := flag.Int("thresholdNew", -1, "new threshold (for reshare)")
+
+	flag.Parse()
+
+	partyIDs := strings.Split(*flagPartyIDs, " ")
+	checkThreshold(*flagThreshold)
+	checkPartyIDs(partyIDs)
+	checkShareDir(*flagShareDir)
+
+	if flagOperation != nil {
+		keygen(*flagIsServer, *flagServerUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
 	} else {
-		fmt.Println("AmbToSide share already exist")
-	}
+		partyIDsNew := strings.Split(*flagPartyIDsNew, " ")
+		checkThreshold(*flagThresholdNew)
+		checkPartyIDs(partyIDsNew)
 
-	if !isShareExist(cfg.Submitters.SideToAmb.Mpc.SharePath) {
-		fmt.Println("SideToAmb keygen begin")
-		keygen(cfg.Submitters.SideToAmb.Mpc)
-		fmt.Println("SideToAmb keygen done")
-	} else {
-		fmt.Println("SideToAmb share already exist")
+		// todo wait for goro
+		if *flagMeID != "" {
+			// we are in old committee
+			go reshare(*flagIsServer, *flagServerUrl,
+				*flagMeID,
+				partyIDs, partyIDsNew,
+				*flagThreshold, *flagThresholdNew, *flagShareDir)
+			// if we already runned as server set flagIsServer to false, coz can't run server twice
+			*flagIsServer = false
+		}
+		if *flagMeIDNew != "" {
+			// we are in new committee
+			reshare(*flagIsServer, *flagServerUrl,
+				*flagMeIDNew,
+				partyIDsNew, partyIDs,
+				*flagThresholdNew, *flagThreshold, *flagShareDir)
+		}
 	}
-
 }
 
-func keygen(cfg *config.SubmitterMpc) {
-	logger := log.Logger
-	mpcc := tss_wrap.NewMpc(cfg.MeID, cfg.Threshold, &logger)
+func checkShareDir(dirPath string) {
+	fileInfo, err := os.Stat(dirPath)
+	if err != nil {
+		log.Fatalf("something wring with dirPath (%v): %v", dirPath, err)
+	}
+	if !fileInfo.IsDir() {
+		log.Fatalf("dirPath (%v) is not a directory", dirPath)
+	}
+}
 
-	// todo get partyIDs from flags or config or env or something else
-	partyIDs := append(cfg.PartyIDs, "backup")
+func checkThreshold(t int) {
+	if t < 2 {
+		log.Fatal("threshold must be >= 2")
+	}
+}
+func checkPartyIDs(partyIDs []string) {
+	if len(partyIDs) < 2 {
+		log.Fatal("partyIDs must be >= 2")
+	}
+}
+
+func keygen(isServer bool, serverURL string, id string, partyIDs []string, threshold int, shareDir string) {
+	sharePath := getSharePath(shareDir, id)
+	if isShareExist(sharePath) {
+		log.Fatal("share already exist")
+	}
+
+	fmt.Println("=======================================================")
+	fmt.Println("You are about to generate the MPC share")
+	fmt.Println("IDS: ", partyIDs, "; threshold: ", threshold)
+	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
+	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
+	fmt.Println("=======================================================")
+
+	logger := zerolog.Logger
+	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	if cfg.IsServer {
+	if isServer {
 		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(cfg.ServerURL, server_)
+		go http.ListenAndServe(serverURL, server_)
 
 		err := server_.Keygen(ctx, partyIDs)
 		if err != nil {
 			panic(err)
 		}
 	} else {
-		client_ := client.NewClient(mpcc, cfg.ServerURL, nil, &logger)
+		client_ := client.NewClient(mpcc, serverURL, nil, &logger)
 
 		err := client_.Keygen(ctx, partyIDs)
 		if err != nil {
 			panic(err)
 		}
 	}
-	saveShare(mpcc, cfg.SharePath)
+	saveShare(mpcc, sharePath)
+}
+
+func reshare(isServer bool, serverURL, id string, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
+	sharePath := getSharePath(shareDir, id)
+
+	fmt.Println("=======================================================")
+	fmt.Println("You are about to reshare the MPC share")
+	fmt.Println("Old IDS: ", partyIDsOld, "; threshold: ", thresholdOld)
+	fmt.Println("New IDS: ", partyIDsOld, "; threshold: ", thresholdNew)
+	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
+	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
+	fmt.Println("=======================================================")
+
+	logger := zerolog.Logger
+	mpcc := tss_wrap.NewMpc(id, thresholdOld, &logger)
+
+	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+	if isServer {
+		server_ := server.NewServer(mpcc, &logger)
+		go http.ListenAndServe(serverURL, server_)
+
+		err := server_.Reshare(ctx, partyIDsOld, partyIDsNew)
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		client_ := client.NewClient(mpcc, serverURL, nil, &logger)
+
+		err := client_.Reshare(ctx, partyIDsOld, partyIDsNew)
+		if err != nil {
+			panic(err)
+		}
+	}
+	saveShare(mpcc, sharePath)
 }
 
 func saveShare(tss *tss_wrap.Mpc, sharePath string) {
@@ -82,4 +185,7 @@ func saveShare(tss *tss_wrap.Mpc, sharePath string) {
 func isShareExist(sharePath string) bool {
 	_, err := os.Stat(sharePath)
 	return err == nil
+}
+func getSharePath(shareDir, id string) string {
+	return filepath.Join(shareDir, fmt.Sprintf("share_%s", id))
 }
