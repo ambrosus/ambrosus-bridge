@@ -61,8 +61,9 @@ func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSi
 	}
 
 	return &ReceiverUntrustlessMpc{
-		Receiver: receiver,
-		auth:     &auth,
+		Receiver:  receiver,
+		mpcSigner: mpcSigner,
+		auth:      &auth,
 	}, nil
 }
 
