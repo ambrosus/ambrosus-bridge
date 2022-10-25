@@ -30,11 +30,12 @@ type (
 		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 	SubmitterMpc struct {
-		IsServer  bool   `mapstructure:"isServer"`
-		MeID      int    `mapstructure:"meID"`
-		PartyLen  int    `mapstructure:"partyLen"`
-		ServerURL string `mapstructure:"serverURL"` // client connect to this url; server listen on this url
-		SharePath string `mapstructure:"sharePath"`
+		IsServer  bool     `mapstructure:"isServer"`
+		MeID      string   `mapstructure:"meID"`
+		PartyIDs  []string `mapstructure:"partyIds"` // for sign operation
+		Threshold int      `mapstructure:"threshold"`
+		ServerURL string   `mapstructure:"serverURL"` // client connect to this url; server listen on this url
+		SharePath string   `mapstructure:"sharePath"`
 	}
 )
 

@@ -42,21 +42,24 @@ func main() {
 
 func keygen(cfg *config.SubmitterMpc) {
 	logger := log.Logger
-	mpcc := tss_wrap.NewMpc(cfg.MeID, cfg.PartyLen, &logger)
+	mpcc := tss_wrap.NewMpc(cfg.MeID, cfg.Threshold, &logger)
+
+	// todo get partyIDs from flags or config or env or something else
+	partyIDs := append(cfg.PartyIDs, "backup")
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 	if cfg.IsServer {
 		server_ := server.NewServer(mpcc, &logger)
 		go http.ListenAndServe(cfg.ServerURL, server_)
 
-		err := server_.Keygen(ctx)
+		err := server_.Keygen(ctx, partyIDs)
 		if err != nil {
 			panic(err)
 		}
 	} else {
 		client_ := client.NewClient(mpcc, cfg.ServerURL, nil, &logger)
 
-		err := client_.Keygen(ctx)
+		err := client_.Keygen(ctx, partyIDs)
 		if err != nil {
 			panic(err)
 		}
