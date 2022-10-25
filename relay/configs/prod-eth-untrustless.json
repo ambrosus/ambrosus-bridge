@@ -24,9 +24,9 @@
         },
     },
     "validityWatchdogs": {
-        "enable": true
+        "enable": true,
         "enableForAmb": false,
-        "enableForSide": true,
+        "enableForSide": true
     },
     "pauseUnpauseWatchdogs": {
         "enable": false
