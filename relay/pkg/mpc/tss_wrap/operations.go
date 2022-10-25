@@ -58,6 +58,36 @@ func (m *Mpc) Sign(ctx context.Context, party []string, inCh <-chan []byte, outC
 	return tssSignToECDSA(signature.(*common.SignatureData)), nil
 }
 
+// Reshare initiate share regeneration; Set received share to m.share after finishing protocol
+func (m *Mpc) Reshare(ctx context.Context, partyOld, partyNew []string, inCh <-chan []byte, outCh chan<- *Message) error {
+	params, err := m.createReshareParams(partyOld, partyNew)
+	if err != nil {
+		return err
+	}
+	if m.share == nil {
+		emptyShare := keygen.NewLocalPartySaveData(len(partyNew))
+		m.share = &emptyShare
+	}
+	outChTss := make(chan tss.Message, 100)
+	endCh := make(chan keygen.LocalPartySaveData, 5)
+	reshareParty := resharing.NewLocalParty(params, *m.share, outChTss, endCh)
+
+	share, err := m.messaging(ctx, reshareParty, inCh, outCh, outChTss, endCh, nil, params.OldAndNewParties())
+	if err != nil {
+		return err
+	}
+	if share == nil {
+		return fmt.Errorf("share is nil")
+	}
+	if !params.IsOldCommittee() { // if I'm in old committee, I don't need to save new share coz it useless for me
+		m.share = share.(*keygen.LocalPartySaveData)
+	}
+
+	m.logger.Info().Msgf("reshare finished, new share: %v", m.share)
+
+	return nil
+}
+
 // messaging is a generic function for receiving and transmitting messages.
 // loop ends when: ctx done OR some endCh receive result OR errCh receive error.
 func (m *Mpc) messaging(
@@ -168,5 +198,25 @@ func (m *Mpc) createParams(partyIDs []string) (*tss.Parameters, error) {
 		return nil, fmt.Errorf("can't find myself in partyIDs")
 	}
 	params := tss.NewParameters(tss.S256(), party, me, len(party.IDs()), m.threshold-1)
+	return params, nil
+}
+
+func (m *Mpc) createReshareParams(partyIDsOld, partyIDsNew []string) (*tss.ReSharingParameters, error) {
+	var me *tss.PartyID
+
+	partyOld, me := m.createParty(partyIDsOld)
+	partyNew, meNew := m.createParty(partyIDsNew)
+	if me == nil {
+		me = meNew
+		if me == nil {
+			return nil, fmt.Errorf("can't find myself in partyIDs")
+		}
+	}
+
+	params := tss.NewReSharingParameters(tss.S256(),
+		partyOld, partyNew, me,
+		len(partyOld.IDs()), m.threshold-1,
+		len(partyNew.IDs()), m.threshold-1)
+
 	return params, nil
 }

@@ -89,6 +89,57 @@ func TestSign(t *testing.T) {
 	assert.Equal(t, pubkey, sigPublicKey)
 }
 
+func TestReshare(t *testing.T) {
+	partyIDs := []string{"0", "1", "2", "3", "4", "backup"}
+	peers := createPeers(partyIDs, 5) // threshold == peers - 1
+	// keygen
+	doOperation(peers,
+		func(p *testPeer, outCh chan *Message) {
+			err := p.keygen(outCh, partyIDs)
+			if err != nil {
+				t.Fatal(err)
+			}
+		},
+	)
+
+	oldAddress, err := peers["0"].peer.GetAddress()
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Println("keygen finished")
+
+	// reshare
+
+	// peer 0 lost his share
+	delete(peers, "0") // delete from networking
+	oldPartyIDs := []string{"1", "2", "3", "4", "backup"}
+	newPartyIDs := []string{"0a", "1a", "2a", "3a", "4a", "backup_a"}
+
+	// add new party to peers map
+	for id, peer := range createPeers(newPartyIDs, 5) {
+		peers[id] = peer
+	}
+
+	doOperation(peers,
+		func(p *testPeer, outCh chan *Message) {
+			err := p.reshare(outCh, oldPartyIDs, newPartyIDs)
+			if err != nil {
+				t.Fatal(err)
+			}
+		},
+	)
+
+	// checks
+	for _, peer := range peers {
+		address, err := peer.peer.GetAddress()
+		if err != nil {
+			t.Fatal(err)
+		}
+		assert.Equal(t, oldAddress, address)
+	}
+
+}
+
 func doOperation(peers map[string]*testPeer, operation func(*testPeer, chan *Message)) {
 	outCh := make(chan *Message, 1000)
 
