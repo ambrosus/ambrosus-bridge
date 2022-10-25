@@ -116,7 +116,7 @@ func keygen(isServer bool, serverURL string, id string, partyIDs []string, thres
 	logger := zerolog.Logger
 	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	if isServer {
 		server_ := server.NewServer(mpcc, &logger)
 		go http.ListenAndServe(serverURL, server_)
@@ -157,7 +157,7 @@ func reshare(isServer bool, serverURL, id string, partyIDsOld, partyIDsNew []str
 		mpcc.SetShare(share)
 	}
 
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	if isServer {
 		server_ := server.NewServer(mpcc, &logger)
 		go http.ListenAndServe(serverURL, server_)
