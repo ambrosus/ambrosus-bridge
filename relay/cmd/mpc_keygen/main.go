@@ -149,6 +149,13 @@ func reshare(isServer bool, serverURL, id string, partyIDsOld, partyIDsNew []str
 
 	logger := zerolog.Logger
 	mpcc := tss_wrap.NewMpc(id, thresholdOld, &logger)
+	if isShareExist(sharePath) {
+		share, err := os.ReadFile(sharePath)
+		if err != nil {
+			panic(fmt.Errorf("can't read share: %w", err))
+		}
+		mpcc.SetShare(share)
+	}
 
 	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
 	if isServer {
