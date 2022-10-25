@@ -142,7 +142,7 @@ func reshare(isServer bool, serverURL, id string, partyIDsOld, partyIDsNew []str
 	fmt.Println("=======================================================")
 	fmt.Println("You are about to reshare the MPC share")
 	fmt.Println("Old IDS: ", partyIDsOld, "; threshold: ", thresholdOld)
-	fmt.Println("New IDS: ", partyIDsOld, "; threshold: ", thresholdNew)
+	fmt.Println("New IDS: ", partyIDsNew, "; threshold: ", thresholdNew)
 	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
 	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
 	fmt.Println("=======================================================")
