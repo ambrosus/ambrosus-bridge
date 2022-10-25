@@ -39,24 +39,24 @@ func NewClient(tss *tss_wrap.Mpc, serverURL string, httpClient *http.Client, log
 	return s
 }
 
-func (s *Client) Sign(ctx context.Context, msg []byte) ([]byte, error) {
+func (s *Client) Sign(ctx context.Context, party []string, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	signature, err := s.doOperation(ctx, msg,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			return s.Tss.Sign(ctx, inCh, outCh, msg)
+			return s.Tss.Sign(ctx, party, inCh, outCh, msg)
 		},
 	)
 
 	return signature, err
 }
 
-func (s *Client) Keygen(ctx context.Context) error {
+func (s *Client) Keygen(ctx context.Context, party []string) error {
 	s.logger.Info().Msg("Start keygen operation")
 
 	_, err := s.doOperation(ctx, common.KeygenOperation,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.Keygen(ctx, inCh, outCh)
+			err := s.Tss.Keygen(ctx, party, inCh, outCh)
 			if err != nil {
 				return nil, err
 			}

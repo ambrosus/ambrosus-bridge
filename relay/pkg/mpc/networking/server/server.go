@@ -41,24 +41,24 @@ func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
 
 // todo if threshold < partyLen, do we need to provide current party or use full party? client doesn't know about current part of party
 
-func (s *Server) Sign(ctx context.Context, msg []byte) ([]byte, error) {
+func (s *Server) Sign(ctx context.Context, partyIDs []string, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
 	signature, err := s.doOperation(ctx, msg,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			return s.Tss.Sign(ctx, inCh, outCh, msg)
+			return s.Tss.Sign(ctx, partyIDs, inCh, outCh, msg)
 		},
 	)
 
 	return signature, err
 }
 
-func (s *Server) Keygen(ctx context.Context) error {
+func (s *Server) Keygen(ctx context.Context, partyIDs []string) error {
 	s.logger.Info().Msg("Start keygen operation")
 
 	_, err := s.doOperation(ctx, common.KeygenOperation,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.Keygen(ctx, inCh, outCh)
+			err := s.Tss.Keygen(ctx, partyIDs, inCh, outCh)
 			if err != nil {
 				return nil, err
 			}
