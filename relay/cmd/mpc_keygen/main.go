@@ -41,8 +41,8 @@ func main() {
 	flagShareDir := flag.String("shareDir", "", "path to directory with shares")
 
 	// for reshare only
-	flagMeIDNew := flag.String("MeIDNew", "", "new my ID (for reshare)")
-	flagPartyIDsNew := flag.String("flagPartyIDsNew", "", "new party IDs (space separated) (for reshare)")
+	flagMeIDNew := flag.String("meIDNew", "", "new my ID (for reshare)")
+	flagPartyIDsNew := flag.String("partyIDsNew", "", "new party IDs (space separated) (for reshare)")
 	flagThresholdNew := flag.Int("thresholdNew", -1, "new threshold (for reshare)")
 
 	flag.Parse()
@@ -52,7 +52,7 @@ func main() {
 	checkPartyIDs(partyIDs)
 	checkShareDir(*flagShareDir)
 
-	if flagOperation != nil {
+	if !*flagOperation {
 		keygen(*flagIsServer, *flagServerUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
 	} else {
 		partyIDsNew := strings.Split(*flagPartyIDsNew, " ")
