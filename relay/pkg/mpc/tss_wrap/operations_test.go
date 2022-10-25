@@ -2,11 +2,14 @@ package tss_wrap
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/fixtures"
+	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -18,11 +21,12 @@ type testPeer struct {
 }
 
 func TestKeygen(t *testing.T) {
-	peers := createPeers(5)
+	partyIDs := []string{"0", "1", "2", "3", "4"}
+	peers := createPeers(partyIDs, 5)
 
 	doOperation(peers,
 		func(p *testPeer, outCh chan *Message) {
-			err := p.keygen(outCh)
+			err := p.keygen(outCh, partyIDs)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -52,14 +56,15 @@ func TestKeygen(t *testing.T) {
 }
 
 func TestSign(t *testing.T) {
-	peers := createPeers(5)
+	partyIDs := []string{"0", "1", "2", "3", "4"}
+	peers := createPeers(partyIDs, 5)
 
 	msg := fixtures.Message()
 	signatures := make(map[string][]byte)
 
 	doOperation(peers,
 		func(p *testPeer, outCh chan *Message) {
-			signature, err := p.sign(outCh, msg)
+			signature, err := p.sign(outCh, partyIDs, msg)
 			if err != nil {
 				t.Fatal(p.peer.MyID(), err)
 			}
@@ -115,12 +120,13 @@ func messaging(outCh chan *Message, peers map[string]*testPeer) {
 	}
 }
 
-func createPeers(count int) map[string]*testPeer {
+func createPeers(ids []string, threshold int) map[string]*testPeer {
 	peers := make(map[string]*testPeer)
 
-	for i := 0; i < count; i++ {
+	for _, id := range ids {
+		logger := log.With().Str("id", id).Logger()
 		peer := &testPeer{
-			peer: NewMpc(i, count, &log.Logger),
+			peer: NewMpc(id, threshold, &logger),
 			inCh: make(chan []byte, 100),
 		}
 
@@ -129,13 +135,28 @@ func createPeers(count int) map[string]*testPeer {
 	return peers
 }
 
-func (p *testPeer) sign(outCh chan *Message, msg []byte) ([]byte, error) {
-	if err := p.peer.SetShare(fixtures.GetShare(p.peer.me.Index)); err != nil {
+func (p *testPeer) sign(outCh chan *Message, party []string, msg []byte) ([]byte, error) {
+	if err := p.peer.SetShare(fixtures.GetShare(p.peer.MyID())); err != nil {
 		return nil, err
 	}
-	return p.peer.Sign(context.Background(), p.inCh, outCh, msg)
+	return p.peer.Sign(context.Background(), party, p.inCh, outCh, msg)
 }
 
-func (p *testPeer) keygen(outCh chan *Message) error {
-	return p.peer.Keygen(context.Background(), p.inCh, outCh, fixtures.GetPreParams(p.peer.me.Index))
+func (p *testPeer) keygen(outCh chan *Message, party []string) (err error) {
+	preParams := fixtures.GetPreParams(p.peer.MyID())
+	if preParams == nil {
+		fmt.Printf("generating pre params for %s\n", p.peer.MyID())
+		preParams, err = keygen.GeneratePreParams(5 * time.Minute)
+		fmt.Printf("pre params for %s generated\n", p.peer.MyID())
+		marshalled, err := json.Marshal(preParams)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Print(string(marshalled))
+	}
+	return p.peer.Keygen(context.Background(), party, p.inCh, outCh, *preParams)
+}
+
+func (p *testPeer) reshare(outCh chan *Message, partyOld, partyNew []string) error {
+	return p.peer.Reshare(context.Background(), partyOld, partyNew, p.inCh, outCh)
 }

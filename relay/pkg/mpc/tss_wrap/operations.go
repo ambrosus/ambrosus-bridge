@@ -7,18 +7,22 @@ import (
 
 	"github.com/bnb-chain/tss-lib/common"
 	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
+	"github.com/bnb-chain/tss-lib/ecdsa/resharing"
 	"github.com/bnb-chain/tss-lib/ecdsa/signing"
 	"github.com/bnb-chain/tss-lib/tss"
 )
 
 // Keygen initiate share generation; Set received share to m.share after finishing protocol
-func (m *Mpc) Keygen(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
-	params := tss.NewParameters(tss.S256(), m.party, m.me, len(m.party.IDs()), len(m.party.IDs())-1)
+func (m *Mpc) Keygen(ctx context.Context, party []string, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
+	params, err := m.createParams(party)
+	if err != nil {
+		return err
+	}
 	outChTss := make(chan tss.Message, 100)
 	endCh := make(chan keygen.LocalPartySaveData, 5)
 	keygenParty := keygen.NewLocalParty(params, outChTss, endCh, optionalPreParams...)
 
-	share, err := m.messaging(ctx, keygenParty, inCh, outCh, outChTss, endCh, nil)
+	share, err := m.messaging(ctx, keygenParty, inCh, outCh, outChTss, endCh, nil, params.Parties().IDs())
 	if err != nil {
 		return err
 	}
@@ -31,14 +35,20 @@ func (m *Mpc) Keygen(ctx context.Context, inCh <-chan []byte, outCh chan<- *Mess
 
 // Sign initiate signing msg; Signature will be stored in `result` arg after finishing protocol
 // nil is sent to encCh when signing is finished successfully
-func (m *Mpc) Sign(ctx context.Context, inCh <-chan []byte, outCh chan<- *Message, msg []byte) ([]byte, error) {
+func (m *Mpc) Sign(ctx context.Context, party []string, inCh <-chan []byte, outCh chan<- *Message, msg []byte) ([]byte, error) {
 	bigMsg := new(big.Int).SetBytes(msg)
-	params := tss.NewParameters(tss.S256(), m.party, m.me, len(m.party.IDs()), len(m.party.IDs())-1)
+	params, err := m.createParams(party)
+	if err != nil {
+		return nil, err
+	}
+	if m.share == nil {
+		return nil, fmt.Errorf("share is nil")
+	}
 	outChTss := make(chan tss.Message, 100)
 	endCh := make(chan common.SignatureData, 5)
 	signParty := signing.NewLocalParty(bigMsg, params, *m.share, outChTss, endCh)
 
-	signature, err := m.messaging(ctx, signParty, inCh, outCh, outChTss, nil, endCh)
+	signature, err := m.messaging(ctx, signParty, inCh, outCh, outChTss, nil, endCh, params.Parties().IDs())
 	if err != nil {
 		return nil, err
 	}
@@ -60,6 +70,8 @@ func (m *Mpc) messaging(
 	outChTss chan tss.Message,
 	endChKeygen chan keygen.LocalPartySaveData,
 	endChSign chan common.SignatureData,
+
+	allPeers []*tss.PartyID,
 ) (interface{}, error) {
 	// todo hard to read, maybe refactor
 
@@ -72,11 +84,11 @@ func (m *Mpc) messaging(
 	// a separate goro is needed to not stop receiving messages from outChTss after receiving the result
 	go func() {
 		for msgOut := range outChTss {
-			outputMsg, err := m.newOutputMsg(msgOut)
+			outputMsg, err := m.newOutputMsg(msgOut, allPeers)
 			if err != nil {
 				msgOutErrCh <- fmt.Errorf("newOutputMsg: %s", err.Error())
 			}
-			m.logger.Debug().Msgf("%v send messages to %v %v", m.me.Id, outputMsg.SendToIds, msgOut.Type())
+			m.logger.Debug().Msgf("%v send messages to %v %v", m.MyID(), outputMsg.SendToIds, msgOut.Type())
 
 			outCh <- outputMsg
 		}
@@ -95,7 +107,7 @@ func (m *Mpc) messaging(
 				if !ok {
 					return nil, fmt.Errorf("party.Update: %s", err.Error())
 				}
-				m.logger.Debug().Msgf("%v received msg from %v %v", m.me.Id, parsedMessage.GetFrom().Id, parsedMessage.Type())
+				m.logger.Debug().Msgf("%v received msg from %v %v", m.MyID(), parsedMessage.GetFrom().Id, parsedMessage.Type())
 
 			case result := <-endChKeygen:
 				return &result, nil
@@ -133,4 +145,28 @@ func (m *Mpc) messaging(
 
 func tssSignToECDSA(signature *common.SignatureData) []byte {
 	return append(signature.Signature, signature.SignatureRecovery[0])
+}
+
+func (m *Mpc) createParty(partyIDs []string) (*tss.PeerContext, *tss.PartyID) {
+	unsortedParty := make([]*tss.PartyID, 0, len(partyIDs))
+	var me *tss.PartyID
+
+	for _, id := range partyIDs {
+		peer := createPeer(id)
+		unsortedParty = append(unsortedParty, peer)
+		if id == m.MyID() {
+			me = peer
+		}
+	}
+	party := tss.SortPartyIDs(unsortedParty)
+	return tss.NewPeerContext(party), me
+}
+
+func (m *Mpc) createParams(partyIDs []string) (*tss.Parameters, error) {
+	party, me := m.createParty(partyIDs)
+	if me == nil {
+		return nil, fmt.Errorf("can't find myself in partyIDs")
+	}
+	params := tss.NewParameters(tss.S256(), party, me, len(party.IDs()), m.threshold-1)
+	return params, nil
 }

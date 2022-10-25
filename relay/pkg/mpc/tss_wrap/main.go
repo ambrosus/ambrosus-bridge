@@ -15,28 +15,23 @@ import (
 )
 
 type Mpc struct {
-	me          *tss.PartyID
-	party       *tss.PeerContext
-	partyIDsMap map[string]*tss.PartyID
-	threshold   int
-	share       *keygen.LocalPartySaveData // share for local peer
-	logger      *zerolog.Logger
+	meID      string
+	threshold int
+	share     *keygen.LocalPartySaveData // share for local peer
+	logger    *zerolog.Logger
 }
 
-func NewMpcWithShare(meID, partyLen int, share []byte, logger *zerolog.Logger) (*Mpc, error) {
-	mpc := NewMpc(meID, partyLen, logger)
+func NewMpcWithShare(meID string, threshold int, share []byte, logger *zerolog.Logger) (*Mpc, error) {
+	mpc := NewMpc(meID, threshold, logger)
 	err := mpc.SetShare(share)
 	return mpc, err
 }
 
-func NewMpc(meID, partyLen int, logger *zerolog.Logger) *Mpc {
-	partyIDsMap, party := createParty(partyLen)
+func NewMpc(meID string, threshold int, logger *zerolog.Logger) *Mpc {
 	return &Mpc{
-		me:          partyIDsMap[fmt.Sprint(meID)],
-		party:       party,
-		partyIDsMap: partyIDsMap,
-		threshold:   partyLen,
-		logger:      logger,
+		meID:      meID,
+		threshold: threshold,
+		logger:    logger,
 	}
 }
 
@@ -44,7 +39,7 @@ func (m *Mpc) Threshold() int {
 	return m.threshold
 }
 func (m *Mpc) MyID() string {
-	return m.me.Id
+	return m.meID
 }
 
 func (m *Mpc) Share() ([]byte, error) {
@@ -62,21 +57,6 @@ func (m *Mpc) SetShare(share []byte) error {
 	return nil
 }
 
-// createParty party of partyLen participant; context == party
-func createParty(partyLen int) (partyIDsMap map[string]*tss.PartyID, party *tss.PeerContext) {
-	unsortedParty := make([]*tss.PartyID, 0, partyLen)
-	partyIDsMap = make(map[string]*tss.PartyID)
-
-	for id := 0; id < partyLen; id++ {
-		stringID := fmt.Sprint(id)
-		peer := tss.NewPartyID(stringID, stringID, big.NewInt(int64(id+1)))
-		unsortedParty = append(unsortedParty, peer)
-		partyIDsMap[stringID] = unsortedParty[id]
-	}
-	partyIDs := tss.SortPartyIDs(unsortedParty)
-	return partyIDsMap, tss.NewPeerContext(partyIDs)
-}
-
 func (m *Mpc) GetAddress() (common.Address, error) {
 	pubKey, err := m.GetPublicKey()
 	return crypto.PubkeyToAddress(*pubKey), err
@@ -91,4 +71,8 @@ func (m *Mpc) GetPublicKey() (*ecdsa.PublicKey, error) {
 		X:     m.share.ECDSAPub.X(),
 		Y:     m.share.ECDSAPub.Y(),
 	}, nil
+}
+
+func createPeer(id string) *tss.PartyID {
+	return tss.NewPartyID(id, id, new(big.Int).SetBytes([]byte(id)))
 }

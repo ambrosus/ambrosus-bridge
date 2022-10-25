@@ -16,6 +16,7 @@ type Message struct {
 // inputMessage contains information that tss lib want to receive
 type inputMessage struct {
 	FromID       string
+	FromIndex    int
 	IsBroadcast  bool
 	MsgWireBytes []byte
 }
@@ -28,22 +29,21 @@ func (om *Message) Marshall() ([]byte, error) {
 	return json.Marshal(om)
 }
 
-func (m *Mpc) newOutputMsg(msg tss.Message) (*Message, error) {
+func (m *Mpc) newOutputMsg(msg tss.Message, allPeers []*tss.PartyID) (*Message, error) {
 	// fetch IDs of all parties that should receive this message
 	var sendToIds []string
-	if msg.IsBroadcast() { // nsg.GetTo will be nil for broadcast messages
-		for peerID := range m.partyIDsMap {
-			if peerID != m.me.Id {
-				sendToIds = append(sendToIds, peerID)
+	if msg.IsBroadcast() { // msg.GetTo will be nil for broadcast messages
+		for _, peer := range allPeers {
+			if peer.Id != m.meID {
+				sendToIds = append(sendToIds, peer.Id)
 			}
 		}
 	} else {
 		for _, peer := range msg.GetTo() {
-			if peer.Id != m.me.Id {
-				sendToIds = append(sendToIds, peer.Id)
-			} else {
+			if peer.Id == m.meID {
 				panic("send to self ??")
 			}
+			sendToIds = append(sendToIds, peer.Id)
 		}
 	}
 
@@ -55,6 +55,7 @@ func (m *Mpc) newOutputMsg(msg tss.Message) (*Message, error) {
 
 	inputMsg := &inputMessage{
 		FromID:       msg.GetFrom().GetId(),
+		FromIndex:    msg.GetFrom().Index,
 		IsBroadcast:  msg.IsBroadcast(),
 		MsgWireBytes: wireBytes,
 	}
@@ -75,7 +76,9 @@ func (m *Mpc) unmarshallInputMsg(msgWire []byte) (tss.ParsedMessage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("json.Unmarshal: %s", err.Error())
 	}
-	message, err := tss.ParseWireMessage(inputMsg.MsgWireBytes, m.partyIDsMap[inputMsg.FromID], inputMsg.IsBroadcast)
+	from := createPeer(inputMsg.FromID)
+	from.Index = inputMsg.FromIndex
+	message, err := tss.ParseWireMessage(inputMsg.MsgWireBytes, from, inputMsg.IsBroadcast)
 	if err != nil {
 		return nil, fmt.Errorf("tss.ParseWireMessage: %s", err.Error())
 	}
