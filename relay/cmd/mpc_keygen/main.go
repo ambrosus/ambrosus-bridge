@@ -73,7 +73,7 @@ func main() {
 			// we are in new committee
 			reshare(*flagIsServer, *flagServerUrl,
 				*flagMeIDNew,
-				partyIDsNew, partyIDs,
+				partyIDs, partyIDsNew,
 				*flagThresholdNew, *flagThreshold, *flagShareDir)
 		}
 	}
