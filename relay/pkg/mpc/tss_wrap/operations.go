@@ -59,7 +59,7 @@ func (m *Mpc) Sign(ctx context.Context, party []string, inCh <-chan []byte, outC
 }
 
 // Reshare initiate share regeneration; Set received share to m.share after finishing protocol
-func (m *Mpc) Reshare(ctx context.Context, partyOld, partyNew []string, inCh <-chan []byte, outCh chan<- *Message) error {
+func (m *Mpc) Reshare(ctx context.Context, partyOld, partyNew []string, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
 	params, err := m.createReshareParams(partyOld, partyNew)
 	if err != nil {
 		return err
@@ -67,6 +67,9 @@ func (m *Mpc) Reshare(ctx context.Context, partyOld, partyNew []string, inCh <-c
 	if m.share == nil {
 		emptyShare := keygen.NewLocalPartySaveData(len(partyNew))
 		m.share = &emptyShare
+		if len(optionalPreParams) == 1 {
+			m.share.LocalPreParams = optionalPreParams[0]
+		}
 	}
 	outChTss := make(chan tss.Message, 100)
 	endCh := make(chan keygen.LocalPartySaveData, 5)

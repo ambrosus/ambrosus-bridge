@@ -2,14 +2,11 @@ package tss_wrap
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/fixtures"
-	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -194,20 +191,9 @@ func (p *testPeer) sign(outCh chan *Message, party []string, msg []byte) ([]byte
 }
 
 func (p *testPeer) keygen(outCh chan *Message, party []string) (err error) {
-	preParams := fixtures.GetPreParams(p.peer.MyID())
-	if preParams == nil {
-		fmt.Printf("generating pre params for %s\n", p.peer.MyID())
-		preParams, err = keygen.GeneratePreParams(5 * time.Minute)
-		fmt.Printf("pre params for %s generated\n", p.peer.MyID())
-		marshalled, err := json.Marshal(preParams)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Print(string(marshalled))
-	}
-	return p.peer.Keygen(context.Background(), party, p.inCh, outCh, *preParams)
+	return p.peer.Keygen(context.Background(), party, p.inCh, outCh, *fixtures.GetOrGenPreParams(p.peer.MyID()))
 }
 
 func (p *testPeer) reshare(outCh chan *Message, partyOld, partyNew []string) error {
-	return p.peer.Reshare(context.Background(), partyOld, partyNew, p.inCh, outCh)
+	return p.peer.Reshare(context.Background(), partyOld, partyNew, p.inCh, outCh, *fixtures.GetOrGenPreParams(p.peer.MyID()))
 }

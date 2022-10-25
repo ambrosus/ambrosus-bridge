@@ -23,8 +23,11 @@ type Mpc struct {
 
 func NewMpcWithShare(meID string, threshold int, share []byte, logger *zerolog.Logger) (*Mpc, error) {
 	mpc := NewMpc(meID, threshold, logger)
-	err := mpc.SetShare(share)
-	return mpc, err
+	if share != nil {
+		err := mpc.SetShare(share)
+		return mpc, err
+	}
+	return mpc, nil
 }
 
 func NewMpc(meID string, threshold int, logger *zerolog.Logger) *Mpc {
