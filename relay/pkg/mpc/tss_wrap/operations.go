@@ -18,6 +18,9 @@ func (m *Mpc) Keygen(ctx context.Context, party []string, inCh <-chan []byte, ou
 	if err != nil {
 		return err
 	}
+	if len(optionalPreParams) == 0 && m.share != nil { // can provide preParams through share
+		optionalPreParams = append(optionalPreParams, m.share.LocalPreParams)
+	}
 	outChTss := make(chan tss.Message, 100)
 	endCh := make(chan keygen.LocalPartySaveData, 5)
 	keygenParty := keygen.NewLocalParty(params, outChTss, endCh, optionalPreParams...)

@@ -20,20 +20,22 @@ import (
 
 // examples:
 // keygen server:
-// go run main.go -hostUrl :8080 -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
+// go run main.go -server :8080 -meID A -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
 // keygen client:
-// go run main.go -serverUrl http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
+// go run main.go -url http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
 
-// reshare server:
-// go run main.go -reshare -hostUrl :8080 -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -meIdNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
-// reshare client:
-// go run main.go -reshare -serverUrl http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -meIdNew B2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// reshare server (for new commit) and client (for old committee):
+// go run main.go -reshare -server :8080 -url http://localhost:8080 -meID A -partyIDs "A B C" -threshold 2 -meIdNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// reshare clients (for both committee):
+// go run main.go -reshare -url http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -meIdNew B2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+
+var logger = zerolog.Logger
 
 func main() {
 	flagOperation := flag.Bool("reshare", false, "do reshare (default: keygen)")
 
-	flagHostUrl := flag.String("hostUrl", "", "url where the server will be host (don't enable if it's client)")
-	flagServerUrl := flag.String("serverUrl", "", "url to which a client will connect")
+	flagServerHost := flag.String("server", "", "if specified, run a server on this port (ex: ':8080')")
+	flagUrl := flag.String("url", "", "url to which a client will connect")
 
 	flagMeID := flag.String("meID", "", "my ID")
 	flagPartyIDs := flag.String("partyIDs", "", "party IDs (space separated)")
@@ -49,43 +51,137 @@ func main() {
 	flag.Parse()
 
 	partyIDs := strings.Split(*flagPartyIDs, " ")
-	isServer := *flagHostUrl != ""
+	isServer := *flagServerHost != ""
 	checkThreshold(*flagThreshold)
 	checkPartyIDs(partyIDs)
 	checkShareDir(*flagShareDir)
 
 	if !*flagOperation {
-		keygen(isServer, *flagHostUrl, *flagServerUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
+		keygen(isServer, *flagServerHost, *flagUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
 	} else {
 		partyIDsNew := strings.Split(*flagPartyIDsNew, " ")
 		checkThreshold(*flagThresholdNew)
 		checkPartyIDs(partyIDsNew)
 
-		var wg sync.WaitGroup
-		if *flagMeIDNew != "" {
-			// we are in new committee
-			wg.Add(1)
-			go func() {
-				reshare(isServer, *flagHostUrl, *flagServerUrl,
-					*flagMeIDNew,
-					partyIDs, partyIDsNew,
-					*flagThresholdNew, *flagThreshold, *flagShareDir)
-				wg.Done()
-			}()
-			// if we already runned as server set flagIsServer to false, coz can't run server twice
-			time.Sleep(2 * time.Second)
-			isServer = false
-		}
-		if *flagMeID != "" {
-			// we are in old committee
-			reshare(isServer, *flagHostUrl, *flagServerUrl,
-				*flagMeID,
-				partyIDs, partyIDsNew,
-				*flagThreshold, *flagThresholdNew, *flagShareDir)
-		}
-		wg.Wait()
+		reshareBothCommittee(isServer, *flagServerHost, *flagUrl, *flagMeID, *flagMeIDNew, partyIDs, partyIDsNew, *flagThreshold, *flagThresholdNew, *flagShareDir)
 	}
 }
+
+func keygen(isServer bool, hostUrl, serverURL string, id string, partyIDs []string, threshold int, shareDir string) {
+	sharePath := getSharePath(shareDir, id)
+
+	fmt.Println("=======================================================")
+	fmt.Println("You are about to generate the MPC share")
+	fmt.Println("IDS: ", partyIDs, "; threshold: ", threshold)
+	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
+	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
+	fmt.Println("=======================================================")
+
+	if isShareExist(sharePath) {
+		log.Fatal("share already exist")
+	}
+	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
+	netOperation := createNetworking(isServer, hostUrl, serverURL, mpcc)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
+	err := netOperation.Keygen(ctx, partyIDs)
+	if err != nil {
+		log.Fatal(err)
+	}
+	saveShare(mpcc, sharePath)
+}
+
+func reshare(isServer bool, hostUrl, serverURL, id string, meInNewCommittee bool, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
+	sharePath := getSharePath(shareDir, id)
+
+	fmt.Println("=======================================================")
+	fmt.Println("You are about to reshare the MPC share")
+	fmt.Println("Old IDS: ", partyIDsOld, "; threshold: ", thresholdOld)
+	fmt.Println("New IDS: ", partyIDsNew, "; threshold: ", thresholdNew)
+	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
+	fmt.Println("Is your in new committee: ", meInNewCommittee)
+	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
+	fmt.Println("=======================================================")
+
+	mpcc := tss_wrap.NewMpc(id, thresholdOld, &logger)
+	if !meInNewCommittee {
+		readShare(mpcc, sharePath)
+	}
+
+	netOperation := createNetworking(isServer, hostUrl, serverURL, mpcc)
+	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
+	err := netOperation.Reshare(ctx, partyIDsOld, partyIDsNew)
+	if err != nil {
+		log.Fatal(err)
+	}
+	saveShare(mpcc, sharePath)
+}
+
+func reshareBothCommittee(isServer bool, serverHost, url, meID, meIDNew string, partyIDs, partyIDsNew []string, threshold, thresholdNew int, shareDir string) {
+	var wg sync.WaitGroup
+	if meIDNew != "" { // we are in new committee
+		wg.Add(1)
+		go func() {
+			reshare(isServer, serverHost, url,
+				meIDNew, true, partyIDs, partyIDsNew,
+				thresholdNew, threshold, shareDir)
+			wg.Done()
+		}()
+
+		// if new committee just launched as server, old committee must be run as client, coz can't run server twice
+		isServer = false
+	}
+	if meID != "" { // we are in old committee
+		reshare(isServer, serverHost, url,
+			meID, false, partyIDs, partyIDsNew,
+			threshold, thresholdNew, shareDir)
+	}
+	wg.Wait()
+}
+
+// utils
+
+type networkingOperations interface {
+	Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string) error
+	Keygen(ctx context.Context, party []string) error
+}
+
+func createNetworking(isServer bool, hostUrl string, serverURL string, mpcc *tss_wrap.Mpc) networkingOperations {
+	if isServer {
+		server_ := server.NewServer(mpcc, &logger)
+		go http.ListenAndServe(hostUrl, server_)
+		return server_
+	} else {
+		return client.NewClient(mpcc, serverURL, nil, &logger)
+	}
+}
+
+// share file utils
+
+func saveShare(tss *tss_wrap.Mpc, sharePath string) {
+	if share, err := tss.Share(); err != nil {
+		log.Fatal(fmt.Errorf("can't get share: %w", err))
+	} else if err = os.WriteFile(sharePath, share, 0644); err != nil {
+		log.Fatal(fmt.Errorf("can't save share: %w", err))
+	}
+}
+
+func readShare(tss *tss_wrap.Mpc, sharePath string) {
+	if share, err := os.ReadFile(sharePath); err != nil {
+		log.Fatal(fmt.Errorf("can't read share: %w", err))
+	} else if err = tss.SetShare(share); err != nil {
+		log.Fatal(fmt.Errorf("can't set share: %w", err))
+	}
+}
+
+func isShareExist(sharePath string) bool {
+	_, err := os.Stat(sharePath)
+	return err == nil
+}
+func getSharePath(shareDir, id string) string {
+	return filepath.Join(shareDir, fmt.Sprintf("share_%s", id))
+}
+
+// flags checks
 
 func checkShareDir(dirPath string) {
 	fileInfo, err := os.Stat(dirPath)
@@ -106,101 +202,4 @@ func checkPartyIDs(partyIDs []string) {
 	if len(partyIDs) < 2 {
 		log.Fatal("partyIDs must be >= 2")
 	}
-}
-
-func keygen(isServer bool, hostUrl, serverURL string, id string, partyIDs []string, threshold int, shareDir string) {
-	sharePath := getSharePath(shareDir, id)
-	if isShareExist(sharePath) {
-		log.Fatal("share already exist")
-	}
-
-	fmt.Println("=======================================================")
-	fmt.Println("You are about to generate the MPC share")
-	fmt.Println("IDS: ", partyIDs, "; threshold: ", threshold)
-	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
-	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
-	fmt.Println("=======================================================")
-
-	logger := zerolog.Logger
-	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
-
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
-	if isServer {
-		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(hostUrl, server_)
-
-		err := server_.Keygen(ctx, partyIDs)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		client_ := client.NewClient(mpcc, serverURL, nil, &logger)
-
-		err := client_.Keygen(ctx, partyIDs)
-		if err != nil {
-			panic(err)
-		}
-	}
-	saveShare(mpcc, sharePath)
-}
-
-func reshare(isServer bool, hostUrl, serverURL, id string, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
-	sharePath := getSharePath(shareDir, id)
-
-	fmt.Println("=======================================================")
-	fmt.Println("You are about to reshare the MPC share")
-	fmt.Println("Old IDS: ", partyIDsOld, "; threshold: ", thresholdOld)
-	fmt.Println("New IDS: ", partyIDsNew, "; threshold: ", thresholdNew)
-	fmt.Println("Your ID: ", id, "; share path: ", sharePath)
-	fmt.Println("Is this server: ", isServer, "; server URL: ", serverURL)
-	fmt.Println("=======================================================")
-
-	logger := zerolog.Logger
-	mpcc := tss_wrap.NewMpc(id, thresholdOld, &logger)
-	if isShareExist(sharePath) {
-		share, err := os.ReadFile(sharePath)
-		if err != nil {
-			panic(fmt.Errorf("can't read share: %w", err))
-		}
-		mpcc.SetShare(share)
-	}
-
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
-	if isServer {
-		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(hostUrl, server_)
-
-		err := server_.Reshare(ctx, partyIDsOld, partyIDsNew)
-		if err != nil {
-			panic(err)
-		}
-	} else {
-		client_ := client.NewClient(mpcc, serverURL, nil, &logger)
-
-		err := client_.Reshare(ctx, partyIDsOld, partyIDsNew)
-		if err != nil {
-			panic(err)
-		}
-	}
-	saveShare(mpcc, sharePath)
-}
-
-func saveShare(tss *tss_wrap.Mpc, sharePath string) {
-	share, err := tss.Share()
-	if err != nil {
-		panic(err)
-	}
-
-	err = os.WriteFile(sharePath, share, 0644)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func isShareExist(sharePath string) bool {
-	_, err := os.Stat(sharePath)
-	return err == nil
-}
-func getSharePath(shareDir, id string) string {
-	return filepath.Join(shareDir, fmt.Sprintf("share_%s", id))
 }
