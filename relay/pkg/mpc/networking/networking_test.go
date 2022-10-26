@@ -23,7 +23,6 @@ func TestNetworkingKeygen(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// todo use pre params
 	partyIDs := []string{"0", "1", "2", "3", "4"}
 
 	server_ := createServer(partyIDs[0], 5)
@@ -85,8 +84,6 @@ func TestNetworkingSigning(t *testing.T) {
 }
 
 func TestNetworkingRefresh(t *testing.T) {
-	// todo use pre params
-
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
