@@ -20,20 +20,20 @@ import (
 
 // examples:
 // keygen server:
-// go run main.go -server -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
+// go run main.go -hostUrl :8080 -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
 // keygen client:
 // go run main.go -serverUrl http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
 
 // reshare server:
-// go run main.go -reshare -server -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -meIdNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// go run main.go -reshare -hostUrl :8080 -serverUrl :8080 -meID A -partyIDs "A B C" -threshold 2 -meIdNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
 // reshare client:
 // go run main.go -reshare -serverUrl http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -meIdNew B2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
 
 func main() {
 	flagOperation := flag.Bool("reshare", false, "do reshare (default: keygen)")
 
-	flagIsServer := flag.Bool("server", false, "is this server (default: client)")
-	flagServerUrl := flag.String("serverUrl", "", "server url (use ':8080' for server)")
+	flagHostUrl := flag.String("hostUrl", "", "url where the server will be host (don't enable if it's client)")
+	flagServerUrl := flag.String("serverUrl", "", "url to which a client will connect")
 
 	flagMeID := flag.String("meID", "", "my ID")
 	flagPartyIDs := flag.String("partyIDs", "", "party IDs (space separated)")
@@ -49,12 +49,13 @@ func main() {
 	flag.Parse()
 
 	partyIDs := strings.Split(*flagPartyIDs, " ")
+	isServer := *flagHostUrl != ""
 	checkThreshold(*flagThreshold)
 	checkPartyIDs(partyIDs)
 	checkShareDir(*flagShareDir)
 
 	if !*flagOperation {
-		keygen(*flagIsServer, *flagServerUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
+		keygen(isServer, *flagHostUrl, *flagServerUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
 	} else {
 		partyIDsNew := strings.Split(*flagPartyIDsNew, " ")
 		checkThreshold(*flagThresholdNew)
@@ -65,18 +66,18 @@ func main() {
 			// we are in new committee
 			wg.Add(1)
 			go func() {
-				reshare(*flagIsServer, *flagServerUrl,
+				reshare(isServer, *flagHostUrl, *flagServerUrl,
 					*flagMeIDNew,
 					partyIDs, partyIDsNew,
 					*flagThresholdNew, *flagThreshold, *flagShareDir)
 				wg.Done()
 			}()
 			// if we already runned as server set flagIsServer to false, coz can't run server twice
-			*flagIsServer = false
+			isServer = false
 		}
 		if *flagMeID != "" {
 			// we are in old committee
-			reshare(*flagIsServer, *flagServerUrl,
+			reshare(isServer, *flagHostUrl, *flagServerUrl,
 				*flagMeID,
 				partyIDs, partyIDsNew,
 				*flagThreshold, *flagThresholdNew, *flagShareDir)
@@ -106,7 +107,7 @@ func checkPartyIDs(partyIDs []string) {
 	}
 }
 
-func keygen(isServer bool, serverURL string, id string, partyIDs []string, threshold int, shareDir string) {
+func keygen(isServer bool, hostUrl, serverURL string, id string, partyIDs []string, threshold int, shareDir string) {
 	sharePath := getSharePath(shareDir, id)
 	if isShareExist(sharePath) {
 		log.Fatal("share already exist")
@@ -125,7 +126,7 @@ func keygen(isServer bool, serverURL string, id string, partyIDs []string, thres
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	if isServer {
 		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(serverURL, server_)
+		go http.ListenAndServe(hostUrl, server_)
 
 		err := server_.Keygen(ctx, partyIDs)
 		if err != nil {
@@ -142,7 +143,7 @@ func keygen(isServer bool, serverURL string, id string, partyIDs []string, thres
 	saveShare(mpcc, sharePath)
 }
 
-func reshare(isServer bool, serverURL, id string, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
+func reshare(isServer bool, hostUrl, serverURL, id string, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
 	sharePath := getSharePath(shareDir, id)
 
 	fmt.Println("=======================================================")
@@ -166,7 +167,7 @@ func reshare(isServer bool, serverURL, id string, partyIDsOld, partyIDsNew []str
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	if isServer {
 		server_ := server.NewServer(mpcc, &logger)
-		go http.ListenAndServe(serverURL, server_)
+		go http.ListenAndServe(hostUrl, server_)
 
 		err := server_.Reshare(ctx, partyIDsOld, partyIDsNew)
 		if err != nil {
