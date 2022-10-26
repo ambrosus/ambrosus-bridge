@@ -8,6 +8,7 @@ import (
 
 var (
 	KeygenOperation    = []byte("keygen")
+	ReshareOperation   = []byte("reshare")
 	HeaderTssID        = "X-TSS-ID"
 	HeaderTssOperation = "X-TSS-Operation"
 	ResultPrefix       = []byte("result")

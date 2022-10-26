@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
 	ec "github.com/ethereum/go-ethereum/common"
 
@@ -40,32 +39,50 @@ func NewClient(tss *tss_wrap.Mpc, serverURL string, httpClient *http.Client, log
 	return s
 }
 
-func (s *Client) Sign(ctx context.Context, msg []byte) ([]byte, error) {
-	for {
-		sig, err := s.sign(ctx, msg)
-		if err == nil {
-			return sig, nil
-		}
-		s.logger.Error().Err(err).Msg("sign error")
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
-		}
-		time.Sleep(time.Second)
-	}
+func (s *Client) Sign(ctx context.Context, party []string, msg []byte) ([]byte, error) {
+	s.logger.Info().Msg("Start sign operation")
+
+	signature, err := s.doOperation(ctx, msg,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			return s.Tss.Sign(ctx, party, inCh, outCh, msg)
+		},
+	)
+
+	return signature, err
 }
 
-func (s *Client) Keygen(ctx context.Context) error {
-	for {
-		err := s.keygen(ctx)
-		if err == nil {
-			return nil
-		}
-		s.logger.Error().Err(err).Msg("keygen error")
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-		time.Sleep(time.Second)
-	}
+func (s *Client) Keygen(ctx context.Context, party []string) error {
+	s.logger.Info().Msg("Start keygen operation")
+
+	_, err := s.doOperation(ctx, common.KeygenOperation,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Keygen(ctx, party, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
+}
+
+func (s *Client) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string) error {
+	s.logger.Info().Msg("Start reshare operation")
+
+	_, err := s.doOperation(ctx, common.ReshareOperation,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
 }
 
 func (s *Client) SetFullMsg(fullMsg []byte) {
@@ -89,35 +106,6 @@ func (s *Client) GetFullMsg() ([]byte, error) {
 
 func (s *Client) GetTssAddress() (ec.Address, error) {
 	return s.Tss.GetAddress()
-}
-
-func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
-	s.logger.Info().Msg("Start sign operation")
-
-	signature, err := s.doOperation(ctx, msg,
-		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			return s.Tss.SignSync(ctx, inCh, outCh, msg)
-		},
-	)
-
-	return signature, err
-}
-
-func (s *Client) keygen(ctx context.Context) error {
-	s.logger.Info().Msg("Start keygen operation")
-
-	_, err := s.doOperation(ctx, common.KeygenOperation,
-		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.KeygenSync(ctx, inCh, outCh)
-			if err != nil {
-				return nil, err
-			}
-			addr, err := s.Tss.GetAddress()
-			return addr.Bytes(), err
-		},
-	)
-
-	return err
 }
 
 func (s *Client) doOperation(ctx context.Context, operation []byte, tssOperation common.OperationFunc) ([]byte, error) {
