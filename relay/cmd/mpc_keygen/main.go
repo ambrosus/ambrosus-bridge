@@ -59,22 +59,21 @@ func main() {
 		checkThreshold(*flagThresholdNew)
 		checkPartyIDs(partyIDsNew)
 
-		// todo wait for goro
-		if *flagMeID != "" {
-			// we are in old committee
-			go reshare(*flagIsServer, *flagServerUrl,
-				*flagMeID,
-				partyIDs, partyIDsNew,
-				*flagThreshold, *flagThresholdNew, *flagShareDir)
-			// if we already runned as server set flagIsServer to false, coz can't run server twice
-			*flagIsServer = false
-		}
 		if *flagMeIDNew != "" {
 			// we are in new committee
-			reshare(*flagIsServer, *flagServerUrl,
+			go reshare(*flagIsServer, *flagServerUrl,
 				*flagMeIDNew,
 				partyIDs, partyIDsNew,
 				*flagThresholdNew, *flagThreshold, *flagShareDir)
+			// if we already runned as server set flagIsServer to false, coz can't run server twice
+			*flagIsServer = false
+		}
+		if *flagMeID != "" {
+			// we are in old committee
+			reshare(*flagIsServer, *flagServerUrl,
+				*flagMeID,
+				partyIDs, partyIDsNew,
+				*flagThreshold, *flagThresholdNew, *flagShareDir)
 		}
 	}
 }
