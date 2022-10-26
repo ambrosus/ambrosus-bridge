@@ -72,6 +72,9 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindi
 	defer b.mpcSigner.SetFullMsg(nil)
 
 	return b.ProcessTx("submitTransferUntrustless", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		// SubmitTransferUntrustless will call auth.Signer function, which:
+		// - call mpcSigner.SetFullMsg to set full tx
+		// - call mpcSigner.Sign to get signature
 		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
 	})
 }
@@ -94,7 +97,8 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcClient(event *bindi
 		auth.GasTipCap = serverTx.GasTipCap()
 	}
 
-	//
+	// SubmitTransferUntrustless will call auth.Signer function, which call mpcSigner.Sign to get signature
+	// tx will be signed but not sent
 	_, err = b.GetContract().SubmitTransferUntrustless(&auth, event.EventId, event.Queue)
 	return err
 }
