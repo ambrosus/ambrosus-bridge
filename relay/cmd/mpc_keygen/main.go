@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/client"
@@ -59,12 +60,17 @@ func main() {
 		checkThreshold(*flagThresholdNew)
 		checkPartyIDs(partyIDsNew)
 
+		var wg sync.WaitGroup
 		if *flagMeIDNew != "" {
 			// we are in new committee
-			go reshare(*flagIsServer, *flagServerUrl,
-				*flagMeIDNew,
-				partyIDs, partyIDsNew,
-				*flagThresholdNew, *flagThreshold, *flagShareDir)
+			wg.Add(1)
+			go func() {
+				reshare(*flagIsServer, *flagServerUrl,
+					*flagMeIDNew,
+					partyIDs, partyIDsNew,
+					*flagThresholdNew, *flagThreshold, *flagShareDir)
+				wg.Done()
+			}()
 			// if we already runned as server set flagIsServer to false, coz can't run server twice
 			*flagIsServer = false
 		}
@@ -75,6 +81,7 @@ func main() {
 				partyIDs, partyIDsNew,
 				*flagThreshold, *flagThresholdNew, *flagShareDir)
 		}
+		wg.Wait()
 	}
 }
 
