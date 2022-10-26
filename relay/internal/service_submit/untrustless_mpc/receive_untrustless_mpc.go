@@ -25,11 +25,7 @@ type MpcSigner interface {
 type ReceiverUntrustlessMpc struct {
 	service_submit.Receiver
 	mpcSigner MpcSigner
-	signer    types.Signer
-
-	fromAddress common.Address
-	signers     []string
-	auth        *bind.TransactOpts
+	auth      *bind.TransactOpts
 }
 
 func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSigner, signersIDs []string) (*ReceiverUntrustlessMpc, error) {
