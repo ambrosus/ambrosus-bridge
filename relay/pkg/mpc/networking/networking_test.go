@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -28,22 +29,17 @@ func TestNetworkingKeygen(t *testing.T) {
 	server_ := createServer(partyIDs[0], 5)
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
-	wsURL := strings.TrimPrefix(ts.URL, "http://")
 
-	clients := createClients(partyIDs[1:], 5, wsURL)
+	clients := createClients(partyIDs[1:], 5, ts.URL)
 
-	for _, client_ := range clients {
-		go func(client_ *client.Client) {
-			time.Sleep(time.Second) // wait for server to start keygen operation
-			err := client_.Keygen(ctx, partyIDs)
-			if err != nil {
-				t.Error(err)
-			}
-		}(client_)
-	}
+	waitForClients := doClientsOperation(clients, func(client_ *client.Client) {
+		err := client_.Keygen(ctx, partyIDs)
+		assert.NoError(t, err)
+	})
 
 	err := server_.Keygen(ctx, partyIDs)
 	assert.NoError(t, err)
+	waitForClients()
 
 	// checks
 
@@ -66,23 +62,17 @@ func TestNetworkingSigning(t *testing.T) {
 	server_ := createServer(partyIDs[0], 5)
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
-	wsURL := strings.TrimPrefix(ts.URL, "http://")
 
-	clients := createClients(partyIDs[1:], 5, wsURL)
+	clients := createClients(partyIDs[1:], 5, ts.URL)
 
-	for _, client_ := range clients {
-		go func(client_ *client.Client) {
-			time.Sleep(time.Second) // wait for server to start sign operation
-			_, err := client_.Sign(ctx, partyIDs, msg)
-			if err != nil {
-				t.Error(err)
-			}
-		}(client_)
-	}
+	waitForClients := doClientsOperation(clients, func(client_ *client.Client) {
+		_, err := client_.Sign(ctx, partyIDs, msg)
+		assert.NoError(t, err)
+	})
 
 	signature, err := server_.Sign(ctx, partyIDs, msg)
 	assert.NoError(t, err)
-
+	waitForClients()
 	// checks
 
 	pubkey, err := server_.Tss.GetPublicKey()
@@ -105,22 +95,19 @@ func TestNetworkingRefresh(t *testing.T) {
 	server_ := createServer(partyIDs[0], 5)
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
-	wsURL := strings.TrimPrefix(ts.URL, "http://")
 
-	clients := createClients(partyIDs[1:], 5, wsURL)
+	clients := createClients(partyIDs[1:], 5, ts.URL)
 
-	for _, client_ := range clients {
-		go func(client_ *client.Client) {
-			time.Sleep(time.Second) // wait for server to start keygen operation
-			err := client_.Keygen(ctx, partyIDs)
-			if err != nil {
-				t.Error(err)
-			}
-		}(client_)
-	}
+	// keygen
+
+	waitForClients := doClientsOperation(clients, func(client_ *client.Client) {
+		err := client_.Keygen(ctx, partyIDs)
+		assert.NoError(t, err)
+	})
 
 	err := server_.Keygen(ctx, partyIDs)
 	assert.NoError(t, err)
+	waitForClients()
 
 	pubkeyOld, err := server_.Tss.GetPublicKey()
 	assert.NoError(t, err)
@@ -133,22 +120,18 @@ func TestNetworkingRefresh(t *testing.T) {
 	newPartyIDs := []string{"0a", "1a", "2a", "3a", "4a", "backup_a"}
 
 	// add new party to peers map
-	for id, peer := range createClients(newPartyIDs, 5, wsURL) {
+	for id, peer := range createClients(newPartyIDs, 5, ts.URL) {
 		clients[id] = peer
 	}
 
-	for _, client_ := range clients {
-		go func(client_ *client.Client) {
-			time.Sleep(time.Second) // wait for server to start keygen operation
-			err := client_.Reshare(ctx, oldPartyIDs, newPartyIDs)
-			if err != nil {
-				t.Error(err)
-			}
-		}(client_)
-	}
+	waitForClients = doClientsOperation(clients, func(client_ *client.Client) {
+		err = client_.Reshare(ctx, oldPartyIDs, newPartyIDs)
+		assert.NoError(t, err)
+	})
 
 	err = server_.Reshare(ctx, oldPartyIDs, newPartyIDs)
 	assert.NoError(t, err)
+	waitForClients()
 
 	// checks
 
@@ -156,6 +139,19 @@ func TestNetworkingRefresh(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, pubkeyOld, pubkeyNew)
 
+}
+
+func doClientsOperation(clients map[string]*client.Client, operation func(client_ *client.Client)) (waitFunc func()) {
+	var wg sync.WaitGroup
+	for _, client_ := range clients {
+		wg.Add(1)
+		go func(client_ *client.Client) {
+			time.Sleep(time.Second) // wait for server to start operation
+			operation(client_)
+			wg.Done()
+		}(client_)
+	}
+	return wg.Wait
 }
 
 func createServer(serverID string, threshold int) *server.Server {
@@ -168,7 +164,8 @@ func createServer(serverID string, threshold int) *server.Server {
 	return server.NewServer(mpc, &serverLogger)
 }
 
-func createClients(clientsIDs []string, threshold int, url string) map[string]*client.Client {
+func createClients(clientsIDs []string, threshold int, httpUrl string) map[string]*client.Client {
+	url := strings.TrimPrefix(httpUrl, "http://")
 	clients := make(map[string]*client.Client)
 
 	for _, id := range clientsIDs {
