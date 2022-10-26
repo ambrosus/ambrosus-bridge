@@ -73,6 +73,7 @@ func main() {
 				wg.Done()
 			}()
 			// if we already runned as server set flagIsServer to false, coz can't run server twice
+			time.Sleep(2 * time.Second)
 			isServer = false
 		}
 		if *flagMeID != "" {
