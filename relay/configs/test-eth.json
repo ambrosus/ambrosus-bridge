@@ -20,7 +20,18 @@
             "variant": "untrustless"
         },
         "ambToSide": {
-            "variant": "untrustless2"
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6455",
+                "sharePath": "share_master"
+            }
         }
     },
     "validityWatchdogs": {

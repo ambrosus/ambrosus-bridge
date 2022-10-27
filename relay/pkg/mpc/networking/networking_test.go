@@ -19,6 +19,20 @@ import (
 
 var logger = log.Logger
 
+func TestFullMsg(t *testing.T) {
+	server_ := server.NewServer(nil, &logger)
+	ts := httptest.NewServer(server_)
+	defer ts.Close()
+
+	url := strings.TrimPrefix(ts.URL, "http://")
+	client_ := client.NewClient(nil, url, nil, &logger)
+
+	server_.SetFullMsg([]byte("test"))
+	msg, err := client_.GetFullMsg()
+	assert.NoError(t, err)
+	assert.Equal(t, []byte("test"), msg)
+}
+
 func TestNetworkingKeygen(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
