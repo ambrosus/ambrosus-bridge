@@ -28,7 +28,7 @@
                     "master",
                     "apollo420"
                 ],
-                "threshold": 1,
+                "threshold": 2,
                 "serverURL": "relay-eth.ambrosus-test.io:6455",
                 "sharePath": "in env"
             }
