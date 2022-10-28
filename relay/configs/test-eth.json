@@ -30,7 +30,7 @@
                 ],
                 "threshold": 2,
                 "serverURL": ":6455",
-                "sharePath": "share_master"
+                "sharePath": "shared/share_master"
             }
         }
     },
