@@ -16,10 +16,10 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/" {
-		s.registerConnection(w, r)
-	} else if r.URL.Path == common.EndpointFullMsg {
+	if r.Header.Get(common.HeaderTssID) == "" {
 		s.fullMsgHandler(w, r)
+	} else {
+		s.registerConnection(w, r)
 	}
 }
 

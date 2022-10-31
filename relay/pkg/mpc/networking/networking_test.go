@@ -24,7 +24,7 @@ func TestFullMsg(t *testing.T) {
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
 
-	url := strings.TrimPrefix(ts.URL, "http://")
+	url := "ws://" + strings.TrimPrefix(ts.URL, "http://")
 	client_ := client.NewClient(nil, url, nil, &logger)
 
 	server_.SetFullMsg([]byte("test"))
@@ -176,7 +176,7 @@ func createServer(serverID string, threshold int) *server.Server {
 }
 
 func createClients(clientsIDs []string, threshold int, httpUrl string) map[string]*client.Client {
-	url := strings.TrimPrefix(httpUrl, "http://")
+	url := "ws://" + strings.TrimPrefix(httpUrl, "http://")
 	clients := make(map[string]*client.Client)
 
 	for _, id := range clientsIDs {

@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	ec "github.com/ethereum/go-ethereum/common"
+	"github.com/gorilla/websocket"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
@@ -21,20 +22,19 @@ type Client struct {
 	Tss       *tss_wrap.Mpc
 	operation []byte
 
-	serverURL  string
-	httpClient *http.Client
+	serverURL string
 }
 
+// todo remove httpClient arg
 func NewClient(tss *tss_wrap.Mpc, serverURL string, httpClient *http.Client, logger *zerolog.Logger) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{}
 	}
 
 	s := &Client{
-		Tss:        tss,
-		serverURL:  serverURL,
-		httpClient: httpClient,
-		logger:     logger,
+		Tss:       tss,
+		serverURL: serverURL,
+		logger:    logger,
 	}
 	return s
 }
@@ -90,9 +90,11 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 }
 
 func (s *Client) GetFullMsg() ([]byte, error) {
-	resp, err := s.httpClient.Get("http://" + s.serverURL + common.EndpointFullMsg)
-	if err != nil {
-		return nil, err
+	// todo ctx
+	// make request with websocket lib coz std http lib doesn't support wss protocol in url
+	_, resp, _ := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
