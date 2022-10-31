@@ -29,7 +29,7 @@
                     "Max"
                 ],
                 "threshold": 2,
-                "serverURL": "wss://relay-eth.ambrosus-test.io:6455",
+                "serverURL": "wss://relay-eth.ambrosus-test.io/mpcSide/ws",
                 "sharePath": "in env"
             }
         }
