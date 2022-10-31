@@ -62,12 +62,12 @@ func (s *Client) Keygen(ctx context.Context, party []string) error {
 	return err
 }
 
-func (s *Client) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string) error {
+func (s *Client) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string, thresholdNew int) error {
 	s.logger.Info().Msg("Start reshare operation")
 
 	_, err := s.doOperation(ctx, common.ReshareOperation,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, inCh, outCh)
+			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, thresholdNew, inCh, outCh)
 			if err != nil {
 				return nil, err
 			}

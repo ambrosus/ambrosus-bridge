@@ -109,7 +109,7 @@ func reshare(isServer bool, hostUrl, serverURL, id string, meInNewCommittee bool
 
 	netOperation := createNetworking(isServer, hostUrl, serverURL, mpcc)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
-	err := netOperation.Reshare(ctx, partyIDsOld, partyIDsNew)
+	err := netOperation.Reshare(ctx, partyIDsOld, partyIDsNew, thresholdNew)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -142,7 +142,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, meID, meIDNew string, 
 // utils
 
 type networkingOperations interface {
-	Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string) error
+	Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string, thresholdNew int) error
 	Keygen(ctx context.Context, party []string) error
 }
 
