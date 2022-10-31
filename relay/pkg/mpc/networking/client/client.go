@@ -25,18 +25,12 @@ type Client struct {
 	serverURL string
 }
 
-// todo remove httpClient arg
-func NewClient(tss *tss_wrap.Mpc, serverURL string, httpClient *http.Client, logger *zerolog.Logger) *Client {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-
-	s := &Client{
+func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Client {
+	return &Client{
 		Tss:       tss,
 		serverURL: serverURL,
 		logger:    logger,
 	}
-	return s
 }
 
 func (s *Client) Sign(ctx context.Context, party []string, msg []byte) ([]byte, error) {
