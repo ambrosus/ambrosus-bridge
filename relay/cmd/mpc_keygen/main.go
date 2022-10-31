@@ -128,6 +128,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, meID, meIDNew string, 
 		}()
 
 		// if new committee just launched as server, old committee must be run as client, coz can't run server twice
+		time.Sleep(2 * time.Second)
 		isServer = false
 	}
 	if meID != "" { // we are in old committee
