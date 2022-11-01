@@ -62,8 +62,8 @@ func (m *Mpc) Sign(ctx context.Context, party []string, inCh <-chan []byte, outC
 }
 
 // Reshare initiate share regeneration; Set received share to m.share after finishing protocol
-func (m *Mpc) Reshare(ctx context.Context, partyOld, partyNew []string, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
-	params, err := m.createReshareParams(partyOld, partyNew)
+func (m *Mpc) Reshare(ctx context.Context, partyOld, partyNew []string, thresholdNew int, inCh <-chan []byte, outCh chan<- *Message, optionalPreParams ...keygen.LocalPreParams) error {
+	params, err := m.createReshareParams(partyOld, partyNew, thresholdNew)
 	if err != nil {
 		return err
 	}
@@ -207,7 +207,7 @@ func (m *Mpc) createParams(partyIDs []string) (*tss.Parameters, error) {
 	return params, nil
 }
 
-func (m *Mpc) createReshareParams(partyIDsOld, partyIDsNew []string) (*tss.ReSharingParameters, error) {
+func (m *Mpc) createReshareParams(partyIDsOld, partyIDsNew []string, thresholdNew int) (*tss.ReSharingParameters, error) {
 	var me *tss.PartyID
 
 	partyOld, me := m.createParty(partyIDsOld)
@@ -222,7 +222,7 @@ func (m *Mpc) createReshareParams(partyIDsOld, partyIDsNew []string) (*tss.ReSha
 	params := tss.NewReSharingParameters(tss.S256(),
 		partyOld, partyNew, me,
 		len(partyOld.IDs()), m.threshold-1,
-		len(partyNew.IDs()), m.threshold-1)
+		len(partyNew.IDs()), thresholdNew-1)
 
 	return params, nil
 }

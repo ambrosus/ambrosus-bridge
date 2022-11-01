@@ -136,11 +136,11 @@ func TestNetworkingRefresh(t *testing.T) {
 	}
 
 	waitForClients = doClientsOperation(clients, func(client_ *client.Client) {
-		err = client_.Reshare(ctx, oldPartyIDs, newPartyIDs)
+		err = client_.Reshare(ctx, oldPartyIDs, newPartyIDs, 5)
 		assert.NoError(t, err)
 	})
 
-	err = server_.Reshare(ctx, oldPartyIDs, newPartyIDs)
+	err = server_.Reshare(ctx, oldPartyIDs, newPartyIDs, 5)
 	assert.NoError(t, err)
 	waitForClients()
 

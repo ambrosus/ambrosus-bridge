@@ -119,7 +119,7 @@ func TestReshare(t *testing.T) {
 
 	doOperation(peers,
 		func(p *testPeer, outCh chan *Message) {
-			err := p.reshare(outCh, oldPartyIDs, newPartyIDs)
+			err := p.reshare(outCh, oldPartyIDs, newPartyIDs, 5)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -194,6 +194,6 @@ func (p *testPeer) keygen(outCh chan *Message, party []string) (err error) {
 	return p.peer.Keygen(context.Background(), party, p.inCh, outCh, *fixtures.GetOrGenPreParams(p.peer.MyID()))
 }
 
-func (p *testPeer) reshare(outCh chan *Message, partyOld, partyNew []string) error {
-	return p.peer.Reshare(context.Background(), partyOld, partyNew, p.inCh, outCh, *fixtures.GetOrGenPreParams(p.peer.MyID()))
+func (p *testPeer) reshare(outCh chan *Message, partyOld, partyNew []string, thresholdNew int) error {
+	return p.peer.Reshare(context.Background(), partyOld, partyNew, thresholdNew, p.inCh, outCh, *fixtures.GetOrGenPreParams(p.peer.MyID()))
 }
