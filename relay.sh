@@ -62,8 +62,14 @@ docker rm -f eth-relay
 set -e
 
 IMAGE=ghcr.io/ambrosus/ambrosus-bridge
-TAG=latest
-STAGE=prod
+STAGE=${STAGE:-prod}
+if [ $STAGE == "prod" ]; then
+  TAG=latest
+elif [ $STAGE == "test" ]; then
+  TAG=dev
+elif [ $STAGE == "dev" ]; then
+  TAG=dev
+fi
 
 docker pull $IMAGE:$TAG
 
