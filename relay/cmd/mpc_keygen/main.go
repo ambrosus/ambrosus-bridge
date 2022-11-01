@@ -123,7 +123,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, meID, meIDNew string, 
 		go func() {
 			reshare(isServer, serverHost, url,
 				meIDNew, true, partyIDs, partyIDsNew,
-				thresholdNew, threshold, shareDir)
+				threshold, thresholdNew, shareDir)
 			wg.Done()
 		}()
 
