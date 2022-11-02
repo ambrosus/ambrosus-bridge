@@ -23,12 +23,13 @@
             "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
-                "meID": "master",
+                "meID": "master2",
                 "partyIDs": [
-                    "master",
-                    "Max"
+                    "master2",
+                    "Max2",
+                    "AndreyM2"
                 ],
-                "threshold": 2,
+                "threshold": 3,
                 "serverURL": ":6455",
                 "sharePath": "shared/share_master"
             }
