@@ -7,7 +7,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.live && hre.network.tags["amb"]) return;
   const isMainNet = parseNet(hre.network).stage === 'main'
   if (isMainNet) {
-    console.log("No need to deploy USDC on mainnet");
+    console.log("No need to deploy USDT on mainnet");
     return;
   }
 
@@ -16,30 +16,30 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   let configFile = readConfig_(hre.network);
 
-  const usdc = configFile.tokens.USDC;
+  const usdt = configFile.tokens.USDT;
 
-  if (usdc === undefined) {
-    console.log("USDC is not in config")
+  if (usdt === undefined) {
+    console.log("USDT is not in config")
     return
   }
-  if (usdc.addresses[netName] != "DEPLOY") return;  // already deployed or shouldn't be deployed
-  if (isAddress(usdc.addresses[netName])) {
-    console.log("USDC already deployed on", netName);
+  if (usdt.addresses[netName] != "DEPLOY") return;  // already deployed or shouldn't be deployed
+  if (isAddress(usdt.addresses[netName])) {
+    console.log("USDT already deployed on", netName);
     return;
   }
 
-  const deployResult = await hre.deployments.deploy(usdc.symbol, {
+  const deployResult = await hre.deployments.deploy(usdt.symbol, {
     contract: "MintableERC20",
     from: owner,
-    args: [usdc.name, usdc.symbol, getSideNetDecimalsOrTokenDenomination(usdc, netName)],
+    args: [usdt.name, usdt.symbol, getSideNetDecimalsOrTokenDenomination(usdt, netName)],
     log: true,
   });
 
-  usdc.addresses[netName] = deployResult.address;
+  usdt.addresses[netName] = deployResult.address;
   configFile.save();
 
 
 };
 
 export default func;
-func.tags = ["USDC", "tokens"];
+func.tags = ["USDT", "tokens"];

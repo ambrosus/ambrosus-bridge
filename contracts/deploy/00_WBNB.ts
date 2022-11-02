@@ -11,6 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     return;
   }
 
+  const netName = parseNet(hre.network).name;
   const {owner} = await hre.getNamedAccounts();
 
   let configFile = readConfig_(hre.network);
@@ -21,6 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     console.log("wBNB is not in config")
     return
   }
+  if (wbnb.addresses[netName] != "DEPLOY") return;  // already deployed or shouldn't be deployed
   if (isAddress(wbnb.addresses.bsc)) {
     console.log("wBNB already deployed");
     return;
