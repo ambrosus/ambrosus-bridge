@@ -31,7 +31,7 @@
                 ],
                 "threshold": 3,
                 "serverURL": ":6455",
-                "sharePath": "shared/share_master"
+                "sharePath": "shared/share_master2"
             }
         }
     },
