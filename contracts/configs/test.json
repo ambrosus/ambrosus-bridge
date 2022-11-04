@@ -11,6 +11,7 @@
   },
   "tokens": {
     "SAMB": {
+      "isActive": true,
       "name": "Synthetic Amber",
       "symbol": "SAMB",
       "denomination": 18,
@@ -30,6 +31,7 @@
       "nativeAnalog": "AMB"
     },
     "WETH": {
+      "isActive": false,
       "name": "Wrapped Ether",
       "symbol": "WETH",
       "denomination": 18,
@@ -48,6 +50,7 @@
       "nativeAnalog": "ETH"
     },
     "WBNB": {
+      "isActive": false,
       "name": "Wrapped BNB",
       "symbol": "WBNB",
       "denomination": 18,
@@ -66,6 +69,7 @@
       "nativeAnalog": "BNB"
     },
     "USDC": {
+      "isActive": false,
       "name": "USD Coin",
       "symbol": "USDC",
       "denomination": 18,
@@ -86,6 +90,7 @@
       "nativeAnalog": ""
     },
     "USDT": {
+      "isActive": true,
       "name": "Tether USD",
       "symbol": "USDT",
       "denomination": 18,
@@ -104,6 +109,7 @@
       "nativeAnalog": ""
     },
     "BUSD": {
+      "isActive": true,
       "name": "BUSD Token",
       "symbol": "BUSD",
       "denomination": 18,
