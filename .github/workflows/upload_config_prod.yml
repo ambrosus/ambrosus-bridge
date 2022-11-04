@@ -3,7 +3,6 @@ name: Upload bridge config on prod
 on:
   push:
     branches:
-      - dev
       - main
     paths:
       - 'contracts/configs/main.json'
