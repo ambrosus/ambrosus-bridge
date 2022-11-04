@@ -25,11 +25,11 @@
                 "isServer": false,
                 "meID": "in env",
                 "partyIDs": [
-                    "master2",
-                    "Max2",
-                    "AndreyM2"
+                    "master",
+                    "Max",
+                    "AndreyM"
                 ],
-                "threshold": 3,
+                "threshold": 2,
                 "serverURL": "wss://relay-eth.ambrosus-test.io/mpcSide/ws",
                 "sharePath": "in env"
             }
