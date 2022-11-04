@@ -35,6 +35,9 @@
       "name": "Wrapped Ether",
       "symbol": "WETH",
       "denomination": 18,
+      "decimals": {
+        "eth": 18
+      },
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "primaryNets": [
         "eth"
