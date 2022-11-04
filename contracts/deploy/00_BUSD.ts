@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const busd = configFile.tokens.BUSD;
 
-  if (busd === undefined) {
+  if (busd === undefined || !busd.isActive) {
     console.log("BUSD is not in config")
     return
   }

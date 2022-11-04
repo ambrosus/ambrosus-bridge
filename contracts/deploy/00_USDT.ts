@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const usdt = configFile.tokens.USDT;
 
-  if (usdt === undefined) {
+  if (usdt === undefined || !usdt.isActive) {
     console.log("USDT is not in config")
     return
   }

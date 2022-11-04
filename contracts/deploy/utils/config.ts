@@ -7,6 +7,7 @@ import { isAddress } from "ethers/lib/utils";
 
 
 export interface Token {
+  isActive: boolean;
   name: string;
   symbol: string;
   denomination: number;
@@ -46,6 +47,7 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
   const tokenPair: { [k: string]: string } = {};
 
   for (const token of Object.values(configFile.tokens)) {
+    if (!token.isActive) continue;
     // token must be deployed on both sides
     if (!isAddress(token.addresses[thisNet]) || !isAddress(token.addresses[sideNet]))
       continue
