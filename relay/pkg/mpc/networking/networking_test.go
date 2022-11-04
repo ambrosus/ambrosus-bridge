@@ -152,6 +152,18 @@ func TestNetworkingRefresh(t *testing.T) {
 
 }
 
+func TestNetworkingAccessToken(t *testing.T) {
+	server := server.NewServer(nil, "serverToken", nil)
+	ts := httptest.NewServer(server)
+	defer ts.Close()
+
+	partyIDs := []string{"1"}
+	clients := createClients(partyIDs, 1, ts.URL)
+
+	err := clients["1"].Keygen(context.Background(), partyIDs)
+	assert.Equal(t, "ws connect: websocket: bad handshake. http resp: 401 Unauthorized", err.Error())
+}
+
 func doClientsOperation(clients map[string]*client.Client, operation func(client_ *client.Client)) (waitFunc func()) {
 	var wg sync.WaitGroup
 	for _, client_ := range clients {
