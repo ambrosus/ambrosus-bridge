@@ -55,7 +55,7 @@ func submitterMpc(cfg *config.SubmitterMpc, submitterBridge networks.Bridge, rec
 		go http.ListenAndServe(cfg.ServerURL, server_)
 		mpcSigner = server_
 	} else {
-		client_ := client.NewClient(mpcc, cfg.AccessToken, cfg.ServerURL, nil, logger)
+		client_ := client.NewClient(mpcc, cfg.ServerURL, cfg.AccessToken, logger)
 		mpcSigner = client_
 	}
 

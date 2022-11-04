@@ -153,7 +153,7 @@ func createNetworking(isServer bool, hostUrl string, serverURL string, accessTok
 		go http.ListenAndServe(hostUrl, server_)
 		return server_
 	} else {
-		return client.NewClient(mpcc, serverURL, &logger)
+		return client.NewClient(mpcc, serverURL, accessToken, &logger)
 	}
 }
 
