@@ -16,7 +16,7 @@ import (
 )
 
 type MpcSigner interface {
-	Sign(ctx context.Context, msg []byte) ([]byte, error)
+	Sign(ctx context.Context, party []string, msg []byte) ([]byte, error)
 	SetFullMsg(fullMsg []byte)
 	GetFullMsg() ([]byte, error)
 	GetTssAddress() (common.Address, error)
@@ -25,52 +25,46 @@ type MpcSigner interface {
 type ReceiverUntrustlessMpc struct {
 	service_submit.Receiver
 	mpcSigner MpcSigner
-	signer    types.Signer
-
-	fromAddress common.Address
+	auth      *bind.TransactOpts
 }
 
-func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSigner) (*ReceiverUntrustlessMpc, error) {
+func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSigner, signersIDs []string) (*ReceiverUntrustlessMpc, error) {
 	chainID, err := receiver.GetClient().ChainID(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("get chain id: %w", err)
 	}
 	signer := types.LatestSignerForChainID(chainID)
 
-	fromAddress, err := mpcSigner.GetTssAddress()
+	auth := *receiver.GetAuth()
+	auth.From, err = mpcSigner.GetTssAddress()
 	if err != nil {
 		return nil, fmt.Errorf("get tss address: %w", err)
 	}
+	auth.Signer = func(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
+		hash := signer.Hash(tx).Bytes()
+		txBytes, err := tx.MarshalBinary()
+		if err != nil {
+			return nil, fmt.Errorf("tx to bytes: %w", err)
+		}
+
+		ctx, _ := context.WithTimeout(context.Background(), time.Minute)
+		mpcSigner.SetFullMsg(txBytes)
+		sig, err := mpcSigner.Sign(ctx, signersIDs, hash)
+		if err != nil {
+			return nil, fmt.Errorf("mpcSigner sign: %w", err)
+		}
+		return tx.WithSignature(signer, sig)
+	}
 
 	return &ReceiverUntrustlessMpc{
-		Receiver:    receiver,
-		mpcSigner:   mpcSigner,
-		signer:      signer,
-		fromAddress: fromAddress,
+		Receiver:  receiver,
+		mpcSigner: mpcSigner,
+		auth:      &auth,
 	}, nil
 }
 
 func (b *ReceiverUntrustlessMpc) GetAuth() *bind.TransactOpts {
-	originalAuth := *b.Receiver.GetAuth()
-	originalAuth.Signer = b.MpcSign
-	originalAuth.From = b.fromAddress
-	return &originalAuth
-}
-
-func (b *ReceiverUntrustlessMpc) MpcSign(address common.Address, tx *types.Transaction) (*types.Transaction, error) {
-	hash := b.signer.Hash(tx).Bytes()
-	txBytes, err := tx.MarshalBinary()
-	if err != nil {
-		return nil, fmt.Errorf("tx to bytes: %w", err)
-	}
-
-	ctx, _ := context.WithTimeout(context.Background(), time.Minute)
-	b.mpcSigner.SetFullMsg(txBytes)
-	sig, err := b.mpcSigner.Sign(ctx, hash)
-	if err != nil {
-		return nil, fmt.Errorf("mpcSigner sign: %w", err)
-	}
-	return tx.WithSignature(b.signer, sig)
+	return b.auth
 }
 
 func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindings.BridgeTransfer) error {
@@ -78,6 +72,9 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcServer(event *bindi
 	defer b.mpcSigner.SetFullMsg(nil)
 
 	return b.ProcessTx("submitTransferUntrustless", b.GetAuth(), func(opts *bind.TransactOpts) (*types.Transaction, error) {
+		// SubmitTransferUntrustless will call auth.Signer function, which:
+		// - call mpcSigner.SetFullMsg to set full tx
+		// - call mpcSigner.Sign to get signature
 		return b.GetContract().SubmitTransferUntrustless(opts, event.EventId, event.Queue)
 	})
 }
@@ -100,7 +97,8 @@ func (b *ReceiverUntrustlessMpc) SubmitTransferUntrustlessMpcClient(event *bindi
 		auth.GasTipCap = serverTx.GasTipCap()
 	}
 
-	//
+	// SubmitTransferUntrustless will call auth.Signer function, which call mpcSigner.Sign to get signature
+	// tx will be signed but not sent
 	_, err = b.GetContract().SubmitTransferUntrustless(&auth, event.EventId, event.Queue)
 	return err
 }

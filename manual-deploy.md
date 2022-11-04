@@ -25,4 +25,8 @@ Command to run eth-relay:
 curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay.sh > relay.sh && sudo chmod +x relay.sh && sudo ./relay.sh
 </pre>
 
-If any pop-ups occur, select "ok".  
+If any pop-ups occur, select "ok" or type "y".
+
+During installation you will be prompted to enter your ambrosus and ethereum private keys and token issued by bridge developers.
+
+Also you can pass `STAGE` env variable to run the relay on `dev`, `test` or `prod` environment. `prod` is set by default.

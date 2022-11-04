@@ -22,12 +22,17 @@
         "ambToSide": {
             "variant": "untrustless-mpc",
             "mpc": {
-                "sharePath": "share-server.json",
-                "meID": 0,
-                "partyLen": 2,
-                "accessToken": "in env",
+                "isServer": true,
+                "meID": "master2",
+                "partyIDs": [
+                    "master2",
+                    "Max2",
+                    "AndreyM2"
+                ],
+                "threshold": 3,
                 "serverURL": ":6455",
-                "isServer": true
+                "accessToken": "in env",
+                "sharePath": "shared/share_master2"
             }
         }
     },

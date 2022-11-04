@@ -16,10 +16,9 @@ func (s *Client) connect(ctx context.Context) (*common.Conn, error) {
 	headers.Add(common.HeaderTssOperation, fmt.Sprintf("%x", s.operation)) // as hex
 	headers.Add(common.HeaderAccessToken, s.accessToken)
 
-	url := "ws://" + s.serverURL
-	s.logger.Debug().Str("url", url).Msg("Connecting to server")
+	s.logger.Debug().Str("url", s.serverURL).Msg("Connecting to server")
 
-	conn, httpResp, err := websocket.DefaultDialer.DialContext(ctx, url, headers)
+	conn, httpResp, err := websocket.DefaultDialer.DialContext(ctx, s.serverURL, headers)
 	if err != nil {
 		if httpResp != nil {
 			return nil, fmt.Errorf("ws connect: %w. http resp: %v", err, httpResp.Status)

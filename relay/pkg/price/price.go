@@ -14,6 +14,8 @@ type TokenInfo struct {
 func TokenToUSD(token *TokenInfo) (price float64, err error) {
 	if token.Symbol == "SAMB" {
 		price, err = GetAmb()
+	} else if token.Symbol == "USDT" || token.Symbol == "BUSD" {
+		price, err = GetKucoin(token)
 	} else {
 		price, err = Get0x(token)
 	}

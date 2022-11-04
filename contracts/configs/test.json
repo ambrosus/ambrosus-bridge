@@ -29,23 +29,39 @@
       },
       "nativeAnalog": "AMB"
     },
-    "USDC": {
-      "name": "USD Coin",
-      "symbol": "USDC",
+    "USDT": {
+      "name": "Tether USD",
+      "symbol": "USDT",
       "denomination": 18,
       "decimals": {
-        "eth": 6,
+        "eth": 6
+      },
+      "logo": "https://etherscan.io/token/images/tether_32.png",
+      "primaryNets": [
+        "eth"
+      ],
+      "addresses": {
+        "amb": "0x2Af6411938cc6a1BE90bB74494A57b971D2Ff079",
+        "eth": "0x2Aaf5696BdF562b31D6dAd629B7434E809296bAF",
+        "bsc": ""
+      },
+      "nativeAnalog": ""
+    },
+    "BUSD": {
+      "name": "BUSD Token",
+      "symbol": "BUSD",
+      "denomination": 18,
+      "decimals": {
         "bsc": 18
       },
-      "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
+      "logo": "https://bscscan.com/token/images/busd_32.png",
       "primaryNets": [
-        "eth",
         "bsc"
       ],
       "addresses": {
-        "amb": "0x56a79d39fc414Ff11EbB30d6a5367ea5da8c6fE9",
-        "eth": "0x1D335E8B7787fB6c51F98713df5BCb56884FD023",
-        "bsc": "0x3a5633bAE0243bB360e25624DC6dFd241333B575"
+        "amb": "0x9F9B96F8d33B58c85f0E5bB4BE53164c0Fe77cD9",
+        "eth": "",
+        "bsc": "0x7E0F09c8c2aAf4743B57355edb051F5E5ED6F73d"
       },
       "nativeAnalog": ""
     }

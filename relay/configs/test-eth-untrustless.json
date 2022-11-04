@@ -16,15 +16,23 @@
     },
     "submitters": {
         "enable": true,
+        "sideToAmb": {
+            "variant": ""
+        },
         "ambToSide": {
             "variant": "untrustless-mpc",
             "mpc": {
-                "sharePath": "share-client.json",
+                "isServer": false,
                 "meID": "in env",
-                "partyLen": 2,
+                "partyIDs": [
+                    "master2",
+                    "Max2",
+                    "AndreyM2"
+                ],
+                "threshold": 3,
+                "serverURL": "wss://relay-eth.ambrosus-test.io/mpcSide/ws",
                 "accessToken": "in env",
-                "serverURL": "relay-eth.ambrosus.io:6455",
-                "isServer": false
+                "sharePath": "in env"
             }
         }
     },

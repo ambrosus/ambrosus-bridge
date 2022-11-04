@@ -6,9 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
 	ec "github.com/ethereum/go-ethereum/common"
+	"github.com/gorilla/websocket"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
@@ -22,52 +22,63 @@ type Client struct {
 	Tss       *tss_wrap.Mpc
 	operation []byte
 
+	serverURL string
 	accessToken string
-	serverURL   string
-	httpClient  *http.Client
 }
 
-func NewClient(tss *tss_wrap.Mpc, accessToken string, serverURL string, httpClient *http.Client, logger *zerolog.Logger) *Client {
-	if httpClient == nil {
-		httpClient = &http.Client{}
-	}
-
-	s := &Client{
-		Tss:         tss,
+func NewClient(tss *tss_wrap.Mpc, serverURL string, accessToken string, logger *zerolog.Logger) *Client {
+	return &Client{
+		Tss:       tss,
+		serverURL: serverURL,
 		accessToken: accessToken,
-		serverURL:   serverURL,
-		httpClient:  httpClient,
-		logger:      logger,
-	}
-	return s
-}
-
-func (s *Client) Sign(ctx context.Context, msg []byte) ([]byte, error) {
-	for {
-		sig, err := s.sign(ctx, msg)
-		if err == nil {
-			return sig, nil
-		}
-		s.logger.Error().Err(err).Msg("sign error")
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
-		}
-		time.Sleep(time.Second)
+		logger:    logger,
 	}
 }
 
-func (s *Client) Keygen(ctx context.Context) error {
-	for {
-		err := s.keygen(ctx)
-		if err == nil {
-			return nil
-		}
-		s.logger.Error().Err(err).Msg("keygen error")
-		if ctx.Err() != nil {
-			return ctx.Err()
-		}
-		time.Sleep(time.Second)
-	}
+func (s *Client) Sign(ctx context.Context, party []string, msg []byte) ([]byte, error) {
+	s.logger.Info().Msg("Start sign operation")
+
+	signature, err := s.doOperation(ctx, msg,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			return s.Tss.Sign(ctx, party, inCh, outCh, msg)
+		},
+	)
+
+	return signature, err
+}
+
+func (s *Client) Keygen(ctx context.Context, party []string) error {
+	s.logger.Info().Msg("Start keygen operation")
+
+	_, err := s.doOperation(ctx, common.KeygenOperation,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Keygen(ctx, party, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
+}
+
+func (s *Client) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string, thresholdNew int) error {
+	s.logger.Info().Msg("Start reshare operation")
+
+	_, err := s.doOperation(ctx, common.ReshareOperation,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, thresholdNew, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
 }
 
 func (s *Client) SetFullMsg(fullMsg []byte) {
@@ -75,9 +86,11 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 }
 
 func (s *Client) GetFullMsg() ([]byte, error) {
-	resp, err := s.httpClient.Get("http://" + s.serverURL + common.EndpointFullMsg)
-	if err != nil {
-		return nil, err
+	// todo ctx
+	// make request with websocket lib coz std http lib doesn't support wss protocol in url
+	_, resp, _ := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
@@ -91,35 +104,6 @@ func (s *Client) GetFullMsg() ([]byte, error) {
 
 func (s *Client) GetTssAddress() (ec.Address, error) {
 	return s.Tss.GetAddress()
-}
-
-func (s *Client) sign(ctx context.Context, msg []byte) ([]byte, error) {
-	s.logger.Info().Msg("Start sign operation")
-
-	signature, err := s.doOperation(ctx, msg,
-		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			return s.Tss.SignSync(ctx, inCh, outCh, msg)
-		},
-	)
-
-	return signature, err
-}
-
-func (s *Client) keygen(ctx context.Context) error {
-	s.logger.Info().Msg("Start keygen operation")
-
-	_, err := s.doOperation(ctx, common.KeygenOperation,
-		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.KeygenSync(ctx, inCh, outCh)
-			if err != nil {
-				return nil, err
-			}
-			addr, err := s.Tss.GetAddress()
-			return addr.Bytes(), err
-		},
-	)
-
-	return err
 }
 
 func (s *Client) doOperation(ctx context.Context, operation []byte, tssOperation common.OperationFunc) ([]byte, error) {

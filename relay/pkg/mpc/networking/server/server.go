@@ -19,11 +19,10 @@ type Server struct {
 	operation []byte
 	fullMsg   []byte
 
-	connections  map[string]*common.Conn
-	connChangeCh chan byte // populates when client connect or disconnect; used for waitForConnections method
+	connections      map[string]*common.Conn
+	connChangeNotify context.CancelFunc
 
-	results       map[string][]byte
-	resultsWaiter *sync.WaitGroup
+	results map[string][]byte
 
 	accessToken string
 
@@ -33,35 +32,62 @@ type Server struct {
 // NewServer create and start new server
 func NewServer(tss *tss_wrap.Mpc, accessToken string, logger *zerolog.Logger) *Server {
 	s := &Server{
-		Tss:          tss,
-		connections:  make(map[string]*common.Conn),
-		connChangeCh: make(chan byte, 1000),
+		Tss:    tss,
+		logger: logger,
 		accessToken:  accessToken,
-		logger:       logger,
 	}
 	return s
 }
 
 // todo if threshold < partyLen, do we need to provide current party or use full party? client doesn't know about current part of party
 
-func (s *Server) Sign(ctx context.Context, msg []byte) ([]byte, error) {
+func (s *Server) Sign(ctx context.Context, partyIDs []string, msg []byte) ([]byte, error) {
 	s.logger.Info().Msg("Start sign operation")
 
-	signature, err := s.doOperation(ctx, msg,
+	if err := s.startOperation(msg, partyIDs); err != nil {
+		return nil, err
+	}
+
+	signature, err := s.doOperation(ctx,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			return s.Tss.SignSync(ctx, inCh, outCh, msg)
+			return s.Tss.Sign(ctx, partyIDs, inCh, outCh, msg)
 		},
 	)
 
 	return signature, err
 }
 
-func (s *Server) Keygen(ctx context.Context) error {
+func (s *Server) Keygen(ctx context.Context, partyIDs []string) error {
 	s.logger.Info().Msg("Start keygen operation")
 
-	_, err := s.doOperation(ctx, common.KeygenOperation,
+	if err := s.startOperation(common.KeygenOperation, partyIDs); err != nil {
+		return err
+	}
+
+	_, err := s.doOperation(ctx,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.KeygenSync(ctx, inCh, outCh)
+			err := s.Tss.Keygen(ctx, partyIDs, inCh, outCh)
+			if err != nil {
+				return nil, err
+			}
+			addr, err := s.Tss.GetAddress()
+			return addr.Bytes(), err
+		},
+	)
+
+	return err
+}
+
+func (s *Server) Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string, thresholdNew int) error {
+	s.logger.Info().Msg("Start reshare operation")
+
+	if err := s.startOperation(common.ReshareOperation, append(partyIDsOld, partyIDsNew...)); err != nil {
+		return err
+	}
+
+	_, err := s.doOperation(ctx,
+		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
+			err := s.Tss.Reshare(ctx, partyIDsOld, partyIDsNew, thresholdNew, inCh, outCh)
 			if err != nil {
 				return nil, err
 			}
@@ -88,12 +114,8 @@ func (s *Server) GetTssAddress() (ec.Address, error) {
 
 func (s *Server) doOperation(
 	ctx context.Context,
-	operation []byte,
 	tssOperation common.OperationFunc,
 ) ([]byte, error) {
-	if err := s.startOperation(operation); err != nil {
-		return nil, err
-	}
 	defer s.stopOperation()
 
 	if err := s.waitForConnections(ctx); err != nil {
@@ -175,7 +197,7 @@ func (s *Server) doOperation_(
 	}
 }
 
-func (s *Server) startOperation(msg []byte) error {
+func (s *Server) startOperation(msg []byte, waitForIDs []string) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -185,8 +207,7 @@ func (s *Server) startOperation(msg []byte) error {
 
 	s.operation = msg
 	s.results = make(map[string][]byte)
-	s.resultsWaiter = new(sync.WaitGroup)
-	s.resultsWaiter.Add(s.Tss.Threshold() - 1) // -1 because we don't need to wait for our own result
+	s.makeNamedConnections(waitForIDs)
 
 	return nil
 }

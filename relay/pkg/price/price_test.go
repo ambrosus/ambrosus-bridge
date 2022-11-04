@@ -30,3 +30,11 @@ func TestAmb(t *testing.T) {
 	}
 	fmt.Println("Amb: ", a)
 }
+
+func TestKucoin(t *testing.T) {
+	a, err := GetKucoin(&TokenInfo{Symbol: "USDT", Decimals: 18})
+	if err != nil {
+		t.Fatal(err)
+	}
+	fmt.Printf("USDT to USD: %.30f", a)
+}

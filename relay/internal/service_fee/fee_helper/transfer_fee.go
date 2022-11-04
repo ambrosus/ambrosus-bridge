@@ -107,6 +107,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 		return fmt.Errorf("getWithdrawsCount: %w", err)
 	}
 	if withdrawsCount == 0 {
+		p.latestProcessedEvent = newEventId
 		return nil
 	}
 

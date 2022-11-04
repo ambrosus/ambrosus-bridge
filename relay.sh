@@ -32,6 +32,16 @@ do
     fi
 done
 
+read -sp 'Ethereum private key: ' ETH_PRIVATE_KEY
+while true;
+do
+    echo -e "\n"
+    if [ ${#ETH_PRIVATE_KEY} -ne 64 ];
+        then read -sp 'Key length should be 64 characters, type again: ' ETH_PRIVATE_KEY;
+        else break
+    fi
+done
+
 
 echo -e "\nPlease enter your token (issued by the bridge developers)"
 
@@ -52,8 +62,14 @@ docker rm -f eth-relay
 set -e
 
 IMAGE=ghcr.io/ambrosus/ambrosus-bridge
-TAG=latest
-STAGE=prod
+STAGE=${STAGE:-prod}
+if [ $STAGE == "prod" ]; then
+  TAG=latest
+elif [ $STAGE == "test" ]; then
+  TAG=dev
+elif [ $STAGE == "dev" ]; then
+  TAG=dev
+fi
 
 docker pull $IMAGE:$TAG
 
@@ -64,6 +80,7 @@ docker run -d \
 -e STAGE=$STAGE \
 -e NETWORK=eth-untrustless \
 -e NETWORKS_AMB_PRIVATEKEY=$AMB_PRIVATE_KEY \
+-e NETWORKS_ETH_PRIVATEKEY=$ETH_PRIVATE_KEY \
 -e EXTERNALLOGGER_TELEGRAM_TOKEN=$EXTERNALLOGGER_TELEGRAM_TOKEN \
 $IMAGE:$TAG >> /dev/null
 
