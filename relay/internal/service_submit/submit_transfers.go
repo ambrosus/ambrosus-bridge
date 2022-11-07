@@ -36,7 +36,7 @@ func (b *SubmitTransfers) Run() {
 
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
-		cb.EnsureContractUnpaused(b.receiver)
+		cb.EnsureContractUnpaused(b.receiver, b.logger)
 
 		if err := b.watchTransfers(); err != nil {
 			b.logger.Error().Err(err).Msg("")

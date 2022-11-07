@@ -32,7 +32,7 @@ func NewUnlockTransfers(bridge networks.Bridge, watchValidity *service_validity_
 func (b *UnlockTransfers) Run() {
 	cb.ShouldHavePk(b.bridge)
 	for {
-		cb.EnsureContractUnpaused(b.bridge)
+		cb.EnsureContractUnpaused(b.bridge, b.logger)
 
 		if err := b.unlockOldTransfers(); err != nil {
 			b.logger.Error().Err(err).Msg("")

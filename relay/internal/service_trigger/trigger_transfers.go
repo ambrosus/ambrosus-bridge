@@ -29,7 +29,7 @@ func NewTriggerTransfers(bridge networks.Bridge) *TriggerTransfers {
 func (b *TriggerTransfers) Run() {
 	cb.ShouldHavePk(b.bridge)
 	for {
-		cb.EnsureContractUnpaused(b.bridge)
+		cb.EnsureContractUnpaused(b.bridge, b.logger)
 
 		if err := b.checkTriggerTransfers(); err != nil {
 			b.logger.Error().Err(err).Msg("")
