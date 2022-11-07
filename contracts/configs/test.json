@@ -69,7 +69,7 @@
       "nativeAnalog": "BNB"
     },
     "USDC": {
-      "isActive": false,
+      "isActive": true,
       "name": "USD Coin",
       "symbol": "USDC",
       "denomination": 18,
