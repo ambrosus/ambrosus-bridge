@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const weth = configFile.tokens.WETH;
 
-  if (weth === undefined) {
+  if (weth === undefined || !weth.isActive) {
     console.log("wETH is not in config")
     return
   }

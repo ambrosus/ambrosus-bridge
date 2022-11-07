@@ -18,7 +18,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const wbnb = configFile.tokens.WBNB;
 
-  if (wbnb === undefined) {
+  if (wbnb === undefined || !wbnb.isActive) {
     console.log("wBNB is not in config")
     return
   }

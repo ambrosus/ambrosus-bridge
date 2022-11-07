@@ -11,6 +11,7 @@
   },
   "tokens": {
     "SAMB": {
+      "isActive": true,
       "name": "Synthetic Amber",
       "symbol": "SAMB",
       "denomination": 18,
@@ -30,6 +31,7 @@
       "nativeAnalog": "AMB"
     },
     "USDC": {
+      "isActive": true,
       "name": "USD Coin",
       "symbol": "USDC",
       "denomination": 6,
