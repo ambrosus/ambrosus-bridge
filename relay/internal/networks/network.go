@@ -39,6 +39,7 @@ type Bridge interface {
 	GetName() string
 	GetAuth() *bind.TransactOpts
 	GetContractAddress() common.Address
+	GetRelayAddress() common.Address
 
 	ProcessTx(methodName string, txOpts *bind.TransactOpts, txCallback ContractCallFn) error
 }
