@@ -45,6 +45,7 @@ func CreateLogger(cfg *config.ExternalLoggers) zerolog.Logger {
 		tgLoggerHook = antidouble.NewAntiDoubleTgLogger(tgLogger)
 		tgLoggerHook = loggermiddlewares.NewOnlyLevels(tgLoggerHook, loggermiddlewares.DefaultOnlyLevels)
 		tgLoggerHook = loggermiddlewares.NewSkipSubstrings(tgLoggerHook, loggermiddlewares.DefaultSkipSubstrings)
+		tgLoggerHook = loggermiddlewares.NewRemoveHTMLTags(tgLoggerHook, loggermiddlewares.DefaultApplicableRegexps)
 	}
 	return logger.NewLoggerWithHook(tgLoggerHook)
 }
