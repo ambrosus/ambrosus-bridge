@@ -5,12 +5,13 @@ import (
 )
 
 type ExtLog struct {
-	Level   string                 `json:"level"`
-	Bridge  string                 `json:"bridge"`
-	Service string                 `json:"service"`
-	Message string                 `json:"message"`
-	Error   string                 `json:"error"`
-	Rest    map[string]interface{} `json:"-"`
+	Level      string                 `json:"level"`
+	Bridge     string                 `json:"bridge"`
+	SideBridge string                 `json:"sideBridge"`
+	Service    string                 `json:"service"`
+	Message    string                 `json:"message"`
+	Error      string                 `json:"error"`
+	Rest       map[string]interface{} `json:"-"`
 }
 
 //go:generate mockgen -source=hook.go -destination=mocks/hook.go
@@ -32,6 +33,7 @@ func (h hook) Write(p []byte) (n int, err error) {
 	}
 	delete(extLog.Rest, "level")
 	delete(extLog.Rest, "bridge")
+	delete(extLog.Rest, "sideBridge")
 	delete(extLog.Rest, "service")
 	delete(extLog.Rest, "message")
 	delete(extLog.Rest, "error")

@@ -15,13 +15,13 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.Network, baseLogger zerolog.Logger) (*Bridge, error) {
+func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) (*Bridge, error) {
 	commonBridge, err := nc.New(cfg, BridgeName)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
 
-	commonBridge.Logger = baseLogger.With().Str("bridge", BridgeName).Logger()
+	commonBridge.Logger = baseLogger.With().Str("bridge", BridgeName).Str("sideBridge", sideBridgeName).Logger()
 
 	return &Bridge{
 		CommonBridge: commonBridge,

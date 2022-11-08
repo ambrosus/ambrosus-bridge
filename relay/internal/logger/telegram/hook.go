@@ -23,8 +23,8 @@ func (t *TgLogger) Log(l *logger.ExtLog) {
 func BuildMessage(l *logger.ExtLog) string {
 	var msg string
 
-	if l.Bridge != "" {
-		msg += fmt.Sprintf("[<b>%s</b>] ", strings.ToUpper(l.Bridge))
+	if l.Bridge != "" && l.SideBridge != "" {
+		msg += fmt.Sprintf("[<b>%s->%s</b>] ", strings.ToUpper(l.Bridge), strings.ToUpper(l.SideBridge))
 	}
 
 	switch l.Level {
