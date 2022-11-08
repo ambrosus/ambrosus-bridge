@@ -121,9 +121,11 @@ describe("Common tests", () => {
       expect(events2Amb[0].args.eventId).eq(events1Amb[0].args.eventId.add("1"));
     });
 
-    it("unwrapSide == true", async () => {
-      // const tx = await commonBridge.withdraw(mockERC20.address, user, 1, true, {value: 1000})
-      // todo check address in event
+    it("unwrapSide == true (tokenTo should be 0x0)", async () => {
+      const signature = await getSignature(relayS, mockERC20.address, START_TIMESTAMP, 1);
+      await expect(commonBridge.withdraw(...withdrawArgs(mockERC20.address, user, signature, true)))
+        .to.emit(commonBridge, "Withdraw")
+        .withNamedArgs({tokenTo: ethers.constants.AddressZero})
     });
 
     it("unwrapSide == true, but wrong token", async () => {
