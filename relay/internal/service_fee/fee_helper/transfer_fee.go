@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/rs/zerolog"
 )
 
 var (
@@ -29,6 +30,8 @@ type explorerClient interface {
 type transferFeeTracker struct {
 	bridge     networks.Bridge
 	sideBridge networks.Bridge
+	logger     *zerolog.Logger
+	sideLogger *zerolog.Logger
 
 	explorer     explorerClient
 	sideExplorer explorerClient
@@ -54,9 +57,14 @@ func newTransferFeeTracker(
 	transferFeeIncludedTxsFromAddresses []string, sideTransferFeeIncludedTxsFromAddresses []string,
 	transferFeeTxsFromBlock, sideTransferFeeTxsFromBlock uint64,
 ) (*transferFeeTracker, error) {
+	logger := bridge.GetLogger().With().Str("service", "TransferFeeTracker").Logger()
+	sideLogger := sideBridge.GetLogger().With().Str("service", "TransferFeeTracker").Logger()
+
 	p := &transferFeeTracker{
 		bridge:                                  bridge,
 		sideBridge:                              sideBridge,
+		logger:                                  &logger,
+		sideLogger:                              &sideLogger,
 		explorer:                                explorer,
 		sideExplorer:                            sideExplorer,
 		transferFeeIncludedTxsFromAddresses:     transferFeeIncludedTxsFromAddresses,
@@ -77,7 +85,7 @@ func newTransferFeeTracker(
 }
 
 func (p *transferFeeTracker) GasPerWithdraw() (thisGas, sideGas *big.Int) {
-	p.bridge.GetLogger().Debug().Msgf("GasPerWithdraw: totalSideGas: %d, totalThisGas: %d, totalWithdrawCount: %d", p.totalSideGas, p.totalThisGas, p.totalWithdrawCount)
+	p.logger.Debug().Msgf("GasPerWithdraw: totalSideGas: %d, totalThisGas: %d, totalWithdrawCount: %d", p.totalSideGas, p.totalThisGas, p.totalWithdrawCount)
 	// if there's no transfers then return zeroes
 	if p.totalWithdrawCount.Cmp(big.NewInt(0)) == 0 {
 		return bigZero, bigZero
@@ -151,7 +159,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 
 	p.latestProcessedEvent = newEventId
 
-	p.bridge.GetLogger().Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalSideGas: %d, totalWithdrawsCount: %d", totalSideGas, withdrawsCount, p.totalSideGas, p.totalWithdrawCount)
+	p.logger.Debug().Msgf("from new event we got gas: %d, withdrawsCount: %d. totalSideGas: %d, totalWithdrawsCount: %d", totalSideGas, withdrawsCount, p.totalSideGas, p.totalWithdrawCount)
 
 	return nil
 }
@@ -161,7 +169,7 @@ func (p *transferFeeTracker) processEvents(newEventId uint64) error {
 func (p *transferFeeTracker) WatchUnlocksLoop() {
 	for {
 		if err := p.watchUnlocks(); err != nil {
-			p.sideBridge.GetLogger().Error().Err(err).Msg("price tracker watchUnlocks error")
+			p.sideLogger.Error().Err(fmt.Errorf("watchUnlocks: %w", err)).Msg("")
 		}
 		time.Sleep(time.Minute)
 	}
@@ -175,7 +183,7 @@ func (p *transferFeeTracker) checkOldUnlocks() error {
 	latestUnlockedEventId := latestLockedEventId.Uint64() - 1
 
 	if p.latestProcessedEvent != latestUnlockedEventId {
-		p.sideBridge.GetLogger().Info().Str("event_id", fmt.Sprint(latestUnlockedEventId)).Msg("Process old unlock...")
+		p.sideLogger.Info().Str("event_id", fmt.Sprint(latestUnlockedEventId)).Msg("Process old unlock...")
 		p.processEvents(latestUnlockedEventId)
 	}
 	return nil
@@ -203,7 +211,7 @@ func (p *transferFeeTracker) watchUnlocks() error {
 				continue
 			}
 
-			p.sideBridge.GetLogger().Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
+			p.sideLogger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
 			if err := p.processEvents(event.EventId.Uint64()); err != nil {
 				return err
 			}
