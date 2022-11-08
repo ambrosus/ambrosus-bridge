@@ -13,6 +13,7 @@ type ExtLog struct {
 	Rest    map[string]interface{} `json:"-"`
 }
 
+//go:generate mockgen -source=hook.go -destination=mocks/hook.go
 type Hook interface {
 	Log(*ExtLog)
 }
