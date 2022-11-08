@@ -23,12 +23,14 @@ type Client struct {
 	operation []byte
 
 	serverURL string
+	accessToken string
 }
 
-func NewClient(tss *tss_wrap.Mpc, serverURL string, logger *zerolog.Logger) *Client {
+func NewClient(tss *tss_wrap.Mpc, serverURL string, accessToken string, logger *zerolog.Logger) *Client {
 	return &Client{
 		Tss:       tss,
 		serverURL: serverURL,
+		accessToken: accessToken,
 		logger:    logger,
 	}
 }

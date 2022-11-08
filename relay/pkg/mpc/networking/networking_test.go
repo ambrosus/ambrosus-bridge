@@ -20,12 +20,12 @@ import (
 var logger = log.Logger
 
 func TestFullMsg(t *testing.T) {
-	server_ := server.NewServer(nil, &logger)
+	server_ := server.NewServer(nil, "testtoken", &logger)
 	ts := httptest.NewServer(server_)
 	defer ts.Close()
 
 	url := "ws://" + strings.TrimPrefix(ts.URL, "http://")
-	client_ := client.NewClient(nil, url, &logger)
+	client_ := client.NewClient(nil, url, "testtoken", &logger)
 
 	server_.SetFullMsg([]byte("test"))
 	msg, err := client_.GetFullMsg()
@@ -152,6 +152,18 @@ func TestNetworkingRefresh(t *testing.T) {
 
 }
 
+func TestNetworkingAccessToken(t *testing.T) {
+	server := server.NewServer(nil, "serverToken", nil)
+	ts := httptest.NewServer(server)
+	defer ts.Close()
+
+	partyIDs := []string{"1"}
+	clients := createClients(partyIDs, 1, ts.URL)
+
+	err := clients["1"].Keygen(context.Background(), partyIDs)
+	assert.Equal(t, "ws connect: websocket: bad handshake. http resp: 401 Unauthorized", err.Error())
+}
+
 func doClientsOperation(clients map[string]*client.Client, operation func(client_ *client.Client)) (waitFunc func()) {
 	var wg sync.WaitGroup
 	for _, client_ := range clients {
@@ -172,7 +184,7 @@ func createServer(serverID string, threshold int) *server.Server {
 	if err != nil {
 		panic(err)
 	}
-	return server.NewServer(mpc, &serverLogger)
+	return server.NewServer(mpc, "testtoken", &serverLogger)
 }
 
 func createClients(clientsIDs []string, threshold int, httpUrl string) map[string]*client.Client {
@@ -187,7 +199,7 @@ func createClients(clientsIDs []string, threshold int, httpUrl string) map[strin
 			panic(err)
 		}
 
-		client_ := client.NewClient(mpc, url, &clientLogger)
+		client_ := client.NewClient(mpc, url, "testtoken", &clientLogger)
 		clients[id] = client_
 	}
 	return clients

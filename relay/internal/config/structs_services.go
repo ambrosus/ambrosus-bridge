@@ -34,6 +34,7 @@ type (
 		MeID      string   `mapstructure:"meID"`
 		PartyIDs  []string `mapstructure:"partyIds"` // for sign operation
 		Threshold int      `mapstructure:"threshold"`
+		AccessToken string `mapstructure:"accessToken"` // client puts this token into request; server checks this token
 		ServerURL string   `mapstructure:"serverURL"` // client connect to this url; server listen on this url
 		SharePath string   `mapstructure:"sharePath"`
 	}

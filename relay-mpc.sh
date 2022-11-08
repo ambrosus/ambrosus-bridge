@@ -21,9 +21,10 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
 MPC_MEID=$1
-MPC_PARTY_IDS=$2
-MPC_THRESHOLD=$3
-MPC_KEYGEN_URL=$4
+MPC_ACCESS_TOKEN=$2
+MPC_PARTY_IDS=$3
+MPC_THRESHOLD=$4
+MPC_KEYGEN_URL=$5
 
 echo "Please enter your private key"
 
@@ -87,7 +88,7 @@ else
   -v $PWD/share:/app/shared \
   --entrypoint '/bin/sh' \
   $IMAGE:$TAG \
-  -c "go run ./cmd/mpc_keygen -url $MPC_KEYGEN_URL -meID $MPC_MEID -partyIDs '$MPC_PARTY_IDS' -threshold $MPC_THRESHOLD -shareDir ./shared"
+  -c "go run ./cmd/mpc_keygen -url $MPC_KEYGEN_URL -meID $MPC_MEID -partyIDs '$MPC_PARTY_IDS' -threshold $MPC_THRESHOLD -accessToken $MPC_ACCESS_TOKEN -shareDir ./shared"
 fi
 
 echo "Starting relay..."
@@ -102,6 +103,7 @@ docker run -d \
 -e EXTERNALLOGGER_TELEGRAM_TOKEN=$EXTERNALLOGGER_TELEGRAM_TOKEN \
 -e SUBMITTERS_AMBTOSIDE_MPC_MEID=$MPC_MEID \
 -e SUBMITTERS_AMBTOSIDE_MPC_SHAREPATH="shared/share_$MPC_MEID" \
+-e SUBMITTERS_AMBTOSIDE_MPC_ACCESSTOKEN=$MPC_ACCESS_TOKEN \
 $IMAGE:$TAG >> /dev/null
 
 sleep 10

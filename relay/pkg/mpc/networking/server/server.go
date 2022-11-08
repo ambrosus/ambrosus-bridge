@@ -24,14 +24,17 @@ type Server struct {
 
 	results map[string][]byte
 
+	accessToken string
+
 	logger *zerolog.Logger
 }
 
 // NewServer create and start new server
-func NewServer(tss *tss_wrap.Mpc, logger *zerolog.Logger) *Server {
+func NewServer(tss *tss_wrap.Mpc, accessToken string, logger *zerolog.Logger) *Server {
 	s := &Server{
 		Tss:    tss,
 		logger: logger,
+		accessToken:  accessToken,
 	}
 	return s
 }

@@ -31,6 +31,7 @@
                 ],
                 "threshold": 2,
                 "serverURL": "wss://relay-eth.ambrosus-test.io/mpcSide/ws",
+                "accessToken": "in env",
                 "sharePath": "in env"
             }
         }

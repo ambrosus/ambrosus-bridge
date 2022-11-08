@@ -51,11 +51,11 @@ func submitterMpc(cfg *config.SubmitterMpc, submitterBridge networks.Bridge, rec
 
 	var mpcSigner untrustless_mpc.MpcSigner
 	if cfg.IsServer {
-		server_ := server.NewServer(mpcc, logger)
+		server_ := server.NewServer(mpcc, cfg.AccessToken, logger)
 		go http.ListenAndServe(cfg.ServerURL, server_)
 		mpcSigner = server_
 	} else {
-		client_ := client.NewClient(mpcc, cfg.ServerURL, logger)
+		client_ := client.NewClient(mpcc, cfg.ServerURL, cfg.AccessToken, logger)
 		mpcSigner = client_
 	}
 

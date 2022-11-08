@@ -36,6 +36,7 @@ func main() {
 
 	flagServerHost := flag.String("server", "", "if specified, run a server on this port (ex: ':8080')")
 	flagUrl := flag.String("url", "", "url to which a client will connect")
+	flagAccessToken := flag.String("accessToken", "", "url to which a client will connect")
 
 	flagMeID := flag.String("meID", "", "my ID")
 	flagPartyIDs := flag.String("partyIDs", "", "party IDs (space separated)")
@@ -57,17 +58,17 @@ func main() {
 	checkShareDir(*flagShareDir)
 
 	if !*flagOperation {
-		keygen(isServer, *flagServerHost, *flagUrl, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
+		keygen(isServer, *flagServerHost, *flagUrl, *flagAccessToken, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
 	} else {
 		partyIDsNew := strings.Split(*flagPartyIDsNew, " ")
 		checkThreshold(*flagThresholdNew)
 		checkPartyIDs(partyIDsNew)
 
-		reshareBothCommittee(isServer, *flagServerHost, *flagUrl, *flagMeID, *flagMeIDNew, partyIDs, partyIDsNew, *flagThreshold, *flagThresholdNew, *flagShareDir)
+		reshareBothCommittee(isServer, *flagServerHost, *flagUrl, *flagAccessToken, *flagMeID, *flagMeIDNew, partyIDs, partyIDsNew, *flagThreshold, *flagThresholdNew, *flagShareDir)
 	}
 }
 
-func keygen(isServer bool, hostUrl, serverURL string, id string, partyIDs []string, threshold int, shareDir string) {
+func keygen(isServer bool, hostUrl, serverURL string, accessToken string, id string, partyIDs []string, threshold int, shareDir string) {
 	sharePath := getSharePath(shareDir, id)
 
 	fmt.Println("=======================================================")
@@ -81,7 +82,7 @@ func keygen(isServer bool, hostUrl, serverURL string, id string, partyIDs []stri
 		log.Fatal("share already exist")
 	}
 	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
-	netOperation := createNetworking(isServer, hostUrl, serverURL, mpcc)
+	netOperation := createNetworking(isServer, hostUrl, serverURL, accessToken, mpcc)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	err := netOperation.Keygen(ctx, partyIDs)
 	if err != nil {
@@ -90,7 +91,7 @@ func keygen(isServer bool, hostUrl, serverURL string, id string, partyIDs []stri
 	saveShare(mpcc, sharePath)
 }
 
-func reshare(isServer bool, hostUrl, serverURL, id string, meInNewCommittee bool, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
+func reshare(isServer bool, hostUrl, serverURL, accessToken string, id string, meInNewCommittee bool, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
 	sharePath := getSharePath(shareDir, id)
 
 	fmt.Println("=======================================================")
@@ -107,7 +108,7 @@ func reshare(isServer bool, hostUrl, serverURL, id string, meInNewCommittee bool
 		readShare(mpcc, sharePath)
 	}
 
-	netOperation := createNetworking(isServer, hostUrl, serverURL, mpcc)
+	netOperation := createNetworking(isServer, hostUrl, serverURL, accessToken, mpcc)
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
 	err := netOperation.Reshare(ctx, partyIDsOld, partyIDsNew, thresholdNew)
 	if err != nil {
@@ -116,12 +117,12 @@ func reshare(isServer bool, hostUrl, serverURL, id string, meInNewCommittee bool
 	saveShare(mpcc, sharePath)
 }
 
-func reshareBothCommittee(isServer bool, serverHost, url, meID, meIDNew string, partyIDs, partyIDsNew []string, threshold, thresholdNew int, shareDir string) {
+func reshareBothCommittee(isServer bool, serverHost, url, accessToken, meID, meIDNew string, partyIDs, partyIDsNew []string, threshold, thresholdNew int, shareDir string) {
 	var wg sync.WaitGroup
 	if meIDNew != "" { // we are in new committee
 		wg.Add(1)
 		go func() {
-			reshare(isServer, serverHost, url,
+			reshare(isServer, serverHost, url, accessToken,
 				meIDNew, true, partyIDs, partyIDsNew,
 				threshold, thresholdNew, shareDir)
 			wg.Done()
@@ -132,7 +133,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, meID, meIDNew string, 
 		isServer = false
 	}
 	if meID != "" { // we are in old committee
-		reshare(isServer, serverHost, url,
+		reshare(isServer, serverHost, url, accessToken,
 			meID, false, partyIDs, partyIDsNew,
 			threshold, thresholdNew, shareDir)
 	}
@@ -146,13 +147,13 @@ type networkingOperations interface {
 	Keygen(ctx context.Context, party []string) error
 }
 
-func createNetworking(isServer bool, hostUrl string, serverURL string, mpcc *tss_wrap.Mpc) networkingOperations {
+func createNetworking(isServer bool, hostUrl string, serverURL string, accessToken string, mpcc *tss_wrap.Mpc) networkingOperations {
 	if isServer {
-		server_ := server.NewServer(mpcc, &logger)
+		server_ := server.NewServer(mpcc, accessToken, &logger)
 		go http.ListenAndServe(hostUrl, server_)
 		return server_
 	} else {
-		return client.NewClient(mpcc, serverURL, &logger)
+		return client.NewClient(mpcc, serverURL, accessToken, &logger)
 	}
 }
 
