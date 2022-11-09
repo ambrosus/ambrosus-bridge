@@ -6,6 +6,7 @@ import vsAbi from "../../abi/ValidatorSet.json";
 import {Block} from "@ethersproject/abstract-provider";
 import {Config, readConfig, Token} from "./config";
 import {getAddresses} from "./prod_addresses";
+import {isAddress} from "ethers/lib/utils";
 
 export function readConfig_(network: Network): Config {
   return readConfig(parseNet(network).stage);
@@ -124,7 +125,7 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
   const bridgesDecimals = [];
 
   for (const [netName, {amb: address}] of Object.entries(configFile.bridges)) {
-    if (address == "") {
+    if (!isAddress(address)) {
       continue
     }
 
