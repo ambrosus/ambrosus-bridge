@@ -21,7 +21,23 @@
             "variant": "untrustless"
         },
         "ambToSide": {
-            "variant": "untrustless2"
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "backup",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": ":6455",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
         }
     },
     "validityWatchdogs": {
