@@ -13,6 +13,11 @@ BRIDGE_TAG="bridges_$SIDE"
 
 echo "Deploying on $AMB_NET and $SIDE_NET"
 
+if [ $TYPE != "main" ]; then
+    yarn hardhat deploy --network ${AMB_NET} --tags primary_tokens_testnets
+    yarn hardhat deploy --network ${SIDE_NET} --tags primary_tokens_testnets
+fi
+
 yarn hardhat deploy --network ${AMB_NET} --tags tokens
 yarn hardhat deploy --network ${SIDE_NET} --tags tokens
 

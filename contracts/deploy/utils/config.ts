@@ -38,6 +38,10 @@ export function readConfig(stage: string): Config {
   return config;
 }
 
+export function isTokenWrappable(token: Token): boolean {
+    return token.nativeAnalog != ""
+}
+
 export function isTokenNotBridgeERC20(token: Token, netName: string): boolean {
     return token.primaryNets.includes(netName)
 }
