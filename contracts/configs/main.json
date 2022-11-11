@@ -91,7 +91,7 @@
       "nativeAnalog": ""
     },
     "BUSD": {
-      "isActive": true,
+      "isActive": false,
       "name": "BUSD Token",
       "symbol": "BUSD",
       "denomination": 18,
