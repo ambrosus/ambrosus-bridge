@@ -15,7 +15,26 @@
         }
     },
     "submitters": {
-        "enable": false
+        "enable": true,
+        "sideToAmb": {
+            "variant": ""
+        },
+        "ambToSide": {
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": false,
+                "meID": "in env",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": "wss://relay-eth.ambrosus-test.io/mpcSide/ws",
+                "accessToken": "in env",
+                "sharePath": "in env"
+            }
+        }
     },
     "validityWatchdogs": {
         "enable": true,

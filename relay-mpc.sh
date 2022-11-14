@@ -20,6 +20,12 @@ echo \
 apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
 
+MPC_MEID=$1
+MPC_ACCESS_TOKEN=$2
+MPC_PARTY_IDS=$3
+MPC_THRESHOLD=$4
+MPC_KEYGEN_URL=$5
+
 echo "Please enter your private key"
 
 read -sp 'Ambrosus private key: ' AMB_PRIVATE_KEY
@@ -73,15 +79,31 @@ fi
 
 docker pull $IMAGE:$TAG
 
+echo "Starting keygen..."
+if [ -f "$PWD/share/share_$MPC_MEID" ]; then
+  echo "Share already exist"
+else
+  docker run -it --rm \
+  --name eth-relay-keygen \
+  -v $PWD/share:/app/shared \
+  --entrypoint '/bin/sh' \
+  $IMAGE:$TAG \
+  -c "go run ./cmd/mpc_keygen -url $MPC_KEYGEN_URL -meID $MPC_MEID -partyIDs '$MPC_PARTY_IDS' -threshold $MPC_THRESHOLD -accessToken $MPC_ACCESS_TOKEN -shareDir ./shared"
+fi
+
 echo "Starting relay..."
 docker run -d \
 --name eth-relay \
 --restart unless-stopped \
+-v $PWD/share:/app/shared \
 -e STAGE=$STAGE \
 -e NETWORK=eth-untrustless \
 -e NETWORKS_AMB_PRIVATEKEY=$AMB_PRIVATE_KEY \
 -e NETWORKS_ETH_PRIVATEKEY=$ETH_PRIVATE_KEY \
 -e EXTERNALLOGGER_TELEGRAM_TOKEN=$EXTERNALLOGGER_TELEGRAM_TOKEN \
+-e SUBMITTERS_AMBTOSIDE_MPC_MEID=$MPC_MEID \
+-e SUBMITTERS_AMBTOSIDE_MPC_SHAREPATH="shared/share_$MPC_MEID" \
+-e SUBMITTERS_AMBTOSIDE_MPC_ACCESSTOKEN=$MPC_ACCESS_TOKEN \
 $IMAGE:$TAG >> /dev/null
 
 sleep 10

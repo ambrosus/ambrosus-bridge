@@ -16,10 +16,14 @@ var upgrader = websocket.Upgrader{
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/" {
-		s.registerConnection(w, r)
-	} else if r.URL.Path == common.EndpointFullMsg {
+	if r.Header.Get(common.HeaderTssID) == "" {
 		s.fullMsgHandler(w, r)
+	} else {
+		if !s.isAccessTokenCorrect(&r.Header) {
+			http.Error(w, "wrong access token", http.StatusUnauthorized)
+			return
+		}
+		s.registerConnection(w, r)
 	}
 }
 
@@ -55,14 +59,22 @@ func (s *Server) registerConnection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	conn, err := upgrader.Upgrade(w, r, nil)
+	conn_, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		connLogger.Error().Err(err).Msg("Failed to upgrade connection to websocket")
 		return
 	}
 
 	// register connection (now ready for protocol)
-	s.clientConnected(clientID, &common.Conn{Conn: conn})
+	conn := &common.Conn{Conn: conn_}
+	err = s.clientConnected(clientID, conn)
+
+	if err != nil {
+		connLogger.Error().Err(err).Msg("Failed to register connection")
+		conn.Close(err)
+		return
+	}
+
 }
 
 func parseHeaders(r *http.Request) (string, []byte, error) {
@@ -77,4 +89,8 @@ func parseHeaders(r *http.Request) (string, []byte, error) {
 	}
 
 	return clientID, operation, err
+}
+
+func (s *Server) isAccessTokenCorrect(h *http.Header) bool {
+	return h.Get(common.HeaderAccessToken) == s.accessToken
 }

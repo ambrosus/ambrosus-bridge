@@ -20,7 +20,20 @@
             "variant": "untrustless"
         },
         "ambToSide": {
-            "variant": "untrustless2"
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6455",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
         }
     },
     "validityWatchdogs": {
@@ -61,7 +74,8 @@
             "explorerURL": "https://api-sepolia.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E",
+                "0x50c8ced687672bf4c94a06eb676d61888b8a8001"
             ],
             "transferFeeTxsFromBlock": 2085848
         }

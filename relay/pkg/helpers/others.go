@@ -1,7 +1,5 @@
 package helpers
 
-// TODO: name the file better
-
 import (
 	"crypto/ecdsa"
 	"encoding/hex"

@@ -11,16 +11,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     return;
   }
 
+  const netName = parseNet(hre.network).name;
   const {owner} = await hre.getNamedAccounts();
 
   let configFile = readConfig_(hre.network);
 
   const weth = configFile.tokens.WETH;
 
-  if (weth === undefined) {
+  if (weth === undefined || !weth.isActive) {
     console.log("wETH is not in config")
     return
   }
+  if (weth.addresses[netName] != "DEPLOY") return;  // already deployed or shouldn't be deployed
   if (isAddress(weth.addresses.eth)) {
     console.log("wETH already deployed");
     return;

@@ -16,23 +16,23 @@ import (
 )
 
 func CreateBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.Bridge, sideBridge service_submit.Receiver, err error) {
-	// Creating a new ambrosus bridge.
-	ambBridge, err = amb.New(cfg.Networks["amb"], logger)
-	if err != nil {
-		return nil, nil, fmt.Errorf("ambrosus bridge not created: %w", err)
-	}
-
 	// Creating a side (eth or bsc) bridge.
 	switch cfg.SideBridgeNetwork {
 	case "ETH":
-		sideBridge, err = eth.New(cfg.Networks["eth"], logger)
+		sideBridge, err = eth.New(cfg.Networks["eth"], amb.BridgeName, logger)
 	case "BSC":
-		sideBridge, err = bsc.New(cfg.Networks["bsc"], logger)
+		sideBridge, err = bsc.New(cfg.Networks["bsc"], amb.BridgeName, logger)
 	default:
 		return nil, nil, fmt.Errorf("dunno which sideBridge to create")
 	}
 	if err != nil {
 		return nil, nil, fmt.Errorf("side (%v) bridge not created: %w", cfg.SideBridgeNetwork, err)
+	}
+
+	// Creating a new ambrosus bridge.
+	ambBridge, err = amb.New(cfg.Networks["amb"], sideBridge.GetName(), logger)
+	if err != nil {
+		return nil, nil, fmt.Errorf("ambrosus bridge not created: %w", err)
 	}
 
 	return
@@ -45,6 +45,7 @@ func CreateLogger(cfg *config.ExternalLoggers) zerolog.Logger {
 		tgLoggerHook = antidouble.NewAntiDoubleTgLogger(tgLogger)
 		tgLoggerHook = loggermiddlewares.NewOnlyLevels(tgLoggerHook, loggermiddlewares.DefaultOnlyLevels)
 		tgLoggerHook = loggermiddlewares.NewSkipSubstrings(tgLoggerHook, loggermiddlewares.DefaultSkipSubstrings)
+		tgLoggerHook = loggermiddlewares.NewRemoveHTMLTags(tgLoggerHook, loggermiddlewares.DefaultApplicableRegexps)
 	}
 	return logger.NewLoggerWithHook(tgLoggerHook)
 }

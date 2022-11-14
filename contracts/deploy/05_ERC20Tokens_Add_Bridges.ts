@@ -69,6 +69,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   for (const token of Object.values(configFile.tokens)) {
+    if (!token.isActive) continue;
     if (!isAddress(token.addresses[netName])) continue;  // not deployed
     if (isTokenNotBridgeERC20(token, netName)) continue;  // it's not bridgeErc20, no need to set role
 

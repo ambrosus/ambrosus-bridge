@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/cmd"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/logger"
@@ -30,7 +32,10 @@ func main() {
 	go runPrometheus(cfg.Prometheus, baseLogger)
 	go runHealth(":80", baseLogger)
 
-	baseLogger.WithLevel(logger.ImportantInfoLevel).Msg("Relay has been started!")
+	baseLogger.WithLevel(logger.ImportantInfoLevel).
+		Str(fmt.Sprintf("%s relay", ambBridge.GetName()), ambBridge.GetRelayAddress().Hex()).
+		Str(fmt.Sprintf("%s relay", sideBridge.GetName()), sideBridge.GetRelayAddress().Hex()).
+		Msg("Relay has been started!")
 
 	select {}
 

@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/rs/zerolog"
 )
 
 func ShouldHavePk(b networks.Bridge) {
@@ -22,14 +23,14 @@ func ShouldHavePk(b networks.Bridge) {
 	}
 }
 
-func EnsureContractUnpaused(b networks.Bridge) {
+func EnsureContractUnpaused(b networks.Bridge, logger *zerolog.Logger) {
 	for {
 		err := waitForUnpauseContract(b)
 		if err == nil {
 			return
 		}
 
-		b.GetLogger().Error().Err(err).Msg("waitForUnpauseContract error")
+		logger.Error().Err(fmt.Errorf("EnsureContractUnpaused: %w", err)).Msg("")
 		time.Sleep(time.Second * 30)
 	}
 }

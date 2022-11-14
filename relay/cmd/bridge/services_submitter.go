@@ -44,22 +44,22 @@ func submitterMpc(cfg *config.SubmitterMpc, submitterBridge networks.Bridge, rec
 	if err != nil {
 		return nil, fmt.Errorf("can't read share: %w", err)
 	}
-	mpcc, err := tss_wrap.NewMpcWithShare(cfg.MeID, cfg.PartyLen, share, logger)
+	mpcc, err := tss_wrap.NewMpcWithShare(cfg.MeID, cfg.Threshold, share, logger)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create MPC client: %w", err)
 	}
 
 	var mpcSigner untrustless_mpc.MpcSigner
 	if cfg.IsServer {
-		server_ := server.NewServer(mpcc, logger)
+		server_ := server.NewServer(mpcc, cfg.AccessToken, logger)
 		go http.ListenAndServe(cfg.ServerURL, server_)
 		mpcSigner = server_
 	} else {
-		client_ := client.NewClient(mpcc, cfg.ServerURL, nil, logger)
+		client_ := client.NewClient(mpcc, cfg.ServerURL, cfg.AccessToken, logger)
 		mpcSigner = client_
 	}
 
-	receiver, err := untrustless_mpc.NewReceiverUntrustlessMpc(receiverBridge, mpcSigner)
+	receiver, err := untrustless_mpc.NewReceiverUntrustlessMpc(receiverBridge, mpcSigner, cfg.PartyIDs)
 	if err != nil {
 		return nil, fmt.Errorf("NewSubmitterUntrustlessMpc: %w", err)
 	}

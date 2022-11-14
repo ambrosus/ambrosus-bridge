@@ -1,3 +1,5 @@
+//go:build !ci
+
 package ambrosus_explorer
 
 import (

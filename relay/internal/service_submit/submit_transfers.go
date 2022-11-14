@@ -21,7 +21,8 @@ type SubmitTransfers struct {
 
 func NewSubmitTransfers(submitter Submitter) *SubmitTransfers {
 	logger := submitter.GetLogger().With().
-		Str("relay", submitter.Receiver().GetAuth().From.Hex()).
+		Str("relayReceiver", submitter.Receiver().GetAuth().From.Hex()).
+		Str("relaySubmitter", submitter.GetAuth().From.Hex()).
 		Str("service", "SubmitTransfers").Logger()
 
 	return &SubmitTransfers{
@@ -36,7 +37,7 @@ func (b *SubmitTransfers) Run() {
 
 	for {
 		// since we submit transfers to receiver, ensure that it is unpaused
-		cb.EnsureContractUnpaused(b.receiver)
+		cb.EnsureContractUnpaused(b.receiver, b.logger)
 
 		if err := b.watchTransfers(); err != nil {
 			b.logger.Error().Err(err).Msg("")
