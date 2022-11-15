@@ -43,7 +43,7 @@
         "eth"
       ],
       "addresses": {
-        "amb": "",
+        "amb": "0xe7c3607474E235Ec8deF1f0a63Ea983538eea182",
         "eth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
         "bsc": ""
       },
@@ -63,7 +63,7 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "",
+        "amb": "0xA96C522fA8Df99BB73A6E317A1afb0E3FA13b735",
         "eth": "",
         "bsc": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c"
       },
