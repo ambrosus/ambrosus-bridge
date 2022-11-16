@@ -82,7 +82,8 @@
             "explorerURL": "https://explorer-api.ambrosus.io",
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
-                "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE"
+                "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE",
+                "0x3BB6161dc6E5380831833b223D467b715e05F16E"
             ],
             "transferFeeTxsFromBlock": 21204114
         },
@@ -93,7 +94,8 @@
             "explorerURL": "https://api.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
-                "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded"
+                "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded",
+                "0x3BB6161dc6E5380831833b223D467b715e05F16E"
             ],
             "transferFeeTxsFromBlock": 15818035
         }
