@@ -57,7 +57,7 @@
             "explorerURL": "https://explorer-api.ambrosus.io",
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+                "0xDE99F453d76D5f485d90244319593b12D5eeDe8B"
             ],
             "transferFeeTxsFromBlock": 0
         },
@@ -68,7 +68,7 @@
             "explorerURL": "https://api.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+                "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8"
             ],
             "transferFeeTxsFromBlock": 0
         }
