@@ -7,7 +7,9 @@ require (
 	github.com/bnb-chain/tss-lib v1.3.5
 	github.com/ethereum/go-ethereum v1.10.13
 	github.com/golang/mock v1.4.4
+	github.com/gorilla/websocket v1.4.2
 	github.com/kofalt/go-memoize v0.0.0-20210721235729-46a601ff34b8
+	github.com/nanmu42/etherscan-api v1.8.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.26.1
@@ -18,6 +20,7 @@ require (
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e
 	golang.org/x/exp v0.0.0-20220428152302-39d4317da171
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/time v0.2.0
 )
 
 require (
@@ -36,7 +39,6 @@ require (
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/uuid v1.1.5 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
@@ -48,7 +50,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.3 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/otiai10/primes v0.0.0-20180210170552-f6d2a1ba97c4 // indirect
-	github.com/nanmu42/etherscan-api v1.8.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml v1.9.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
