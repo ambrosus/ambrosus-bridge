@@ -52,7 +52,20 @@ describe("BridgeERC20_Amb", () => {
 
     // `transferFrom` doesn't work with bridge as sender,
     // coz bridge should call `increaseAllowance` for it.
-    // bridge contract use `transfer` for sending, so it's ok
+    // bridge contract use `transfer` for sending.
+    // but we test it anyway
+
+
+    it("should mint (transferFrom)", async () => {
+      // transfer 1 TOKEN from 1e6 BRIDGE to 1e18 USER
+      // AMOUNT is 1e6 == 1 TOKEN in bridge network
+      // USER MUST RECEIVE 1e18 == 1 TOKEN in user network
+
+      await ambERC20.connect(bridgeS).increaseAllowance(owner, parseUnits("1", 18));
+      await ambERC20.connect(ownerS).transferFrom(bridge, owner, parseUnits("1", 6));
+      expect(await ambERC20.balanceOf(owner)).eq(parseUnits("1", 18));
+      expect(await ambERC20.balanceOf(bridge)).eq(0);
+    });
 
   });
 
@@ -83,8 +96,8 @@ describe("BridgeERC20_Amb", () => {
 
       await bridgeMint(owner, parseUnits("3", 6))
 
-      await ambERC20.increaseAllowance(bridge, parseUnits("2", 6));
-      await ambERC20.transfer(bridge, parseUnits("2", 6));
+      await ambERC20.increaseAllowance(bridge, parseUnits("2", 18));
+      await ambERC20.connect(bridgeS).transferFrom(owner, bridge, parseUnits("2", 6));
       expect(await ambERC20.balanceOf(owner)).eq(parseUnits("1", 18));
       expect(await ambERC20.balanceOf(bridge)).eq(parseUnits("0", 18));
     });
@@ -112,7 +125,7 @@ describe("BridgeERC20_Amb", () => {
 
       // transfer 2 TOKENS
       await ambERC20.increaseAllowance(owner, parseUnits("2", 18));
-      await ambERC20.transfer(user, parseUnits("2", 18));
+      await ambERC20.connect(ownerS).transferFrom(owner, user, parseUnits("2", 18));
 
       expect(await ambERC20.balanceOf(user)).eq(parseUnits("2", 18));
       expect(await ambERC20.balanceOf(owner)).eq(parseUnits("1", 18));

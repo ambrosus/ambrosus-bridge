@@ -4,7 +4,12 @@ pragma solidity 0.8.6;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract BridgeERC20_Amb is ERC20, Ownable {
+
+// this contract is already deployed on mainnets as USDC and BUSD tokens, but
+// it has an unpleasant feature: allowance need to be set with ANOTHER token denomination
+// and user will see counterintuitive amount in increaseAllowance() function.
+// SO, FRONT SHOULD CHECK FOR USDC AND BUSD TOKENS AND USE THIS LEGACY LOGIC FOR THEM
+contract BridgeERC20_Amb_OLD is ERC20, Ownable {
 
     // decimals of token in side network
     // example:
@@ -41,35 +46,12 @@ contract BridgeERC20_Amb is ERC20, Ownable {
             sideTokenDecimals[bridgeAddresses_[i]] = sideTokenDecimals_[i];
     }
 
-
-    function transferFrom(
-        address sender,
-        address recipient,
-        uint256 amount
-    ) public virtual override returns (bool) {
-        _transfer(sender, recipient, amount);
-
-        // convert decimals just like in _transfer function
-        if (sideTokenDecimals[sender] != 0) { // sender is bridge
-            amount = _convertDecimals(amount, sideTokenDecimals[sender], _decimals);
-        } else if (sideTokenDecimals[recipient] != 0) { // recipient is bridge
-            amount = _convertDecimals(amount, sideTokenDecimals[recipient], _decimals);
-        }
-
-        uint256 currentAllowance = allowance(sender,_msgSender());
-        require(currentAllowance >= amount, "ERC20: transfer amount exceeds allowance");
-        unchecked {
-            _approve(sender, _msgSender(), currentAllowance - amount);
-        }
-
-        return true;
-    }
-
     function _transfer(
         address sender,
         address recipient,
         uint amount
     ) internal virtual override {
+        // todo events
         if (sideTokenDecimals[sender] != 0) { // sender is bridge
              // user transfer tokens to ambrosus => need to mint it
 
