@@ -58,6 +58,7 @@ func TestSign(t *testing.T) {
 
 	msg := fixtures.Message()
 	signatures := make(map[string][]byte)
+	signaturesMu := sync.Mutex{}
 
 	doOperation(peers,
 		func(p *testPeer, outCh chan *Message) {
@@ -66,7 +67,9 @@ func TestSign(t *testing.T) {
 				t.Fatal(p.peer.MyID(), err)
 			}
 
+			signaturesMu.Lock()
 			signatures[p.peer.MyID()] = signature
+			signaturesMu.Unlock()
 		},
 	)
 
