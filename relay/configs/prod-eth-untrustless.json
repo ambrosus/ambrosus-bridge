@@ -23,7 +23,6 @@
                 "meID": "in env",
                 "partyIDs": [
                     "master",
-                    "backup",
                     "Kevin",
                     "Lang",
                     "Rory",
@@ -42,7 +41,6 @@
                 "meID": "in env",
                 "partyIDs": [
                     "master",
-                    "backup",
                     "Kevin",
                     "Lang",
                     "Rory",
