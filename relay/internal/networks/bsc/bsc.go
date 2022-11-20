@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/limit_filtering"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients_rpc/rate_limiter"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
@@ -43,7 +44,7 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 	}
 	commonBridge.Logger.Info().Msgf("Set BSC_FILTER_LOGS_LIMIT_BLOCKS to %d", filterLogsLimitBlocks)
 
-	rpcHTTPClient, err := rpc.DialHTTP(cfg.HttpURL)
+	rpcHTTPClient, err := rate_limiter.DialHTTP(cfg.HttpURL)
 	if err != nil {
 		return nil, fmt.Errorf("dial http: %w", err)
 	}
