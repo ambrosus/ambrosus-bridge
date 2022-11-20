@@ -7,7 +7,7 @@ import {DeployFunction} from "hardhat-deploy/types";
 import {getBridgesDecimals, parseNet, readConfig_} from "./utils/utils";
 import {ethers} from "ethers";
 import {isAddress} from "ethers/lib/utils";
-import {Config, isTokenNotBridgeERC20, Token} from "./utils/config";
+import {Config, isTokenPrimary, Token} from "./utils/config";
 
 
 const BRIDGE_ROLE = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("BRIDGE_ROLE"));
@@ -71,7 +71,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
     if (!isAddress(token.addresses[netName])) continue;  // not deployed
-    if (isTokenNotBridgeERC20(token, netName)) continue;  // it's not bridgeErc20, no need to set role
+    if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token, no need to set role
 
     try {
       await addLegacy(token) // try to use old method first

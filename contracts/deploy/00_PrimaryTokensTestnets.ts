@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { getSideNetDecimalsOrTokenDenomination, parseNet, readConfig_ } from "./utils/utils";
-import { isTokenNotBridgeERC20, isTokenWrappable } from "./utils/config";
+import { isTokenPrimary, isTokenWrappable } from "./utils/config";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const netName = parseNet(hre.network).name;
@@ -18,8 +18,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       console.log(token.symbol, "already or should not be deployed.");
       continue;
     }
-    if (!isTokenNotBridgeERC20(token, netName)) {
-      console.log(token.symbol, "is BridgeERC20 token, skip it.");
+    if (isTokenPrimary(token, netName)) {
+      console.log(token.symbol, "is synthetic token, skip it.");
       continue;
     }
 

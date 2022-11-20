@@ -6,7 +6,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {getBridgesDecimals, parseNet, readConfig_} from "./utils/utils";
-import {isTokenNotBridgeERC20, Token} from "./utils/config";
+import {isTokenPrimary, Token} from "./utils/config";
 import {ethers} from "hardhat";
 import {isAddress} from "ethers/lib/utils";
 
@@ -44,7 +44,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
     if (token.addresses[netName] != "DEPLOY") continue;  // already deployed or shouldn't be deployed
-    if (isTokenNotBridgeERC20(token, netName)) continue;  // it's not bridgeErc20
+    if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token
 
     const address = (hre.network.tags["amb"]) ?
       await deployAmb(token) :
