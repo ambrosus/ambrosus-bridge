@@ -29,7 +29,7 @@
                     "Andrey"
                 ],
                 "threshold": 5,
-                "serverURL": "ws://65.108.51.81:6455",
+                "serverURL": "ws://65.108.51.81:6555",
                 "accessToken": "in env",
                 "sharePath": "in env"
             }
