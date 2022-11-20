@@ -8,6 +8,7 @@ import {DeployFunction} from "hardhat-deploy/types";
 import {getBridgesDecimals, parseNet, readConfig_} from "./utils/utils";
 import {isTokenNotBridgeERC20, Token} from "./utils/config";
 import {ethers} from "hardhat";
+import {isAddress} from "ethers/lib/utils";
 
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -29,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // more lightweight contract; only 1 bridge address
   const deployNonAmb = async (token: Token) => {
-    const bridgeAddress = configFile.bridges[netName].side || ethers.constants.AddressZero
+    const bridgeAddress = isAddress(configFile.bridges[netName].side) || ethers.constants.AddressZero
 
     const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20",
