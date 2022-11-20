@@ -24,7 +24,6 @@
                 "meID": "master",
                 "partyIDs": [
                     "master",
-                    "backup",
                     "Kevin",
                     "Lang",
                     "Rory",
@@ -43,7 +42,6 @@
                 "meID": "master",
                 "partyIDs": [
                     "master",
-                    "backup",
                     "Kevin",
                     "Lang",
                     "Rory",
