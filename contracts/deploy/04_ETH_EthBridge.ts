@@ -46,7 +46,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     ]
   };
 
-  if (false) {
+  if (isMainNet) {
     console.log("To update prod contract remove this if statement :)");
 
   } else {

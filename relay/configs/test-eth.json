@@ -17,7 +17,20 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "untrustless"
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6555",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
         },
         "ambToSide": {
             "variant": "untrustless-mpc",
@@ -57,7 +70,7 @@
         "endpoint": "/fees",
         "amb": {
             "privateKey": "in env",
-            "minBridgeFeeUSD": 5,
+            "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
             "explorerURL": "https://explorer-api.ambrosus-test.io",
             "transferFeeRecipient": "0x",
@@ -69,7 +82,7 @@
         },
         "side": {
             "privateKey": "in env",
-            "minBridgeFeeUSD": 5,
+            "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
             "explorerURL": "https://api-sepolia.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
             "transferFeeRecipient": "0x",

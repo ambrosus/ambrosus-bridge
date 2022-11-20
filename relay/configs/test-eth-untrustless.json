@@ -17,7 +17,20 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": ""
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": false,
+                "meID": "in env",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": "wss://relay-eth.ambrosus-test.io/mpcAmb/ws",
+                "accessToken": "in env",
+                "sharePath": "in env"
+            }
         },
         "ambToSide": {
             "variant": "untrustless-mpc",
@@ -38,7 +51,7 @@
     },
     "validityWatchdogs": {
         "enable": true,
-        "enableForAmb": false,
+        "enableForAmb": true,
         "enableForSide": true,
         "__description__": "user relay for untrustless2 will only check that transfers pushed into side network (eth) are valid"
     },

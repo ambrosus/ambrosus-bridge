@@ -17,15 +17,45 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "untrustless"
+            "variant": "",
+            "mpc": {
+                "isServer": false,
+                "meID": "in env",
+                "partyIDs": [
+                    "master",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": "ws://65.108.51.81:6455",
+                "accessToken": "in env",
+                "sharePath": "in env"
+            }
         },
         "ambToSide": {
-            "variant": ""
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": false,
+                "meID": "in env",
+                "partyIDs": [
+                    "master",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": "ws://65.108.51.81:6455",
+                "accessToken": "in env",
+                "sharePath": "in env"
+            }
         }
     },
     "validityWatchdogs": {
         "enable": true,
-        "enableForAmb": false,
+        "enableForAmb": true,
         "enableForSide": true
     },
     "pauseUnpauseWatchdogs": {

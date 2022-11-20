@@ -83,7 +83,7 @@ func keygen(isServer bool, hostUrl, serverURL string, accessToken string, id str
 	}
 	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
 	netOperation := createNetworking(isServer, hostUrl, serverURL, accessToken, mpcc)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Minute)
 	err := netOperation.Keygen(ctx, partyIDs)
 	if err != nil {
 		log.Fatal(err)
@@ -109,7 +109,7 @@ func reshare(isServer bool, hostUrl, serverURL, accessToken string, id string, m
 	}
 
 	netOperation := createNetworking(isServer, hostUrl, serverURL, accessToken, mpcc)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Minute)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Minute)
 	err := netOperation.Reshare(ctx, partyIDsOld, partyIDsNew, thresholdNew)
 	if err != nil {
 		log.Fatal(err)
