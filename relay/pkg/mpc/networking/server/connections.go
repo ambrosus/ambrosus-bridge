@@ -29,7 +29,13 @@ func (s *Server) waitForConnections(ctx context.Context) error {
 				connChange, s.connChangeNotify = context.WithCancel(context.Background()) // this ctx done, create a new one
 				continue
 			case <-ctx.Done():
-				return ctx.Err()
+				notConnected := make([]string, 0)
+				for id, conn := range s.connections {
+					if conn == nil {
+						notConnected = append(notConnected, id)
+					}
+				}
+				return fmt.Errorf("%w. not connected: %v", ctx.Err(), notConnected)
 			}
 		}
 
