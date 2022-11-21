@@ -14,118 +14,122 @@
       "isActive": true,
       "name": "Synthetic Amber",
       "symbol": "SAMB",
-      "denomination": 18,
-      "decimals": {
-        "eth": 18,
-        "bsc": 18
-      },
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
-      "primaryNets": [
-        "amb"
-      ],
-      "addresses": {
-        "amb": "0xDA9BB33F9E3334781f3e4fce310288D7dB3eD29a",
-        "eth": "0xfc277855999cF6452F9027BbdC1B56264A736E3A",
-        "bsc": "0xDAA9Ee2aB371E31a75Faf93D0b859561a5D8a58f"
-      },
-      "nativeAnalog": "AMB"
+      "networks": {
+        "amb": {
+          "address": "0xDA9BB33F9E3334781f3e4fce310288D7dB3eD29a",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "AMB"
+        },
+        "bsc": {
+          "address": "0xDAA9Ee2aB371E31a75Faf93D0b859561a5D8a58f",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "eth": {
+          "address": "0xfc277855999cF6452F9027BbdC1B56264A736E3A",
+          "denomination": 18,
+          "isPrimary": false
+        }
+      }
     },
     "WETH": {
       "isActive": false,
       "name": "Wrapped Ether",
       "symbol": "WETH",
-      "denomination": 18,
-      "decimals": {
-        "eth": 18
-      },
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
-      "primaryNets": [
-        "eth"
-      ],
-      "addresses": {
-        "amb": "0x075dE66D19CA867387c75C880CffddBA9A3E9763",
-        "eth": "0xd67A7CE611C1b33A549712c0FcbFE8436A917b71",
-        "bsc": ""
-      },
-      "nativeAnalog": "ETH"
+      "networks": {
+        "amb": {
+          "address": "0x075dE66D19CA867387c75C880CffddBA9A3E9763",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "eth": {
+          "address": "0xd67A7CE611C1b33A549712c0FcbFE8436A917b71",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "ETH"
+        }
+      }
     },
     "WBNB": {
       "isActive": false,
       "name": "Wrapped BNB",
       "symbol": "WBNB",
-      "denomination": 18,
-      "decimals": {
-        "bsc": 18
-      },
       "logo": "https://bscscan.com/token/images/binance_32.png",
-      "primaryNets": [
-        "bsc"
-      ],
-      "addresses": {
-        "amb": "0xD52F6e6aD16904a23E5cA0309098652502CA97E8",
-        "eth": "",
-        "bsc": "0x8601876F8A6DCcAE5Ce8Cf154f710E09c3f0f2c8"
-      },
-      "nativeAnalog": "BNB"
+      "networks": {
+        "amb": {
+          "address": "0xD52F6e6aD16904a23E5cA0309098652502CA97E8",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "bsc": {
+          "address": "0x8601876F8A6DCcAE5Ce8Cf154f710E09c3f0f2c8",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "BNB"
+        }
+      }
     },
     "USDC": {
       "isActive": true,
       "name": "USD Coin",
       "symbol": "USDC",
-      "denomination": 18,
-      "decimals": {
-        "eth": 6,
-        "bsc": 18
-      },
       "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
-      "primaryNets": [
-        "eth",
-        "bsc"
-      ],
-      "addresses": {
-        "amb": "0x56a79d39fc414Ff11EbB30d6a5367ea5da8c6fE9",
-        "eth": "0x1D335E8B7787fB6c51F98713df5BCb56884FD023",
-        "bsc": "0x3a5633bAE0243bB360e25624DC6dFd241333B575"
-      },
-      "nativeAnalog": ""
+      "networks": {
+        "amb": {
+          "address": "0x56a79d39fc414Ff11EbB30d6a5367ea5da8c6fE9",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "bsc": {
+          "address": "0x3a5633bAE0243bB360e25624DC6dFd241333B575",
+          "denomination": 18,
+          "isPrimary": true
+        },
+        "eth": {
+          "address": "0x1D335E8B7787fB6c51F98713df5BCb56884FD023",
+          "denomination": 6,
+          "isPrimary": true
+        }
+      }
     },
     "USDT": {
       "isActive": true,
       "name": "Tether USD",
       "symbol": "USDT",
-      "denomination": 18,
-      "decimals": {
-        "eth": 6
-      },
       "logo": "https://etherscan.io/token/images/tether_32.png",
-      "primaryNets": [
-        "eth"
-      ],
-      "addresses": {
-        "amb": "0x2Af6411938cc6a1BE90bB74494A57b971D2Ff079",
-        "eth": "0x2Aaf5696BdF562b31D6dAd629B7434E809296bAF",
-        "bsc": ""
-      },
-      "nativeAnalog": ""
+      "networks": {
+        "amb": {
+          "address": "0x2Af6411938cc6a1BE90bB74494A57b971D2Ff079",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "eth": {
+          "address": "0x2Aaf5696BdF562b31D6dAd629B7434E809296bAF",
+          "denomination": 6,
+          "isPrimary": true
+        }
+      }
     },
     "BUSD": {
       "isActive": true,
       "name": "BUSD Token",
       "symbol": "BUSD",
-      "denomination": 18,
-      "decimals": {
-        "bsc": 18
-      },
       "logo": "https://bscscan.com/token/images/busd_32.png",
-      "primaryNets": [
-        "bsc"
-      ],
-      "addresses": {
-        "amb": "0x9F9B96F8d33B58c85f0E5bB4BE53164c0Fe77cD9",
-        "eth": "",
-        "bsc": "0x7E0F09c8c2aAf4743B57355edb051F5E5ED6F73d"
-      },
-      "nativeAnalog": ""
+      "networks": {
+        "amb": {
+          "address": "0x9F9B96F8d33B58c85f0E5bB4BE53164c0Fe77cD9",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "bsc": {
+          "address": "0x7E0F09c8c2aAf4743B57355edb051F5E5ED6F73d",
+          "denomination": 18,
+          "isPrimary": true
+        }
+      }
     }
   }
 }
