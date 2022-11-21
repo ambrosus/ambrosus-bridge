@@ -129,19 +129,13 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
       continue
     }
 
-    // if decimals not specified for side net, use token.decimals
-    const sideNetDecimals = getSideNetDecimalsOrTokenDenomination(token, netName)
+    const sideNetDecimals = token.networks[netName].denomination;
     bridgesAddresses.push(address);
     bridgesDecimals.push(sideNetDecimals);
   }
 
   return {bridgesAddresses, bridgesDecimals};
 }
-
-export function getSideNetDecimalsOrTokenDenomination(token: Token, netName: string): number {
-  return (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
-}
-
 
 
 // valildators
