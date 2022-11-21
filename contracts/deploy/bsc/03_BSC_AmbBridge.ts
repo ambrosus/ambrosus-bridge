@@ -22,27 +22,28 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const [initialEpoch, initialValidators] = await getBscValidators(bscNet);
   const chainId = await bscNet.getChainId();
 
+  const deployOptions: any = await options(hre, BRIDGE_NAME, tokenPairs,
+    {
+      sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
+      wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
+      timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+      lockTime: isMainNet ? 60 * 10 : 60,
+      minSafetyBlocks: 10,
+    },
+    [  // posa receiver params
+      initialValidators,
+      initialEpoch,
+      parseInt(chainId),
+    ],
+  );
+
   if (isMainNet) {
     console.log("To update prod contract remove this if statement :)");
-
   }  else {
 
     const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
       contract: BRIDGE_NAME,
-      ...await options(hre, BRIDGE_NAME, tokenPairs,
-        {
-          sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
-          wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
-          timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-          lockTime: isMainNet ? 60 * 10 : 60,
-          minSafetyBlocks: 10,
-        },
-        [
-          initialValidators,
-          initialEpoch,
-          parseInt(chainId),
-        ],
-      )
+      ...deployOptions,
     });
 
     configFile.bridges.bsc.amb = deployResult.address;
@@ -57,15 +58,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // set sideBridgeAddress
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.bsc.side, hre)
-
-  // DISABLE OLD USDC TOKEN ( will be along with enabling new USDC coin for gas economy :) )
-  // todo remove this after call
-  if (parseNet(hre.network).stage === "main") {
-    tokenPairs["0x290998B7B5589AFdc4E3f3c7eF817F05dcDEC947"] = "0x0000000000000000000000000000000000000000"
-  }
-  console.log(tokenPairs);
-  // END
-
 
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);

@@ -11,7 +11,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   let configFile = readConfig_(hre.network);
   const tokenPairs = configFile.getTokenPairs("amb", "eth")
 
-  const optionsWithOnUpgrade: any = await options(hre, BRIDGE_NAME, tokenPairs,
+  const deployOptions: any = await options(hre, BRIDGE_NAME, tokenPairs,
     {
       sideBridgeAddress: ethers.constants.AddressZero, // amb deployed before eth
       wrappingTokenAddress: configFile.tokens.SAMB.addresses.amb,
@@ -19,9 +19,9 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       lockTime: isMainNet ? 60 * 10 : 60,
       minSafetyBlocks: 10,
     },
-    [
-      5,
-      [
+    [ // untrusless1 params:
+      5, // threshold
+      [  // multisigners
         "0x260cfE305cA40CaE1a32Ba7611137eF4d7146233", // Kevin
         "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a", // Lang
         "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8", // Rory
@@ -34,14 +34,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   if (isMainNet) {
     console.log("To update prod contract remove this if statement :)");
-
   }  else {
 
     const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
       contract: BRIDGE_NAME,
-      ...optionsWithOnUpgrade
+      ...deployOptions
     });
-
 
     configFile.bridges.eth.amb = deployResult.address;
     configFile.save()
@@ -57,15 +55,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.eth.side, hre)
 
   // add new tokens
-
-  // DISABLE OLD USDC TOKEN ( will be along with enabling new USDC coin for gas economy :) )
-  // todo remove this after call
-  // if (parseNet(hre.network).stage === "main") {
-  //   tokenPairs["0x290998B7B5589AFdc4E3f3c7eF817F05dcDEC947"] = "0x0000000000000000000000000000000000000000"
-  // }
-  // console.log(tokenPairs);
-  // END
-
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
 };
 
