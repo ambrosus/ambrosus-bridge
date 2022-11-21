@@ -16,10 +16,14 @@ contract ETH_AmbBridge is CommonBridge, CheckUntrustless2 {
     function upgrade(
         address[] calldata _watchdogs,
         address _fee_provider,
+        address mpcRelay,
         address oldDefaultAdmin,
-        address mpcRelay
+        address oldRelay
     ) public {
         require(msg.sender == address(this), "This method require multisig");
+
+        // revoke RELAY_ROLE from old relay
+        revokeRole(RELAY_ROLE, oldRelay);
 
         // new roles for untrustless mpc
         _setupRoles(WATCHDOG_ROLE, _watchdogs);

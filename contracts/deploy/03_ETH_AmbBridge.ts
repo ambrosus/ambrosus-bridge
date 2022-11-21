@@ -22,25 +22,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }, []
   )
 
-  // upgrade to untrustless-mpc; set watchdogs and fee_provider roles; remove DEFAULT_ADMIN_ROLE from deployer
+  // upgrade to untrustless-mpc; set watchdogs and fee_provider roles; remove DEFAULT_ADMIN_ROLE from deployer; remove RELAY_ROLE from old relay
   let {owner} = await hre.getNamedAccounts();
   const prod_addresses = getAddresses(BRIDGE_NAME);
   deployOptions.proxy.execute.onUpgrade = {
     methodName: "upgrade",
     args: [
-      [ // watchdogs (user-relays + master-relay + admin)
-        "0x260cfE305cA40CaE1a32Ba7611137eF4d7146233", // Kevin
-        "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a", // Lang
-        "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8", // Rory
-        "0xb017DcCC473499C83f1b553bE564f3CeAf002254", // Andrey
+      prod_addresses.watchdogsAddresses, // grand WATCHDOG_ROLEs
+      isMainNet ? prod_addresses.feeProviderAddress: owner,  // grand FEE_PROVIDER_ROLE
+      isMainNet ? prod_addresses.relayAddress : owner,  // grand RELAY_ROLE to new mpc relay
 
-        isMainNet ? prod_addresses.relayAddress : owner, // Master relay
-        isMainNet ? prod_addresses.adminAddress : owner, // Admin
-      ],
-      isMainNet ? prod_addresses.relayAddress : owner, // fee_provider (relay)
       isMainNet ? prod_addresses.adminAddress : owner, // remove DEFAULT_ADMIN_ROLE from this address
-      'TODO' // new mpc relay address
-      // todo remove RELAY_ROLE from old relay address
+      isMainNet ? prod_addresses.feeProviderAddress: owner // remove RELAY_ROLE from this address (it's old relay address)
     ]
   };
 
