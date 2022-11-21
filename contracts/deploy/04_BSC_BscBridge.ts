@@ -1,6 +1,5 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {ethers} from "ethers";
 import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "./utils/utils";
 
 const BRIDGE_NAME = "BSC_BscBridge";
@@ -14,29 +13,29 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const ambNet = hre.companionNetworks['amb']
   const ambBridge = await ambNet.deployments.get('BSC_AmbBridge');
 
+  const deployOptions = await options(hre, BRIDGE_NAME, tokenPairs,
+    {
+      sideBridgeAddress: ambBridge.address,
+      wrappingTokenAddress: configFile.tokens.WBNB.addresses.bsc,
+      timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
+      lockTime: isMainNet ? 60 * 10 : 60,
+      minSafetyBlocks: isMainNet ? 10 : 2,
+      minSafetyBlocksValidators: isMainNet ? 10 : 2,
+    },
+    [  // aura receiver params
+      ...(await getAmbValidators(ambNet, isMainNet)),
+      isMainNet ? 10 : 2, // minSafetyBlocksValidators
+    ]
+  );
+
   if (isMainNet) {
     console.log("To update prod contract remove this if statement :)");
-
   }  else {
 
     const deployResult = await hre.deployments.deploy(BRIDGE_NAME, {
       contract: BRIDGE_NAME,
-      ...await options(hre, BRIDGE_NAME, tokenPairs,
-        {
-          sideBridgeAddress: ambBridge.address,
-          wrappingTokenAddress: configFile.tokens.WBNB.addresses.bsc,
-          timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
-          lockTime: isMainNet ? 60 * 10 : 60,
-          minSafetyBlocks: isMainNet ? 10 : 2,
-          minSafetyBlocksValidators: isMainNet ? 10 : 2,
-        },
-        [
-          ...(await getAmbValidators(ambNet, isMainNet)),
-          isMainNet ? 10 : 2, // minSafetyBlocksValidators
-        ]
-      )
+      ...deployOptions,
     });
-
 
     configFile.bridges.bsc.side = deployResult.address;
     configFile.save()
