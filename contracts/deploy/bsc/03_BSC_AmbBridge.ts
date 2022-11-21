@@ -8,7 +8,7 @@ import {
   parseNet,
   readConfig_,
   setSideBridgeAddress
-} from "./utils/utils";
+} from "../utils/utils";
 
 const BRIDGE_NAME = "BSC_AmbBridge";
 

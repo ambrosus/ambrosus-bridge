@@ -1,8 +1,8 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "ethers";
-import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "./utils/utils";
-import {getAddresses} from "./utils/prod_addresses";
+import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "../utils/utils";
+import {getAddresses} from "../utils/prod_addresses";
 
 const BRIDGE_NAME = "ETH_EthBridge";
 

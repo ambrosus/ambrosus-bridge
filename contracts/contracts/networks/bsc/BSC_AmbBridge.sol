@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../common/CommonBridge.sol";
-import "../checks/CheckPoSA.sol";
+import "../../common/CommonBridge.sol";
+import "../../checks/CheckPoSA.sol";
 
 
 contract BSC_AmbBridge is CommonBridge, CheckPoSA {

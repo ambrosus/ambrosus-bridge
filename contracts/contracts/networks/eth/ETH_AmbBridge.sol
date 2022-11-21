@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.6;
 
-import "../common/CommonBridge.sol";
-import "../checks/CheckUntrustless.sol";
+import "../../common/CommonBridge.sol";
+import "../../checks/CheckUntrustless.sol";
 
 
 contract ETH_AmbBridge is CommonBridge, CheckUntrustless {

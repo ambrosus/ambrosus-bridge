@@ -1,7 +1,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "ethers";
-import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "./utils/utils";
+import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "../utils/utils";
 
 const BRIDGE_NAME = "BSC_BscBridge";
 
