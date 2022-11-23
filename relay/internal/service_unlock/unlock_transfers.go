@@ -88,10 +88,10 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 		return fmt.Errorf("checkOldLockedTransferFromId: %w", err)
 	}
 
-	// b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf("waiting next block before unlocking...")
-	// if err := cb.WaitForNextBlock(b.bridge.GetWsClient()); err != nil {
-	// 	return fmt.Errorf("wait for next block: %w", err)
-	// }
+	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msgf("waiting next block before unlocking...")
+	if err := cb.WaitForNextBlock(b.bridge.GetWsClient()); err != nil {
+		return fmt.Errorf("wait for next block: %w", err)
+	}
 
 	b.logger.Info().Str("event_id", oldestLockedEventId.String()).Msg("unlocking...")
 	if err := b.unlockTransfers(); err != nil {
