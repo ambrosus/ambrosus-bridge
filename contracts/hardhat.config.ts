@@ -13,9 +13,11 @@ dotenv.config();
 const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
 
 const bscScanApiKey = "NFH875QU828E37MQD7XB3QHFBE4XTC2AKH"
+const polygonScanApiKey = "5B48B7UTG14J3UNYQGQ9I3UHIHB7PND7VE"
 
 const sideNets = ["eth", "bsc"];
 const bscExtraFields = {verify: {etherscan: {apiKey: bscScanApiKey}}};
+const polygonExtraFields = {verify: {etherscan: {apiKey: polygonScanApiKey}}};
 
 
 const config: HardhatUserConfig = {
@@ -43,6 +45,8 @@ const config: HardhatUserConfig = {
     ...network("eth", "dev", "https://goerli.infura.io/v3/" + process.env.INFURA_KEY),
     ...network("eth", "test", "https://sepolia.infura.io/v3/" + process.env.INFURA_KEY),
     ...network("eth", "main", "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY),
+
+    ...network("polygon", "test", "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY, polygonExtraFields),
 
     ...network("bsc", "dev", "https://data-seed-prebsc-1-s1.binance.org:8545", bscExtraFields),
     ...network("bsc", "test", "https://data-seed-prebsc-1-s1.binance.org:8545", bscExtraFields),

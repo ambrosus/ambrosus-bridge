@@ -7,6 +7,10 @@
     "bsc": {
       "amb": "0xa09De74437D2453Df47deF3F5C2d14Cd3f0cF8c0",
       "side": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248"
+    },
+    "polygon": {
+      "amb": "0xfE3E11764549759b59d54459e1C7f526eF7056D5",
+      "side": "0x17c9b9A8BeeB1FE98566877AF442dbeBd0F5dB09"
     }
   },
   "tokens": {
@@ -26,7 +30,8 @@
       "addresses": {
         "amb": "0xDA9BB33F9E3334781f3e4fce310288D7dB3eD29a",
         "eth": "0xfc277855999cF6452F9027BbdC1B56264A736E3A",
-        "bsc": "0xDAA9Ee2aB371E31a75Faf93D0b859561a5D8a58f"
+        "bsc": "0xDAA9Ee2aB371E31a75Faf93D0b859561a5D8a58f",
+        "polygon": "0x3B851d4d79C44AbBBF914D6bc61A2BdCC7387d85"
       },
       "nativeAnalog": "AMB"
     },
@@ -67,6 +72,26 @@
         "bsc": "0x8601876F8A6DCcAE5Ce8Cf154f710E09c3f0f2c8"
       },
       "nativeAnalog": "BNB"
+    },
+    "WMATIC": {
+      "isActive": true,
+      "name": "Wrapped Matic",
+      "symbol": "WMATIC",
+      "denomination": 18,
+      "decimals": {
+        "polygon": 18
+      },
+      "logo": "https://bscscan.com/token/images/binance_32.png",
+      "primaryNets": [
+        "polygon"
+      ],
+      "addresses": {
+        "amb": "0x355dDC6CC57a8E7739a6B86252B51ac05DFB07ea",
+        "eth": "",
+        "bsc": "",
+        "polygon": "0x132827Ee051b7276a2f85D6964F6182974aa243c"
+      },
+      "nativeAnalog": "MATIC"
     },
     "USDC": {
       "isActive": true,
