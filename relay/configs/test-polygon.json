@@ -1,0 +1,108 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "POLYGON",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus-test.io",
+            "wsUrl": "wss://network.ambrosus-test.io/ws",
+            "contractAddr": "0xfE3E11764549759b59d54459e1C7f526eF7056D5",
+            "privateKey": "in env"
+        },
+        "POLYGON": {
+            "httpUrl": "https://polygon-mumbai.infura.io/v3/f8d408601fd44f4c960fee652d5ad21b",
+            "wsUrl": "wss://polygon-mumbai.g.alchemy.com/v2/BnWTUg0nBiIvO1i_VlRcXmPAcY1kDtQU",
+            "contractAddr": "0x17c9b9A8BeeB1FE98566877AF442dbeBd0F5dB09",
+            "privateKey": "in env"
+        }
+    },
+    "submitters": {
+        "enable": true,
+        "sideToAmb": {
+            "variant": "untrustless2",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6555",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
+        },
+        "ambToSide": {
+            "variant": "untrustless2",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6455",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
+        }
+    },
+    "validityWatchdogs": {
+        "enable": true,
+        "enableForAmb": true,
+        "enableForSide": true
+    },
+    "pauseUnpauseWatchdogs": {
+        "enable": true
+    },
+    "triggers": {
+        "enable": true
+    },
+    "unlockers": {
+        "enable": true
+    },
+    "feeApi": {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees",
+        "amb": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 0,
+            "minTransferFeeUSD": 0.05,
+            "explorerURL": "https://explorer-api.ambrosus-test.io",
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xb017DcCC473499C83f1b553bE564f3CeAf002254",
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
+            ],
+            "transferFeeTxsFromBlock": 1439420
+        },
+        "side": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 0,
+            "minTransferFeeUSD": 0.05,
+            "explorerURL": "https://api-sepolia.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+            "transferFeeRecipient": "0x",
+            "transferFeeIncludedTxsFromAddresses": [
+                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E",
+                "0x50c8ced687672bf4c94a06eb676d61888b8a8001"
+            ],
+            "transferFeeTxsFromBlock": 2085848
+        }
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": false,
+            "token": "in env",
+            "chatId": "-1001744413670"
+        }
+    },
+    "prometheus": {
+        "enable": true,
+        "ip": "",
+        "port": "9090"
+    }
+}
