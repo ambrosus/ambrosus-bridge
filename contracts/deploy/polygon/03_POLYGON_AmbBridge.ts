@@ -42,7 +42,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // set sideBridgeAddress
-  await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.eth.side, hre)
+  await setSideBridgeAddress(BRIDGE_NAME, configFile.bridges.polygon.side, hre)
 
   // add new tokens
   await addNewTokensToBridge(tokenPairs, hre, BRIDGE_NAME);
