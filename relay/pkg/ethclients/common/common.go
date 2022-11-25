@@ -38,6 +38,9 @@ type TxGasPriceResp struct {
 }
 
 func (ec *Client) TxGasPriceFromResponse(ctx context.Context, txHash common.Hash) (*big.Int, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+
 	var json TxGasPriceResp
 	err := ec.c.CallContext(ctx, &json, "eth_getTransactionByHash", txHash)
 	return json.GasPrice.ToInt(), err
