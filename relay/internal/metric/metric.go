@@ -41,6 +41,11 @@ var (
 		Name: "withdrawals_count",
 		Help: "Withdrawals count",
 	}, []string{"bridge_name"})
+
+	AmbFaucetBalance = promauto.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "amb_faucet_balance",
+		Help: "Balance of a amb faucet (in gwei)",
+	}, []string{"faucet_address"})
 )
 
 func ServeEndpoint(ip string, port int) error {

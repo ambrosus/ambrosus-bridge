@@ -5,6 +5,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 )
 
@@ -35,6 +36,15 @@ func SetRelayBalanceMetric(b networks.Bridge) {
 		return
 	}
 	RelayBalance.WithLabelValues(b.GetName()).Set(weiToGwei(balance))
+}
+
+func SetAmbFaucetBalanceMetric(b networks.Bridge, moneyAccount common.Address) {
+	balance, err := b.GetClient().BalanceAt(context.Background(), moneyAccount, nil)
+	if err != nil {
+		b.GetLogger().Error().Err(err).Msg("get amb faucet balance error")
+		return
+	}
+	AmbFaucetBalance.WithLabelValues(moneyAccount.String()).Set(weiToGwei(balance))
 }
 
 func weiToGwei(wei *big.Int) float64 {

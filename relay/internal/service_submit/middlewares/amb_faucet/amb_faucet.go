@@ -6,6 +6,7 @@ import (
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -77,6 +78,8 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 }
 
 func (b *AmbFaucet) Transfer(addressTo common.Address) (*types.Transaction, error) {
+	defer metric.SetAmbFaucetBalanceMetric(b.Receiver(), b.moneyAccount.From)
+
 	client := b.Receiver().GetClient()
 	nonce, err := client.PendingNonceAt(context.Background(), b.moneyAccount.From)
 	if err != nil {
