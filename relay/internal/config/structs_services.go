@@ -5,6 +5,8 @@ type (
 		enable    `mapstructure:",squash"`
 		AmbToSide SubmitterVariants `mapstructure:"ambToSide"`
 		SideToAmb SubmitterVariants `mapstructure:"sideToAmb"`
+
+		AmbFaucet AmbFaucetConfig `mapstructure:"ambFaucet"`
 	}
 
 	SubmitterVariants struct {
@@ -30,13 +32,20 @@ type (
 		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
 	}
 	SubmitterMpc struct {
-		IsServer  bool     `mapstructure:"isServer"`
-		MeID      string   `mapstructure:"meID"`
-		PartyIDs  []string `mapstructure:"partyIds"` // for sign operation
-		Threshold int      `mapstructure:"threshold"`
-		AccessToken string `mapstructure:"accessToken"` // client puts this token into request; server checks this token
-		ServerURL string   `mapstructure:"serverURL"` // client connect to this url; server listen on this url
-		SharePath string   `mapstructure:"sharePath"`
+		IsServer    bool     `mapstructure:"isServer"`
+		MeID        string   `mapstructure:"meID"`
+		PartyIDs    []string `mapstructure:"partyIds"` // for sign operation
+		Threshold   int      `mapstructure:"threshold"`
+		AccessToken string   `mapstructure:"accessToken"` // client puts this token into request; server checks this token
+		ServerURL   string   `mapstructure:"serverURL"`   // client connect to this url; server listen on this url
+		SharePath   string   `mapstructure:"sharePath"`
+	}
+
+	AmbFaucetConfig struct {
+		enable     `mapstructure:",squash"`
+		PrivateKey string `mapstructure:"privateKey"`
+		MinBalance int64  `mapstructure:"minBalance"`
+		SendAmount int64  `mapstructure:"sendAmount"`
 	}
 )
 
