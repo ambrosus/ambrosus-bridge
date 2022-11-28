@@ -41,8 +41,8 @@ func (p *FeeAPI) Run(endpoint string, ip string, port int, logger *zerolog.Logge
 func (p *FeeAPI) setupCORS() *cors.Cors {
 	// setup CORS
 	var allowedOrigins = []string{"*"}
-	if os.Getenv("STAGE") == "main" {
-		allowedOrigins = []string{"https://*.ambrosus.io"}
+	if os.Getenv("STAGE") == "prod" {
+		allowedOrigins = []string{"https://*ambrosus.io", "https://*airdao.io", "https://*amplify.com"}
 	}
 
 	return cors.New(cors.Options{
