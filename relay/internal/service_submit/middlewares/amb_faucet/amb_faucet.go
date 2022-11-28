@@ -60,7 +60,7 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 			b.logger.Error().Err(err).Str("address", t.ToAddress.String()).Msg("Get balance error")
 			continue
 		}
-		if balance.Cmp(b.minBalance) != -1 {
+		if balance.Cmp(b.minBalance) == 1 { // do nothing if balance > minBalance
 			b.logger.Debug().Str("address", t.ToAddress.String()).Str("balance", balance.String()).Msg("User have enough balance")
 			continue
 		}
