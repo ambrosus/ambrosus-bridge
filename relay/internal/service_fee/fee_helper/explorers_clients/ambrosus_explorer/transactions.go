@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	maxTxListResponse        = 5_000
+	maxTxListResponse        = 1_000
 	txByAddressRequestFormat = "accounts/%s/transactions"
 )
 
