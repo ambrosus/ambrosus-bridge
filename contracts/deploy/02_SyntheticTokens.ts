@@ -43,7 +43,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
-    if (token.networks[netName].address != "DEPLOY") continue;  // already deployed or shouldn't be deployed
+    if (token.networks[netName]?.address != "DEPLOY") continue;  // already deployed or shouldn't be deployed
     if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token
 
     const address = (hre.network.tags["amb"]) ?

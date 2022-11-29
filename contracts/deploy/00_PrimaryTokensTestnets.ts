@@ -14,7 +14,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       console.log(token.symbol, "is not active");
       continue;
     }
-    if (token.networks[netName].address != "DEPLOY") {
+    if (token.networks[netName]?.address != "DEPLOY") {
       console.log(token.symbol, "already or should not be deployed.");
       continue;
     }
