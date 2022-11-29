@@ -4,17 +4,18 @@ import {ethers} from "ethers";
 import { isAddress } from "ethers/lib/utils";
 
 
-
-
 export interface Token {
   isActive: boolean;
   name: string;
   symbol: string;
+  networks: { [net: string]: TokenNetwork }
+}
+
+export interface TokenNetwork {
+  address: string;
   denomination: number;
-  addresses: { [net: string]: string }
-  primaryNets: string[];
-  nativeAnalog: string | null;
-  decimals: { [net: string]: number }
+  isPrimary: boolean;
+  nativeCoin?: string;
 }
 
 
@@ -38,12 +39,12 @@ export function readConfig(stage: string): Config {
   return config;
 }
 
-export function isTokenWrappable(token: Token): boolean {
-    return token.nativeAnalog != ""
+export function isTokenWrappable(token: Token, netName: string): boolean {
+    return !!token.networks[netName].nativeCoin
 }
 
 export function isTokenPrimary(token: Token, netName: string): boolean {
-    return token.primaryNets.includes(netName)
+    return token.networks[netName].isPrimary
 }
 
 
@@ -53,18 +54,18 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
     // token must be deployed on both sides
-    if (!isAddress(token.addresses[thisNet]) || !isAddress(token.addresses[sideNet]))
+    if (!isAddress(token.networks[thisNet].address) || !isAddress(token.networks[sideNet].address))
       continue
 
-    tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
+    tokenPair[token.networks[thisNet].address] = token.networks[sideNet].address;
 
 
     // if token is wrapper for side-network native coin - save it address with 0x0 key,
     // so if user wants to transfer synthetic wrapper and receive native coin - he can do it
     // by calling withdraw(tokenThisAddress=thisNet, unwrapSide=true, ...).
     // bridge will check if tokens[0x0] == tokenThisAddress and emit Transfer with zero token address
-    if (isTokenPrimary(token, sideNet) && isTokenWrappable(token))
-      tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];
+    if (isTokenPrimary(token, sideNet) && isTokenWrappable(token, sideNet))
+      tokenPair[ethers.constants.AddressZero] = token.networks[thisNet].address;
 
 
   }
