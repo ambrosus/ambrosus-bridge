@@ -102,12 +102,12 @@
       "logo": "https://etherscan.io/token/images/tether_32.png",
       "networks": {
         "amb": {
-          "address": "0x2Af6411938cc6a1BE90bB74494A57b971D2Ff079",
+          "address": "0xa945ec3B3227731f8df905424041D9ab23778D8E",
           "denomination": 18,
           "isPrimary": false
         },
         "eth": {
-          "address": "0x2Aaf5696BdF562b31D6dAd629B7434E809296bAF",
+          "address": "0xd3c82866DD68CBDD292db2A82cd6f41B5c93A9C6",
           "denomination": 6,
           "isPrimary": true
         }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/big"
 	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
@@ -14,6 +15,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/etherscan"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_pause_unpause_watchdog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/middlewares/amb_faucet"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
@@ -26,13 +28,21 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 		return
 	}
 
+	// amb -> side
 	ambSubmitter, err := createSubmitter(&cfg.AmbToSide, ambBridge, sideBridge)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("ambBridgeSubmitter don't created")
 	}
+	// side -> amb
 	sideBridgeSubmitter, err := createSubmitter(&cfg.SideToAmb, sideBridge, ambBridge)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("sideBridgeSubmitter don't created")
+	}
+
+	if cfg.AmbFaucet.Enable {
+		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(sideBridgeSubmitter, cfg.AmbFaucet.PrivateKey,
+			big.NewInt(cfg.AmbFaucet.MinBalance), big.NewInt(cfg.AmbFaucet.SendAmount))
+		logger.Info().Str("service", "ambFaucet").Bool("enabled", cfg.AmbFaucet.Enable).Send()
 	}
 
 	// run submitters
