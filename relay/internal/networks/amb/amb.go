@@ -53,11 +53,6 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 		commonBridge.WsClient = parity.NewClient(rpcWSClient)
-
-		commonBridge.WsContract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.WsClient)
-		if err != nil {
-			return nil, fmt.Errorf("create contract ws: %w", err)
-		}
 	}
 
 	return &Bridge{

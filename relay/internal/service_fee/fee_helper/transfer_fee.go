@@ -10,7 +10,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
 )
@@ -110,7 +109,7 @@ func (p *transferFeeTracker) init() error {
 }
 
 func (p *transferFeeTracker) processEvents(newEventId uint64) error {
-	withdrawsCount, err := getWithdrawsCount(p.bridge.GetContract(), p.latestProcessedEvent+1, newEventId, &bind.FilterOpts{Start: p.transferFeeTxsFromBlock})
+	withdrawsCount, err := p.bridge.Events().GetWithdrawsCount(p.latestProcessedEvent+1, newEventId)
 	if err != nil {
 		return fmt.Errorf("getWithdrawsCount: %w", err)
 	}
@@ -194,27 +193,16 @@ func (p *transferFeeTracker) watchUnlocks() error {
 		return fmt.Errorf("checkOldUnlocks: %w", err)
 	}
 
-	eventCh := make(chan *bindings.BridgeTransferFinish)
-	eventSub, err := p.sideBridge.GetWsContract().WatchTransferFinish(nil, eventCh, nil)
-	if err != nil {
-		return fmt.Errorf("watchTransferFinish: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
 	// main loop
 	for {
-		select {
-		case err := <-eventSub.Err():
+		event, err := p.sideBridge.Events().WatchTransferFinish()
+		if err != nil {
 			return fmt.Errorf("watching unlock transfers: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
+		}
 
-			p.sideLogger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
-			if err := p.processEvents(event.EventId.Uint64()); err != nil {
-				return err
-			}
+		p.sideLogger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferFinish event")
+		if err := p.processEvents(event.EventId.Uint64()); err != nil {
+			return err
 		}
 	}
 }
@@ -225,41 +213,7 @@ func getOldestLockedEventId(contract interfaces.BridgeContract) (*big.Int, error
 	return contract.OldestLockedEventId(nil)
 }
 
-func getTransfersByIds(contract interfaces.BridgeContract, eventIds []*big.Int, opts *bind.FilterOpts) (transfers []*bindings.BridgeTransfer, err error) {
-	logTransfer, err := contract.FilterTransfer(opts, eventIds)
-	if err != nil {
-		return nil, fmt.Errorf("filter transfer: %w", err)
-	}
-
-	for logTransfer.Next() {
-		if !logTransfer.Event.Raw.Removed {
-			transfers = append(transfers, logTransfer.Event)
-		}
-	}
-	return transfers, nil
-}
-
 //
-
-func getWithdrawsCount(contract interfaces.BridgeContract, fromEvent, toEvent uint64, opts *bind.FilterOpts) (int, error) {
-	// get events ids for getting submits, unlocks and transfers for "batch" requests
-	var eventIds []*big.Int
-	for i := fromEvent; i <= toEvent; i++ { // +1 cuz we've already calculated the gas cost for that event
-		eventIds = append(eventIds, big.NewInt(int64(i)))
-	}
-
-	// get events batch requests
-	transfers, err := getTransfersByIds(contract, eventIds, opts)
-	if err != nil {
-		return 0, fmt.Errorf("get transfers by ids: %w", err)
-	}
-	// calc withdraws count in transfer events
-	var withdrawsCount int
-	for _, event := range transfers {
-		withdrawsCount += len(event.Queue)
-	}
-	return withdrawsCount, nil
-}
 
 func calcGasCost(txs []*explorers_clients.Transaction) *big.Int {
 	totalGas := new(big.Int)

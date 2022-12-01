@@ -87,7 +87,7 @@ func (m *Monitoring) getNotConfirmedEvent() (*bindings.BridgeTransfer, error) {
 	}
 
 	nextEventId := new(big.Int).Add(lastEventId, big.NewInt(1))
-	nextEvent, err := cb.GetEventById(m.sideBridge.GetContract(), nextEventId)
+	nextEvent, err := cb.GetEventById(m.sideBridge, nextEventId)
 	if errors.Is(err, networks.ErrEventNotFound) { // no more old events
 		return nil, nil
 	} else if err != nil {

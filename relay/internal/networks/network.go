@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -33,7 +34,7 @@ type Bridge interface {
 	GetWsClient() ethclients.ClientInterface
 
 	GetContract() interfaces.BridgeContract
-	GetWsContract() interfaces.BridgeContract
+	Events() *events.EventsApi
 
 	GetLogger() *zerolog.Logger
 	GetName() string

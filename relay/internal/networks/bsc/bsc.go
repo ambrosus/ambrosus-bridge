@@ -66,11 +66,6 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 		commonBridge.WsClient = limit_filtering.NewClient(rpcWSClient, int64(filterLogsFromBlock), int64(filterLogsLimitBlocks))
-
-		commonBridge.WsContract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.WsClient)
-		if err != nil {
-			return nil, fmt.Errorf("create contract ws: %w", err)
-		}
 	}
 
 	return &Bridge{

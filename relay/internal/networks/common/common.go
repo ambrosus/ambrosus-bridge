@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	common_ethclient "github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
@@ -25,10 +26,10 @@ type CommonBridge struct {
 	networks.Bridge
 	SideBridge networks.Bridge
 
-	Client, WsClient     ethclients.ClientInterface
-	Contract, WsContract interfaces.BridgeContract
-	ContractAddress      common.Address
-	Auth                 *bind.TransactOpts
+	Client, WsClient ethclients.ClientInterface
+	Contract         interfaces.BridgeContract
+	ContractAddress  common.Address
+	Auth             *bind.TransactOpts
 
 	Logger zerolog.Logger
 	Name   string
@@ -63,11 +64,6 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 			return b, fmt.Errorf("dial ws: %w", err)
 		}
 		b.WsClient = common_ethclient.NewClient(rpcWSClient)
-
-		b.WsContract, err = bindings.NewBridge(b.ContractAddress, b.WsClient)
-		if err != nil {
-			return b, fmt.Errorf("create contract ws: %w", err)
-		}
 	}
 
 	// create auth if privateKey provided
@@ -112,6 +108,11 @@ func GetAmbrosusOrigin() string {
 
 // interface `Bridge`
 
+func (b *CommonBridge) Events() *events.EventsApi {
+	// todo
+	return nil
+}
+
 func (b *CommonBridge) GetClient() ethclients.ClientInterface {
 	return b.Client
 }
@@ -122,10 +123,6 @@ func (b *CommonBridge) GetWsClient() ethclients.ClientInterface {
 
 func (b *CommonBridge) GetContract() interfaces.BridgeContract {
 	return b.Contract
-}
-
-func (b *CommonBridge) GetWsContract() interfaces.BridgeContract {
-	return b.WsContract
 }
 
 func (b *CommonBridge) GetLogger() *zerolog.Logger {

@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/rs/zerolog"
 )
 
 const (
-	MsgPaused   = "Contract has been paused!"
-	MsgUnpaused = "Contract has been unpaused!"
+	MsgPaused         = "Contract has been paused!"
+	MsgUnpaused       = "Contract has been unpaused!"
 	MsgWithDateFormat = "%s\n%s"
 )
 
@@ -76,49 +75,25 @@ func (b *WatchPauseUnpause) watchPauseUnpause() error {
 }
 
 func (b *WatchPauseUnpause) waitForPause() error {
-	eventCh := make(chan *bindings.BridgePaused)
-	eventSub, err := b.bridge.GetWsContract().WatchPaused(nil, eventCh)
-	if err != nil {
-		return fmt.Errorf("WatchPaused: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
 	for {
-		select {
-		case err := <-eventSub.Err():
+		err := b.bridge.Events().WatchPaused()
+		if err != nil {
 			return fmt.Errorf("watching paused event: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
-
-			b.logger.Warn().Msg(msgWithDate(MsgPaused))
-			b.lastPausedStatus = true
-			return nil
 		}
+		b.logger.Warn().Msg(msgWithDate(MsgPaused))
+		b.lastPausedStatus = true
+		return nil
 	}
 }
 
 func (b *WatchPauseUnpause) waitForUnpause() error {
-	eventCh := make(chan *bindings.BridgeUnpaused)
-	eventSub, err := b.bridge.GetWsContract().WatchUnpaused(nil, eventCh)
-	if err != nil {
-		return fmt.Errorf("WatchUnpaused: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
 	for {
-		select {
-		case err := <-eventSub.Err():
+		err := b.bridge.Events().WatchUnpaused()
+		if err != nil {
 			return fmt.Errorf("watching unpaused event: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
-
-			b.logger.Warn().Msg(msgWithDate(MsgUnpaused))
-			b.lastPausedStatus = false
-			return nil
 		}
+		b.logger.Warn().Msg(msgWithDate(MsgUnpaused))
+		b.lastPausedStatus = false
+		return nil
 	}
 }

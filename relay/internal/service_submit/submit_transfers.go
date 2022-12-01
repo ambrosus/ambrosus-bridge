@@ -56,7 +56,7 @@ func (b *SubmitTransfers) checkOldTransfers() error {
 
 	for i := int64(1); ; i++ {
 		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
-		nextEvent, err := cb.GetEventById(b.submitter.GetContract(), nextEventId)
+		nextEvent, err := cb.GetEventById(b.submitter, nextEventId)
 		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
 			return nil
 		} else if err != nil {
@@ -76,27 +76,15 @@ func (b *SubmitTransfers) watchTransfers() error {
 	}
 	b.logger.Info().Msg("Listening new events...")
 
-	// Subscribe to events
-	eventCh := make(chan *bindings.BridgeTransfer)
-	eventSub, err := b.submitter.GetWsContract().WatchTransfer(nil, eventCh, nil)
-	if err != nil {
-		return fmt.Errorf("watchTransfer: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
 	// main loop
 	for {
-		select {
-		case err := <-eventSub.Err():
+		event, err := b.submitter.Events().WatchTransfer()
+		if err != nil {
 			return fmt.Errorf("watching transfers: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
-			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-			if err := b.processEvent(event); err != nil {
-				return err
-			}
+		}
+		b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
+		if err := b.processEvent(event); err != nil {
+			return err
 		}
 	}
 }
@@ -113,7 +101,7 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	}
 
 	// Check if the event has been removed.
-	if err := isEventRemoved(b.submitter.GetContract(), event); err != nil {
+	if err := isEventRemoved(b.submitter, event); err != nil {
 		return fmt.Errorf("isEventRemoved: %w", err)
 	}
 
@@ -124,8 +112,8 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	return nil
 }
 
-func isEventRemoved(contract interfaces.BridgeContract, event *bindings.BridgeTransfer) error {
-	newEvent, err := cb.GetEventById(contract, event.EventId)
+func isEventRemoved(bridge networks.Bridge, event *bindings.BridgeTransfer) error {
+	newEvent, err := cb.GetEventById(bridge, event.EventId)
 	if err != nil {
 		return err
 	}

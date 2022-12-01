@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
@@ -44,40 +43,19 @@ func waitForUnpauseContract(b networks.Bridge) error {
 		return nil
 	}
 
-	eventCh := make(chan *bindings.BridgeUnpaused)
-	eventSub, err := b.GetWsContract().WatchUnpaused(nil, eventCh)
-	if err != nil {
-		return fmt.Errorf("WatchUnpaused: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
 	for {
-		select {
-		case err := <-eventSub.Err():
+		err := b.Events().WatchUnpaused()
+		if err != nil {
 			return fmt.Errorf("watching unpaused event: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
-
-			b.GetLogger().Info().Msg("Contracts is unpaused, continue working!")
-			return nil
 		}
+		b.GetLogger().Info().Msg("Contracts is unpaused, continue working!")
+		return nil
 	}
 }
 
 // GetEventById get `Transfer` event (emitted by this contract) by id.
-func GetEventById(client interfaces.BridgeContract, eventId *big.Int) (*bindings.BridgeTransfer, error) {
-	logs, err := client.FilterTransfer(nil, []*big.Int{eventId})
-	if err != nil {
-		return nil, fmt.Errorf("filter transfer: %w", err)
-	}
-	for logs.Next() {
-		if !logs.Event.Raw.Removed {
-			return logs.Event, nil
-		}
-	}
-	return nil, networks.ErrEventNotFound
+func GetEventById(bridge networks.Bridge, eventId *big.Int) (*bindings.BridgeTransfer, error) {
+	return bridge.Events().GetTransfer(eventId.Uint64())
 }
 
 func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (bindings.CommonStructsTransferProof, error) {
