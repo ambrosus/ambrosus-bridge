@@ -19,7 +19,7 @@ const (
 type BridgeFeeApi interface {
 	networks.Bridge
 	Sign(message []byte) ([]byte, error)
-	GetTransferFee() (thisGas, sideGas decimal.Decimal)
+	GetTransferFee() (thisGas, sideGas decimal.Decimal, err error)
 	GetWrapperAddress() common.Address
 	GetMinBridgeFee() decimal.Decimal   // GetMinBridgeFee returns the minimal bridge fee in usd
 	GetMinTransferFee() decimal.Decimal // GetMinTransferFee returns the minimal transfer fee in usd
