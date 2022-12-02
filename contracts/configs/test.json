@@ -35,6 +35,11 @@
           "address": "0xfc277855999cF6452F9027BbdC1B56264A736E3A",
           "denomination": 18,
           "isPrimary": false
+        },
+        "polygon": {
+          "address": "0x7cee2ae3042D2C646Aa24FACfA92dfeE589046f0",
+          "denomination": 18,
+          "isPrimary": false
         }
       }
     },
