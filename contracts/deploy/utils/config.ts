@@ -54,7 +54,7 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
     // token must be deployed on both sides
-    if (!isAddress(token.networks[thisNet].address) || !isAddress(token.networks[sideNet].address))
+    if (!isAddress(token.networks[thisNet]?.address) || !isAddress(token.networks[sideNet]?.address))
       continue
 
     tokenPair[token.networks[thisNet].address] = token.networks[sideNet].address;

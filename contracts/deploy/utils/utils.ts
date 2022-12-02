@@ -128,6 +128,9 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
     if (!isAddress(address)) {
       continue
     }
+    if (token.networks[netName] === undefined) {
+      continue
+    }
 
     const sideNetDecimals = token.networks[netName].denomination;
     bridgesAddresses.push(address);

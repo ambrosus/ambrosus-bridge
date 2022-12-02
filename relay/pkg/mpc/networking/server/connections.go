@@ -26,7 +26,9 @@ func (s *Server) waitForConnections(ctx context.Context) error {
 		if !s.isAllConnected() {
 			select {
 			case <-connChange.Done(): // wait for new connections
+				s.Lock()
 				connChange, s.connChangeNotify = context.WithCancel(context.Background()) // this ctx done, create a new one
+				s.Unlock()
 				continue
 			case <-ctx.Done():
 				notConnected := make([]string, 0)
