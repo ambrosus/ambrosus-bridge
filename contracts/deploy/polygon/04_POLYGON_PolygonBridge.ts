@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployOptions: any = await options(hre, BRIDGE_NAME, tokenPairs,
     {
       sideBridgeAddress: ambBridge.address,
-      wrappingTokenAddress: configFile.tokens.WMATIC.addresses.polygon,
+      wrappingTokenAddress: configFile.tokens.WMATIC.networks.polygon.address,
       timeframeSeconds: isMainNet ? 60 * 60 : 60,
       lockTime: isMainNet ? 60 * 10 : 60,
       minSafetyBlocks: isMainNet ? 10 : 2,

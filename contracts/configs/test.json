@@ -80,21 +80,19 @@
       "isActive": true,
       "name": "Wrapped Matic",
       "symbol": "WMATIC",
-      "denomination": 18,
-      "decimals": {
-        "polygon": 18
-      },
-      "logo": "https://bscscan.com/token/images/binance_32.png",
-      "primaryNets": [
-        "polygon"
-      ],
-      "addresses": {
-        "amb": "0x355dDC6CC57a8E7739a6B86252B51ac05DFB07ea",
-        "eth": "",
-        "bsc": "",
-        "polygon": "0x132827Ee051b7276a2f85D6964F6182974aa243c"
-      },
-      "nativeAnalog": "MATIC"
+      "networks": {
+        "amb": {
+          "address": "0x355dDC6CC57a8E7739a6B86252B51ac05DFB07ea",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "polygon": {
+          "address": "0x132827Ee051b7276a2f85D6964F6182974aa243c",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "MATIC"
+        }
+      }
     },
     "USDC": {
       "isActive": true,
