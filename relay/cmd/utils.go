@@ -11,6 +11,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/amb"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/bsc"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/eth"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/optimism"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/polygon"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/rs/zerolog"
@@ -25,6 +26,8 @@ func CreateBridges(cfg *config.Networks, logger zerolog.Logger) (ambBridge *amb.
 		sideBridge, err = bsc.New(cfg.Networks["bsc"], amb.BridgeName, logger)
 	case "POLYGON":
 		sideBridge, err = polygon.New(cfg.Networks["polygon"], amb.BridgeName, logger)
+	case "OPTIMISM":
+		sideBridge, err = optimism.New(cfg.Networks["optimism"], amb.BridgeName, logger)
 	default:
 		return nil, nil, fmt.Errorf("dunno which sideBridge to create")
 	}

@@ -11,6 +11,10 @@
     "polygon": {
       "amb": "0xfE3E11764549759b59d54459e1C7f526eF7056D5",
       "side": "0x17c9b9A8BeeB1FE98566877AF442dbeBd0F5dB09"
+    },
+    "optimism": {
+      "amb": "0xa7BC995861df7b56685854245d1E7dE19C46Bda0",
+      "side": "0x615D835e0C492b4309E79439765F66Db7BdcE200"
     }
   },
   "tokens": {
@@ -40,6 +44,11 @@
           "address": "0x7cee2ae3042D2C646Aa24FACfA92dfeE589046f0",
           "denomination": 18,
           "isPrimary": false
+        },
+        "optimism": {
+          "address": "0x3B851d4d79C44AbBBF914D6bc61A2BdCC7387d85",
+          "denomination": 18,
+          "isPrimary": false
         }
       }
     },
@@ -56,6 +65,12 @@
         },
         "eth": {
           "address": "0xd67A7CE611C1b33A549712c0FcbFE8436A917b71",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "ETH"
+        },
+        "optimism": {
+          "address": "0x8c33e9D24eBf3918D37eC2F26BaE044C9fD30Ea9",
           "denomination": 18,
           "isPrimary": true,
           "nativeCoin": "ETH"
@@ -159,3 +174,4 @@
       }
     }
   }
+}
