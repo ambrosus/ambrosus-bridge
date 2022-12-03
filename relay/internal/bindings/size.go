@@ -2,10 +2,13 @@ package bindings
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 )
+
+var BridgeParsedABI = parseABI()
 
 var ErrProofTooBig = errors.New("proof is too big")
 
@@ -39,12 +42,7 @@ func (p *CheckPoSAPoSAProof) Size() (uint64, error) {
 }
 
 func getSize(methodName string, args ...interface{}) (uint64, error) {
-	parsedAbi, err := parseABI()
-	if err != nil {
-		return 0, err
-	}
-
-	bytes, err := parsedAbi.Pack(methodName, args...)
+	bytes, err := BridgeParsedABI.Pack(methodName, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -52,6 +50,10 @@ func getSize(methodName string, args ...interface{}) (uint64, error) {
 	return uint64(len(bytes)), nil
 }
 
-func parseABI() (abi.ABI, error) {
-	return abi.JSON(strings.NewReader(BridgeMetaData.ABI))
+func parseABI() abi.ABI {
+	abi, err := abi.JSON(strings.NewReader(BridgeMetaData.ABI))
+	if err != nil {
+		panic(fmt.Errorf("failed to parse bridge abi: %w", err))
+	}
+	return abi
 }

@@ -1,12 +1,37 @@
 package backend_api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gorilla/websocket"
 )
+
+var bridgeBoundContract = bind.NewBoundContract(common.Address{}, bindings.BridgeParsedABI, nil, nil, nil)
+
+func parseToBinding(out interface{}, eventName string, data []byte) error {
+	log, err := parseLog(data)
+	if err != nil {
+		return fmt.Errorf("parse log: %w", err)
+	}
+	err = bridgeBoundContract.UnpackLog(out, eventName, log)
+	if err != nil {
+		return fmt.Errorf("unpack log: %w", err)
+	}
+	return nil
+}
+
+func parseLog(data []byte) (types.Log, error) {
+	var log types.Log
+	err := json.Unmarshal(data, &log)
+	return log, err
+}
 
 func (a *EventsApi) get(eventName string, eventId uint64) ([]byte, error) {
 	return get(a.getEventUrl(eventName, eventId))

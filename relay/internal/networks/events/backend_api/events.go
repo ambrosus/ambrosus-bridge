@@ -38,11 +38,11 @@ func (a *EventsApi) GetTransfer(eventID uint64) (*bindings.BridgeTransfer, error
 	if err != nil {
 		return nil, fmt.Errorf("get transfer event: %w", err)
 	}
-	te := new(TransferEvent)
-	if err := te.Unmarshall(resp); err != nil {
+	e := new(bindings.BridgeTransfer)
+	if err := parseToBinding(e, "Transfer", resp); err != nil {
 		return nil, err
 	}
-	return te.toBridgeTransfer(), nil
+	return e, nil
 }
 
 func (a *EventsApi) WatchTransfer() (*bindings.BridgeTransfer, error) {
@@ -50,11 +50,11 @@ func (a *EventsApi) WatchTransfer() (*bindings.BridgeTransfer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("wait transfer event: %w", err)
 	}
-	te := new(TransferEvent)
-	if err := te.Unmarshall(resp); err != nil {
+	e := new(bindings.BridgeTransfer)
+	if err := parseToBinding(e, "Transfer", resp); err != nil {
 		return nil, err
 	}
-	return te.toBridgeTransfer(), nil
+	return e, nil
 }
 
 func (a *EventsApi) WatchTransferSubmit() (*bindings.BridgeTransferSubmit, error) {
@@ -62,11 +62,11 @@ func (a *EventsApi) WatchTransferSubmit() (*bindings.BridgeTransferSubmit, error
 	if err != nil {
 		return nil, fmt.Errorf("get transferSubmit event: %w", err)
 	}
-	te := new(TransferEvent)
-	if err := te.Unmarshall(resp); err != nil {
+	e := new(bindings.BridgeTransferSubmit)
+	if err := parseToBinding(e, "TransferSubmit", resp); err != nil {
 		return nil, err
 	}
-	return te.toBridgeTransferSubmit(), nil
+	return e, nil
 }
 
 func (a *EventsApi) WatchTransferFinish() (*bindings.BridgeTransferFinish, error) {
@@ -74,11 +74,11 @@ func (a *EventsApi) WatchTransferFinish() (*bindings.BridgeTransferFinish, error
 	if err != nil {
 		return nil, fmt.Errorf("get transferFinish event: %w", err)
 	}
-	te := new(TransferEvent)
-	if err := te.Unmarshall(resp); err != nil {
+	e := new(bindings.BridgeTransferFinish)
+	if err := parseToBinding(e, "TransferFinish", resp); err != nil {
 		return nil, err
 	}
-	return te.toBridgeTransferFinish(), nil
+	return e, nil
 }
 
 // temporary, while can't use backend fee api
