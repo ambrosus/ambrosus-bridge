@@ -79,7 +79,7 @@ func (b *CommonBridge) ProcessTx(methodName string, txOpts *bind.TransactOpts, t
 		// add useful info about insufficient funds error
 		if isInsufficientFundsErr(err) {
 			// bsc returns this info anyway, but I rather add this comment than another if statement
-			balance, errBalanceAt := b.GetClient().BalanceAt(context.Background(), b.GetAuth().From, nil)
+			balance, errBalanceAt := b.GetClient().BalanceAt(context.Background(), txOpts.From, nil)
 			if errBalanceAt != nil {
 				return fmt.Errorf("get balance error: %w", errBalanceAt)
 			}
