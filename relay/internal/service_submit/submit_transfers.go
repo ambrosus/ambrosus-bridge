@@ -113,11 +113,11 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 }
 
 func isEventRemoved(bridge networks.Bridge, event *bindings.BridgeTransfer) error {
-	newEvent, err := cb.GetEventById(bridge, event.EventId)
+	block, err := bridge.GetClient().BlockByNumber(nil, big.NewInt(int64(event.Raw.BlockNumber)))
 	if err != nil {
-		return err
+		return fmt.Errorf("blockByNumber: %w", err)
 	}
-	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
+	if block.Hash() != event.Raw.BlockHash {
 		return fmt.Errorf("looks like the event has been removed")
 	}
 	return nil
