@@ -1,4 +1,4 @@
-package events
+package backend_api
 
 import (
 	"fmt"

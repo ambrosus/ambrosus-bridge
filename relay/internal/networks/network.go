@@ -34,7 +34,7 @@ type Bridge interface {
 	GetWsClient() ethclients.ClientInterface
 
 	GetContract() interfaces.BridgeContract
-	Events() *events.EventsApi
+	Events() events.Events
 
 	GetLogger() *zerolog.Logger
 	GetName() string

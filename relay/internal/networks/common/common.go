@@ -108,7 +108,7 @@ func GetAmbrosusOrigin() string {
 
 // interface `Bridge`
 
-func (b *CommonBridge) Events() *events.EventsApi {
+func (b *CommonBridge) Events() events.Events {
 	// todo
 	return nil
 }
