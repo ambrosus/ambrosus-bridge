@@ -10,7 +10,7 @@ import (
 var ErrProofTooBig = errors.New("proof is too big")
 
 type SizedProofs interface {
-	*CheckAuraAuraProof | *CheckPoWPoWProof | *CheckPoSAPoSAProof
+	*CheckAuraAuraProof | *CheckPoSAPoSAProof
 	Size() (uint64, error)
 }
 
@@ -28,10 +28,6 @@ func IsProofTooBig[T SizedProofs](proof T, maxAllowedSize uint64) error {
 
 func (p *CheckAuraAuraProof) Size() (uint64, error) {
 	return getSize("submitTransferAura", *p)
-}
-
-func (p *CheckPoWPoWProof) Size() (uint64, error) {
-	return getSize("submitTransferPoW", *p)
 }
 
 func (p *CheckPoSAPoSAProof) Size() (uint64, error) {
