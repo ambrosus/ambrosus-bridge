@@ -1,12 +1,12 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0xA6DA88253D4aBFf6b8aC1E1CD9e66D2081C47851",
-      "side": "0x0c3001D98a02dFFf10814E2e5e1DA5a276C2552a"
+      "amb": "0xfd0295083499B495F08872b1043f744075A7E7A7",
+      "side": "0x952b98DBDa3319BF0e339cC9CC574fF768F80f3c"
     },
     "bsc": {
-      "amb": "0xdD97591Fd05f082d363CCe6e793b778cbC728085",
-      "side": "0x99a88dF85C3ffded0D7fF6B18596597e2ffcB3ee"
+      "amb": "0xB841C5707DA4B43eD915B707158010bd2FaF3B46",
+      "side": "0xDFb347Eab15F591b54aEFb17da483188066899Ed"
     }
   },
   "tokens": {
@@ -24,17 +24,55 @@
         "amb"
       ],
       "addresses": {
-        "amb": "0xBC3422cD37a271C7c388AEEeBC71cCBAD7FE368f",
-        "eth": "0x55Be7dd776fAbe89d93bAC66ed1cf0Ab31bdd6eB",
-        "bsc": "0x6d4287E23D544cab6d87518411FeAA2Ee36b26fd"
+        "amb": "0x53a747d34cbe07F6b3d271f75D7B6f0a28A24d3d",
+        "eth": "0x7cee2ae3042D2C646Aa24FACfA92dfeE589046f0",
+        "bsc": "0x115E4BEF320793Ff7cA3B4d0d9988292d08a2f45"
       },
       "nativeAnalog": "AMB"
+    },
+    "WETH": {
+      "isActive": false,
+      "name": "Wrapped Ether",
+      "symbol": "WETH",
+      "denomination": 18,
+      "decimals": {
+        "eth": 18
+      },
+      "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
+      "primaryNets": [
+        "eth"
+      ],
+      "addresses": {
+        "amb": "0x1BB900dFC9Ce42230C497716CaF0b8f657724FE4",
+        "eth": "0x1D1c26e0b8DAFa08FD678A888a8f4de175B1d060",
+        "bsc": ""
+      },
+      "nativeAnalog": "ETH"
+    },
+    "WBNB": {
+      "isActive": false,
+      "name": "Wrapped BNB",
+      "symbol": "WBNB",
+      "denomination": 18,
+      "decimals": {
+        "bsc": 18
+      },
+      "logo": "https://bscscan.com/token/images/binance_32.png",
+      "primaryNets": [
+        "bsc"
+      ],
+      "addresses": {
+        "amb": "0x9BAc26CEC2F956f5DeD50a2bc092eCcca2cC3b63",
+        "eth": "",
+        "bsc": "0x40549ef989d05D60e40CdB0E9b9764a792Bf293E"
+      },
+      "nativeAnalog": "BNB"
     },
     "USDC": {
       "isActive": true,
       "name": "USD Coin",
       "symbol": "USDC",
-      "denomination": 6,
+      "denomination": 18,
       "decimals": {
         "eth": 6,
         "bsc": 18
@@ -45,9 +83,47 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x2Fb6eeB0C2D6703D18c77426b5E8428f59D2E28d",
-        "eth": "0x096B5914C95C34Df19500DAff77470C845EC749D",
-        "bsc": "0x32fac62b1196E03Ed3644a40DbFbe5728e31599A"
+        "amb": "0xB6318deCa7eE555d306d2d3d2a12B98C048234bE",
+        "eth": "0x765e3e03f8dfca312EfdAb378e386E1EA60ee93F",
+        "bsc": "0x9D38570fEd985C14897Dfd95366198f9Fb0d9E2e"
+      },
+      "nativeAnalog": ""
+    },
+    "USDT": {
+      "isActive": true,
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "denomination": 18,
+      "decimals": {
+        "eth": 6
+      },
+      "logo": "https://etherscan.io/token/images/tether_32.png",
+      "primaryNets": [
+        "eth"
+      ],
+      "addresses": {
+        "amb": "0xbA58409f9c00eaE6788f4CAc426314022ed4f60E",
+        "eth": "0x130c0e94E79DbA9F8A63D6452210C89e5942130c",
+        "bsc": ""
+      },
+      "nativeAnalog": ""
+    },
+    "BUSD": {
+      "isActive": true,
+      "name": "BUSD Token",
+      "symbol": "BUSD",
+      "denomination": 18,
+      "decimals": {
+        "bsc": 18
+      },
+      "logo": "https://bscscan.com/token/images/busd_32.png",
+      "primaryNets": [
+        "bsc"
+      ],
+      "addresses": {
+        "amb": "0x1978F2436ba80Bf0947F1876996FF8747bE7fC67",
+        "eth": "",
+        "bsc": "0xDD767424cbEaF9fb75cb92fE7961C1a214D83450"
       },
       "nativeAnalog": ""
     }

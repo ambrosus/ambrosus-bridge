@@ -29,6 +29,12 @@
                 "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin",
                 "receiverBridgeMaxTxSizeKB": 128
             }
+        },
+        "ambFaucet": {
+            "enable": true,
+            "privateKey": "d89670aee201bcd78eba0533ff71c4833bef9985882f90f13c9396d1f5e45de0",
+            "minBalance": "0",
+            "sendAmount": "1000000000000000000"
         }
     },
     "validityWatchdogs": {

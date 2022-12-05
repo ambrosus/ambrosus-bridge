@@ -38,7 +38,11 @@ export function readConfig(stage: string): Config {
   return config;
 }
 
-export function isTokenNotBridgeERC20(token: Token, netName: string): boolean {
+export function isTokenWrappable(token: Token): boolean {
+    return token.nativeAnalog != ""
+}
+
+export function isTokenPrimary(token: Token, netName: string): boolean {
     return token.primaryNets.includes(netName)
 }
 
@@ -54,8 +58,14 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
 
     tokenPair[token.addresses[thisNet]] = token.addresses[sideNet];
 
-    if (token.primaryNets.includes(sideNet) && token.nativeAnalog)   // native token for sideNet
+
+    // if token is wrapper for side-network native coin - save it address with 0x0 key,
+    // so if user wants to transfer synthetic wrapper and receive native coin - he can do it
+    // by calling withdraw(tokenThisAddress=thisNet, unwrapSide=true, ...).
+    // bridge will check if tokens[0x0] == tokenThisAddress and emit Transfer with zero token address
+    if (isTokenPrimary(token, sideNet) && isTokenWrappable(token))
       tokenPair[ethers.constants.AddressZero] = token.addresses[thisNet];
+
 
   }
 

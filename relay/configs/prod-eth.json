@@ -18,7 +18,7 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "untrustless",
+            "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
                 "meID": "master",

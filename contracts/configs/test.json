@@ -102,8 +102,8 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0x2Af6411938cc6a1BE90bB74494A57b971D2Ff079",
-        "eth": "0x2Aaf5696BdF562b31D6dAd629B7434E809296bAF",
+        "amb": "0xa945ec3B3227731f8df905424041D9ab23778D8E",
+        "eth": "0xd3c82866DD68CBDD292db2A82cd6f41B5c93A9C6",
         "bsc": ""
       },
       "nativeAnalog": ""
