@@ -53,11 +53,6 @@ func waitForUnpauseContract(b networks.Bridge) error {
 	}
 }
 
-// GetEventById get `Transfer` event (emitted by this contract) by id.
-func GetEventById(bridge networks.Bridge, eventId *big.Int) (*bindings.BridgeTransfer, error) {
-	return bridge.Events().GetTransfer(eventId.Uint64())
-}
-
 func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (bindings.CommonStructsTransferProof, error) {
 	proof, err := GetProof(client, event)
 	if err != nil {

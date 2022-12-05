@@ -55,16 +55,16 @@ func (b *SubmitTransfers) checkOldTransfers() error {
 		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
 
-	for i := int64(1); ; i++ {
-		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
-		nextEvent, err := cb.GetEventById(b.submitter, nextEventId)
+	for i := uint64(1); ; i++ {
+		nextEventId := lastEventId.Uint64() + i
+		nextEvent, err := b.submitter.Events().GetTransfer(nextEventId)
 		if errors.Is(err, events.ErrEventNotFound) { // no more old events
 			return nil
 		} else if err != nil {
-			return fmt.Errorf("getEventById on id %v: %w", nextEventId.String(), err)
+			return fmt.Errorf("getEventById on id %v: %w", nextEventId, err)
 		}
 
-		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
+		b.logger.Info().Uint64("event_id", nextEventId).Msg("Send old event...")
 		if err := b.processEvent(nextEvent); err != nil {
 			return err
 		}
