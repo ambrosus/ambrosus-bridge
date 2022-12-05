@@ -1,7 +1,7 @@
-import { HardhatRuntimeEnvironment } from "hardhat/types";
-import { DeployFunction } from "hardhat-deploy/types";
-import { getSideNetDecimalsOrTokenDenomination, parseNet, readConfig_ } from "./utils/utils";
-import { isTokenPrimary, isTokenWrappable } from "./utils/config";
+import {HardhatRuntimeEnvironment} from "hardhat/types";
+import {DeployFunction} from "hardhat-deploy/types";
+import {parseNet, readConfig_} from "./utils/utils";
+import {isTokenPrimary, isTokenWrappable} from "./utils/config";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const netName = parseNet(hre.network).name;
@@ -14,17 +14,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       console.log(token.symbol, "is not active");
       continue;
     }
-    if (token.addresses[netName] != "DEPLOY") {
+    if (token.networks[netName]?.address != "DEPLOY") {
       console.log(token.symbol, "already or should not be deployed.");
       continue;
     }
-    if (isTokenPrimary(token, netName)) {
+    if (!isTokenPrimary(token, netName)) {
       console.log(token.symbol, "is synthetic token, skip it.");
       continue;
     }
 
     let address: string;
-    if (isTokenWrappable(token)) {
+    if (isTokenWrappable(token, netName)) {
       console.log("Deploying test wrappable token", token.symbol, "on", netName);
       ({ address } = await hre.deployments.deploy(token.symbol, {
         contract: "sAMB",
@@ -37,12 +37,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       ({ address } = await hre.deployments.deploy(token.symbol, {
         contract: "MintableERC20",
         from: owner,
-        args: [token.name, token.symbol, getSideNetDecimalsOrTokenDenomination(token, netName)],
+        args: [token.name, token.symbol, token.networks[netName].denomination],
         log: true,
       }));
     }
 
-    token.addresses[netName] = address;
+    token.networks[netName].address = address;
     configFile.save();
   }
 };

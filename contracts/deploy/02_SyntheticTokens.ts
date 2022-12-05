@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20_Amb",
-      args: [token.name, token.symbol, token.denomination, bridgesAddresses, bridgesDecimals],
+      args: [token.name, token.symbol, token.networks[netName].denomination, bridgesAddresses, bridgesDecimals],
       from: owner, log: true,
     });
     return address;
@@ -34,7 +34,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
     const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20",
-      args: [token.name, token.symbol, token.denomination, bridgeAddress],
+      args: [token.name, token.symbol, token.networks[netName].denomination, bridgeAddress],
       from: owner, log: true,
     });
     return address;
@@ -43,14 +43,14 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
-    if (token.addresses[netName] != "DEPLOY") continue;  // already deployed or shouldn't be deployed
+    if (token.networks[netName]?.address != "DEPLOY") continue;  // already deployed or shouldn't be deployed
     if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token
 
     const address = (hre.network.tags["amb"]) ?
       await deployAmb(token) :
       await deployNonAmb(token);
 
-    token.addresses[netName] = address;
+    token.networks[netName].address = address;
     configFile.save();
   }
 

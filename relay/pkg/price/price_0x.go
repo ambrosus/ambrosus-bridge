@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	EthUrl = NetworkUrl("https://api.0x.org/swap/v1/price?sellToken=%s&buyToken=USDT&buyAmount=1000000")                 // USDT has 6 decimals
-	BscUrl = NetworkUrl("https://bsc.api.0x.org/swap/v1/price?sellToken=%s&buyToken=BUSD&buyAmount=1000000000000000000") // BUSD has 18 decimals
+	EthUrl     = NetworkUrl("https://api.0x.org/swap/v1/price?sellToken=%s&buyToken=USDT&buyAmount=1000000")                 // USDT has 6 decimals
+	BscUrl     = NetworkUrl("https://bsc.api.0x.org/swap/v1/price?sellToken=%s&buyToken=BUSD&buyAmount=1000000000000000000") // BUSD has 18 decimals
+	PolygonUrl = NetworkUrl("https://polygon.api.0x.org/swap/v1/price?sellToken=%s&buyToken=USDT&buyAmount=1000000")         // USDT has 6 decimals
 )
 
-var NetworkUrls = []NetworkUrl{EthUrl, BscUrl}
+var NetworkUrls = []NetworkUrl{EthUrl, BscUrl, PolygonUrl}
 var ErrValidationFailed = errors.New("Validation Failed")
 
 type NetworkUrl string

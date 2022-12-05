@@ -4,14 +4,25 @@ import "hardhat-gas-reporter";
 import "solidity-coverage";
 import "hardhat-abi-exporter";
 import * as dotenv from "dotenv";
-import {HardhatUserConfig} from "hardhat/types";
+import {HardhatUserConfig, HttpNetworkUserConfig} from "hardhat/types";
 import {ethers} from "ethers";
 
 
 dotenv.config();
 // 0x295C2707319ad4BecA6b5bb4086617fD6F240CfE, used instead of empty PK
 const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
+
 const bscScanApiKey = "NFH875QU828E37MQD7XB3QHFBE4XTC2AKH"
+const polygonScanApiKey = "5B48B7UTG14J3UNYQGQ9I3UHIHB7PND7VE"
+const optimismScanApiKey = "9RU98DN9AAUB99HZXMFN5WETSP68CEN75S"
+const arbitrumScanApiKey = "9RU98DN9AAUB99HZXMFN5WETSP68CEN75S" // TODO: change api key
+
+const sideNets = ["eth", "bsc", "polygon", "optimism", "arbitrum"];
+const bscExtraFields = {verify: {etherscan: {apiKey: bscScanApiKey}}};
+const polygonExtraFields = {verify: {etherscan: {apiKey: polygonScanApiKey}}};
+const optimismExtraFields = {verify: {etherscan: {apiKey: optimismScanApiKey}}};
+const arbitrumExtraFields = {verify: {etherscan: {apiKey: optimismScanApiKey}}};
+
 
 const config: HardhatUserConfig = {
 
@@ -31,94 +42,24 @@ const config: HardhatUserConfig = {
       }
     },
 
-    "dev/eth": {
-      url: "https://goerli.infura.io/v3/" + process.env.INFURA_KEY,
-      tags: ["eth", "devnet"],
-      companionNetworks: {amb: 'dev/amb'},
-      gasPrice: 9000000000,
-      accounts: [devPK],
-    },
-    "test/eth": {
-      url: "https://sepolia.infura.io/v3/" + process.env.INFURA_KEY,
-      tags: ["eth", "testnet"],
-      companionNetworks: {amb: 'test/amb'},
-      accounts: [devPK],
-    },
-    "main/eth": {
-      url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
-      tags: ["eth", "mainnet"],
-      companionNetworks: {amb: 'main/amb'},
-      accounts: [process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero],
-    },
-    "integr/eth": {
-      url: "http://127.0.0.1:8502",
-      accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc", "e7420b6492b8c876d23cd8a1156e35af4bc5dc5703fb4b79b376cb268a718e2e"],
-      tags: ["eth", "integr"],
-      companionNetworks: {amb: 'integr/amb'},
-    },
+    ...ambNetwork("dev", "https://network.ambrosus-dev.io"),
+    ...ambNetwork("test", "https://network.ambrosus-test.io"),
+    ...ambNetwork("main", "https://network.ambrosus.io"),
 
-    "dev/amb": {
-      url: "https://network.ambrosus-dev.io",
-      tags: ["amb", "devnet"],
-      hardfork: "byzantium",
-      companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
-      accounts: [devPK], // todo devPk
-    },
-    "test/amb": {
-      url: "https://network.ambrosus-test.io",
-      tags: ["amb", "testnet"],
-      hardfork: "byzantium",
-      companionNetworks: {eth: 'test/eth', bsc: 'test/bsc'},
-      accounts: [devPK],
-    },
-    "main/amb": {
-      url: "https://network.ambrosus.io",
-      tags: ["amb", "mainnet"],
-      hardfork: "byzantium",
-      companionNetworks: {eth: 'main/eth', bsc: 'main/bsc'},
-      accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero],
-    },
-    "integr/amb": {
-      url: "http://127.0.0.1:8545",
-      accounts: ["0x80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446", "0x5b18f0adcca221f65373b20158f95313ecd51bde42b96a4c16f5eb851576bc06"],
-      tags: ["amb", "integr"],
-      hardfork: "byzantium",
-    },
+    ...network("eth", "dev", "https://goerli.infura.io/v3/" + process.env.INFURA_KEY),
+    ...network("eth", "test", "https://sepolia.infura.io/v3/" + process.env.INFURA_KEY),
+    ...network("eth", "main", "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY),
 
+    ...network("polygon", "test", "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY, polygonExtraFields),
 
-    "dev/bsc": {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
-      tags: ["bsc", "devnet"],
-      companionNetworks: {amb: 'dev/amb'},
-      accounts: [devPK],
-      verify: {
-        etherscan: {
-          apiKey: bscScanApiKey
-        }
-      },
-    },
-    "test/bsc": {
-      url: "https://data-seed-prebsc-1-s1.binance.org:8545/",
-      tags: ["bsc", "testnet"],
-      companionNetworks: {amb: 'test/amb'},
-      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero], // todo devPk
-      verify: {
-        etherscan: {
-          apiKey: bscScanApiKey
-        }
-      },
-    },
-    "main/bsc": {
-      url: "https://bsc-dataseed1.binance.org/",
-      tags: ["bsc", "mainnet"],
-      companionNetworks: {amb: 'main/amb'},
-      accounts: [process.env.PRIVATEKEY_OWNER_BSC || ethers.constants.HashZero],
-      verify: {
-        etherscan: {
-          apiKey: bscScanApiKey
-        }
-      },
-    },
+    ...network("optimism", "test", "https://opt-goerli.g.alchemy.com/v2/6S14oqFC3IHZl0F1trsy_vN41gmDqDaF", optimismExtraFields),
+
+    ...network("arbitrum", "test", "https://arb-goerli.g.alchemy.com/v2/ZOwlu6LylAMGi7hAN_LU5VD8fLqUnuH_", arbitrumExtraFields),
+
+    ...network("bsc", "dev", "https://data-seed-prebsc-1-s1.binance.org:8545", bscExtraFields),
+    ...network("bsc", "test", "https://data-seed-prebsc-1-s1.binance.org:8545", bscExtraFields),
+    ...network("bsc", "main", "https://bsc-dataseed1.binance.org", bscExtraFields),
+
   },
 
   namedAccounts: {
@@ -176,5 +117,33 @@ const config: HardhatUserConfig = {
     ]
   }
 };
+
+function network(network: string, stage: string, url: string, extraFields: any = {}): { [name: string]: HttpNetworkUserConfig } {
+  console.assert(["dev", "test", "main"].includes(stage), "stage must be dev/test/main");
+
+  const account = (stage === "main") ?
+    process.env["PRIVATEKEY_OWNER_" + network.toUpperCase()] :
+    devPK;
+
+  return {
+    [`${stage}/${network}`]: {
+      url: url,
+      tags: [network],
+      companionNetworks: {amb: `${stage}/amb`},
+      accounts: [account || ethers.constants.HashZero],
+      ...extraFields
+    },
+  }
+}
+
+function ambNetwork(stage: string, url: string, otherFields: any = {}): { [name: string]: HttpNetworkUserConfig } {
+  const companionNetworks: { [net: string]: string } = {};
+  sideNets.forEach(sideNet => companionNetworks[sideNet] = `${stage}/${sideNet}`);
+
+  otherFields.hardfork = "byzantium";
+  otherFields.companionNetworks = companionNetworks;
+
+  return network("amb", stage, url, otherFields);
+}
 
 export default config;
