@@ -10,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/rs/zerolog"
 )
 
@@ -57,7 +58,7 @@ func (b *SubmitTransfers) checkOldTransfers() error {
 	for i := int64(1); ; i++ {
 		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
 		nextEvent, err := cb.GetEventById(b.submitter, nextEventId)
-		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
+		if errors.Is(err, events.ErrEventNotFound) { // no more old events
 			return nil
 		} else if err != nil {
 			return fmt.Errorf("getEventById on id %v: %w", nextEventId.String(), err)

@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -88,7 +88,7 @@ func (m *Monitoring) getNotConfirmedEvent() (*bindings.BridgeTransfer, error) {
 
 	nextEventId := new(big.Int).Add(lastEventId, big.NewInt(1))
 	nextEvent, err := cb.GetEventById(m.sideBridge, nextEventId)
-	if errors.Is(err, networks.ErrEventNotFound) { // no more old events
+	if errors.Is(err, events.ErrEventNotFound) { // no more old events
 		return nil, nil
 	} else if err != nil {
 		return nil, fmt.Errorf("getEventById on id %v: %w", nextEventId.String(), err)

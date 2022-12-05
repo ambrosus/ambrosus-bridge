@@ -1,8 +1,12 @@
 package events
 
 import (
+	"errors"
+
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 )
+
+var ErrEventNotFound = errors.New("error event not found")
 
 type Events interface {
 	WatchPaused() error

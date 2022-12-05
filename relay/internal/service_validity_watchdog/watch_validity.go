@@ -12,6 +12,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -107,7 +108,7 @@ func (b *WatchTransfersValidity) watchLockedTransfers() error {
 
 func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
 	sideEvent, err := common.GetEventById(b.eventEmitter, lockedEventId)
-	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
+	if err != nil && !errors.Is(err, events.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("getEventById: %w", err)
 	}
 

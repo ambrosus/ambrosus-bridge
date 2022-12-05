@@ -1,8 +1,6 @@
 package networks
 
 import (
-	"errors"
-
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
@@ -13,10 +11,6 @@ import (
 )
 
 //go:generate mockgen -source=network.go -destination=mocks/mock.go
-
-var (
-	ErrEventNotFound = errors.New("error event not found")
-)
 
 type GetTxErrParams struct {
 	Tx    *types.Transaction
