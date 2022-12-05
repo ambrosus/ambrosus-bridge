@@ -39,9 +39,11 @@ func (a *EventsApi) GetTransfer(eventID uint64) (*bindings.BridgeTransfer, error
 		return nil, fmt.Errorf("get transfer event: %w", err)
 	}
 	e := new(bindings.BridgeTransfer)
-	if err := parseToBinding(e, "Transfer", resp); err != nil {
+	log, err := parseToBinding(e, "Transfer", resp)
+	if err != nil {
 		return nil, err
 	}
+	e.Raw = log
 	return e, nil
 }
 
@@ -51,9 +53,11 @@ func (a *EventsApi) WatchTransfer() (*bindings.BridgeTransfer, error) {
 		return nil, fmt.Errorf("wait transfer event: %w", err)
 	}
 	e := new(bindings.BridgeTransfer)
-	if err := parseToBinding(e, "Transfer", resp); err != nil {
+	log, err := parseToBinding(e, "Transfer", resp)
+	if err != nil {
 		return nil, err
 	}
+	e.Raw = log
 	return e, nil
 }
 
@@ -63,9 +67,11 @@ func (a *EventsApi) WatchTransferSubmit() (*bindings.BridgeTransferSubmit, error
 		return nil, fmt.Errorf("get transferSubmit event: %w", err)
 	}
 	e := new(bindings.BridgeTransferSubmit)
-	if err := parseToBinding(e, "TransferSubmit", resp); err != nil {
+	log, err := parseToBinding(e, "TransferSubmit", resp)
+	if err != nil {
 		return nil, err
 	}
+	e.Raw = log
 	return e, nil
 }
 
@@ -75,9 +81,11 @@ func (a *EventsApi) WatchTransferFinish() (*bindings.BridgeTransferFinish, error
 		return nil, fmt.Errorf("get transferFinish event: %w", err)
 	}
 	e := new(bindings.BridgeTransferFinish)
-	if err := parseToBinding(e, "TransferFinish", resp); err != nil {
+	log, err := parseToBinding(e, "TransferFinish", resp)
+	if err != nil {
 		return nil, err
 	}
+	e.Raw = log
 	return e, nil
 }
 

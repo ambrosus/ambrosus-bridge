@@ -15,16 +15,16 @@ import (
 
 var bridgeBoundContract = bind.NewBoundContract(common.Address{}, bindings.BridgeParsedABI, nil, nil, nil)
 
-func parseToBinding(out interface{}, eventName string, data []byte) error {
+func parseToBinding(out interface{}, eventName string, data []byte) (types.Log, error) {
 	log, err := parseLog(data)
 	if err != nil {
-		return fmt.Errorf("parse log: %w", err)
+		return log, fmt.Errorf("parse log: %w", err)
 	}
 	err = bridgeBoundContract.UnpackLog(out, eventName, log)
 	if err != nil {
-		return fmt.Errorf("unpack log: %w", err)
+		return log, fmt.Errorf("unpack log: %w", err)
 	}
-	return nil
+	return log, nil
 }
 
 func parseLog(data []byte) (types.Log, error) {
