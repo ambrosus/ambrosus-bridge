@@ -9,7 +9,6 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/gorilla/websocket v1.4.2
 	github.com/kofalt/go-memoize v0.0.0-20210721235729-46a601ff34b8
-	github.com/nanmu42/etherscan-api v1.8.0
 	github.com/prometheus/client_golang v1.12.1
 	github.com/rs/cors v1.8.2
 	github.com/rs/zerolog v1.26.1
@@ -38,6 +37,7 @@ require (
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/google/uuid v1.1.5 // indirect
 	github.com/hashicorp/errwrap v1.0.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0 // indirect
