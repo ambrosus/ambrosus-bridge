@@ -16,6 +16,13 @@ function main() {
           "BSC_AmbBridge.json", "BSC_BscBridge.json"
         ];
       }
+      if (args[0] == "--multisig") {
+        return [
+          "ETH_AmbBridge.json", "ETH_EthBridge.json",
+          "BSC_AmbBridge.json", "BSC_BscBridge.json",
+          "ProxyMultiSig.json"
+        ];
+      }
     }
     return args
   }
