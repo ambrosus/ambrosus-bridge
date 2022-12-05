@@ -75,7 +75,7 @@ func wait(url string) ([]byte, error) {
 }
 
 func (a *EventsApi) waitEventUrl(eventName string) string {
-	return fmt.Sprintf("ws://%s/ws?networkFrom=%s&networkTo=%s&events=%s", a.baseUrl, a.thisName, a.sideName, eventName)
+	return fmt.Sprintf("ws://%s/relay/waitEvent?networkFrom=%s&networkTo=%s&eventName=%s", a.baseUrl, a.thisName, a.sideName, eventName)
 }
 
 func (a *EventsApi) getEventUrl(eventName string, eventId uint64) string {
