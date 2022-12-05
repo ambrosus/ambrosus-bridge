@@ -12,7 +12,7 @@ function main() {
         return fs.readdirSync(abiPath).filter(file => file.endsWith(".json"))
       if (args[0] == "--relay") {
         return [
-          "ETH_AmbBridge.json", "ETH_AmbBridge_PoW.json", "ETH_EthBridge.json",
+          "ETH_AmbBridge.json", "ETH_EthBridge.json",
           "BSC_AmbBridge.json", "BSC_BscBridge.json"
         ];
       }
