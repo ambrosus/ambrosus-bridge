@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -53,6 +54,10 @@ func get(url string) ([]byte, error) {
 	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("read body: %w", err)
+	}
+
+	if len(data) == 0 {
+		return nil, networks.ErrEventNotFound // TODO: better to return our error
 	}
 	return data, nil
 }
