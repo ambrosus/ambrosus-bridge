@@ -14,14 +14,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGetTransferEventReal(t *testing.T) {
-	api := NewEventsApi("localhost:8080", "amb", "eth", &zerolog.Logger{})
-	resp, err := api.GetTransfer(1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Log(resp)
-}
+//func TestGetTransferEventReal(t *testing.T) {
+//	api := NewEventsApi("localhost:8080", "amb", "eth", &zerolog.Logger{})
+//	resp, err := api.GetTransfer(1)
+//	if err != nil {
+//		t.Fatal(err)
+//	}
+//	t.Log(resp)
+//}
 
 func TestGetTransferEvent(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
