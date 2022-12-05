@@ -28,6 +28,7 @@ type CommonBridge struct {
 
 	Client, WsClient ethclients.ClientInterface
 	Contract         interfaces.BridgeContract
+	EventsApi           events.Events
 	ContractAddress  common.Address
 	Auth             *bind.TransactOpts
 
@@ -38,9 +39,10 @@ type CommonBridge struct {
 	ContractCallLock *sync.Mutex
 }
 
-func New(cfg *config.Network, name string) (b CommonBridge, err error) {
+func New(cfg *config.Network, name string, eventsApi events.Events) (b CommonBridge, err error) {
 	b.Name = name
 	b.ContractAddress = common.HexToAddress(cfg.ContractAddr)
+	b.EventsApi = eventsApi
 
 	origin := GetAmbrosusOrigin()
 
@@ -109,8 +111,7 @@ func GetAmbrosusOrigin() string {
 // interface `Bridge`
 
 func (b *CommonBridge) Events() events.Events {
-	// todo
-	return nil
+	return b.EventsApi
 }
 
 func (b *CommonBridge) GetClient() ethclients.ClientInterface {

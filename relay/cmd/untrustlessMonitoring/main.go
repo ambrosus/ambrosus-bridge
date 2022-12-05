@@ -25,7 +25,7 @@ func main() {
 
 	baseLogger := cmd.CreateLogger(cfg.ExtLoggers).With().Str("service", "SubmitterAura").Logger()
 
-	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, baseLogger)
+	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, cfg.EventsApi, baseLogger)
 	if err != nil {
 		log.Fatal().Err(err).Msg("error creating bridges")
 	}

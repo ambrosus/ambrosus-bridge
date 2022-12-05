@@ -14,6 +14,9 @@
             "privateKey": "in env"
         }
     },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus-test.io"
+    },
     "submitters": {
         "enable": true,
         "sideToAmb": {
