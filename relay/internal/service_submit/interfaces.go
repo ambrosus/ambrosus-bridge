@@ -3,7 +3,6 @@ package service_submit
 import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethash"
 	"github.com/ethereum/go-ethereum/common"
 )
 
@@ -24,13 +23,6 @@ type ReceiverAura interface {
 	GetValidatorSet() ([]common.Address, error)
 	GetLastProcessedBlockHash() (*common.Hash, error)
 	GetMinSafetyBlocksValidators() (uint64, error)
-}
-
-type ReceiverPoW interface {
-	Receiver
-	SubmitTransferPoW(*bindings.CheckPoWPoWProof) error
-	SubmitEpochData(*ethash.EpochData) error
-	IsEpochSet(epoch uint64) (bool, error)
 }
 
 type ReceiverPoSA interface {
