@@ -15,6 +15,10 @@
     "optimism": {
       "amb": "0xa7BC995861df7b56685854245d1E7dE19C46Bda0",
       "side": "0x615D835e0C492b4309E79439765F66Db7BdcE200"
+    },
+    "arbitrum": {
+      "amb": "0xcD6Bf46E49471b6a9CB9Eb6e11F70c957a38e350",
+      "side": "0x615D835e0C492b4309E79439765F66Db7BdcE200"
     }
   },
   "tokens": {
@@ -49,11 +53,16 @@
           "address": "0x3B851d4d79C44AbBBF914D6bc61A2BdCC7387d85",
           "denomination": 18,
           "isPrimary": false
+        },
+        "arbitrum": {
+          "address": "0x096B5914C95C34Df19500DAff77470C845EC749D",
+          "denomination": 18,
+          "isPrimary": false
         }
       }
     },
     "WETH": {
-      "isActive": false,
+      "isActive": true,
       "name": "Wrapped Ether",
       "symbol": "WETH",
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
@@ -71,6 +80,12 @@
         },
         "optimism": {
           "address": "0x8c33e9D24eBf3918D37eC2F26BaE044C9fD30Ea9",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "ETH"
+        },
+        "arbitrum": {
+          "address": "0x55Be7dd776fAbe89d93bAC66ed1cf0Ab31bdd6eB",
           "denomination": 18,
           "isPrimary": true,
           "nativeCoin": "ETH"

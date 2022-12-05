@@ -66,6 +66,7 @@ func (b *UnlockTransfers) unlockOldTransfers() error {
 	}
 
 	// Get the latest block.
+	// TODO(Arbitrum): method `eth_getBlobkByNumber` doesn't exist in `Alchemy`
 	latestBlock, err := b.bridge.GetClient().BlockByNumber(context.Background(), nil)
 	if err != nil {
 		return fmt.Errorf("get latest block: %w", err)

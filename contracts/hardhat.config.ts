@@ -15,11 +15,13 @@ const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
 const bscScanApiKey = "NFH875QU828E37MQD7XB3QHFBE4XTC2AKH"
 const polygonScanApiKey = "5B48B7UTG14J3UNYQGQ9I3UHIHB7PND7VE"
 const optimismScanApiKey = "9RU98DN9AAUB99HZXMFN5WETSP68CEN75S"
+const arbitrumScanApiKey = "9RU98DN9AAUB99HZXMFN5WETSP68CEN75S" // TODO: change api key
 
-const sideNets = ["eth", "bsc", "polygon", "optimism"];
+const sideNets = ["eth", "bsc", "polygon", "optimism", "arbitrum"];
 const bscExtraFields = {verify: {etherscan: {apiKey: bscScanApiKey}}};
 const polygonExtraFields = {verify: {etherscan: {apiKey: polygonScanApiKey}}};
 const optimismExtraFields = {verify: {etherscan: {apiKey: optimismScanApiKey}}};
+const arbitrumExtraFields = {verify: {etherscan: {apiKey: optimismScanApiKey}}};
 
 
 const config: HardhatUserConfig = {
@@ -51,6 +53,9 @@ const config: HardhatUserConfig = {
     ...network("polygon", "test", "https://polygon-mumbai.g.alchemy.com/v2/" + process.env.ALCHEMY_KEY, polygonExtraFields),
 
     ...network("optimism", "test", "https://opt-goerli.g.alchemy.com/v2/6S14oqFC3IHZl0F1trsy_vN41gmDqDaF", optimismExtraFields),
+
+    ...network("arbitrum", "test", "https://arb-goerli.g.alchemy.com/v2/ZOwlu6LylAMGi7hAN_LU5VD8fLqUnuH_", arbitrumExtraFields),
+
     ...network("bsc", "dev", "https://data-seed-prebsc-1-s1.binance.org:8545", bscExtraFields),
     ...network("bsc", "test", "https://data-seed-prebsc-1-s1.binance.org:8545", bscExtraFields),
     ...network("bsc", "main", "https://bsc-dataseed1.binance.org", bscExtraFields),
