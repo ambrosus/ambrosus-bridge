@@ -14,12 +14,13 @@ type EventsApi struct {
 	logger             *zerolog.Logger
 }
 
-func NewEventsApi(baseUrl, thisName, sideName string, logger *zerolog.Logger) *EventsApi {
+func NewEventsApi(baseUrl, thisName, sideName string, baseLogger *zerolog.Logger) *EventsApi {
+	logger := baseLogger.With().Str("thisName", thisName).Str("sideName", sideName).Str("service", "eventsApi").Logger()
 	return &EventsApi{
 		baseUrl:  baseUrl,
 		thisName: thisName,
 		sideName: sideName,
-		logger:   logger,
+		logger:   &logger,
 	}
 }
 
