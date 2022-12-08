@@ -168,7 +168,6 @@ const config: HardhatUserConfig = {
     only: [
       "Bridge$",
       "Bridge_",
-      ":ValidatorSet$",
       "sAMB",
       "IWrapper",
       ":ERC20$",
