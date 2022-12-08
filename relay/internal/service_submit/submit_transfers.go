@@ -3,7 +3,6 @@ package service_submit
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
@@ -114,12 +113,12 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 }
 
 func isEventRemoved(bridge networks.Bridge, event *bindings.BridgeTransfer) error {
-	block, err := bridge.GetClient().BlockByNumber(nil, big.NewInt(int64(event.Raw.BlockNumber)))
-	if err != nil {
-		return fmt.Errorf("blockByNumber: %w", err)
-	}
-	if block.Hash() != event.Raw.BlockHash {
+	newEvent, err := bridge.Events().GetTransfer(event.EventId.Uint64())
+	if errors.Is(err, events.ErrEventNotFound) || (err == nil && event.Raw.BlockHash != newEvent.Raw.BlockHash) {
 		return fmt.Errorf("looks like the event has been removed")
+	}
+	if err != nil {
+		return fmt.Errorf("GetTransfer: %w", err)
 	}
 	return nil
 }
