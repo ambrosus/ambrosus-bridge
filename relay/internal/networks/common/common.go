@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 	"os"
 	"sync"
 
@@ -18,6 +19,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
@@ -28,7 +30,7 @@ type CommonBridge struct {
 
 	Client, WsClient ethclients.ClientInterface
 	Contract         interfaces.BridgeContract
-	EventsApi           events.Events
+	EventsApi        events.Events
 	ContractAddress  common.Address
 	Auth             *bind.TransactOpts
 
@@ -144,4 +146,15 @@ func (b *CommonBridge) GetContractAddress() common.Address {
 
 func (b *CommonBridge) GetRelayAddress() common.Address {
 	return b.Auth.From
+}
+
+func (b *CommonBridge) IsEventRemoved(eventLog *types.Log) error {
+	header, err := b.Client.HeaderByNumber(nil, big.NewInt(int64(eventLog.BlockNumber)))
+	if err != nil {
+		return fmt.Errorf("parityHeaderByNumber: %w", err)
+	}
+	if header.Hash() != eventLog.BlockHash {
+		return fmt.Errorf("looks like the event has been removed")
+	}
+	return nil
 }

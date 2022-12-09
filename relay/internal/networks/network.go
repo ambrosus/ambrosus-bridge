@@ -36,5 +36,7 @@ type Bridge interface {
 	GetContractAddress() common.Address
 	GetRelayAddress() common.Address
 
+	IsEventRemoved(eventLog *types.Log) error
+
 	ProcessTx(methodName string, txOpts *bind.TransactOpts, txCallback ContractCallFn) error
 }

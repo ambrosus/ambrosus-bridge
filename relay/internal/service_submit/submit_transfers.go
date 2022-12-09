@@ -3,12 +3,10 @@ package service_submit
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/rs/zerolog"
@@ -102,25 +100,14 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	}
 
 	// Check if the event has been removed.
-	if err := isEventRemoved(b.submitter, event); err != nil {
-		return fmt.Errorf("isEventRemoved: %w", err)
+	if err := b.submitter.IsEventRemoved(&event.Raw); err != nil {
+		return fmt.Errorf("IsEventRemoved: %w", err)
 	}
 
 	if err := b.submitter.SendEvent(event, safetyBlocks); err != nil {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	return nil
-}
-
-func isEventRemoved(bridge networks.Bridge, event *bindings.BridgeTransfer) error {
-	block, err := bridge.GetClient().BlockByNumber(nil, big.NewInt(int64(event.Raw.BlockNumber)))
-	if err != nil {
-		return fmt.Errorf("blockByNumber: %w", err)
-	}
-	if block.Hash() != event.Raw.BlockHash {
-		return fmt.Errorf("looks like the event has been removed")
-	}
 	return nil
 }
 
