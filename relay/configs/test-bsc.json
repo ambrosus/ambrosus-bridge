@@ -58,7 +58,7 @@
         "endpoint": "/fees",
         "amb": {
             "privateKey": "in env",
-            "minBridgeFeeUSD": 5,
+            "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
             "explorerURL": "https://explorer-api.ambrosus-test.io",
             "transferFeeRecipient": "0x",
@@ -69,7 +69,7 @@
         },
         "side": {
             "privateKey": "in env",
-            "minBridgeFeeUSD": 5,
+            "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
             "explorerURL": "https://api-testnet.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
             "transferFeeRecipient": "0x",
