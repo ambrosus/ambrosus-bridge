@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
@@ -12,6 +13,17 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/gorilla/websocket"
+)
+
+const (
+	// Time allowed to write a message to the peer.
+	writeWait = 10 * time.Second
+
+	// Time allowed to read the next pong message from the peer.
+	pongWait = 50 * time.Second
+
+	// Send pings to peer with this period. Must be less than pongWait.
+	pingPeriod = (pongWait * 9) / 10
 )
 
 var bridgeBoundContract = bind.NewBoundContract(common.Address{}, bindings.BridgeParsedABI, nil, nil, nil)
@@ -72,11 +84,57 @@ func wait(url string) ([]byte, error) {
 		}
 	}
 	defer conn.Close()
-	_, resp, err := conn.ReadMessage()
-	if err != nil {
-		return nil, fmt.Errorf("read message: %w", err)
+
+	// ping
+	pingDoneCh := make(chan struct{})
+	pingErrCh := make(chan error)
+	go ping(conn, pingErrCh, pingDoneCh)
+
+	// resp
+	type respErr struct {
+		resp []byte
+		err  error
 	}
-	return resp, nil
+	respChan := make(chan respErr)
+	go func() {
+		_, resp, err := conn.ReadMessage()
+		respChan <- respErr{resp, err}
+	}()
+
+	// listen the resp or errors from ping or ReadMessage
+	select {
+	case resp := <-respChan:
+		close(pingDoneCh)
+		if resp.err != nil {
+			return nil, fmt.Errorf("read message: %w", err)
+		}
+		return resp.resp, nil
+	case err := <-pingErrCh:
+		return nil, fmt.Errorf("write ping: %w", err)
+	}
+}
+
+func ping(conn *websocket.Conn, errCh chan<- error, doneCh <-chan struct{}) {
+	conn.SetReadDeadline(time.Now().Add(pongWait))
+	conn.SetPongHandler(func(string) error {
+		conn.SetReadDeadline(time.Now().Add(pongWait))
+		return nil
+	})
+
+	ticker := time.NewTicker(pingPeriod)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-doneCh:
+			return
+		case <-ticker.C:
+			err := conn.WriteControl(websocket.PingMessage, nil, time.Now().Add(pongWait))
+			if err != nil {
+				errCh <- err
+				return
+			}
+		}
+	}
 }
 
 func (a *EventsApi) waitEventUrl(eventName string) string {
