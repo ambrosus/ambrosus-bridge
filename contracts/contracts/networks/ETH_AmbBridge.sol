@@ -2,46 +2,46 @@
 pragma solidity 0.8.6;
 
 import "../common/CommonBridge.sol";
-import "../checks/CheckUntrustless.sol";
+import "../checks/CheckUntrustless2.sol";
 
 
-contract ETH_AmbBridge is CommonBridge, CheckUntrustless {
+contract ETH_AmbBridge is CommonBridge, CheckUntrustless2 {
 
     function initialize(
-        CommonStructs.ConstructorArgs calldata args,
-        uint _confirmations,
-        address[] calldata _relays
+        CommonStructs.ConstructorArgs calldata args
     ) public initializer {
         __CommonBridge_init(args);
-        _setRelaysAndConfirmations(new address[](0), _relays, _confirmations);
     }
 
     function upgrade(
-        uint _confirmations,
-        address[] memory _relays
+        address[] calldata _watchdogs,
+        address _fee_provider,
+        address mpcRelay,
+        address oldDefaultAdmin,
+        address oldRelay
     ) public {
         require(msg.sender == address(this), "This method require multisig");
-        // _setRelaysAndConfirmations don't work during upgrade and nobody knows why
-        relays = _relays;
-        confirmationsThreshold = _confirmations;
+
+        // add DEFAULT_ADMIN_ROLE to multisig
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
+        // revoke RELAY_ROLE from old relay
+        revokeRole(RELAY_ROLE, oldRelay);
+
+        // new roles for untrustless mpc
+        _setupRoles(WATCHDOG_ROLE, _watchdogs);
+        _setupRole(FEE_PROVIDER_ROLE, _fee_provider);
+        _setupRole(RELAY_ROLE, mpcRelay);
+
+        // revoke DEFAULT_ADMIN_ROLE from deployer
+        revokeRole(DEFAULT_ADMIN_ROLE, oldDefaultAdmin);
     }
 
-    function submitTransferUntrustless(uint eventId, CommonStructs.Transfer[] calldata transfers) public whenNotPaused {
-        // relay "role" checked at CheckUntrustless contract
-        require(eventId == inputEventId + 1, "EventId out of order");
 
-        bool confirm = checkUntrustless_(eventId, transfers);
-        if (confirm) {// required count of confirmations reached
-            ++inputEventId;
-            emit TransferSubmit(eventId);
-            lockTransfers(transfers, eventId);
-            // todo need lock?
-        }
-    }
-
-    function setRelaysAndConfirmations(address[] calldata toRemove, address[] calldata toAdd, uint _confirmations) public {
-        require(msg.sender == address(this), "This method require multisig");
-        _setRelaysAndConfirmations(toRemove, toAdd, _confirmations);
+    function submitTransferUntrustless(uint eventId, CommonStructs.Transfer[] calldata transfers) public onlyRole(RELAY_ROLE) whenNotPaused {
+        checkEventId(eventId);
+        emit TransferSubmit(eventId);
+        lockTransfers(transfers, eventId);
     }
 
     function setSideBridge(address _sideBridgeAddress) public onlyRole(ADMIN_ROLE) {

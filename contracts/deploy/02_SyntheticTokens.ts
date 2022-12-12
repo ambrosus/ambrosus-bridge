@@ -30,7 +30,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   // more lightweight contract; only 1 bridge address
   const deployNonAmb = async (token: Token) => {
-    const bridgeAddress = isAddress(configFile.bridges[netName].side) || ethers.constants.AddressZero
+    const bridgeAddress = configFile.bridges[netName]?.side || ethers.constants.AddressZero
 
     const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20",

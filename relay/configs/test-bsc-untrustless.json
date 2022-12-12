@@ -1,16 +1,16 @@
 {
     "networks": {
-        "sideBridgeNetwork": "ETH",
+        "sideBridgeNetwork": "BSC",
         "AMB": {
-            "httpUrl": "https://network.ambrosus.io",
-            "wsUrl": "wss://network.ambrosus.io/ws",
-            "contractAddr": "0x19caBC1E34Ab0CC5C62DaA1394f6022B38b75c78",
+            "httpUrl": "https://network.ambrosus-test.io",
+            "wsUrl": "wss://network.ambrosus-test.io/ws",
+            "contractAddr": "0xa09De74437D2453Df47deF3F5C2d14Cd3f0cF8c0",
             "privateKey": "in env"
         },
-        "ETH": {
-            "httpUrl": "https://mainnet.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://mainnet.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208",
+        "BSC": {
+            "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
+            "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
+            "contractAddr": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248",
             "privateKey": ""
         }
     },
@@ -23,13 +23,11 @@
                 "meID": "in env",
                 "partyIDs": [
                     "master",
-                    "Kevin",
-                    "Lang",
-                    "Rory",
-                    "Andrey"
+                    "Max",
+                    "AndreyM"
                 ],
-                "threshold": 5,
-                "serverURL": "ws://65.108.51.81:6555",
+                "threshold": 2,
+                "serverURL": "ws://95.217.211.229:6555",
                 "accessToken": "in env",
                 "sharePath": "in env"
             }
@@ -41,13 +39,11 @@
                 "meID": "in env",
                 "partyIDs": [
                     "master",
-                    "Kevin",
-                    "Lang",
-                    "Rory",
-                    "Andrey"
+                    "Max",
+                    "AndreyM"
                 ],
-                "threshold": 5,
-                "serverURL": "ws://65.108.51.81:6455",
+                "threshold": 2,
+                "serverURL": "ws://95.217.211.229:6455",
                 "accessToken": "in env",
                 "sharePath": "in env"
             }
@@ -56,7 +52,8 @@
     "validityWatchdogs": {
         "enable": true,
         "enableForAmb": true,
-        "enableForSide": true
+        "enableForSide": true,
+        "__description__": "user relay for untrustless2 will only check that transfers pushed into side network (eth) are valid"
     },
     "pauseUnpauseWatchdogs": {
         "enable": false
@@ -73,8 +70,8 @@
     "externalLogger": {
         "telegram": {
             "enable": true,
-            "token": "in env",
-            "chatId": "-1001601672753"
+            "token": "5379706864:AAGnnmtbDgCTX-6a1ij5CIdS23oVIcA7CB4",
+            "chatId": "-1001753338316"
         }
     },
     "prometheus": {

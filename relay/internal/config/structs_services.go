@@ -12,25 +12,9 @@ type (
 	SubmitterVariants struct {
 		Variant string `mapstructure:"variant"`
 
-		Aura *SubmitterAura `mapstructure:"aura"`
-		Pow  *SubmitterPoW  `mapstructure:"pow"`
-		Posa *SubmitterPoSA `mapstructure:"posa"`
-		Mpc  *SubmitterMpc  `mapstructure:"mpc"`
+		Mpc *SubmitterMpc `mapstructure:"mpc"`
 	}
 
-	SubmitterAura struct {
-		VSContractAddr            string `mapstructure:"vsContractAddr"`
-		FinalizeServiceUrl        string `mapstructure:"finalizeServiceUrl"`
-		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
-	}
-	SubmitterPoW struct {
-		EthashDir            string `mapstructure:"ethashDir"`
-		EthashKeepPrevEpochs uint64 `mapstructure:"ethashKeepPrevEpochs"`
-		EthashGenNextEpochs  uint64 `mapstructure:"ethashGenNextEpochs"`
-	}
-	SubmitterPoSA struct {
-		ReceiverBridgeMaxTxSizeKB uint64 `mapstructure:"receiverBridgeMaxTxSizeKB"`
-	}
 	SubmitterMpc struct {
 		IsServer    bool     `mapstructure:"isServer"`
 		MeID        string   `mapstructure:"meID"`

@@ -5,7 +5,6 @@
             "httpUrl": "https://network.ambrosus.io",
             "wsUrl": "wss://network.ambrosus.io/ws",
             "contractAddr": "0x19caBC1E34Ab0CC5C62DaA1394f6022B38b75c78",
-            "vsContractAddr": "0x0000000000000000000000000000000000000F00",
             "privateKey": "in env"
         },
         "ETH": {
@@ -18,7 +17,7 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "untrustless",
+            "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
                 "meID": "master",
