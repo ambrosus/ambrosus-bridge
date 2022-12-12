@@ -92,7 +92,7 @@ func (a *EventsApi) WatchTransferFinish() (*bindings.BridgeTransferFinish, error
 
 // temporary, while can't use backend fee api
 func (a *EventsApi) GetWithdrawsCount(fromEvent, toEvent uint64) (int, error) {
-	url := fmt.Sprintf("http://%s/relay/withdrawsCount?networkFrom=%s&networkTo=%s", a.baseUrl, a.thisName, a.sideName)
+	url := fmt.Sprintf("http://%s/relay/getWithdrawsCount?networkFrom=%s&networkTo=%s&eventFrom=%d&eventTo=%d", a.baseUrl, a.thisName, a.sideName, fromEvent, toEvent)
 	resp, err := get(url)
 	if err != nil {
 		return 0, fmt.Errorf("get withdraws count: %w", err)
