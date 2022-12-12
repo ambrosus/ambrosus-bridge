@@ -8,6 +8,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	ec "github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
 )
@@ -32,9 +33,9 @@ type Server struct {
 // NewServer create and start new server
 func NewServer(tss *tss_wrap.Mpc, accessToken string, logger *zerolog.Logger) *Server {
 	s := &Server{
-		Tss:    tss,
-		logger: logger,
-		accessToken:  accessToken,
+		Tss:         tss,
+		logger:      logger,
+		accessToken: accessToken,
 	}
 	return s
 }
@@ -57,7 +58,7 @@ func (s *Server) Sign(ctx context.Context, partyIDs []string, msg []byte) ([]byt
 	return signature, err
 }
 
-func (s *Server) Keygen(ctx context.Context, partyIDs []string) error {
+func (s *Server) Keygen(ctx context.Context, partyIDs []string, optionalPreParams ...keygen.LocalPreParams) error {
 	s.logger.Info().Msg("Start keygen operation")
 
 	if err := s.startOperation(common.KeygenOperation, partyIDs); err != nil {
@@ -66,7 +67,7 @@ func (s *Server) Keygen(ctx context.Context, partyIDs []string) error {
 
 	_, err := s.doOperation(ctx,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.Keygen(ctx, partyIDs, inCh, outCh)
+			err := s.Tss.Keygen(ctx, partyIDs, inCh, outCh, optionalPreParams...)
 			if err != nil {
 				return nil, err
 			}
