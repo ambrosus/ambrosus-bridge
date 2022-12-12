@@ -149,7 +149,7 @@ func (b *CommonBridge) GetRelayAddress() common.Address {
 }
 
 func (b *CommonBridge) IsEventRemoved(eventLog *types.Log) error {
-	header, err := b.Client.HeaderByNumber(nil, big.NewInt(int64(eventLog.BlockNumber)))
+	header, err := b.Client.HeaderByNumber(context.Background(), big.NewInt(int64(eventLog.BlockNumber)))
 	if err != nil {
 		return fmt.Errorf("parityHeaderByNumber: %w", err)
 	}

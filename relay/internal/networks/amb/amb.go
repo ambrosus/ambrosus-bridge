@@ -64,7 +64,7 @@ func New(cfg *config.Network, sideBridgeName string, eventsApi events.Events, ba
 }
 
 func (b *Bridge) IsEventRemoved(eventLog *types.Log) error {
-	header, err := b.ParityClient.ParityHeaderByNumber(nil, big.NewInt(int64(eventLog.BlockNumber)))
+	header, err := b.ParityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(eventLog.BlockNumber)))
 	if err != nil {
 		return fmt.Errorf("parityHeaderByNumber: %w", err)
 	}
