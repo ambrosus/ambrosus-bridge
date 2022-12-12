@@ -69,7 +69,7 @@ const config: HardhatUserConfig = {
       tags: ["amb", "testnet"],
       hardfork: "byzantium",
       companionNetworks: {eth: 'test/eth', bsc: 'test/bsc'},
-      accounts: [devPK],
+      accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero],
     },
     "main/amb": {
       url: "https://network.ambrosus.io",
@@ -168,7 +168,6 @@ const config: HardhatUserConfig = {
     only: [
       "Bridge$",
       "Bridge_",
-      ":ValidatorSet$",
       "sAMB",
       "IWrapper",
       ":ERC20$",

@@ -8,8 +8,6 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/aura"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/posa"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless2"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/untrustless_mpc"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/client"
@@ -21,10 +19,6 @@ func createSubmitter(cfg *config.SubmitterVariants, submitterBridge networks.Bri
 	switch cfg.Variant {
 	case "":
 		return nil, nil
-	case "aura":
-		return aura.NewSubmitterAura(submitterBridge, &aura.ReceiverAura{Receiver: receiverBridge}, cfg.Aura)
-	case "posa":
-		return posa.NewSubmitterPoSA(submitterBridge, &posa.ReceiverPoSA{Receiver: receiverBridge}, cfg.Posa)
 	case "untrustless2":
 		return untrustless2.NewSubmitterUntrustless(submitterBridge, &untrustless2.ReceiverUntrustless2{Receiver: receiverBridge})
 	case "untrustless-mpc":

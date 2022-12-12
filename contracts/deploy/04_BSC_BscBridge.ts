@@ -1,6 +1,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {addNewTokensToBridge, getAmbValidators, options, parseNet, readConfig_} from "./utils/utils";
+import {addNewTokensToBridge, options, parseNet, readConfig_} from "./utils/utils";
+import {getAddresses} from "./utils/prod_addresses";
 
 const BRIDGE_NAME = "BSC_BscBridge";
 
@@ -19,14 +20,26 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
       wrappingTokenAddress: configFile.tokens.WBNB.addresses.bsc,
       timeframeSeconds: isMainNet ? 60 * 60 * 4 : 60,
       lockTime: isMainNet ? 60 * 10 : 60,
-      minSafetyBlocks: isMainNet ? 10 : 2,
-      minSafetyBlocksValidators: isMainNet ? 10 : 2,
-    },
-    [  // aura receiver params
-      ...(await getAmbValidators(ambNet, isMainNet)),
-      isMainNet ? 10 : 2, // minSafetyBlocksValidators
-    ]
+      minSafetyBlocks: 10,
+    }, []
   );
+
+  // upgrade to untrustless-mpc; set watchdogs and fee_provider roles; remove DEFAULT_ADMIN_ROLE from deployer; remove RELAY_ROLE from old relay
+  let {owner} = await hre.getNamedAccounts();
+  const prod_addresses = getAddresses(BRIDGE_NAME);
+  // @ts-ignore
+  deployOptions.proxy.execute.onUpgrade = {
+    methodName: "upgrade",
+    args: [
+      prod_addresses.watchdogsAddresses, // grand WATCHDOG_ROLEs
+      isMainNet ? prod_addresses.feeProviderAddress: owner,  // grand FEE_PROVIDER_ROLE
+      isMainNet ? prod_addresses.relayAddress : owner,  // grand RELAY_ROLE to new mpc relay
+
+      isMainNet ? prod_addresses.adminAddress : owner, // remove DEFAULT_ADMIN_ROLE from this address
+      isMainNet ? prod_addresses.feeProviderAddress: owner // remove RELAY_ROLE from this address (it's old relay address)
+    ]
+  };
+
 
   if (isMainNet) {
     console.log("To update prod contract remove this if statement :)");
