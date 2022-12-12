@@ -15,6 +15,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/client"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/server"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
+	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	zerolog "github.com/rs/zerolog/log"
 )
 
@@ -58,7 +59,7 @@ func main() {
 	checkShareDir(*flagShareDir)
 
 	if !*flagOperation {
-		keygen(isServer, *flagServerHost, *flagUrl, *flagAccessToken, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
+		doKeygen(isServer, *flagServerHost, *flagUrl, *flagAccessToken, *flagMeID, partyIDs, *flagThreshold, *flagShareDir)
 	} else {
 		partyIDsNew := strings.Split(*flagPartyIDsNew, " ")
 		checkThreshold(*flagThresholdNew)
@@ -68,7 +69,7 @@ func main() {
 	}
 }
 
-func keygen(isServer bool, hostUrl, serverURL string, accessToken string, id string, partyIDs []string, threshold int, shareDir string) {
+func doKeygen(isServer bool, hostUrl, serverURL string, accessToken string, id string, partyIDs []string, threshold int, shareDir string) {
 	sharePath := getSharePath(shareDir, id)
 
 	fmt.Println("=======================================================")
@@ -81,17 +82,26 @@ func keygen(isServer bool, hostUrl, serverURL string, accessToken string, id str
 	if isShareExist(sharePath) {
 		log.Fatal("share already exist")
 	}
+
+	log.Println("Generating some safe prime numbers...")
+	preParams, err := keygen.GeneratePreParams(10 * time.Minute)
+	if err != nil {
+		log.Fatal("Failed to generate pre params", err)
+	}
+	log.Println("Done generating safe prime numbers!")
+	log.Println("Starting MPC keygen protocol...")
+
 	mpcc := tss_wrap.NewMpc(id, threshold, &logger)
 	netOperation := createNetworking(isServer, hostUrl, serverURL, accessToken, mpcc)
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Minute)
-	err := netOperation.Keygen(ctx, partyIDs)
+	err = netOperation.Keygen(ctx, partyIDs, *preParams)
 	if err != nil {
 		log.Fatal(err)
 	}
 	saveShare(mpcc, sharePath)
 }
 
-func reshare(isServer bool, hostUrl, serverURL, accessToken string, id string, meInNewCommittee bool, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
+func doReshare(isServer bool, hostUrl, serverURL, accessToken string, id string, meInNewCommittee bool, partyIDsOld, partyIDsNew []string, thresholdOld, thresholdNew int, shareDir string) {
 	sharePath := getSharePath(shareDir, id)
 
 	fmt.Println("=======================================================")
@@ -122,7 +132,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, accessToken, meID, meI
 	if meIDNew != "" { // we are in new committee
 		wg.Add(1)
 		go func() {
-			reshare(isServer, serverHost, url, accessToken,
+			doReshare(isServer, serverHost, url, accessToken,
 				meIDNew, true, partyIDs, partyIDsNew,
 				threshold, thresholdNew, shareDir)
 			wg.Done()
@@ -133,7 +143,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, accessToken, meID, meI
 		isServer = false
 	}
 	if meID != "" { // we are in old committee
-		reshare(isServer, serverHost, url, accessToken,
+		doReshare(isServer, serverHost, url, accessToken,
 			meID, false, partyIDs, partyIDsNew,
 			threshold, thresholdNew, shareDir)
 	}
@@ -144,7 +154,7 @@ func reshareBothCommittee(isServer bool, serverHost, url, accessToken, meID, meI
 
 type networkingOperations interface {
 	Reshare(ctx context.Context, partyIDsOld, partyIDsNew []string, thresholdNew int) error
-	Keygen(ctx context.Context, party []string) error
+	Keygen(ctx context.Context, party []string, optionalPreParams ...keygen.LocalPreParams) error
 }
 
 func createNetworking(isServer bool, hostUrl string, serverURL string, accessToken string, mpcc *tss_wrap.Mpc) networkingOperations {
