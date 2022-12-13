@@ -78,13 +78,13 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
-            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/fee?networkThis=amb&networkSide=eth"
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=amb&networkSide=eth"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
-            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/fee?networkThis=eth&networkSide=amb"
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=eth&networkSide=amb"
         }
     },
     "externalLogger": {
