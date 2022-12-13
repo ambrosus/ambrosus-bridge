@@ -3,8 +3,6 @@ package bsc
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
@@ -12,6 +10,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/limit_filtering"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients_rpc/rate_limiter"
 	"github.com/ethereum/go-ethereum/rpc"
+	"github.com/mitchellh/mapstructure"
 	"github.com/rs/zerolog"
 )
 
@@ -32,17 +31,11 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 
 	// ///////////////////
 	origin := nc.GetAmbrosusOrigin()
-	filterLogsFromBlock, err := strconv.Atoi(os.Getenv("BSC_FILTER_LOGS_FROM_BLOCK"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid BSC_FILTER_LOGS_FROM_BLOCK: %w", err)
-	}
-	commonBridge.Logger.Info().Msgf("Set BSC_FILTER_LOGS_FROM_BLOCK to %d", filterLogsFromBlock)
 
-	filterLogsLimitBlocks, err := strconv.Atoi(os.Getenv("BSC_FILTER_LOGS_LIMIT_BLOCKS"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid BSC_FILTER_LOGS_LIMIT_BLOCKS: %w", err)
+	var specificSettings *config.BSCSpecificSettings
+	if err = mapstructure.Decode(cfg.SpecificSettings, &specificSettings); err != nil {
+		return nil, fmt.Errorf("failed to cast `specificSettings`: %w", err)
 	}
-	commonBridge.Logger.Info().Msgf("Set BSC_FILTER_LOGS_LIMIT_BLOCKS to %d", filterLogsLimitBlocks)
 
 	rpcHTTPClient, err := rate_limiter.DialHTTP(cfg.HttpURL)
 	if err != nil {
@@ -50,7 +43,7 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 	}
 	rpcHTTPClient.SetHeader("Origin", origin)
 
-	limitFilteringClient := limit_filtering.NewClient(rpcHTTPClient, int64(filterLogsFromBlock), int64(filterLogsLimitBlocks))
+	limitFilteringClient := limit_filtering.NewClient(rpcHTTPClient, specificSettings.FilterLogsFromBlock, specificSettings.FilterLogsLimitBlocks)
 	commonBridge.Client = limitFilteringClient
 
 	// Creating a new bridge contract instance.
@@ -65,7 +58,7 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 		if err != nil {
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
-		commonBridge.WsClient = limit_filtering.NewClient(rpcWSClient, int64(filterLogsFromBlock), int64(filterLogsLimitBlocks))
+		commonBridge.WsClient = limit_filtering.NewClient(rpcWSClient, specificSettings.FilterLogsFromBlock, specificSettings.FilterLogsLimitBlocks)
 
 		commonBridge.WsContract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.WsClient)
 		if err != nil {
