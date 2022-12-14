@@ -60,6 +60,7 @@ func New(cfg *config.Network, sideBridgeName string, eventsApi events.Events, ba
 
 	return &Bridge{
 		CommonBridge: commonBridge,
+		ParityClient: parityClient,
 	}, nil
 }
 
