@@ -6,12 +6,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/receipts_proof"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
 )
@@ -51,49 +48,6 @@ func waitForUnpauseContract(b networks.Bridge) error {
 		b.GetLogger().Info().Msg("Contracts is unpaused, continue working!")
 		return nil
 	}
-}
-
-func EncodeTransferProof(client ethclients.ClientInterface, event *bindings.BridgeTransfer) (bindings.CommonStructsTransferProof, error) {
-	proof, err := GetProof(client, event)
-	if err != nil {
-		return bindings.CommonStructsTransferProof{}, fmt.Errorf("GetProof: %w", err)
-	}
-
-	return bindings.CommonStructsTransferProof{
-		ReceiptProof: proof,
-		EventId:      event.EventId,
-		Transfers:    event.Queue,
-	}, nil
-}
-
-func GetProof(client ethclients.ClientInterface, event receipts_proof.ProofEvent) ([][]byte, error) {
-	receipts, err := getReceipts(client, event.Log().BlockHash)
-	if err != nil {
-		return nil, fmt.Errorf("getReceipts: %w", err)
-	}
-	return receipts_proof.CalcProofEvent(receipts, event)
-}
-
-func getReceipts(client ethclients.ClientInterface, blockHash common.Hash) ([]*types.Receipt, error) {
-	txsCount, err := client.TransactionCount(context.Background(), blockHash)
-	if err != nil {
-		return nil, fmt.Errorf("get transaction count: %w", err)
-	}
-
-	receipts := make([]*types.Receipt, txsCount)
-
-	for i := uint(0); i < txsCount; i++ {
-		tx, err := client.TransactionInBlock(context.Background(), blockHash, i)
-		if err != nil {
-			return nil, fmt.Errorf("get transaction in block: %w", err)
-		}
-		receipts[i], err = client.TransactionReceipt(context.Background(), tx.Hash())
-		if err != nil {
-			return nil, fmt.Errorf("get transaction receipt: %w", err)
-		}
-	}
-
-	return receipts, nil
 }
 
 // GetTxGasPrice returns gas price from raw response if transaction's type - DynamicFeeTx

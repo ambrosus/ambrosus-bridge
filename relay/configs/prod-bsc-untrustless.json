@@ -23,8 +23,8 @@
         "sideToAmb": {
             "variant": "untrustless-mpc",
             "mpc": {
-                "isServer": true,
-                "meID": "master",
+                "isServer": false,
+                "meID": "in env",
                 "partyIDs": [
                     "master",
                     "Kevin",
@@ -33,16 +33,16 @@
                     "Andrey"
                 ],
                 "threshold": 5,
-                "serverURL": ":6555",
+                "serverURL": "ws://65.108.51.81:6555",
                 "accessToken": "in env",
-                "sharePath": "shared/share_master"
+                "sharePath": "in env"
             }
         },
         "ambToSide": {
             "variant": "untrustless-mpc",
             "mpc": {
-                "isServer": true,
-                "meID": "master",
+                "isServer": false,
+                "meID": "in env",
                 "partyIDs": [
                     "master",
                     "Kevin",
@@ -51,9 +51,9 @@
                     "Andrey"
                 ],
                 "threshold": 5,
-                "serverURL": ":6455",
+                "serverURL": "ws://65.108.51.81:6455",
                 "accessToken": "in env",
-                "sharePath": "shared/share_master"
+                "sharePath": "in env"
             }
         }
     },
@@ -63,52 +63,25 @@
         "enableForSide": true
     },
     "pauseUnpauseWatchdogs": {
-        "enable": true
+        "enable": false
     },
     "triggers": {
-        "enable": true
+        "enable": false
     },
     "unlockers": {
-        "enable": true
+        "enable": false
     },
     "feeApi": {
-        "enable": true,
-        "ip": "",
-        "port": "8080",
-        "endpoint": "/fees",
-        "amb": {
-            "privateKey": "in env",
-            "minBridgeFeeUSD": 0,
-            "minTransferFeeUSD": 1,
-            "explorerURL": "https://explorer-api.ambrosus.io",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xDE99F453d76D5f485d90244319593b12D5eeDe8B"
-            ],
-            "transferFeeTxsFromBlock": 0
-        },
-        "side": {
-            "privateKey": "in env",
-            "minBridgeFeeUSD": 0,
-            "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8"
-            ],
-            "transferFeeTxsFromBlock": 0
-        }
+        "enable": false
     },
     "externalLogger": {
         "telegram": {
             "enable": true,
             "token": "in env",
-            "chatId": "-1001727670023"
+            "chatId": "-1001601672753"
         }
     },
     "prometheus": {
-        "enable": true,
-        "ip": "",
-        "port": "9090"
+        "enable": false
     }
 }

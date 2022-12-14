@@ -35,13 +35,14 @@ curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay.sh
 
 ##### Untrustless MPC
 
-Command to run eth-relay:
+Command to run relay:
 
 <pre>
 curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay-mpc.sh > relay-mpc.sh && sudo chmod +x relay-mpc.sh
-sudo ./relay-mpc.sh <i>meID accessToken partyIDs threshold url</i>
+sudo ./relay-mpc.sh <i>sideNet meID accessToken partyIDs threshold url</i>
 </pre>
 where:
+1. `sideNet` - name of the side network (doesn't matter it's in uppercase or lowercase)
 1. `meID` - your ID in the party
 1. `accessToken` - access token to connect to the server
 1. `partyIDs` - IDs of the party separated by space *(for keygen)*
@@ -50,7 +51,7 @@ where:
 
 For example:
 <pre>
-sudo ./relay-mpc.sh Bob "some token" "Alice Bob" 2 wss://relay-eth.ambrosus.io/mpcSide/ws
+sudo ./relay-mpc.sh ETH Bob "some token" "Alice Bob" 2 wss://relay-eth.ambrosus.io/mpcSide/ws
 </pre>
 
 You may not enter `partyIDs`, `threshold` and `url` if you already have the share to just run the relay.

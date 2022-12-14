@@ -23,10 +23,18 @@ type (
 		Networks          map[string]*Network `mapstructure:",remain"`
 	}
 	Network struct {
-		HttpURL      string `mapstructure:"httpUrl"`
-		WsURL        string `mapstructure:"wsUrl"`
-		ContractAddr string `mapstructure:"contractAddr"`
-		PrivateKey   string `mapstructure:"privateKey"`
+		HttpURL          string                 `mapstructure:"httpUrl"`
+		WsURL            string                 `mapstructure:"wsUrl"`
+		ContractAddr     string                 `mapstructure:"contractAddr"`
+		PrivateKey       string                 `mapstructure:"privateKey"`
+		SpecificSettings map[string]interface{} `mapstructure:"specificSettings"`
+	}
+
+	// specific settings for networks
+
+	BSCSpecificSettings struct {
+		FilterLogsFromBlock   int64 `mapstructure:"filterLogsFromBlock"`
+		FilterLogsLimitBlocks int64 `mapstructure:"filterLogsLimitBlocks"`
 	}
 )
 

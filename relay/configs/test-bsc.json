@@ -11,7 +11,11 @@
             "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "contractAddr": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248",
-            "privateKey": "in env"
+            "privateKey": "in env",
+            "specificSettings": {
+                "filterLogsFromBlock": 23637484,
+                "filterLogsLimitBlocks": 4999
+            }
         }
     },
     "eventsApi": {
@@ -20,17 +24,35 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "posa",
-            "posa": {
-                "receiverBridgeMaxTxSizeKB": 300
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6555",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
             }
         },
         "ambToSide": {
-            "variant": "aura",
-            "aura": {
-                "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-                "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin",
-                "receiverBridgeMaxTxSizeKB": 128
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6455",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
             }
         },
         "ambFaucet": {
