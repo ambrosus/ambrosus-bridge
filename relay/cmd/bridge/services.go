@@ -62,11 +62,11 @@ func runValidityWatchdogs(cfg *config.ValidityWatchdogs, ambBridge *amb.Bridge, 
 	}
 
 	if cfg.EnableForAmb {
-		go service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+		go service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge).Run()
 	}
 
 	if cfg.EnableForSide {
-		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge).Run()
 	}
 
 }
@@ -88,8 +88,8 @@ func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	ambWatchdog := service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
-	sideWatchdog := service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
+	ambWatchdog := service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge)
+	sideWatchdog := service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge)
 	go service_unlock.NewUnlockTransfers(ambBridge, ambWatchdog).Run()
 	go service_unlock.NewUnlockTransfers(sideBridge, sideWatchdog).Run()
 }

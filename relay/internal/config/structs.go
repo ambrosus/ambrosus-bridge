@@ -2,7 +2,8 @@ package config
 
 type (
 	Config struct {
-		Networks *Networks `mapstructure:"networks"`
+		Networks  *Networks  `mapstructure:"networks"`
+		EventsApi *EventsApi `mapstructure:"eventsApi"`
 
 		Submitters            *Submitters            `mapstructure:"submitters"`
 		ValidityWatchdogs     *ValidityWatchdogs     `mapstructure:"validityWatchdogs"`
@@ -34,6 +35,12 @@ type (
 	BSCSpecificSettings struct {
 		FilterLogsFromBlock   int64 `mapstructure:"filterLogsFromBlock"`
 		FilterLogsLimitBlocks int64 `mapstructure:"filterLogsLimitBlocks"`
+	}
+)
+
+type (
+	EventsApi struct {
+		BaseURL string `mapstructure:"baseUrl"`
 	}
 )
 
