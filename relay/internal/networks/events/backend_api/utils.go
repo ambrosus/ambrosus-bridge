@@ -106,7 +106,7 @@ func wait(url string) ([]byte, error) {
 	case resp := <-respChan:
 		close(pingDoneCh)
 		if resp.err != nil {
-			return nil, fmt.Errorf("read message: %w", err)
+			return nil, fmt.Errorf("read message: %w", resp.err)
 		}
 		return resp.resp, nil
 	case err := <-pingErrCh:
