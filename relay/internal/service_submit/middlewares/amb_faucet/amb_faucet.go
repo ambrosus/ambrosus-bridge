@@ -77,5 +77,5 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 
 func (b *AmbFaucet) Transfer(addressTo common.Address, eventId *big.Int) (*types.Transaction, error) {
 	defer metric.SetAmbFaucetBalanceMetric(b.Receiver(), b.faucetAddress)
-	return b.faucetContract.Faucet(nil, addressTo, eventId, b.sendAmount)
+	return b.faucetContract.Faucet(b.Receiver().GetAuth(), addressTo, eventId, b.sendAmount)
 }
