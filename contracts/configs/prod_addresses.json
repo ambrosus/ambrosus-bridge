@@ -3,6 +3,8 @@
     "description": "amb part of amb-bsc bridge",
     "adminAddress": "0x203F8dCBce61d9BFa48A95F588152Da073d9c693",
     "relayAddress": "0xDE99F453d76D5f485d90244319593b12D5eeDe8B",
+    "masterRelayAddress": "0xDE99F453d76D5f485d90244319593b12D5eeDe8B",
+    "feeProviderAddress": "0xDE99F453d76D5f485d90244319593b12D5eeDe8B",
     "transferFeeRecipient": "0xba971570E4352a700de3ca57Fe882E2d4C70F42F",
     "bridgeFeeRecipient": "0x893dF80919D7e89A56ED2668466ad4EB84C367a0",
     "watchdogsAddresses": [
@@ -10,7 +12,7 @@
       "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a",
       "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8",
       "0xb017DcCC473499C83f1b553bE564f3CeAf002254",
-      "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE",
+      "0xDE99F453d76D5f485d90244319593b12D5eeDe8B",
       "0x203F8dCBce61d9BFa48A95F588152Da073d9c693"
     ],
     "multisig": {
@@ -30,6 +32,8 @@
     "description": "bsc part of amb-bsc bridge",
     "adminAddress": "0x3602541a2015A7867532EEF7e3A4eB2ED436a715",
     "relayAddress": "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8",
+    "masterRelayAddress": "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8",
+    "feeProviderAddress": "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8",
     "transferFeeRecipient": "0x90268508333A15BC932f63faD95E40B7a251eFB1",
     "bridgeFeeRecipient": "0x4CD40e00eBD87acbA000071439B647Aaa2810683",
     "watchdogsAddresses": [
@@ -37,8 +41,8 @@
       "0xEB1c6a8a84063B1cef8B9a23AB87Bf926035A21a",
       "0x40B7d71E70fA6311cB0b300c1Ba6926A2A9000b8",
       "0xb017DcCC473499C83f1b553bE564f3CeAf002254",
-      "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE",
-      "0x203F8dCBce61d9BFa48A95F588152Da073d9c693"
+      "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8",
+      "0x3602541a2015A7867532EEF7e3A4eB2ED436a715"
     ],
     "multisig": {
       "admins": [
@@ -58,6 +62,7 @@
     "description": "amb part of amb-eth bridge",
     "adminAddress": "0x203F8dCBce61d9BFa48A95F588152Da073d9c693",
     "relayAddress": "0x3BB6161dc6E5380831833b223D467b715e05F16E",
+    "masterRelayAddress": "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE",
     "feeProviderAddress": "0x0f071e1785e3E115360E04c9C8D53e958E6f85FE",
     "watchdogsAddresses": [
       "0x260cfE305cA40CaE1a32Ba7611137eF4d7146233",
@@ -86,6 +91,7 @@
     "description": "eth part of amb-eth bridge",
     "adminAddress": "0xb6db3c082d25C0dC26602334B5F3D270091DC422",
     "relayAddress": "0x3BB6161dc6E5380831833b223D467b715e05F16E",
+    "masterRelayAddress": "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded",
     "feeProviderAddress": "0xFAE075e12116FBfE65c58e1Ef0E6CA959cA37ded",
     "watchdogsAddresses": [
       "0x260cfE305cA40CaE1a32Ba7611137eF4d7146233",

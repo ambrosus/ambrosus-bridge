@@ -17,6 +17,7 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
 )
 
@@ -38,7 +39,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 	}
 
 	if cfg.AmbFaucet.Enable {
-		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(sideBridgeSubmitter, cfg.AmbFaucet.PrivateKey,
+		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(sideBridgeSubmitter, common.HexToAddress(cfg.AmbFaucet.FaucetAddress),
 			big.NewInt(cfg.AmbFaucet.MinBalance), big.NewInt(cfg.AmbFaucet.SendAmount))
 		logger.Info().Str("service", "ambFaucet").Bool("enabled", cfg.AmbFaucet.Enable).Send()
 	}

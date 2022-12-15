@@ -47,6 +47,12 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         from: owner,
     });
 
+    await hre.deployments.deploy("Faucet", {
+        from: owner,
+        args: [[owner]],
+    });
+
+
     await hre.deployments.deploy("ProxyMultisigTest", {
         from: owner,
     });
