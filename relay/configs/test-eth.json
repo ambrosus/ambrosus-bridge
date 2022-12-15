@@ -81,25 +81,13 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
-            "explorerURL": "https://explorer-api.ambrosus-test.io",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xb017DcCC473499C83f1b553bE564f3CeAf002254",
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ],
-            "transferFeeTxsFromBlock": 1439420
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=amb&networkSide=eth&onlyLastEventsCount=20"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api-sepolia.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E",
-                "0x50c8ced687672bf4c94a06eb676d61888b8a8001"
-            ],
-            "transferFeeTxsFromBlock": 2085848
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=eth&networkSide=amb&onlyLastEventsCount=20"
         }
     },
     "externalLogger": {

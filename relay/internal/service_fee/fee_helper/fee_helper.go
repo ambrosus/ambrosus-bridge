@@ -20,21 +20,11 @@ type FeeHelper struct {
 	wrapperAddress common.Address
 	privateKey     *ecdsa.PrivateKey
 
-	transferFeeTracker *transferFeeTracker
+	feeApiUrl string
 }
 
-func NewFeeHelper(bridge, sideBridge networks.Bridge, explorer, sideExplorer explorerClient, cfg config.FeeApiNetwork, sideCfg config.FeeApiNetwork) (*FeeHelper, error) {
+func NewFeeHelper(bridge networks.Bridge, cfg config.FeeApiNetwork) (*FeeHelper, error) {
 	wrapperAddress, err := bridge.GetContract().WrapperAddress(nil)
-	if err != nil {
-		return nil, err
-	}
-
-	transferFee, err := newTransferFeeTracker(
-		bridge, sideBridge,
-		explorer, sideExplorer,
-		cfg.TransferFeeIncludedTxsFromAddresses, sideCfg.TransferFeeIncludedTxsFromAddresses,
-		cfg.TransferFeeTxsFromBlock, sideCfg.TransferFeeTxsFromBlock,
-	)
 	if err != nil {
 		return nil, err
 	}
@@ -45,12 +35,12 @@ func NewFeeHelper(bridge, sideBridge networks.Bridge, explorer, sideExplorer exp
 	}
 
 	return &FeeHelper{
-		Bridge:             bridge,
-		minBridgeFee:       decimal.NewFromFloat(cfg.MinBridgeFee),
-		minTransferFee:     decimal.NewFromFloat(cfg.MinTransferFee),
-		privateKey:         privateKey,
-		wrapperAddress:     wrapperAddress,
-		transferFeeTracker: transferFee,
+		Bridge:         bridge,
+		minBridgeFee:   decimal.NewFromFloat(cfg.MinBridgeFee),
+		minTransferFee: decimal.NewFromFloat(cfg.MinTransferFee),
+		privateKey:     privateKey,
+		wrapperAddress: wrapperAddress,
+		feeApiUrl:      cfg.FeeApiUrl,
 	}, nil
 }
 
@@ -58,9 +48,8 @@ func (b *FeeHelper) Sign(digestHash []byte) ([]byte, error) {
 	return crypto.Sign(digestHash, b.privateKey)
 }
 
-func (b *FeeHelper) GetTransferFee() (thisGas, sideGas decimal.Decimal) {
-	this, side := b.transferFeeTracker.GasPerWithdraw()
-	return decimal.NewFromBigInt(this, 0), decimal.NewFromBigInt(side, 0)
+func (b *FeeHelper) GetTransferFee() (thisGas, sideGas decimal.Decimal, err error) {
+	return getTransferFee(b.feeApiUrl)
 }
 
 func (b *FeeHelper) GetWrapperAddress() common.Address {

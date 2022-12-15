@@ -85,23 +85,13 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
-            "explorerURL": "https://explorer-api.ambrosus-test.io",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ],
-            "transferFeeTxsFromBlock": 0
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=amb&networkSide=bsc&onlyLastEventsCount=20"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api-testnet.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ],
-            "transferFeeTxsFromBlock": 0
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=bsc&networkSide=amb&onlyLastEventsCount=20"
         }
     },
     "externalLogger": {
