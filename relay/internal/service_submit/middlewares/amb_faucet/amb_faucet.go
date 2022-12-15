@@ -2,16 +2,12 @@ package amb_faucet
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
-	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/rs/zerolog"
@@ -20,30 +16,32 @@ import (
 // AmbFaucet sends money to the users that receive tokens and have zero balance
 type AmbFaucet struct {
 	networks.Bridge
-	prev         service_submit.Submitter
-	moneyAccount *bind.TransactOpts
-	minBalance   *big.Int
-	sendAmount   *big.Int
-	logger       *zerolog.Logger
+	prev           service_submit.Submitter
+	faucetAddress  common.Address
+	faucetContract *bindings.Faucet
+	minBalance     *big.Int
+	sendAmount     *big.Int
+	logger         *zerolog.Logger
 }
 
-func NewAmbFaucet(prev service_submit.Submitter, moneyAccountPK string, minBalance, sendAmount *big.Int) *AmbFaucet {
+func NewAmbFaucet(prev service_submit.Submitter, faucetAddress common.Address, minBalance, sendAmount *big.Int) *AmbFaucet {
 	logger := prev.GetLogger().With().Str("service", "AmbFaucet").Logger()
 	if prev.Receiver().GetName() != "ambrosus" {
 		logger.Fatal().Msg("AmbFaucet can be used only with ambrosus receiver")
 	}
-	moneyAccount, err := createAuth(prev.Receiver().GetClient(), moneyAccountPK)
+	faucetContract, err := bindings.NewFaucet(faucetAddress, prev.Receiver().GetClient())
 	if err != nil {
-		logger.Fatal().Err(err).Msg("Create auth error")
+		logger.Fatal().Err(err).Msg("Create faucet contract error")
 	}
 
 	return &AmbFaucet{
-		Bridge:       prev,
-		prev:         prev,
-		moneyAccount: moneyAccount,
-		minBalance:   minBalance,
-		sendAmount:   sendAmount,
-		logger:       &logger,
+		Bridge:         prev,
+		prev:           prev,
+		faucetAddress:  faucetAddress,
+		faucetContract: faucetContract,
+		minBalance:     minBalance,
+		sendAmount:     sendAmount,
+		logger:         &logger,
 	}
 }
 
@@ -66,7 +64,7 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 		}
 
 		b.logger.Info().Str("address", t.ToAddress.String()).Str("balance", balance.String()).Msg("User have not enough balance, sending money")
-		tx, err := b.Transfer(t.ToAddress)
+		tx, err := b.Transfer(t.ToAddress, event.EventId)
 		if err != nil {
 			b.logger.Error().Err(err).Str("address", t.ToAddress.String()).Msg("Send money error")
 			continue
@@ -77,45 +75,7 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 	return prevRes
 }
 
-func (b *AmbFaucet) Transfer(addressTo common.Address) (*types.Transaction, error) {
-	defer metric.SetAmbFaucetBalanceMetric(b.Receiver(), b.moneyAccount.From)
-
-	client := b.Receiver().GetClient()
-	nonce, err := client.PendingNonceAt(context.Background(), b.moneyAccount.From)
-	if err != nil {
-		return nil, err
-	}
-
-	tx := types.NewTx(&types.LegacyTx{
-		Nonce:    nonce,
-		To:       &addressTo,
-		Value:    b.sendAmount,
-		Gas:      21_000,
-		GasPrice: big.NewInt(0),
-		Data:     []byte(nil),
-	})
-
-	signedTx, err := b.moneyAccount.Signer(b.moneyAccount.From, tx)
-	if err != nil {
-		return nil, err
-	}
-
-	err = client.SendTransaction(context.Background(), signedTx)
-	return signedTx, err
-}
-
-func createAuth(client ethclients.ClientInterface, privateKey string) (*bind.TransactOpts, error) {
-	pk, err := helpers.ParsePK(privateKey)
-	if err != nil {
-		return nil, err
-	}
-	chainId, err := client.ChainID(context.Background())
-	if err != nil {
-		return nil, fmt.Errorf("chain id: %w", err)
-	}
-	auth, err := bind.NewKeyedTransactorWithChainID(pk, chainId)
-	if err != nil {
-		return nil, fmt.Errorf("new keyed transactor: %w", err)
-	}
-	return auth, nil
+func (b *AmbFaucet) Transfer(addressTo common.Address, eventId *big.Int) (*types.Transaction, error) {
+	defer metric.SetAmbFaucetBalanceMetric(b.Receiver(), b.faucetAddress)
+	return b.faucetContract.Faucet(nil, addressTo, eventId, b.sendAmount)
 }

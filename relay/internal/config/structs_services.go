@@ -26,10 +26,10 @@ type (
 	}
 
 	AmbFaucetConfig struct {
-		enable     `mapstructure:",squash"`
-		PrivateKey string `mapstructure:"privateKey"`
-		MinBalance int64  `mapstructure:"minBalance"`
-		SendAmount int64  `mapstructure:"sendAmount"`
+		enable        `mapstructure:",squash"`
+		FaucetAddress string `mapstructure:"faucetAddress"`
+		MinBalance    int64  `mapstructure:"minBalance"`
+		SendAmount    int64  `mapstructure:"sendAmount"`
 	}
 )
 
