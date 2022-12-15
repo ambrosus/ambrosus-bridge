@@ -11,7 +11,11 @@
             "httpUrl": "https://bsc-mainnet.nodereal.io/v1/e88f6b95a25842d4b67bcf5d5f4a992c",
             "wsUrl": "wss://bsc-mainnet.nodereal.io/ws/v1/e88f6b95a25842d4b67bcf5d5f4a992c",
             "contractAddr": "0x92fa52d3043725D00Eab422440C4e9ef3ba180d3",
-            "privateKey": "in env"
+            "privateKey": "in env",
+            "specificSettings": {
+                "filterLogsFromBlock": 20289860,
+                "filterLogsLimitBlocks": 49999
+            }
         }
     },
     "submitters": {

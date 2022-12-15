@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/ecdsa"
 	"fmt"
+	"math/big"
 	"os"
 	"sync"
 
@@ -12,11 +13,13 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/metric"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients"
 	common_ethclient "github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/helpers"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
@@ -25,10 +28,11 @@ type CommonBridge struct {
 	networks.Bridge
 	SideBridge networks.Bridge
 
-	Client, WsClient     ethclients.ClientInterface
-	Contract, WsContract interfaces.BridgeContract
-	ContractAddress      common.Address
-	Auth                 *bind.TransactOpts
+	Client, WsClient ethclients.ClientInterface
+	Contract         interfaces.BridgeContract
+	EventsApi        events.Events
+	ContractAddress  common.Address
+	Auth             *bind.TransactOpts
 
 	Logger zerolog.Logger
 	Name   string
@@ -37,9 +41,10 @@ type CommonBridge struct {
 	ContractCallLock *sync.Mutex
 }
 
-func New(cfg *config.Network, name string) (b CommonBridge, err error) {
+func New(cfg *config.Network, name string, eventsApi events.Events) (b CommonBridge, err error) {
 	b.Name = name
 	b.ContractAddress = common.HexToAddress(cfg.ContractAddr)
+	b.EventsApi = eventsApi
 
 	origin := GetAmbrosusOrigin()
 
@@ -63,11 +68,6 @@ func New(cfg *config.Network, name string) (b CommonBridge, err error) {
 			return b, fmt.Errorf("dial ws: %w", err)
 		}
 		b.WsClient = common_ethclient.NewClient(rpcWSClient)
-
-		b.WsContract, err = bindings.NewBridge(b.ContractAddress, b.WsClient)
-		if err != nil {
-			return b, fmt.Errorf("create contract ws: %w", err)
-		}
 	}
 
 	// create auth if privateKey provided
@@ -112,6 +112,10 @@ func GetAmbrosusOrigin() string {
 
 // interface `Bridge`
 
+func (b *CommonBridge) Events() events.Events {
+	return b.EventsApi
+}
+
 func (b *CommonBridge) GetClient() ethclients.ClientInterface {
 	return b.Client
 }
@@ -122,10 +126,6 @@ func (b *CommonBridge) GetWsClient() ethclients.ClientInterface {
 
 func (b *CommonBridge) GetContract() interfaces.BridgeContract {
 	return b.Contract
-}
-
-func (b *CommonBridge) GetWsContract() interfaces.BridgeContract {
-	return b.WsContract
 }
 
 func (b *CommonBridge) GetLogger() *zerolog.Logger {
@@ -146,4 +146,15 @@ func (b *CommonBridge) GetContractAddress() common.Address {
 
 func (b *CommonBridge) GetRelayAddress() common.Address {
 	return b.Auth.From
+}
+
+func (b *CommonBridge) IsEventRemoved(eventLog *types.Log) error {
+	header, err := b.Client.HeaderByNumber(context.Background(), big.NewInt(int64(eventLog.BlockNumber)))
+	if err != nil {
+		return fmt.Errorf("parityHeaderByNumber: %w", err)
+	}
+	if header.Hash() != eventLog.BlockHash {
+		return fmt.Errorf("looks like the event has been removed")
+	}
+	return nil
 }

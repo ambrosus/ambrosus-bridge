@@ -18,7 +18,7 @@ func main() {
 
 	baseLogger := cmd.CreateLogger(cfg.ExtLoggers)
 
-	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, baseLogger)
+	ambBridge, sideBridge, err := cmd.CreateBridges(cfg.Networks, cfg.EventsApi, baseLogger)
 	if err != nil {
 		baseLogger.Fatal().Err(err).Msg("error creating bridges")
 	}

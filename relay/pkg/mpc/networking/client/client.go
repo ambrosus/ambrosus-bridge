@@ -89,7 +89,11 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 func (s *Client) GetFullMsg() ([]byte, error) {
 	// todo ctx
 	// make request with websocket lib coz std http lib doesn't support wss protocol in url
-	_, resp, _ := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	// we don't check on error because we just want to do kind of http request, not establish ws connection
+	_, resp, err := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	if resp == nil {
+		return nil, fmt.Errorf("resp is nil, err: %w", err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
 	}

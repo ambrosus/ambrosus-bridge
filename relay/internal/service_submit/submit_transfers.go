@@ -3,13 +3,12 @@ package service_submit
 import (
 	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/rs/zerolog"
 )
 
@@ -54,16 +53,16 @@ func (b *SubmitTransfers) checkOldTransfers() error {
 		return fmt.Errorf("GetLastReceivedEventId: %w", err)
 	}
 
-	for i := int64(1); ; i++ {
-		nextEventId := new(big.Int).Add(lastEventId, big.NewInt(i))
-		nextEvent, err := cb.GetEventById(b.submitter.GetContract(), nextEventId)
-		if errors.Is(err, networks.ErrEventNotFound) { // no more old events
+	for i := uint64(1); ; i++ {
+		nextEventId := lastEventId.Uint64() + i
+		nextEvent, err := b.submitter.Events().GetTransfer(nextEventId)
+		if errors.Is(err, events.ErrEventNotFound) { // no more old events
 			return nil
 		} else if err != nil {
-			return fmt.Errorf("getEventById on id %v: %w", nextEventId.String(), err)
+			return fmt.Errorf("getEventById on id %v: %w", nextEventId, err)
 		}
 
-		b.logger.Info().Str("event_id", nextEventId.String()).Msg("Send old event...")
+		b.logger.Info().Uint64("event_id", nextEventId).Msg("Send old event...")
 		if err := b.processEvent(nextEvent); err != nil {
 			return err
 		}
@@ -76,27 +75,15 @@ func (b *SubmitTransfers) watchTransfers() error {
 	}
 	b.logger.Info().Msg("Listening new events...")
 
-	// Subscribe to events
-	eventCh := make(chan *bindings.BridgeTransfer)
-	eventSub, err := b.submitter.GetWsContract().WatchTransfer(nil, eventCh, nil)
-	if err != nil {
-		return fmt.Errorf("watchTransfer: %w", err)
-	}
-	defer eventSub.Unsubscribe()
-
 	// main loop
 	for {
-		select {
-		case err := <-eventSub.Err():
+		event, err := b.submitter.Events().WatchTransfer()
+		if err != nil {
 			return fmt.Errorf("watching transfers: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
-			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
-			if err := b.processEvent(event); err != nil {
-				return err
-			}
+		}
+		b.logger.Info().Str("event_id", event.EventId.String()).Msg("Send event...")
+		if err := b.processEvent(event); err != nil {
+			return err
 		}
 	}
 }
@@ -113,25 +100,14 @@ func (b *SubmitTransfers) processEvent(event *bindings.BridgeTransfer) error {
 	}
 
 	// Check if the event has been removed.
-	if err := isEventRemoved(b.submitter.GetContract(), event); err != nil {
-		return fmt.Errorf("isEventRemoved: %w", err)
+	if err := b.submitter.IsEventRemoved(&event.Raw); err != nil {
+		return fmt.Errorf("IsEventRemoved: %w", err)
 	}
 
 	if err := b.submitter.SendEvent(event, safetyBlocks); err != nil {
 		return fmt.Errorf("send event: %w", err)
 	}
 
-	return nil
-}
-
-func isEventRemoved(contract interfaces.BridgeContract, event *bindings.BridgeTransfer) error {
-	newEvent, err := cb.GetEventById(contract, event.EventId)
-	if err != nil {
-		return err
-	}
-	if newEvent.Raw.BlockHash != event.Raw.BlockHash {
-		return fmt.Errorf("looks like the event has been removed")
-	}
 	return nil
 }
 
