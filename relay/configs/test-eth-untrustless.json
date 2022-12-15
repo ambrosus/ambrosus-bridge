@@ -73,7 +73,7 @@
     "externalLogger": {
         "telegram": {
             "enable": true,
-            "token": "5379706864:AAGnnmtbDgCTX-6a1ij5CIdS23oVIcA7CB4",
+            "token": "in env",
             "chatId": "-1001753338316"
         }
     },
