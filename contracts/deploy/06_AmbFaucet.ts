@@ -9,18 +9,20 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {owner} = await hre.getNamedAccounts();
 
 
-  const relays = isMainNet ?
-    Object.entries(readConfig())
+  const faucetAdmins = [owner];
+  if (isMainNet) {
+    const relays = Object.entries(readConfig())
       .filter(([name, _]) => name.endsWith("AmbBridge")) // only relays from amb side
-      .map(([_, addresses]) => addresses.masterRelayAddress) :
-    [owner];
+      .map(([_, addresses]) => addresses.masterRelayAddress);
+    faucetAdmins.push(...relays)
+  }
 
-  console.log("Deploying faucet, relays:", relays);
+  console.log("Deploying faucet, admins:", faucetAdmins);
 
   await hre.deployments.deploy("Faucet", {
     contract: "Faucet",
     from: owner,
-    args: [relays],
+    args: [faucetAdmins],
     log: true,
   });
 };
