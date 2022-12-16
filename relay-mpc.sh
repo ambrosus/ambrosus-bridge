@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# TODO: remove this after update users' relays; needed for moving to new version of the script
+[ -d ${PWD}/share ] && mv share share_eth
+
+
 SIDE_NET=$1
 MPC_MEID=$2
 MPC_ACCESS_TOKEN=$3
