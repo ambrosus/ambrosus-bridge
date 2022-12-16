@@ -59,6 +59,12 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 	prevRes := b.prev.SendEvent(event, safetyBlocks)
 
 	for _, t := range event.Queue {
+
+		if (t.TokenAddress == common.Address{}) {
+			b.logger.Debug().Str("address", t.ToAddress.String()).Msg("User receiving native AMB, don't need to send money")
+			continue
+		}
+
 		balance, err := b.Receiver().GetClient().BalanceAt(context.Background(), t.ToAddress, nil)
 		if err != nil {
 			b.logger.Error().Err(err).Str("address", t.ToAddress.String()).Msg("Get balance error")
