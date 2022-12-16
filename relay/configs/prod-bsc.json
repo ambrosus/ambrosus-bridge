@@ -18,6 +18,9 @@
             }
         }
     },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus.io"
+    },
     "submitters": {
         "enable": true,
         "sideToAmb": {
@@ -80,23 +83,13 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
-            "explorerURL": "https://explorer-api.ambrosus.io",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xDE99F453d76D5f485d90244319593b12D5eeDe8B"
-            ],
-            "transferFeeTxsFromBlock": 0
+            "feeApiUrl": "https://backoffice-api.ambrosus.io/relay/fee?networkThis=amb&networkSide=bsc&onlyLastEventsCount=20"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0x64C17b651d0c7d2dF92A7f6E7707C27C6e0535D8"
-            ],
-            "transferFeeTxsFromBlock": 0
+            "feeApiUrl": "https://backoffice-api.ambrosus.io/relay/fee?networkThis=bsc&networkSide=amb&onlyLastEventsCount=20"
         }
     },
     "externalLogger": {

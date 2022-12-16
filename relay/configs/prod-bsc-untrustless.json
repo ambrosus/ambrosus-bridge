@@ -18,6 +18,9 @@
             }
         }
     },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus.io"
+    },
     "submitters": {
         "enable": true,
         "sideToAmb": {
