@@ -8,8 +8,8 @@
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "httpUrl": "https://sepolia.infura.io/v3/73b4b0b7af6c459e97f8350277274156",
+            "wsUrl": "wss://sepolia.infura.io/ws/v3/73b4b0b7af6c459e97f8350277274156",
             "contractAddr": "0xACf183fB8C6382d7cB0D5e9832528AEafC151Fcf",
             "privateKey": ""
         }

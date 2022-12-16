@@ -8,8 +8,8 @@
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://mainnet.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://mainnet.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "httpUrl": "https://mainnet.infura.io/v3/733accefca45411796207d2dbef883a8",
+            "wsUrl": "wss://mainnet.infura.io/ws/v3/733accefca45411796207d2dbef883a8",
             "contractAddr": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208",
             "privateKey": "in env"
         }
