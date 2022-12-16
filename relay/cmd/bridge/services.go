@@ -39,7 +39,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 	}
 
 	if cfg.AmbFaucet.Enable {
-		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(sideBridgeSubmitter, common.HexToAddress(cfg.AmbFaucet.FaucetAddress),
+		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(ambBridge, sideBridgeSubmitter, common.HexToAddress(cfg.AmbFaucet.FaucetAddress),
 			big.NewInt(cfg.AmbFaucet.MinBalance), big.NewInt(cfg.AmbFaucet.SendAmount))
 		logger.Info().Str("service", "ambFaucet").Bool("enabled", cfg.AmbFaucet.Enable).Send()
 	}
