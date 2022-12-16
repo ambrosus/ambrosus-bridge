@@ -97,7 +97,7 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 		return
 	}
 
-	return bridgeFee.BigInt(), transferFee.BigInt(), amount.BigInt(), nil
+	return bridgeFee.RoundUp(0).BigInt(), transferFee.RoundUp(0).BigInt(), amount.BigInt(), nil
 
 }
 
