@@ -15,31 +15,33 @@ import (
 
 // AmbFaucet sends money to the users that receive tokens and have zero balance
 type AmbFaucet struct {
-	networks.Bridge // used for sending transactions, must be amb bridge
-	prev            service_submit.Submitter
-	faucetAddress   common.Address
-	faucetContract  *bindings.Faucet
-	minBalance      *big.Int
-	sendAmount      *big.Int
-	logger          *zerolog.Logger
+	networks.Bridge
+	ambBridge      networks.Bridge // used for sending transactions, must be amb bridge
+	prev           service_submit.Submitter
+	faucetAddress  common.Address
+	faucetContract *bindings.Faucet
+	minBalance     *big.Int
+	sendAmount     *big.Int
+	logger         *zerolog.Logger
 }
 
-func NewAmbFaucet(bridge networks.Bridge, prev service_submit.Submitter, faucetAddress common.Address, minBalance, sendAmount *big.Int) *AmbFaucet {
+func NewAmbFaucet(ambBridge networks.Bridge, prev service_submit.Submitter, faucetAddress common.Address, minBalance, sendAmount *big.Int) *AmbFaucet {
 	logger := prev.GetLogger().With().Str("service", "AmbFaucet").Logger()
 	if prev.Receiver().GetName() != "ambrosus" {
 		logger.Fatal().Msg("AmbFaucet can be used only with ambrosus receiver")
 	}
-	if bridge.GetName() != "ambrosus" {
+	if ambBridge.GetName() != "ambrosus" {
 		logger.Fatal().Msg("AmbFaucet can be used only with ambrosus bridge")
 	}
 
-	faucetContract, err := bindings.NewFaucet(faucetAddress, bridge.GetClient())
+	faucetContract, err := bindings.NewFaucet(faucetAddress, ambBridge.GetClient())
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Create faucet contract error")
 	}
 
 	return &AmbFaucet{
-		Bridge:         bridge,
+		Bridge:         prev,
+		ambBridge:      ambBridge,
 		prev:           prev,
 		faucetAddress:  faucetAddress,
 		faucetContract: faucetContract,
@@ -80,6 +82,6 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 }
 
 func (b *AmbFaucet) Transfer(addressTo common.Address, eventId *big.Int) (*types.Transaction, error) {
-	defer metric.SetAmbFaucetBalanceMetric(b.Bridge, b.faucetAddress)
-	return b.faucetContract.Faucet(b.Bridge.GetAuth(), addressTo, eventId, b.sendAmount)
+	defer metric.SetAmbFaucetBalanceMetric(b.ambBridge, b.faucetAddress)
+	return b.faucetContract.Faucet(b.ambBridge.GetAuth(), addressTo, eventId, b.sendAmount)
 }
