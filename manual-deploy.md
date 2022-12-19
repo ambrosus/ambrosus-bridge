@@ -39,9 +39,18 @@ Command to run relay:
 
 <pre>
 curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay-mpc.sh > relay-mpc.sh && sudo chmod +x relay-mpc.sh
+
+AMB_HTTP_URL=<i>amb_http_url</i> \
+AMB_WS_URL=<i>amb_ws_url</i> \
+SIDE_HTTP_URL=<i>side_http_url</i> \
+SIDE_WS_URL=<i>side_ws_url</i> \
 sudo ./relay-mpc.sh <i>sideNet meID accessToken partyIDs threshold url</i>
 </pre>
 where:
+1. `amb_http_url` - ambrosus http rpc endpoint
+1. `amb_ws_url` - ambrosus ws rpc endpoint
+1. `side_http_url` - side net http rpc endpoint
+1. `side_ws_url` - side net ws rpc endpoint
 1. `sideNet` - name of the side network (doesn't matter it's in uppercase or lowercase)
 1. `meID` - your ID in the party
 1. `accessToken` - access token to connect to the server
