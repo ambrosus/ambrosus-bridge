@@ -1,13 +1,19 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {readConfig} from "./utils/prod_addresses";
-import {parseNet} from "./utils/utils";
+import {parseNet, readConfig_} from "./utils/utils";
+import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const isMainNet = parseNet(hre.network).stage === 'main'
 
   const {owner} = await hre.getNamedAccounts();
 
+  let configFile = readConfig_(hre.network);
+  if (isAddress(configFile.ambFaucetAddress)) {
+    console.log("AmbFaucet already deployed");
+    return;
+  }
 
   const faucetAdmins = [owner];
   if (isMainNet) {
@@ -19,12 +25,17 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   console.log("Deploying faucet, admins:", faucetAdmins);
 
-  await hre.deployments.deploy("Faucet", {
+  const deployResult = await hre.deployments.deploy("Faucet", {
     contract: "Faucet",
     from: owner,
     args: [faucetAdmins],
     log: true,
   });
+
+
+  configFile.ambFaucetAddress = deployResult.address;
+  configFile.save();
+
 };
 
 export default func;
