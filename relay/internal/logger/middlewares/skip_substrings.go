@@ -12,6 +12,7 @@ var DefaultSkipSubstrings = []string{
 	"connection reset by peer",
 	"cannot retry err [http2: Transport received Server's graceful shutdown GOAWAY] after Request.Body was written; define Request.GetBody to avoid this error",
 	"i/o timeout",
+	"CloudFlare WebSocket proxy restarting",
 }
 
 type SkipSubstrings struct {
