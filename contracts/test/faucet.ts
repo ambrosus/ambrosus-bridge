@@ -26,18 +26,18 @@ describe("Faucet", () => {
 
   it("faucet", async () => {
     await replenish()
-    await expect(faucet.faucet(user, 69, 420)).to
-      .emit(faucet, "Faucet").withArgs(user, 69, 420)
+    await expect(faucet.faucet(user, 69, 1, 420)).to
+      .emit(faucet, "Faucet").withArgs(user, 69, 1, 420)
       .changeEtherBalance(userS, 420);
   });
 
   it("faucet no money", async () => {
-    await expect(faucet.faucet(user, 69, 420)).to
+    await expect(faucet.faucet(user, 69, 1, 420)).to
       .be.revertedWith("not enough funds");
   });
 
   it("faucet wrong acc", async () => {
-    await expect(faucet.connect(userS).faucet(user, 69, 420)).to
+    await expect(faucet.connect(userS).faucet(user, 69, 1, 420)).to
       .be.revertedWith(`AccessControl: account ${user.toLowerCase()} is missing role ${ethers.constants.HashZero}`);
   });
 

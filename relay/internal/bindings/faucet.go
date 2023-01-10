@@ -30,7 +30,7 @@ var (
 
 // FaucetMetaData contains all meta data concerning the Faucet contract.
 var FaucetMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"admins\",\"type\":\"address[]\"}],\"stateMutability\":\"payable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Faucet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"faucet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
+	ABI: "[{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"admins\",\"type\":\"address[]\"}],\"stateMutability\":\"payable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"indexed\":true,\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"Faucet\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"eventId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"chainId\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"faucet\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"stateMutability\":\"payable\",\"type\":\"receive\"}]",
 }
 
 // FaucetABI is the input ABI used to generate the binding from.
@@ -303,25 +303,25 @@ func (_Faucet *FaucetCallerSession) SupportsInterface(interfaceId [4]byte) (bool
 	return _Faucet.Contract.SupportsInterface(&_Faucet.CallOpts, interfaceId)
 }
 
-// Faucet is a paid mutator transaction binding the contract method 0x59561ffa.
+// Faucet is a paid mutator transaction binding the contract method 0x2a13b891.
 //
-// Solidity: function faucet(address toAddress, uint256 eventId, uint256 amount) returns()
-func (_Faucet *FaucetTransactor) Faucet(opts *bind.TransactOpts, toAddress common.Address, eventId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _Faucet.contract.Transact(opts, "faucet", toAddress, eventId, amount)
+// Solidity: function faucet(address toAddress, uint256 eventId, uint256 chainId, uint256 amount) returns()
+func (_Faucet *FaucetTransactor) Faucet(opts *bind.TransactOpts, toAddress common.Address, eventId *big.Int, chainId *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _Faucet.contract.Transact(opts, "faucet", toAddress, eventId, chainId, amount)
 }
 
-// Faucet is a paid mutator transaction binding the contract method 0x59561ffa.
+// Faucet is a paid mutator transaction binding the contract method 0x2a13b891.
 //
-// Solidity: function faucet(address toAddress, uint256 eventId, uint256 amount) returns()
-func (_Faucet *FaucetSession) Faucet(toAddress common.Address, eventId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _Faucet.Contract.Faucet(&_Faucet.TransactOpts, toAddress, eventId, amount)
+// Solidity: function faucet(address toAddress, uint256 eventId, uint256 chainId, uint256 amount) returns()
+func (_Faucet *FaucetSession) Faucet(toAddress common.Address, eventId *big.Int, chainId *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _Faucet.Contract.Faucet(&_Faucet.TransactOpts, toAddress, eventId, chainId, amount)
 }
 
-// Faucet is a paid mutator transaction binding the contract method 0x59561ffa.
+// Faucet is a paid mutator transaction binding the contract method 0x2a13b891.
 //
-// Solidity: function faucet(address toAddress, uint256 eventId, uint256 amount) returns()
-func (_Faucet *FaucetTransactorSession) Faucet(toAddress common.Address, eventId *big.Int, amount *big.Int) (*types.Transaction, error) {
-	return _Faucet.Contract.Faucet(&_Faucet.TransactOpts, toAddress, eventId, amount)
+// Solidity: function faucet(address toAddress, uint256 eventId, uint256 chainId, uint256 amount) returns()
+func (_Faucet *FaucetTransactorSession) Faucet(toAddress common.Address, eventId *big.Int, chainId *big.Int, amount *big.Int) (*types.Transaction, error) {
+	return _Faucet.Contract.Faucet(&_Faucet.TransactOpts, toAddress, eventId, chainId, amount)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
@@ -500,14 +500,15 @@ func (it *FaucetFaucetIterator) Close() error {
 type FaucetFaucet struct {
 	To      common.Address
 	EventId *big.Int
+	ChainId *big.Int
 	Amount  *big.Int
 	Raw     types.Log // Blockchain specific contextual infos
 }
 
-// FilterFaucet is a free log retrieval operation binding the contract event 0x214e597359607d253d273b990ec10788316369f1c0a60fd7d46d8ad75beb7f8e.
+// FilterFaucet is a free log retrieval operation binding the contract event 0x4828ab435cca543539934276b7cad7900854b86fadd6284f6af7a8706161c698.
 //
-// Solidity: event Faucet(address indexed to, uint256 indexed eventId, uint256 amount)
-func (_Faucet *FaucetFilterer) FilterFaucet(opts *bind.FilterOpts, to []common.Address, eventId []*big.Int) (*FaucetFaucetIterator, error) {
+// Solidity: event Faucet(address indexed to, uint256 indexed eventId, uint256 indexed chainId, uint256 amount)
+func (_Faucet *FaucetFilterer) FilterFaucet(opts *bind.FilterOpts, to []common.Address, eventId []*big.Int, chainId []*big.Int) (*FaucetFaucetIterator, error) {
 
 	var toRule []interface{}
 	for _, toItem := range to {
@@ -517,18 +518,22 @@ func (_Faucet *FaucetFilterer) FilterFaucet(opts *bind.FilterOpts, to []common.A
 	for _, eventIdItem := range eventId {
 		eventIdRule = append(eventIdRule, eventIdItem)
 	}
+	var chainIdRule []interface{}
+	for _, chainIdItem := range chainId {
+		chainIdRule = append(chainIdRule, chainIdItem)
+	}
 
-	logs, sub, err := _Faucet.contract.FilterLogs(opts, "Faucet", toRule, eventIdRule)
+	logs, sub, err := _Faucet.contract.FilterLogs(opts, "Faucet", toRule, eventIdRule, chainIdRule)
 	if err != nil {
 		return nil, err
 	}
 	return &FaucetFaucetIterator{contract: _Faucet.contract, event: "Faucet", logs: logs, sub: sub}, nil
 }
 
-// WatchFaucet is a free log subscription operation binding the contract event 0x214e597359607d253d273b990ec10788316369f1c0a60fd7d46d8ad75beb7f8e.
+// WatchFaucet is a free log subscription operation binding the contract event 0x4828ab435cca543539934276b7cad7900854b86fadd6284f6af7a8706161c698.
 //
-// Solidity: event Faucet(address indexed to, uint256 indexed eventId, uint256 amount)
-func (_Faucet *FaucetFilterer) WatchFaucet(opts *bind.WatchOpts, sink chan<- *FaucetFaucet, to []common.Address, eventId []*big.Int) (event.Subscription, error) {
+// Solidity: event Faucet(address indexed to, uint256 indexed eventId, uint256 indexed chainId, uint256 amount)
+func (_Faucet *FaucetFilterer) WatchFaucet(opts *bind.WatchOpts, sink chan<- *FaucetFaucet, to []common.Address, eventId []*big.Int, chainId []*big.Int) (event.Subscription, error) {
 
 	var toRule []interface{}
 	for _, toItem := range to {
@@ -538,8 +543,12 @@ func (_Faucet *FaucetFilterer) WatchFaucet(opts *bind.WatchOpts, sink chan<- *Fa
 	for _, eventIdItem := range eventId {
 		eventIdRule = append(eventIdRule, eventIdItem)
 	}
+	var chainIdRule []interface{}
+	for _, chainIdItem := range chainId {
+		chainIdRule = append(chainIdRule, chainIdItem)
+	}
 
-	logs, sub, err := _Faucet.contract.WatchLogs(opts, "Faucet", toRule, eventIdRule)
+	logs, sub, err := _Faucet.contract.WatchLogs(opts, "Faucet", toRule, eventIdRule, chainIdRule)
 	if err != nil {
 		return nil, err
 	}
@@ -571,9 +580,9 @@ func (_Faucet *FaucetFilterer) WatchFaucet(opts *bind.WatchOpts, sink chan<- *Fa
 	}), nil
 }
 
-// ParseFaucet is a log parse operation binding the contract event 0x214e597359607d253d273b990ec10788316369f1c0a60fd7d46d8ad75beb7f8e.
+// ParseFaucet is a log parse operation binding the contract event 0x4828ab435cca543539934276b7cad7900854b86fadd6284f6af7a8706161c698.
 //
-// Solidity: event Faucet(address indexed to, uint256 indexed eventId, uint256 amount)
+// Solidity: event Faucet(address indexed to, uint256 indexed eventId, uint256 indexed chainId, uint256 amount)
 func (_Faucet *FaucetFilterer) ParseFaucet(log types.Log) (*FaucetFaucet, error) {
 	event := new(FaucetFaucet)
 	if err := _Faucet.contract.UnpackLog(event, "Faucet", log); err != nil {

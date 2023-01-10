@@ -16,8 +16,9 @@ import (
 // AmbFaucet sends money to the users that receive tokens and have zero balance
 type AmbFaucet struct {
 	networks.Bridge
-	ambBridge      networks.Bridge // used for sending transactions, must be amb bridge
 	prev           service_submit.Submitter
+	ambBridge      networks.Bridge // used for sending transactions, must be amb bridge
+	sideNetChainID *big.Int
 	faucetAddress  common.Address
 	faucetContract *bindings.Faucet
 	minBalance     *big.Int
@@ -39,10 +40,16 @@ func NewAmbFaucet(ambBridge networks.Bridge, prev service_submit.Submitter, fauc
 		logger.Fatal().Err(err).Msg("Create faucet contract error")
 	}
 
+	sideNetChainID, err := prev.GetClient().ChainID(context.Background())
+	if err != nil {
+		logger.Fatal().Err(err).Msg("Get side net chain id error")
+	}
+
 	return &AmbFaucet{
 		Bridge:         prev,
-		ambBridge:      ambBridge,
 		prev:           prev,
+		ambBridge:      ambBridge,
+		sideNetChainID: sideNetChainID,
 		faucetAddress:  faucetAddress,
 		faucetContract: faucetContract,
 		minBalance:     minBalance,
@@ -89,5 +96,5 @@ func (b *AmbFaucet) SendEvent(event *bindings.BridgeTransfer, safetyBlocks uint6
 
 func (b *AmbFaucet) Transfer(addressTo common.Address, eventId *big.Int) (*types.Transaction, error) {
 	defer metric.SetAmbFaucetBalanceMetric(b.ambBridge, b.faucetAddress)
-	return b.faucetContract.Faucet(b.ambBridge.GetAuth(), addressTo, eventId, b.sendAmount)
+	return b.faucetContract.Faucet(b.ambBridge.GetAuth(), addressTo, eventId, b.sideNetChainID, b.sendAmount)
 }
