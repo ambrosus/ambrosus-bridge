@@ -26,6 +26,12 @@
         "type": "uint256"
       },
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "chainId",
+        "type": "uint256"
+      },
+      {
         "indexed": false,
         "internalType": "uint256",
         "name": "amount",
@@ -133,6 +139,11 @@
       {
         "internalType": "uint256",
         "name": "eventId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "chainId",
         "type": "uint256"
       },
       {
