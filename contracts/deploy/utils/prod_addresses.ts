@@ -1,5 +1,4 @@
-import path from "path";
-
+import prod_addresses from '../../configs/prod_addresses';
 
 interface constructorConfig {
   adminAddress: string,
@@ -21,5 +20,5 @@ export function getAddresses(network: string): constructorConfig {
 }
 
 export function readConfig(): { [net: string]: constructorConfig } {
-  return require(path.resolve(__dirname, `../../configs/prod_addresses.json`));
+  return prod_addresses;
 }
