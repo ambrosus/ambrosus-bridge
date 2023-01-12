@@ -33,7 +33,7 @@ const prod_addresses = {
   // amb part of amb-bsc bridge
   "BSC_AmbBridge": {
     "adminAddress": AdminAmb,
-    "relayAddress": Master_BSC_Amb,
+    "relayAddress": '0x360858AEB14D04b465B879b767319cD79Be6250E',
     "masterRelayAddress": Master_BSC_Amb,
     "feeProviderAddress": Master_BSC_Amb,
     "watchdogsAddresses": [
@@ -49,7 +49,7 @@ const prod_addresses = {
   // bsc part of amb-bsc bridge
   "BSC_BscBridge": {
     "adminAddress": AdminBsc,
-    "relayAddress": Master_BSC_Bsc,
+    "relayAddress": '0x360858AEB14D04b465B879b767319cD79Be6250E',
     "masterRelayAddress": Master_BSC_Bsc,
     "feeProviderAddress": Master_BSC_Bsc,
     "watchdogsAddresses": [
