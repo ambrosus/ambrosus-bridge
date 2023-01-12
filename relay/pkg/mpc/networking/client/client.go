@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	ec "github.com/ethereum/go-ethereum/common"
 	"github.com/gorilla/websocket"
 
@@ -22,16 +23,16 @@ type Client struct {
 	Tss       *tss_wrap.Mpc
 	operation []byte
 
-	serverURL string
+	serverURL   string
 	accessToken string
 }
 
 func NewClient(tss *tss_wrap.Mpc, serverURL string, accessToken string, logger *zerolog.Logger) *Client {
 	return &Client{
-		Tss:       tss,
-		serverURL: serverURL,
+		Tss:         tss,
+		serverURL:   serverURL,
 		accessToken: accessToken,
-		logger:    logger,
+		logger:      logger,
 	}
 }
 
@@ -47,12 +48,12 @@ func (s *Client) Sign(ctx context.Context, party []string, msg []byte) ([]byte, 
 	return signature, err
 }
 
-func (s *Client) Keygen(ctx context.Context, party []string) error {
+func (s *Client) Keygen(ctx context.Context, party []string, optionalPreParams ...keygen.LocalPreParams) error {
 	s.logger.Info().Msg("Start keygen operation")
 
 	_, err := s.doOperation(ctx, common.KeygenOperation,
 		func(ctx context.Context, inCh <-chan []byte, outCh chan<- *tss_wrap.Message) ([]byte, error) {
-			err := s.Tss.Keygen(ctx, party, inCh, outCh)
+			err := s.Tss.Keygen(ctx, party, inCh, outCh, optionalPreParams...)
 			if err != nil {
 				return nil, err
 			}
@@ -88,7 +89,11 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 func (s *Client) GetFullMsg() ([]byte, error) {
 	// todo ctx
 	// make request with websocket lib coz std http lib doesn't support wss protocol in url
-	_, resp, _ := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	// we don't check on error because we just want to do kind of http request, not establish ws connection
+	_, resp, err := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	if resp == nil {
+		return nil, fmt.Errorf("resp is nil, err: %w", err)
+	}
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
 	}

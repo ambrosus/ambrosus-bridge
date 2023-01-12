@@ -17,57 +17,6 @@
     "inputs": [
       {
         "indexed": true,
-        "internalType": "address",
-        "name": "relay",
-        "type": "address"
-      }
-    ],
-    "name": "RelayAdd",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "eventId",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes32",
-        "name": "hash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "RelayConfirmation",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "relay",
-        "type": "address"
-      }
-    ],
-    "name": "RelayRemove",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
         "internalType": "bytes32",
         "name": "role",
         "type": "bytes32"
@@ -136,19 +85,6 @@
       }
     ],
     "name": "RoleRevoked",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newThreshold",
-        "type": "uint256"
-      }
-    ],
-    "name": "ThresholdChange",
     "type": "event"
   },
   {
@@ -434,62 +370,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      },
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "name": "confirmations",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "confirmationsThreshold",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes32",
-        "name": "hash",
-        "type": "bytes32"
-      }
-    ],
-    "name": "confirmedCount",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "eventId",
         "type": "uint256"
@@ -530,19 +410,6 @@
         "internalType": "struct CommonStructs.LockedTransfers",
         "name": "",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getRelays",
-    "outputs": [
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -695,16 +562,6 @@
         "internalType": "struct CommonStructs.ConstructorArgs",
         "name": "args",
         "type": "tuple"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_confirmations",
-        "type": "uint256"
-      },
-      {
-        "internalType": "address[]",
-        "name": "_relays",
-        "type": "address[]"
       }
     ],
     "name": "initialize",
@@ -726,73 +583,8 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "relay",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "eventId",
-        "type": "uint256"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "tokenAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "toAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct CommonStructs.Transfer[]",
-        "name": "transfers",
-        "type": "tuple[]"
-      }
-    ],
-    "name": "isConfirmedByRelay",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "isQueueEmpty",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "relay",
-        "type": "address"
-      }
-    ],
-    "name": "isRelay",
     "outputs": [
       {
         "internalType": "bool",
@@ -911,25 +703,6 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "name": "relays",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
         "name": "eventId",
         "type": "uint256"
       }
@@ -989,29 +762,6 @@
       }
     ],
     "name": "revokeRoles",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address[]",
-        "name": "toRemove",
-        "type": "address[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "toAdd",
-        "type": "address[]"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_confirmations",
-        "type": "uint256"
-      }
-    ],
-    "name": "setRelaysAndConfirmations",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1217,47 +967,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "eventId",
-        "type": "uint256"
-      },
-      {
-        "components": [
-          {
-            "internalType": "address",
-            "name": "tokenAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "toAddress",
-            "type": "address"
-          },
-          {
-            "internalType": "uint256",
-            "name": "amount",
-            "type": "uint256"
-          }
-        ],
-        "internalType": "struct CommonStructs.Transfer[]",
-        "name": "transfers",
-        "type": "tuple[]"
-      }
-    ],
-    "name": "transfersHash",
-    "outputs": [
-      {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
-    ],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
     "inputs": [],
     "name": "triggerTransfers",
     "outputs": [],
@@ -1294,14 +1003,29 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "_confirmations",
-        "type": "uint256"
+        "internalType": "address[]",
+        "name": "_watchdogs",
+        "type": "address[]"
       },
       {
-        "internalType": "address[]",
-        "name": "_relays",
-        "type": "address[]"
+        "internalType": "address",
+        "name": "_fee_provider",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "mpcRelay",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "oldDefaultAdmin",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "oldRelay",
+        "type": "address"
       }
     ],
     "name": "upgrade",

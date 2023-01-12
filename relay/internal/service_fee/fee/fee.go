@@ -19,7 +19,7 @@ const (
 type BridgeFeeApi interface {
 	networks.Bridge
 	Sign(message []byte) ([]byte, error)
-	GetTransferFee() (thisGas, sideGas decimal.Decimal)
+	GetTransferFee() (thisGas, sideGas decimal.Decimal, err error)
 	GetWrapperAddress() common.Address
 	GetMinBridgeFee() decimal.Decimal   // GetMinBridgeFee returns the minimal bridge fee in usd
 	GetMinTransferFee() decimal.Decimal // GetMinTransferFee returns the minimal transfer fee in usd
@@ -97,7 +97,7 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 		return
 	}
 
-	return bridgeFee.BigInt(), transferFee.BigInt(), amount.BigInt(), nil
+	return bridgeFee.RoundUp(0).BigInt(), transferFee.RoundUp(0).BigInt(), amount.BigInt(), nil
 
 }
 

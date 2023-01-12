@@ -28,3 +28,5 @@ yarn hardhat deploy --network ${AMB_NET} --tags ${BRIDGE_TAG}  # setSideBridge t
 
 yarn hardhat deploy --network ${AMB_NET} --tags tokens_add_bridges
 yarn hardhat deploy --network ${SIDE_NET} --tags tokens_add_bridges
+
+yarn hardhat deploy --network ${AMB_NET} --tags faucet

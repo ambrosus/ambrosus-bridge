@@ -22,6 +22,9 @@ contract ETH_AmbBridge is CommonBridge, CheckUntrustless2 {
     ) public {
         require(msg.sender == address(this), "This method require multisig");
 
+        // add DEFAULT_ADMIN_ROLE to multisig
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+
         // revoke RELAY_ROLE from old relay
         revokeRole(RELAY_ROLE, oldRelay);
 
@@ -30,8 +33,6 @@ contract ETH_AmbBridge is CommonBridge, CheckUntrustless2 {
         _setupRole(FEE_PROVIDER_ROLE, _fee_provider);
         _setupRole(RELAY_ROLE, mpcRelay);
 
-        // add DEFAULT_ADMIN_ROLE to multisig
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
         // revoke DEFAULT_ADMIN_ROLE from deployer
         revokeRole(DEFAULT_ADMIN_ROLE, oldDefaultAdmin);
     }

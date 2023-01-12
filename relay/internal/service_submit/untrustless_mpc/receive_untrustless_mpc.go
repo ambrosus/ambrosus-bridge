@@ -47,7 +47,9 @@ func NewReceiverUntrustlessMpc(receiver service_submit.Receiver, mpcSigner MpcSi
 			return nil, fmt.Errorf("tx to bytes: %w", err)
 		}
 
-		ctx, _ := context.WithTimeout(context.Background(), time.Minute*5)
+		ctx, cancel := context.WithTimeout(context.Background(), time.Minute*5)
+		defer cancel()
+
 		mpcSigner.SetFullMsg(txBytes)
 		sig, err := mpcSigner.Sign(ctx, signersIDs, hash)
 		if err != nil {

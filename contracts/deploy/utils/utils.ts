@@ -1,9 +1,5 @@
-
 import {HardhatRuntimeEnvironment, Network} from "hardhat/types";
 import {DeployOptions} from "hardhat-deploy/types";
-import {ethers} from "ethers";
-import vsAbi from "../../abi/ValidatorSet.json";
-import {Block} from "@ethersproject/abstract-provider";
 import {Config, readConfig, Token} from "./config";
 import {getAddresses} from "./prod_addresses";
 import {isAddress} from "ethers/lib/utils";
@@ -140,45 +136,6 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
 
 export function getSideNetDecimalsOrTokenDenomination(token: Token, netName: string): number {
   return (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
-}
-
-
-
-// valildators
-
-async function getValidatorsAndLatestBlock(network: any, vsAddress: string, vsAbi: any): Promise<[string[], Block, any]> {
-  const provider = new ethers.providers.JsonRpcProvider(urlFromHHProvider(network.provider));
-  const vsContract = ethers.ContractFactory.getContract(vsAddress, vsAbi).connect(provider);
-
-  const latestBlock = await provider.getBlock('latest');
-  const validators = await vsContract.getValidators({blockTag: "latest"});
-  return [validators, latestBlock, vsContract];
-}
-
-export async function getBscValidators(bscNetwork: any): Promise<[number, string[]]> {
-  const vsAddress = "0x0000000000000000000000000000000000001000";
-  const [validators, latestBlock] = await getValidatorsAndLatestBlock(bscNetwork, vsAddress, vsAbi);
-  const epoch = Math.floor(latestBlock.number / 200);
-
-  return [epoch, validators];
-}
-
-export async function getAmbValidators(ambNetwork: any, isMainNet: boolean): Promise<[string[], string, string]> {
-  const vsAddress = "0x0000000000000000000000000000000000000F00";
-  const [validators, latestBlock, vsContract] = await getValidatorsAndLatestBlock(ambNetwork, vsAddress, vsAbi);
-
-  // check that current validators match with the latest finalized event
-  const fromBlock = isMainNet ? 19470402 : 0;
-  const logs = await vsContract.queryFilter(vsContract.filters.InitiateChange(), fromBlock)
-  const latestLog = logs[logs.length-1]
-  const latestLogParsed = vsContract.interface.parseLog(latestLog).args
-  console.assert(JSON.stringify(latestLogParsed.newSet) == JSON.stringify(validators),
-    `ValidatorSet extracted from ${latestBlock.number} block doesn't equal to 
-    ValidatorSet emitted in ${latestLog.blockNumber} block. 
-    Probably, latest event doesn't finalized yet and this can cause a trouble.
-    Try again at block ~${latestLog.blockNumber + latestLogParsed.newSet.length/2}`)
-
-  return [validators, vsAddress, latestLogParsed.parentHash]
 }
 
 

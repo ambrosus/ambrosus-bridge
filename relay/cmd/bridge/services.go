@@ -11,14 +11,13 @@ import (
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/api"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/ambrosus_explorer"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_fee/fee_helper/explorers_clients/etherscan"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_pause_unpause_watchdog"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_submit/middlewares/amb_faucet"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_trigger"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_unlock"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/service_validity_watchdog"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/rs/zerolog"
 )
 
@@ -40,7 +39,7 @@ func runSubmitters(cfg *config.Submitters, ambBridge *amb.Bridge, sideBridge ser
 	}
 
 	if cfg.AmbFaucet.Enable {
-		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(sideBridgeSubmitter, cfg.AmbFaucet.PrivateKey,
+		sideBridgeSubmitter = amb_faucet.NewAmbFaucet(ambBridge, sideBridgeSubmitter, common.HexToAddress(cfg.AmbFaucet.FaucetAddress),
 			big.NewInt(cfg.AmbFaucet.MinBalance), big.NewInt(cfg.AmbFaucet.SendAmount))
 		logger.Info().Str("service", "ambFaucet").Bool("enabled", cfg.AmbFaucet.Enable).Send()
 	}
@@ -62,11 +61,11 @@ func runValidityWatchdogs(cfg *config.ValidityWatchdogs, ambBridge *amb.Bridge, 
 	}
 
 	if cfg.EnableForAmb {
-		go service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract()).Run()
+		go service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge).Run()
 	}
 
 	if cfg.EnableForSide {
-		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract()).Run()
+		go service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge).Run()
 	}
 
 }
@@ -88,8 +87,8 @@ func runUnlockers(cfg *config.Unlockers, ambBridge *amb.Bridge, sideBridge netwo
 		return
 	}
 
-	ambWatchdog := service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge.GetContract())
-	sideWatchdog := service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge.GetContract())
+	ambWatchdog := service_validity_watchdog.NewWatchTransfersValidity(ambBridge, sideBridge)
+	sideWatchdog := service_validity_watchdog.NewWatchTransfersValidity(sideBridge, ambBridge)
 	go service_unlock.NewUnlockTransfers(ambBridge, ambWatchdog).Run()
 	go service_unlock.NewUnlockTransfers(sideBridge, sideWatchdog).Run()
 }
@@ -110,20 +109,11 @@ func runFeeApi(cfg *config.FeeApi, ambBridge, sideBridge networks.Bridge, logger
 		return
 	}
 
-	explorerAmb, err := ambrosus_explorer.NewAmbrosusExplorer(cfg.Amb.ExplorerURL, nil)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("explorerAmb not created")
-	}
-	explorerSide, err := etherscan.NewEtherscan(cfg.Side.ExplorerURL, nil)
-	if err != nil {
-		logger.Fatal().Err(err).Msg("explorerSide not created")
-	}
-
-	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, sideBridge, explorerAmb, explorerSide, cfg.Amb, cfg.Side)
+	feeAmb, err := fee_helper.NewFeeHelper(ambBridge, cfg.Amb)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeAmb not created")
 	}
-	feeSide, err := fee_helper.NewFeeHelper(sideBridge, ambBridge, explorerSide, explorerAmb, cfg.Side, cfg.Amb)
+	feeSide, err := fee_helper.NewFeeHelper(sideBridge, cfg.Side)
 	if err != nil {
 		logger.Fatal().Err(err).Msg("feeSide not created")
 	}

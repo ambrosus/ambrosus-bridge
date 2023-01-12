@@ -11,28 +11,53 @@
             "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "contractAddr": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248",
-            "privateKey": "in env"
+            "privateKey": "in env",
+            "specificSettings": {
+                "filterLogsFromBlock": 23637484,
+                "filterLogsLimitBlocks": 4999
+            }
         }
+    },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus-test.io"
     },
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "posa",
-            "posa": {
-                "receiverBridgeMaxTxSizeKB": 300
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6555",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
             }
         },
         "ambToSide": {
-            "variant": "aura",
-            "aura": {
-                "vsContractAddr": "0x0000000000000000000000000000000000000F00",
-                "finalizeServiceUrl": "https://finalizing-api.ambrosus-test.io/logs.bin",
-                "receiverBridgeMaxTxSizeKB": 128
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Max",
+                    "AndreyM"
+                ],
+                "threshold": 2,
+                "serverURL": ":6455",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
             }
         },
         "ambFaucet": {
             "enable": true,
-            "privateKey": "d89670aee201bcd78eba0533ff71c4833bef9985882f90f13c9396d1f5e45de0",
+            "faucetAddress": "0x7b8A17Fc98711db0870c7F37A45d069f2B750637",
             "minBalance": "0",
             "sendAmount": "1000000000000000000"
         }
@@ -60,23 +85,13 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 1,
-            "explorerURL": "https://explorer-api.ambrosus-test.io",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ],
-            "transferFeeTxsFromBlock": 0
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=amb&networkSide=bsc&onlyLastEventsCount=20"
         },
         "side": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
             "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api-testnet.bscscan.com/api?apikey=NFH875QU828E37MQD7XB3QHFBE4XTC2AKH",
-            "transferFeeRecipient": "0x",
-            "transferFeeIncludedTxsFromAddresses": [
-                "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
-            ],
-            "transferFeeTxsFromBlock": 0
+            "feeApiUrl": "https://backoffice-api.ambrosus-test.io/relay/fee?networkThis=bsc&networkSide=amb&onlyLastEventsCount=20"
         }
     },
     "externalLogger": {

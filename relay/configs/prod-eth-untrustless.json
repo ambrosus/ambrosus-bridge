@@ -8,11 +8,14 @@
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://mainnet.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "wsUrl": "wss://mainnet.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "httpUrl": "in env",
+            "wsUrl": "in env",
             "contractAddr": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208",
             "privateKey": ""
         }
+    },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus.io"
     },
     "submitters": {
         "enable": true,

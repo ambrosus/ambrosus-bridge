@@ -1,0 +1,90 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "BSC",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus.io",
+            "wsUrl": "wss://network.ambrosus.io/ws",
+            "contractAddr": "0xe10eB55f6EeF66218BbE58B749428ec4A51D6659",
+            "privateKey": "in env"
+        },
+        "BSC": {
+            "httpUrl": "in env",
+            "wsUrl": "in env",
+            "contractAddr": "0x92fa52d3043725D00Eab422440C4e9ef3ba180d3",
+            "privateKey": "in env",
+            "specificSettings": {
+                "filterLogsFromBlock": 20289860,
+                "filterLogsLimitBlocks": 49999
+            }
+        }
+    },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus.io"
+    },
+    "submitters": {
+        "enable": true,
+        "sideToAmb": {
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": false,
+                "meID": "in env",
+                "partyIDs": [
+                    "master",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": "ws://65.108.51.81:6555",
+                "accessToken": "in env",
+                "sharePath": "in env"
+            }
+        },
+        "ambToSide": {
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": false,
+                "meID": "in env",
+                "partyIDs": [
+                    "master",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": "ws://65.108.51.81:6455",
+                "accessToken": "in env",
+                "sharePath": "in env"
+            }
+        }
+    },
+    "validityWatchdogs": {
+        "enable": true,
+        "enableForAmb": true,
+        "enableForSide": true
+    },
+    "pauseUnpauseWatchdogs": {
+        "enable": false
+    },
+    "triggers": {
+        "enable": false
+    },
+    "unlockers": {
+        "enable": false
+    },
+    "feeApi": {
+        "enable": false
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": true,
+            "token": "in env",
+            "chatId": "-1001601672753"
+        }
+    },
+    "prometheus": {
+        "enable": false
+    }
+}

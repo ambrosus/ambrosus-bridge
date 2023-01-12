@@ -23,6 +23,7 @@ If any pop-ups occur, select "ok" or type "y".
 During installation you will be prompted to enter your ambrosus and ethereum private keys and token issued by bridge developers.
 
 Also you can pass `STAGE` env variable to run the relay on `dev`, `test` or `prod` environment. `prod` is set by default.
+Also you can pass `NO_DOCKER_INSTALL` env variable with any value to bypass docker installing.
 
 ##### Untrustless
 
@@ -35,13 +36,23 @@ curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay.sh
 
 ##### Untrustless MPC
 
-Command to run eth-relay:
+Command to run relay:
 
 <pre>
 curl -s https://raw.githubusercontent.com/ambrosus/ambrosus-bridge/main/relay-mpc.sh > relay-mpc.sh && sudo chmod +x relay-mpc.sh
-sudo ./relay-mpc.sh <i>meID accessToken partyIDs threshold url</i>
+
+AMB_HTTP_URL=<i>amb_http_url</i> \
+AMB_WS_URL=<i>amb_ws_url</i> \
+SIDE_HTTP_URL=<i>side_http_url</i> \
+SIDE_WS_URL=<i>side_ws_url</i> \
+sudo ./relay-mpc.sh <i>sideNet meID accessToken partyIDs threshold url</i>
 </pre>
 where:
+1. `amb_http_url` - ambrosus http rpc endpoint
+1. `amb_ws_url` - ambrosus ws rpc endpoint
+1. `side_http_url` - side net http rpc endpoint
+1. `side_ws_url` - side net ws rpc endpoint
+1. `sideNet` - name of the side network (doesn't matter it's in uppercase or lowercase)
 1. `meID` - your ID in the party
 1. `accessToken` - access token to connect to the server
 1. `partyIDs` - IDs of the party separated by space *(for keygen)*
@@ -50,7 +61,7 @@ where:
 
 For example:
 <pre>
-sudo ./relay-mpc.sh Bob "some token" "Alice Bob" 2 wss://relay-eth.ambrosus.io/mpcSide/ws
+sudo ./relay-mpc.sh ETH Bob "some token" "Alice Bob" 2 wss://relay-eth.ambrosus.io/mpcSide/ws
 </pre>
 
 You may not enter `partyIDs`, `threshold` and `url` if you already have the share to just run the relay.

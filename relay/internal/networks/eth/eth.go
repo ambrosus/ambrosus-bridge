@@ -5,6 +5,7 @@ import (
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/rs/zerolog"
 )
 
@@ -15,8 +16,8 @@ type Bridge struct {
 }
 
 // New creates a new ethereum bridge.
-func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) (*Bridge, error) {
-	commonBridge, err := nc.New(cfg, BridgeName)
+func New(cfg *config.Network, sideBridgeName string, eventsApi events.Events, baseLogger zerolog.Logger) (*Bridge, error) {
+	commonBridge, err := nc.New(cfg, BridgeName, eventsApi)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}

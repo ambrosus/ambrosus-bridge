@@ -21,6 +21,7 @@ export interface Token {
 export interface Config {
   tokens: { [symb: string]: Token };
   bridges: { [net: string]: { amb: string, side: string } };
+  ambFaucetAddress: string;
 
   save(): void;
   getTokenPairs(thisNet: string, sideNet: string): { [k: string]: string }

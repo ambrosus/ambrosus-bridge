@@ -9,10 +9,9 @@ import (
 	"time"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks"
-	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	cb "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/avast/retry-go"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -23,11 +22,11 @@ var errEmptyLockedTransfers = errors.New("empty locked transfers")
 
 type WatchTransfersValidity struct {
 	bridge       networks.Bridge
-	eventEmitter interfaces.BridgeContract
+	eventEmitter networks.Bridge
 	logger       *zerolog.Logger
 }
 
-func NewWatchTransfersValidity(bridge networks.Bridge, eventEmitter interfaces.BridgeContract) *WatchTransfersValidity {
+func NewWatchTransfersValidity(bridge networks.Bridge, eventEmitter networks.Bridge) *WatchTransfersValidity {
 	logger := bridge.GetLogger().With().Str("service", "WatchTransfersValidity").Logger()
 
 	return &WatchTransfersValidity{
@@ -83,44 +82,32 @@ func (b *WatchTransfersValidity) watchLockedTransfers() error {
 		return fmt.Errorf("checkOldLockedTransfers: %w", err)
 	}
 
-	eventCh := make(chan *bindings.BridgeTransferSubmit)
-	eventSub, err := b.bridge.GetWsContract().WatchTransferSubmit(nil, eventCh, nil)
-	if err != nil {
-		return fmt.Errorf("WatchTransferSubmit: %w", err)
-	}
-
-	defer eventSub.Unsubscribe()
-
 	// main loop
 	for {
-		select {
-		case err := <-eventSub.Err():
+		event, err := b.bridge.Events().WatchTransferSubmit()
+		if err != nil {
 			return fmt.Errorf("watching submit transfers: %w", err)
-		case event := <-eventCh:
-			if event.Raw.Removed {
-				continue
-			}
+		}
 
-			b.logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
+		b.logger.Info().Str("event_id", event.EventId.String()).Msg("Found new TransferSubmit event")
 
-			// Nodes may be out of sync and the event may be empty (but it's not confirmed info)
-			// So we need to retry if the result is empty
-			lockedTransfer, err := b.getLockedTransfers(event.EventId, &bind.CallOpts{
-				BlockNumber: big.NewInt(int64(event.Raw.BlockNumber)),
-			})
-			if err != nil {
-				return fmt.Errorf("GetLockedTransfers: %w", err)
-			}
-			if err := b.checkValidity(event.EventId, &lockedTransfer); err != nil {
-				b.logger.Error().Err(fmt.Errorf("checkValidity: %s", err)).Msg("checkValidity error")
-			}
+		// Nodes may be out of sync and the event may be empty (but it's not confirmed info)
+		// So we need to retry if the result is empty
+		lockedTransfer, err := b.getLockedTransfers(event.EventId, &bind.CallOpts{
+			BlockNumber: big.NewInt(int64(event.Raw.BlockNumber)),
+		})
+		if err != nil {
+			return fmt.Errorf("GetLockedTransfers: %w", err)
+		}
+		if err := b.checkValidity(event.EventId, &lockedTransfer); err != nil {
+			b.logger.Error().Err(fmt.Errorf("checkValidity: %s", err)).Msg("checkValidity error")
 		}
 	}
 }
 
 func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
-	sideEvent, err := common.GetEventById(b.eventEmitter, lockedEventId)
-	if err != nil && !errors.Is(err, networks.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
+	sideEvent, err := b.eventEmitter.Events().GetTransfer(lockedEventId.Uint64())
+	if err != nil && !errors.Is(err, events.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
 		return fmt.Errorf("getEventById: %w", err)
 	}
 

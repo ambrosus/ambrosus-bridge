@@ -3,11 +3,14 @@ package amb
 import (
 	"context"
 	"fmt"
+	"math/big"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/config"
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
 )
@@ -20,8 +23,8 @@ type Bridge struct {
 }
 
 // New creates a new ambrosus bridge.
-func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) (*Bridge, error) {
-	commonBridge, err := nc.New(cfg, BridgeName)
+func New(cfg *config.Network, sideBridgeName string, eventsApi events.Events, baseLogger zerolog.Logger) (*Bridge, error) {
+	commonBridge, err := nc.New(cfg, BridgeName, eventsApi)
 	if err != nil {
 		return nil, fmt.Errorf("create commonBridge: %w", err)
 	}
@@ -53,14 +56,21 @@ func New(cfg *config.Network, sideBridgeName string, baseLogger zerolog.Logger) 
 			return nil, fmt.Errorf("dial ws: %w", err)
 		}
 		commonBridge.WsClient = parity.NewClient(rpcWSClient)
-
-		commonBridge.WsContract, err = bindings.NewBridge(commonBridge.ContractAddress, commonBridge.WsClient)
-		if err != nil {
-			return nil, fmt.Errorf("create contract ws: %w", err)
-		}
 	}
 
 	return &Bridge{
 		CommonBridge: commonBridge,
+		ParityClient: parityClient,
 	}, nil
+}
+
+func (b *Bridge) IsEventRemoved(eventLog *types.Log) error {
+	header, err := b.ParityClient.ParityHeaderByNumber(context.Background(), big.NewInt(int64(eventLog.BlockNumber)))
+	if err != nil {
+		return fmt.Errorf("parityHeaderByNumber: %w", err)
+	}
+	if header.Hash(true) != eventLog.BlockHash {
+		return fmt.Errorf("looks like the event has been removed")
+	}
+	return nil
 }

@@ -43,32 +43,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         minSafetyBlocks: 10,
     });
 
-    await hre.deployments.deploy("CheckPoWTest", {
-        from: owner,
-        args: [
-            0 // minimum difficulty
-        ],
-    });
-
-    await hre.deployments.deploy("CheckAuraTest", {
-        from: owner,
-        args: [
-            "0x0000000000000000000000000000000000000F00", // validatorSetAddress
-            2, // minSafetyBlocksValidators
-        ],
-    });
-
     await hre.deployments.deploy("CheckUntrustlessTest", {
         from: owner,
     });
 
-  await hre.deployments.deploy("CheckPoSATest", {
-    from: owner,
-    args: [
-      "0x61"  // chainId
-    ],
-    log: true,
-  });
+    await hre.deployments.deploy("Faucet", {
+        from: owner,
+        args: [[owner]],
+    });
+
 
     await hre.deployments.deploy("ProxyMultisigTest", {
         from: owner,
