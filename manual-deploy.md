@@ -23,6 +23,7 @@ If any pop-ups occur, select "ok" or type "y".
 During installation you will be prompted to enter your ambrosus and ethereum private keys and token issued by bridge developers.
 
 Also you can pass `STAGE` env variable to run the relay on `dev`, `test` or `prod` environment. `prod` is set by default.
+Also you can pass `NO_DOCKER_INSTALL` env variable with any value to bypass docker installing.
 
 ##### Untrustless
 
