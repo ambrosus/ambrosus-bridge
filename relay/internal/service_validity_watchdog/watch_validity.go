@@ -2,9 +2,11 @@ package service_validity_watchdog
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/ambrosus/ambrosus-bridge/relay/internal/bindings/interfaces"
 	"math/big"
 	"time"
 
@@ -106,15 +108,19 @@ func (b *WatchTransfersValidity) watchLockedTransfers() error {
 }
 
 func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
-	sideEvent, err := b.eventEmitter.Events().GetTransfer(lockedEventId.Uint64())
-	if err != nil && !errors.Is(err, events.ErrEventNotFound) { // we'll handle the ErrEventNotFound later
-		return fmt.Errorf("getEventById: %w", err)
+	sideEvent, err := getTransferEventById(lockedEventId, b)
+	if err != nil && !errors.Is(err, events.ErrEventNotFound) {
+		// all errors except ErrEventNotFound are transport errors, so return and retry
+		// but if we catch events.ErrEventNotFound it means that we possibly hacked!
+		// so continue checking with empty event, that of course will fail and will be reported
+		return err
 	}
 
 	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
 	if err != nil {
 		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 	}
+
 	sideTransfers := []byte("event not found")
 	if sideEvent != nil {
 		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
@@ -143,6 +149,37 @@ Pausing contract...`, lockedEventId, thisTransfers, sideTransfers)
 	b.logger.Warn().Str("event_id", lockedEventId.String()).Msg("checkValidity: Contract has been paused")
 	return nil
 
+}
+
+func getTransferEventById(lockedEventId *big.Int, b *WatchTransfersValidity) (*bindings.BridgeTransfer, error) {
+	// firstly get event from backend coz it fast
+	sideEventFromBackend, err := b.eventEmitter.Events().GetTransfer(lockedEventId.Uint64())
+	if err != nil {
+		return nil, fmt.Errorf("get transfer event from backend: %w", err)
+	}
+
+	// get same event from blockchain to prevent hacking with backend.
+	// explicitly set block numbers so bsc provider doesn't mess up
+	sideEvent, err := getEventFromBlockchain(b.eventEmitter.GetContract(), sideEventFromBackend)
+	if err != nil {
+		return nil, fmt.Errorf("get transfer event from blockchain: %w", err)
+	}
+	return sideEvent, nil
+}
+
+func getEventFromBlockchain(contract interfaces.BridgeContract, backendEvent *bindings.BridgeTransfer) (*bindings.BridgeTransfer, error) {
+	eventsIter, err := contract.FilterTransfer(&bind.FilterOpts{
+		Start:   backendEvent.Raw.BlockNumber,
+		End:     &backendEvent.Raw.BlockNumber,
+		Context: context.Background(),
+	}, []*big.Int{backendEvent.EventId})
+	if err != nil {
+		return nil, fmt.Errorf("filtering submit transfers: %w", err)
+	}
+	for eventsIter.Next() {
+		return eventsIter.Event, nil
+	}
+	return nil, events.ErrEventNotFound
 }
 
 func (b *WatchTransfersValidity) getLockedTransfers(eventId *big.Int, opts *bind.CallOpts) (lockedTransfer bindings.CommonStructsLockedTransfers, err error) {
