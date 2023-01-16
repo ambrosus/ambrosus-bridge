@@ -108,12 +108,12 @@ func (b *WatchTransfersValidity) watchLockedTransfers() error {
 }
 
 func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTransfer *bindings.CommonStructsLockedTransfers) error {
-	sideEvent, err := getTransferEventById(lockedEventId, b)
-	if err != nil && !errors.Is(err, events.ErrEventNotFound) {
+	sideEvent, sideEventErr := getTransferEventById(lockedEventId, b)
+	if sideEventErr != nil && !errors.Is(sideEventErr, events.ErrEventNotFound) {
 		// all errors except ErrEventNotFound are transport errors, so return and retry
 		// but if we catch events.ErrEventNotFound it means that we possibly hacked!
 		// so continue checking with empty event, that of course will fail and will be reported
-		return err
+		return sideEventErr
 	}
 
 	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
@@ -122,6 +122,9 @@ func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTra
 	}
 
 	sideTransfers := []byte("event not found")
+	if sideEventErr != nil {
+		sideTransfers = []byte(sideEventErr.Error())
+	}
 	if sideEvent != nil {
 		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
 		if err != nil {
