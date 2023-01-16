@@ -116,17 +116,17 @@ func (b *WatchTransfersValidity) checkValidity(lockedEventId *big.Int, lockedTra
 		return err
 	}
 
-	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
-	if err != nil {
-		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
-	}
-
-	sideTransfers := []byte("event not found")
+	sideTransfers := []byte(err.Error())
 	if sideEvent != nil {
 		sideTransfers, err = json.MarshalIndent(sideEvent.Queue, "", "  ")
 		if err != nil {
 			return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 		}
+	}
+
+	thisTransfers, err := json.MarshalIndent(lockedTransfer.Transfers, "", "  ")
+	if err != nil {
+		return fmt.Errorf("thisLockedTransfer marshal: %w", err)
 	}
 
 	if bytes.Equal(thisTransfers, sideTransfers) {
