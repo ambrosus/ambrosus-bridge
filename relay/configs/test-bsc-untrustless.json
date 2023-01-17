@@ -11,11 +11,7 @@
             "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
             "contractAddr": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248",
-            "privateKey": "",
-            "specificSettings": {
-                "filterLogsFromBlock": 23637484,
-                "filterLogsLimitBlocks": 4999
-            }
+            "privateKey": ""
         }
     },
     "eventsApi": {

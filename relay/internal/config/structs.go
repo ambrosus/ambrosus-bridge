@@ -27,14 +27,6 @@ type (
 		WsURL            string                 `mapstructure:"wsUrl"`
 		ContractAddr     string                 `mapstructure:"contractAddr"`
 		PrivateKey       string                 `mapstructure:"privateKey"`
-		SpecificSettings map[string]interface{} `mapstructure:"specificSettings"`
-	}
-
-	// specific settings for networks
-
-	BSCSpecificSettings struct {
-		FilterLogsFromBlock   int64 `mapstructure:"filterLogsFromBlock"`
-		FilterLogsLimitBlocks int64 `mapstructure:"filterLogsLimitBlocks"`
 	}
 )
 
