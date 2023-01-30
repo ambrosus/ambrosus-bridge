@@ -24,6 +24,7 @@ During installation you will be prompted to enter your ambrosus and ethereum pri
 
 Also you can pass `STAGE` env variable to run the relay on `dev`, `test` or `prod` environment. `prod` is set by default.
 Also you can pass `NO_DOCKER_INSTALL` env variable with any value to bypass docker installing.
+Also you can pass `KEYGEN_ONLY` env variable with any value to do only keygen.
 
 ##### Untrustless
 

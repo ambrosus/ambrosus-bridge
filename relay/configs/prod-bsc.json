@@ -11,11 +11,7 @@
             "httpUrl": "in env",
             "wsUrl": "in env",
             "contractAddr": "0x92fa52d3043725D00Eab422440C4e9ef3ba180d3",
-            "privateKey": "in env",
-            "specificSettings": {
-                "filterLogsFromBlock": 20289860,
-                "filterLogsLimitBlocks": 49999
-            }
+            "privateKey": "in env"
         }
     },
     "eventsApi": {
