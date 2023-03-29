@@ -42,7 +42,7 @@ const config: HardhatUserConfig = {
       url: "https://sepolia.infura.io/v3/" + process.env.INFURA_KEY,
       tags: ["eth", "testnet"],
       companionNetworks: {amb: 'test/amb'},
-      accounts: [devPK],
+      accounts: [process.env.PRIVATEKEY_OWNER_ETH || ethers.constants.HashZero],
     },
     "main/eth": {
       url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
