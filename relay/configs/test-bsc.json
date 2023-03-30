@@ -8,8 +8,8 @@
             "privateKey": "in env"
         },
         "BSC": {
-            "httpUrl": "https://bsc-testnet.nodereal.io/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
-            "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/32ada8ed8d834ea3b2afa0a9a035a42c",
+            "httpUrl": "https://bsc-testnet.nodereal.io/v1/7e4174dba68f4a18aeb1ebd839b1f197",
+            "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/7e4174dba68f4a18aeb1ebd839b1f197",
             "contractAddr": "0x8619f5E8315aff3E7Eba238492906329414084Da",
             "privateKey": "in env"
         }
