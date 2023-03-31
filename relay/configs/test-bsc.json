@@ -53,7 +53,7 @@
         },
         "ambFaucet": {
             "enable": true,
-            "faucetAddress": "0x7b8A17Fc98711db0870c7F37A45d069f2B750637",
+            "faucetAddress": "0xE2Fb2d9014B4c7b2705F81D21a6693219Cc518Ba",
             "minBalance": "0",
             "sendAmount": "1000000000000000000"
         }
