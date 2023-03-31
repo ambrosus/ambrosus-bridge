@@ -155,7 +155,7 @@ func (b *CommonBridge) IsEventRemoved(eventLog *types.Log) error {
 	}
 	if header.Hash() != eventLog.BlockHash {
 		cid, err := b.Client.ChainID(context.Background())
-		print("chainId", cid, err)
+		print("chainId ", cid, " ", err)
 		return fmt.Errorf("%s != %s (blockNum: %v)", header.Hash().Hex(), eventLog.BlockHash.Hex(), eventLog.BlockNumber)
 	}
 	return nil
