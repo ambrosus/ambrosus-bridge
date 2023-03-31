@@ -151,10 +151,10 @@ func (b *CommonBridge) GetRelayAddress() common.Address {
 func (b *CommonBridge) IsEventRemoved(eventLog *types.Log) error {
 	header, err := b.Client.HeaderByNumber(context.Background(), big.NewInt(int64(eventLog.BlockNumber)))
 	if err != nil {
-		return fmt.Errorf("parityHeaderByNumber: %w", err)
+		return fmt.Errorf("HeaderByNumber: %w", err)
 	}
 	if header.Hash() != eventLog.BlockHash {
-		return fmt.Errorf("looks like the event has been removed")
+		return fmt.Errorf("%s != %s (blockNum: %v)", header.Hash().Hex(), eventLog.BlockHash.Hex(), eventLog.BlockNumber)
 	}
 	return nil
 }
