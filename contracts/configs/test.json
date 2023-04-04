@@ -96,7 +96,8 @@
       "symbol": "USDT",
       "denomination": 18,
       "decimals": {
-        "eth": 6
+        "eth": 6,
+        "bsc": 18
       },
       "logo": "https://etherscan.io/token/images/tether_32.png",
       "primaryNets": [
