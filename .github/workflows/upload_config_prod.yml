@@ -27,4 +27,4 @@ jobs:
 
       - name: Upload config
         run: |
-          aws s3 cp contracts/configs/main.json s3://bridge-config.ambrosus.io/index.html --content-type application/json
+          aws s3 cp contracts/configs/main.json s3://bridge-config.ambrosus.io/index.html --content-type application/json --cache-control no-cache

@@ -1,15 +1,15 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0xcdea3ECb85D0F386Ea5D498D39c9c127380F254a",
-      "side": "0xACf183fB8C6382d7cB0D5e9832528AEafC151Fcf"
+      "amb": "0xb08cFc95eEA0F1d9Bb79002d23FA204B8836A536",
+      "side": "0xFCE5b5ca100e58E5635B15b79F0163be4CbD258b"
     },
     "bsc": {
-      "amb": "0xa09De74437D2453Df47deF3F5C2d14Cd3f0cF8c0",
-      "side": "0x4a69003c355656Acf4860Ff3e7cdd6f37CdC3248"
+      "amb": "0xdC103bf9a3789f78958f365321F3BA07e369667A",
+      "side": "0x8619f5E8315aff3E7Eba238492906329414084Da"
     }
   },
-  "ambFaucetAddress": "0x7b8A17Fc98711db0870c7F37A45d069f2B750637",
+  "ambFaucetAddress": "0xE2Fb2d9014B4c7b2705F81D21a6693219Cc518Ba",
   "tokens": {
     "SAMB": {
       "isActive": true,
@@ -25,9 +25,9 @@
         "amb"
       ],
       "addresses": {
-        "amb": "0xDA9BB33F9E3334781f3e4fce310288D7dB3eD29a",
-        "eth": "0xfc277855999cF6452F9027BbdC1B56264A736E3A",
-        "bsc": "0xDAA9Ee2aB371E31a75Faf93D0b859561a5D8a58f"
+        "amb": "0x7cee2ae3042D2C646Aa24FACfA92dfeE589046f0",
+        "eth": "0x9Ba7ef7E1C6C5EF4fe7e2A32d4527497D6B12Ff2",
+        "bsc": "0xC61D0CfaDc9bE2EF05288D04EbCC8ec8035D7aC6"
       },
       "nativeAnalog": "AMB"
     },
@@ -44,8 +44,8 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0x075dE66D19CA867387c75C880CffddBA9A3E9763",
-        "eth": "0xd67A7CE611C1b33A549712c0FcbFE8436A917b71",
+        "amb": "",
+        "eth": "0x5ECfeaD3d77F6814D189F6209ea27eCD1c00D45a",
         "bsc": ""
       },
       "nativeAnalog": "ETH"
@@ -63,9 +63,9 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0xD52F6e6aD16904a23E5cA0309098652502CA97E8",
+        "amb": "",
         "eth": "",
-        "bsc": "0x8601876F8A6DCcAE5Ce8Cf154f710E09c3f0f2c8"
+        "bsc": "0x3050A5cBe1ec89917933476a99962A40e802B89C"
       },
       "nativeAnalog": "BNB"
     },
@@ -84,9 +84,9 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x56a79d39fc414Ff11EbB30d6a5367ea5da8c6fE9",
-        "eth": "0x1D335E8B7787fB6c51F98713df5BCb56884FD023",
-        "bsc": "0x3a5633bAE0243bB360e25624DC6dFd241333B575"
+        "amb": "0x952b98DBDa3319BF0e339cC9CC574fF768F80f3c",
+        "eth": "0xB841C5707DA4B43eD915B707158010bd2FaF3B46",
+        "bsc": "0x9CE86a22E9a89a4d716Ee23d057389c3df3E26A5"
       },
       "nativeAnalog": ""
     },
@@ -96,16 +96,18 @@
       "symbol": "USDT",
       "denomination": 18,
       "decimals": {
-        "eth": 6
+        "eth": 6,
+        "bsc": 18
       },
       "logo": "https://etherscan.io/token/images/tether_32.png",
       "primaryNets": [
-        "eth"
+        "eth",
+        "bsc"
       ],
       "addresses": {
-        "amb": "0xa945ec3B3227731f8df905424041D9ab23778D8E",
-        "eth": "0xd3c82866DD68CBDD292db2A82cd6f41B5c93A9C6",
-        "bsc": ""
+        "amb": "0x1bB13b68DbA3571415B4092802777B5cA15de897",
+        "eth": "0x05875578a63C7E26245c7CBa3cF460fF6a613c6B",
+        "bsc": "0x62c6e4534594aD39307FE654D5260f12010A297E"
       },
       "nativeAnalog": ""
     },
@@ -122,9 +124,9 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x9F9B96F8d33B58c85f0E5bB4BE53164c0Fe77cD9",
+        "amb": "0xfB069aFFe6e75674FaBf67108e9094fb988A31D9",
         "eth": "",
-        "bsc": "0x7E0F09c8c2aAf4743B57355edb051F5E5ED6F73d"
+        "bsc": "0x446c2daE148049E53D0489A8cc0D7E55CF3Da5df"
       },
       "nativeAnalog": ""
     }

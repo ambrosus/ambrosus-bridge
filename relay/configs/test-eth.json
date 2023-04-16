@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0xcdea3ECb85D0F386Ea5D498D39c9c127380F254a",
+            "contractAddr": "0xb08cFc95eEA0F1d9Bb79002d23FA204B8836A536",
             "privateKey": "in env"
         },
         "ETH": {
-            "httpUrl": "https://sepolia.infura.io/v3/73b4b0b7af6c459e97f8350277274156",
-            "wsUrl": "wss://sepolia.infura.io/ws/v3/73b4b0b7af6c459e97f8350277274156",
-            "contractAddr": "0xACf183fB8C6382d7cB0D5e9832528AEafC151Fcf",
+            "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
+            "contractAddr": "0xFCE5b5ca100e58E5635B15b79F0163be4CbD258b",
             "privateKey": "in env"
         }
     },
@@ -20,7 +20,7 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "untrustless-mpc",
+            "variant": "untrustless2",
             "mpc": {
                 "isServer": true,
                 "meID": "master",
@@ -36,7 +36,7 @@
             }
         },
         "ambToSide": {
-            "variant": "untrustless-mpc",
+            "variant": "untrustless2",
             "mpc": {
                 "isServer": true,
                 "meID": "master",
@@ -53,7 +53,7 @@
         },
         "ambFaucet": {
             "enable": true,
-            "faucetAddress": "0x7b8A17Fc98711db0870c7F37A45d069f2B750637",
+            "faucetAddress": "0xE2Fb2d9014B4c7b2705F81D21a6693219Cc518Ba",
             "minBalance": "0",
             "sendAmount": "1000000000000000000"
         }
