@@ -1,15 +1,15 @@
 package client
 
 import (
-	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/bnb-chain/tss-lib/ecdsa/keygen"
 	ec "github.com/ethereum/go-ethereum/common"
-	"github.com/gorilla/websocket"
 
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/networking/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/mpc/tss_wrap"
@@ -88,9 +88,8 @@ func (s *Client) SetFullMsg(fullMsg []byte) {
 
 func (s *Client) GetFullMsg() ([]byte, error) {
 	// todo ctx
-	// make request with websocket lib coz std http lib doesn't support wss protocol in url
-	// we don't check on error because we just want to do kind of http request, not establish ws connection
-	_, resp, err := websocket.DefaultDialer.Dial(s.serverURL, nil)
+	serverURL := strings.Replace(s.serverURL, "ws", "http", 1)
+	resp, err := http.Get(serverURL)
 	if resp == nil {
 		return nil, fmt.Errorf("resp is nil, err: %w", err)
 	}
@@ -99,12 +98,12 @@ func (s *Client) GetFullMsg() ([]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	var buf bytes.Buffer
-	if _, err := buf.ReadFrom(resp.Body); err != nil {
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
 		return nil, fmt.Errorf("read body to buffer: %w", err)
 	}
 
-	return buf.Bytes(), nil
+	return b, nil
 }
 
 func (s *Client) GetTssAddress() (ec.Address, error) {
