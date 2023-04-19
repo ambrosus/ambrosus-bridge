@@ -108,6 +108,27 @@
         "bsc": "0xe9e7CEA3DedcA5984780Bafc599bD69ADd087D56"
       },
       "nativeAnalog": ""
+    },
+    "USDT": {
+      "isActive": true,
+      "name": "Tether USD",
+      "symbol": "USDT",
+      "denomination": 18,
+      "decimals": {
+        "eth": 6,
+        "bsc": 18
+      },
+      "logo": "https://etherscan.io/token/images/tether_32.png",
+      "primaryNets": [
+        "eth",
+        "bsc"
+      ],
+      "addresses": {
+        "amb": "0xfEE01F2D120250A0a59bfbF9C144F8ECC4425fCc",
+        "eth": "",
+        "bsc": "0x55d398326f99059fF775485246999027B3197955"
+      },
+      "nativeAnalog": ""
     }
   },
   "ambFaucetAddress": "0x5B72903b7D2711134DD2120Bc3CA61DB6f10cB92"
