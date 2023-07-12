@@ -61,9 +61,6 @@ func doRequest(urlFormat NetworkUrl, sellToken string) (float64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if resp.StatusCode >= 400 {
-		return 0, fmt.Errorf("0xApi answered error code %d", resp.StatusCode)
-	}
 	defer resp.Body.Close()
 
 	var r response
