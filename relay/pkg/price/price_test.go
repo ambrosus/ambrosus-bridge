@@ -18,6 +18,7 @@ func Test0x(t *testing.T) {
 }
 
 func Test0xBNB(t *testing.T) {
+	os.Setenv("0X_API_KEY", "c7a70fdd-3474-425b-9fc3-2e40a7275ca3") // test api key
 	e, err := TokenToUSD(&TokenInfo{Symbol: "WBNB", Decimals: 18, Address: common.Address{}})
 	if err != nil {
 		t.Fatal(err)
