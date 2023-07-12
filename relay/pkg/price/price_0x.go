@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"net/http"
+	"os"
 )
 
 const (
@@ -15,6 +16,8 @@ const (
 
 var NetworkUrls = []NetworkUrl{EthUrl, BscUrl}
 var ErrValidationFailed = errors.New("Validation Failed")
+
+var ApiKey = os.Getenv("0X_API_KEY")
 
 type NetworkUrl string
 type response struct {
@@ -46,11 +49,21 @@ func Get0x(token *TokenInfo) (price float64, err error) {
 }
 
 func doRequest(urlFormat NetworkUrl, sellToken string) (float64, error) {
-	url := fmt.Sprintf(string(urlFormat), sellToken)
+	client := http.Client{}
 
-	resp, err := http.Get(url)
+	url := fmt.Sprintf(string(urlFormat), sellToken)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return 0, err
+	}
+	req.Header.Set("0x-api-key", ApiKey)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, err
+	}
+	if resp.StatusCode >= 400 {
+		return 0, fmt.Errorf("0xApi answered error code %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
 
