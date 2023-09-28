@@ -15,6 +15,11 @@ type kucoinResponse struct {
 }
 
 func GetKucoin(token *TokenInfo) (price float64, err error) {
+	// hotfix for BUSD
+	if token.Symbol == "BUSD" {
+		token.Symbol = "USDT"
+	}
+
 	resp, err := http.Get(fmt.Sprintf(kucoinPriceUrlFormat, token.Symbol))
 	if err != nil {
 		return 0, err
