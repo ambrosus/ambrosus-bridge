@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0xb08cFc95eEA0F1d9Bb79002d23FA204B8836A536",
+            "contractAddr": "0x3B851d4d79C44AbBBF914D6bc61A2BdCC7387d85",
             "privateKey": "in env"
         },
         "ETH": {
             "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xFCE5b5ca100e58E5635B15b79F0163be4CbD258b",
+            "contractAddr": "0xEFf51A8fD7129Ca474b1dcCBE7925ef6b5D45F31",
             "privateKey": "in env"
         }
     },
@@ -53,7 +53,7 @@
         },
         "ambFaucet": {
             "enable": true,
-            "faucetAddress": "0xE2Fb2d9014B4c7b2705F81D21a6693219Cc518Ba",
+            "faucetAddress": "0x090801d716A9d501F57519B1f4bd6aBD2961aa88",
             "minBalance": "0",
             "sendAmount": "1000000000000000000"
         }
