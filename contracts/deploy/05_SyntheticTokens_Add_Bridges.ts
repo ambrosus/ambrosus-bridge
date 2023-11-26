@@ -70,7 +70,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
-    if (!isAddress(token.addresses[netName])) continue;  // not deployed
+    if (!isAddress(token.networks[netName]?.address)) continue;  // not deployed
     if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token, no need to set role
 
     try {
