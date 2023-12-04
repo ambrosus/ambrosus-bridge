@@ -7,7 +7,7 @@ on:
       - dev
       - main
     paths:
-      - 'contracts/configs/test.json'
+      - 'contracts/configs/legacy/test.json'
 
 jobs:
   upload_chainspec_testnet:
