@@ -17,7 +17,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const {owner} = await hre.getNamedAccounts();
 
   // can have more than 1 bridge addresses; can convert decimals between networks
-  const deployAmb = async (token: Token) => {
+  const deployInAmbNetwork = async (token: Token) => {
     const {bridgesAddresses, bridgesDecimals} = getBridgesDecimals(configFile, token);
 
     const {address} = await hre.deployments.deploy(token.symbol, {
@@ -29,7 +29,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // more lightweight contract; only 1 bridge address
-  const deployNonAmb = async (token: Token) => {
+  const deployInNonAmbNetwork = async (token: Token) => {
     const bridgeAddress = configFile.bridges[netName]?.side || ethers.constants.AddressZero
 
     const {address} = await hre.deployments.deploy(token.symbol, {
@@ -47,8 +47,8 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token
 
     const address = (hre.network.tags["amb"]) ?
-      await deployAmb(token) :
-      await deployNonAmb(token);
+      await deployInAmbNetwork(token) :
+      await deployInNonAmbNetwork(token);
 
     token.networks[netName].address = address;
     configFile.save();

@@ -1,7 +1,7 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
 import {parseNet, readConfig_} from "./utils/utils";
-import {isTokenPrimary, isTokenWrappable} from "./utils/config";
+import {isTokenPrimary, isTokenIsNativeCoinWrapper} from "./utils/config";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const netName = parseNet(hre.network).name;
@@ -24,7 +24,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     }
 
     let address: string;
-    if (isTokenWrappable(token, netName)) {
+    if (isTokenIsNativeCoinWrapper(token, netName)) {
       console.log("Deploying test wrappable token", token.symbol, "on", netName);
       ({ address } = await hre.deployments.deploy(token.symbol, {
         contract: "sAMB",

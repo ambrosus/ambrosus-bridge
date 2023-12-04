@@ -8,6 +8,7 @@ export interface Token {
   isActive: boolean;
   name: string;
   symbol: string;
+  logo: string;
   networks: { [net: string]: TokenNetwork }
 }
 
@@ -40,7 +41,7 @@ export function readConfig(stage: string): Config {
   return config;
 }
 
-export function isTokenWrappable(token: Token, netName: string): boolean {
+export function isTokenIsNativeCoinWrapper(token: Token, netName: string): boolean {
     return !!token.networks[netName].nativeCoin
 }
 
@@ -65,7 +66,7 @@ function getTokenPairs(thisNet: string, sideNet: string, configFile: Config): { 
     // so if user wants to transfer synthetic wrapper and receive native coin - he can do it
     // by calling withdraw(tokenThisAddress=thisNet, unwrapSide=true, ...).
     // bridge will check if tokens[0x0] == tokenThisAddress and emit Transfer with zero token address
-    if (isTokenPrimary(token, sideNet) && isTokenWrappable(token, sideNet))
+    if (isTokenPrimary(token, sideNet) && isTokenIsNativeCoinWrapper(token, sideNet))
       tokenPair[ethers.constants.AddressZero] = token.networks[thisNet].address;
 
 
