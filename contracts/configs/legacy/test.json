@@ -30,12 +30,12 @@
         "bsc": "0x5B7eC4D70Df5Cc1e4E5dFF97b0d9aCc35908C33f",
         "eth": "0x5731311327A62B67E25a4d99270483bf35F46Ab4"
       },
-      "nativeAnalog": "AMB"
+      "nativeAnalog": ""
     },
     "SAMB2": {
       "isActive": true,
-      "name": "Synthetic Amber",
-      "symbol": "SAMB",
+      "name": "Synthetic Amber 2",
+      "symbol": "SAMB2",
       "denomination": 18,
       "decimals": {
         "amb": 18,
