@@ -10,7 +10,7 @@ on:
       - 'contracts/configs/legacy/test.json'
 
 jobs:
-  upload_chainspec_testnet:
+  upload_chainspec_devnet:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,10 +22,14 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID_NEW }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY_NEW }}
+          aws-region: us-east-1
+
+      - name: Extract bucket name
+        id: extract_bucket
+        run: echo "::set-output name=bucket_name::$(aws s3 ls | grep bridge-config-test | awk '{print $3}')"
 
       - name: Upload config
         run: |
-          aws s3 cp contracts/configs/test.json s3://bridge-config.ambrosus-test.io/index.html --content-type application/json --cache-control no-cache
+          aws s3 cp contracts/configs/test.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/index.html --content-type application/json --cache-control no-cache
