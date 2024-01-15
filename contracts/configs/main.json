@@ -23,12 +23,12 @@
           "nativeCoin": "AMB"
         },
         "bsc": {
-          "address": "0x683aae5cD37AC94943D05C19E9109D5876113562",
+          "address": "0x23c1C1cc14270B7Bd63677d1fe4790891b17A33d",
           "denomination": 18,
           "isPrimary": false
         },
         "eth": {
-          "address": "0x23c1C1cc14270B7Bd63677d1fe4790891b17A33d",
+          "address": "0x683aae5cD37AC94943D05C19E9109D5876113562",
           "denomination": 18,
           "isPrimary": false
         }
