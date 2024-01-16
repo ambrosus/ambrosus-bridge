@@ -52,7 +52,7 @@
           "isPrimary": false
         },
         "eth": {
-          "address": "DEPLOY",
+          "address": "0x586EE5Df24c5a426e42eD7Ea6e3EB0f00a4a2256",
           "denomination": 18,
           "isPrimary": false
         }
