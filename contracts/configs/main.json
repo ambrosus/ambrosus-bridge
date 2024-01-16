@@ -34,6 +34,30 @@
         }
       }
     },
+    "SAMB2": {
+      "isActive": true,
+      "name": "Synthetic Amber",
+      "symbol": "SAMB",
+      "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
+      "networks": {
+        "amb": {
+          "address": "0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F",
+          "denomination": 18,
+          "isPrimary": true,
+          "nativeCoin": "AMB"
+        },
+        "bsc": {
+          "address": "",
+          "denomination": 18,
+          "isPrimary": false
+        },
+        "eth": {
+          "address": "DEPLOY",
+          "denomination": 18,
+          "isPrimary": false
+        }
+      }
+    },
     "WETH": {
       "isActive": false,
       "name": "Wrapped Ether",
