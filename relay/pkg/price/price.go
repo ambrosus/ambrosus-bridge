@@ -12,7 +12,7 @@ type TokenInfo struct {
 
 // TokenToUSD return usd price for smallest token part (wei 1e-18 / satoshi 1e-9)
 func TokenToUSD(token *TokenInfo) (price float64, err error) {
-	if token.Symbol == "SAMB" {
+	if token.Symbol == "SAMB" || token.Symbol == "AMB" {
 		price, err = GetAmb()
 	} else if token.Symbol == "USDT" || token.Symbol == "BUSD" {
 		price, err = GetKucoin(token)
