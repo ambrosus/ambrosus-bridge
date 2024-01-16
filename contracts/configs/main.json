@@ -36,8 +36,8 @@
     },
     "SAMB2": {
       "isActive": true,
-      "name": "Synthetic Amber",
-      "symbol": "SAMB",
+      "name": "AirDAO",
+      "symbol": "AMB",
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "networks": {
         "amb": {
