@@ -65,4 +65,4 @@ function mapToLegacyToken(newToken: Token) {
   return legacyToken;
 }
 
-mapToLegacyConfig("test")
+mapToLegacyConfig("main")
