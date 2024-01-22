@@ -19,16 +19,19 @@ import (
 	zerolog "github.com/rs/zerolog/log"
 )
 
-// examples:
+// keugen examples:
 // keygen server:
 // go run main.go -server :8080 -meID A -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
 // keygen client:
 // go run main.go -url http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -shareDir /tmp/mpc
 
-// reshare server (for new commit) and client (for old committee):
-// go run main.go -reshare -server :8080 -url http://localhost:8080 -meID A -partyIDs "A B C" -threshold 2 -meIdNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
-// reshare clients (for both committee):
-// go run main.go -reshare -url http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -meIdNew B2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// reshare examples:
+// run as server and client, member of old and new committees
+// go run main.go -reshare -server :8080 -url http://localhost:8080 -meID A -partyIDs "A B C" -threshold 2 -meIDNew A2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// run as client, member of old and new committees
+// go run main.go -reshare -url http://localhost:8080 -meID B -partyIDs "A B C" -threshold 2 -meIDNew B2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
+// run as client, member of new committee
+// go run main.go -reshare -url http://localhost:8080 partyIDs "A B C" -threshold 2 -meIDNew C2 -partyIDsNew "A2 B2 C2 D2" -thresholdNew 3 -shareDir /tmp/mpc
 
 var logger = zerolog.Logger
 
@@ -122,7 +125,12 @@ func doReshare(isServer bool, hostUrl, serverURL, accessToken string, id string,
 	if err != nil {
 		log.Fatal(err)
 	}
-	saveShare(mpcc, sharePath)
+
+	// save share only if we are in new committee
+	// coz old share changes somehow after reshare (Xi component zeroed)
+	if meInNewCommittee {
+		saveShare(mpcc, sharePath)
+	}
 }
 
 func reshareBothCommittee(isServer bool, serverHost, url, accessToken, meID, meIDNew string, partyIDs, partyIDsNew []string, threshold, thresholdNew int, shareDir string) {

@@ -1,0 +1,103 @@
+{
+    "networks": {
+        "sideBridgeNetwork": "ETH",
+        "AMB": {
+            "httpUrl": "https://network.ambrosus.io",
+            "wsUrl": "wss://network.ambrosus.io/ws",
+            "contractAddr": "0x19caBC1E34Ab0CC5C62DaA1394f6022B38b75c78",
+            "privateKey": "in env"
+        },
+        "ETH": {
+            "httpUrl": "in env",
+            "wsUrl": "in env",
+            "contractAddr": "0x0De2669e8A7A6F6CC0cBD3Cf2D1EEaD89e243208",
+            "privateKey": "in env"
+        }
+    },
+    "eventsApi": {
+        "baseUrl": "backoffice-api.ambrosus.io"
+    },
+    "submitters": {
+        "enable": false,
+        "sideToAmb": {
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": ":6555",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
+        },
+        "ambToSide": {
+            "variant": "untrustless-mpc",
+            "mpc": {
+                "isServer": true,
+                "meID": "master",
+                "partyIDs": [
+                    "master",
+                    "Kevin",
+                    "Lang",
+                    "Rory",
+                    "Andrey"
+                ],
+                "threshold": 5,
+                "serverURL": ":6455",
+                "accessToken": "in env",
+                "sharePath": "shared/share_master"
+            }
+        }
+    },
+    "validityWatchdogs": {
+        "enable": false,
+        "enableForAmb": false,
+        "enableForSide": false
+    },
+    "pauseUnpauseWatchdogs": {
+        "enable": false
+    },
+    "triggers": {
+        "enable": false
+    },
+    "unlockers": {
+        "enable": false
+    },
+    "feeApi": {
+        "enable": true,
+        "ip": "",
+        "port": "8080",
+        "endpoint": "/fees",
+        "amb": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 0,
+            "minTransferFeeUSD": 10,
+            "feeApiUrl": "https://backoffice-api.ambrosus.io/relay/fee?networkThis=amb&networkSide=eth&eventFrom=4&onlyLastEventsCount=20"
+        },
+        "side": {
+            "privateKey": "in env",
+            "minBridgeFeeUSD": 0,
+            "minTransferFeeUSD": 0.5,
+            "feeApiUrl": "https://backoffice-api.ambrosus.io/relay/fee?networkThis=eth&networkSide=amb&eventFrom=10&onlyLastEventsCount=20"
+        }
+    },
+    "externalLogger": {
+        "telegram": {
+            "enable": false,
+            "token": "in env",
+            "chatId": "-1001170462749"
+        }
+    },
+    "prometheus": {
+        "enable": false,
+        "ip": "",
+        "port": "9090"
+    }
+}

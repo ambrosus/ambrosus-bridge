@@ -1,6 +1,6 @@
 import {HardhatRuntimeEnvironment} from "hardhat/types";
 import {DeployFunction} from "hardhat-deploy/types";
-import {parseNet, readConfig_} from "./utils/utils";
+import {readConfig_} from "./utils/utils";
 import {isAddress} from "ethers/lib/utils";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
@@ -8,7 +8,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   const samb = configFile.tokens.SAMB;
 
-  if (isAddress(samb.addresses.amb)) {
+  if (isAddress(samb.networks.amb.address)) {
       console.log("sAMB already deployed");
       return;
   }
@@ -22,7 +22,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  samb.addresses.amb = deployResult.address;
+  samb.networks.amb.address = deployResult.address;
   configFile.save();
 
 };

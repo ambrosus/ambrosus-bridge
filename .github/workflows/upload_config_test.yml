@@ -6,7 +6,7 @@ on:
     branches:
       - '*'
     paths:
-      - 'contracts/configs/test.json'
+      - 'contracts/configs/legacy/test.json'
 
 jobs:
   upload_chainspec_devnet:
@@ -31,4 +31,4 @@ jobs:
 
       - name: Upload config
         run: |
-          aws s3 cp contracts/configs/test.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/index.html --content-type application/json --cache-control no-cache
+          aws s3 cp contracts/configs/legacy/test.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/index.html --content-type application/json --cache-control no-cache

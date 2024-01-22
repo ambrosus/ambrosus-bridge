@@ -23,7 +23,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
 
   // try to use old BridgeERC20 method for backward compatibility with legacy contracts
-  const addLegacy = async (token: Token) => {
+  const registerBridgeInLegacyToken = async (token: Token) => {
     const notSetBridges = (await Promise.all(
       bridgesInNet(netName, configFile)
         .map(async (br) => {
@@ -39,7 +39,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // can have more than 1 bridge addresses; can convert decimals between networks
-  const addAmb = async (token: Token) => {
+  const registerBridgeInAmbNetworkToken = async (token: Token) => {
     const {bridgesAddresses, bridgesDecimals} = getBridgesDecimals(configFile, token);
 
     const bridgesAddressesToSet = [];
@@ -58,7 +58,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   }
 
   // more lightweight contract; only 1 bridge address
-  const addNonAmb = async (token: Token) => {
+  const registerBridgeInNonAmbNetworkToken = async (token: Token) => {
     const bridgeAddress = configFile.bridges[netName].side || ethers.constants.AddressZero
     const realBridgeAddress = await hre.deployments.read(token.symbol, {from: owner}, "bridgeAddress");
 
@@ -70,16 +70,16 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
 
   for (const token of Object.values(configFile.tokens)) {
     if (!token.isActive) continue;
-    if (!isAddress(token.addresses[netName])) continue;  // not deployed
+    if (!isAddress(token.networks[netName]?.address)) continue;  // not deployed
     if (isTokenPrimary(token, netName)) continue;  // it's not synthetic token, no need to set role
 
     try {
-      await addLegacy(token) // try to use old method first
+      await registerBridgeInLegacyToken(token) // try to use old method first
     } catch (e) {
       if (netName == "amb") {
-        await addAmb(token)
+        await registerBridgeInAmbNetworkToken(token)
       } else {
-        await addNonAmb(token)
+        await registerBridgeInNonAmbNetworkToken(token)
       }
     }
 

@@ -18,7 +18,8 @@
     "clear_solcInputs": "ts-node ./scripts/clear_solcInputs.ts",
     "integr_deploy": "./deploy.sh eth integr",
     "integr_test": "hardhat test scripts/integration_tests.ts",
-    "deploy_menu": "hardhat run scripts/dialog.ts"
+    "deploy_menu": "hardhat run scripts/dialog.ts",
+    "map_config_to_legacy": "ts-node ./scripts/legacy_config.ts"
   },
   "devDependencies": {
     "@types/chai-as-promised": "^7.1.4",

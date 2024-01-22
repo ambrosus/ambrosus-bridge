@@ -23,11 +23,11 @@ export async function addNewTokensToBridge(tokenPairs: { [k: string]: string },
   const {owner} = await hre.getNamedAccounts();
 
   // remove from tokenPairs all tokens that are already in the bridge
-  await Promise.all(Object.keys(tokenPairs).map(async (tokenThis) => {
+  for (const tokenThis of Object.keys(tokenPairs)) {
     const tokenSide = await hre.deployments.read(bridgeName, {from: owner}, 'tokenAddresses', tokenThis);
     if (tokenPairs[tokenThis] == tokenSide)
       delete tokenPairs[tokenThis];
-  }));
+  }
 
   if (Object.keys(tokenPairs).length == 0) {
     console.log("No new tokens to add to bridge");
@@ -67,16 +67,16 @@ export async function options(hre: HardhatRuntimeEnvironment, bridgeName: string
   // multisig threshold == 1, so no upgrade confirmations needed
   const cfg = (network.stage === "main") ? getAddresses(bridgeName) :
     {
-        adminAddress: owner,
-        relayAddress: owner,
-        feeProviderAddress: owner,
-        watchdogsAddresses: [owner],
-        transferFeeRecipient: owner,
-        bridgeFeeRecipient: owner,
-        multisig: {
-            admins: [owner],
-            threshold: 1
-        }
+      adminAddress: owner,
+      relayAddress: owner,
+      feeProviderAddress: owner,
+      watchdogsAddresses: [owner],
+      transferFeeRecipient: owner,
+      bridgeFeeRecipient: owner,
+      multisig: {
+        admins: [owner],
+        threshold: 1
+      }
     };
 
   if (owner != cfg.adminAddress) {
@@ -120,27 +120,16 @@ export function getBridgesDecimals(configFile: Config, token: Token) {
   const bridgesAddresses = [];
   const bridgesDecimals = [];
 
-  for (const [netName, {amb: address}] of Object.entries(configFile.bridges)) {
-    if (!isAddress(address)) {
-      continue
-    }
+  for (const netName of Object.keys(configFile.bridges)) {
+    if (token.networks[netName] === undefined) continue; // skip if token not deployed on this network
 
-    // if decimals not specified for side net, use token.decimals
-    const sideNetDecimals = getSideNetDecimalsOrTokenDenomination(token, netName)
-    bridgesAddresses.push(address);
+    const ambBridgeAddress = configFile.bridges[netName].amb;
+    if (!isAddress(ambBridgeAddress)) continue; // skip non existing bridges :)
+
+    const sideNetDecimals = token.networks[netName].denomination;
+    bridgesAddresses.push(ambBridgeAddress);
     bridgesDecimals.push(sideNetDecimals);
   }
 
   return {bridgesAddresses, bridgesDecimals};
-}
-
-export function getSideNetDecimalsOrTokenDenomination(token: Token, netName: string): number {
-  return (token.decimals !== undefined && token.decimals[netName]) || token.denomination;
-}
-
-
-// :(((
-export function urlFromHHProvider(provider: any): string {
-  while (provider && !provider.url) provider = provider._wrapped;
-  return provider.url
 }
