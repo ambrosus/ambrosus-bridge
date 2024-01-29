@@ -142,10 +142,10 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 1000,
+            runs: 200,
           },
           // Note: for amb deploy
-          // evmVersion: "byzantium"
+          evmVersion: "byzantium"
         },
       }, {
         version: "0.4.22",
