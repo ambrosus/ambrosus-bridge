@@ -30,10 +30,10 @@ contract BridgeERC20 is ERC20, Ownable {
         uint amount
     ) internal virtual override {
         if (sender == bridgeAddress) {
-            // user transfer tokens to ambrosus => need to mint it
+            // tokens transferred from airdao bridge => need to mint them
             _mint(recipient, amount);
         } else if (recipient == bridgeAddress) {
-            // user withdraw tokens from ambrosus => need to burn it
+            // tokens transferred to airdao bridge => need to burn them
             _burn(sender, amount);
         } else {
             super._transfer(sender, recipient, amount);
