@@ -47,7 +47,7 @@
           "nativeCoin": "AMB"
         },
         "bsc": {
-          "address": "DEPLOY",
+          "address": "0x96c7957030aa8b1FD3C6E0eE3D84c4695c6eaE9c",
           "denomination": 18,
           "isPrimary": false
         },
