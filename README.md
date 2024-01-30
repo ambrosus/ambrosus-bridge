@@ -16,14 +16,21 @@ The bridge consists of **2 contracts**, one for each network and a **relay** - s
 in a nutshell, the bridge works as follows:
 1. the user calls the `withdraw` function in the contract `A`; he's tokens locks on bridge contract
 2. this contract emits an `Transfer` event
-3. relay find new event, prepare a proof and call `submit` function on contract `B` (another network)
-4. contract `B` checks (using proof) that `Transfer` event really emitted in first network by contract `A`
-5. if check successful, contract `B` mint synthetic analog of primary token to user
+3. relay find new event, prepare a MPC signature with other relays and call `submit` function on contract `B` (another network)
+4. contract `B` saves transfers in locked state for `lockTime` seconds
+5. if no one dispute locked transfer during this time, contract `B` mint synthetic analog of primary token to user
 
 
-Since for withdrawal of funds contract B independently checks that contract A actually created the Transfer event,  
-and the relay is needed only to send public information,  
-**the bridge can be called trustless** and therefore protected from burglary relay
+### MPC
+
+MPC - Multi-Party Computation - is a cryptographic protocol that allows several parties to jointly compute a function over their inputs while keeping them private.  
+In our case, we use MPC to sign `submit` transaction with the public key trusted by the contract.  
+However, the private key never exists anywhere in memory, and is instead fragmented for each of the several relays.  
+
+So, in order to submit a transfers, all relays must be in consensus about data is going to be submitted.  
+If one of the relays is malicious, it will not be able to submit a transaction and any try will be reported.  
+
+We are using [binance tss-lib](https://github.com/bnb-chain/tss-lib) library for MPC.
 
 
 ### Contracts
@@ -48,32 +55,7 @@ Each contract is inherited from `CommonBridge` and `CheckXxXxX`
 
 `CheckXxXxX`, which can mean `CheckAura`, `CheckPoW`, `CheckPoSA`, - is contracts, that verify that `Transfer` event happened in other (side) network.
 
-In general, these contracts do the same thing:
-they check that there is a `Transfer` event in a certain block with the same information that the relay sent,
-and also checks ~ 10 (`minSafetyBlocks` param) next blocks.
-
-But the principle of checking blocks is different for different networks:
-
-- `CheckAura` (for blocks from Ambrosus) - check author of each block, it must be specific validator from Validator Set.       
-  `assert block.author == block.step % validatorSet.length`  
-  Need to sync ValidatorSet from contract (`0x0000000000000000000000000000000000000F00`) into receiver network.
-
-
-- `CheckPoSA` (for blocks from Binance Smart Chain) - check author of each block, it must be validator from Validator Set.  
-  `assert validatorSet[block.author]`  
-  Need to sync ValidatorSet from each epoch start block (`block.number % 200 == 0`) into receiver network.
-
-
-- `CheckPoW` (for blocks from Ethereum 1.0) - check PoW hash for each block, it must be suitable with network difficulty.
-
-
-For each checker relay prepare proof (`PoWProof`, `PoSAProof`, `AuraProof`) - struct, that contains necessary information, like blocks, user transfers, etc...
-
-
-Smart contracts structure:
-![uml](./docs/output/classes.png)
-
-
+Currently, we migrate all bridges to `CheckUntrustless2` strategy, that don't check for any blockchain consensus, but instead relies on MPC signature from relays.
 
 
 ### Flow
@@ -115,10 +97,10 @@ Smart contracts structure:
 
 1. Relay get event `Transfer(event_id, withdraw_queue)` from AmbBridge
 2. Checks that `event_id == EthBridge.inputEventId + 1`, otherwise look for Transfer with a matching event\_id
-3. waits for N next blocks (safety blocks)
-4. creates receipts proof (see below)
-5. encodes the blocks (event and safety block) depending on the network consensus: BlockPoA or BlockPoW (see below)
-6. calls EthBridge method `submitTransfers`
+3. Waits for N next blocks (safety blocks)
+4. Build the `submit` transaction with data from Transfer event
+5. Sign transaction with MPC in consensus with other relays
+6. Master relay send signed transaction to blockchain
 
 
 ### Fees
@@ -169,103 +151,6 @@ _**Bridge fee**_ - are processed in the following way:&#x20;
     3. Total commissions which user will pay = 0,0083 + 0,00083 + 0.02 = 0,02913 ETH&#x20;
 
 
-
-
-### Extra
-
-#### Block pre-encoding
-
-To prove that the block is correct, you need to calc its hash.
-
-```
-blockHeader = {
-    ParentHash, UncleHash, Coinbase, Root, TxHash,
-    ReceiptHash, 
-    Bloom, Difficulty, Number, GasLimit, GasUsed,
-    Time, Extra, MixDigest, Nonce
-}
-
-blockHash = keccak256(rlpEncode(blockHeader))
-assert blockHash == needHash
-```
-
-The hashed value is almost always encoded in RLP (Recursive Length Prefix) first. This encoding only adds a prefix to the input value, which means that the input value with some offset is contained in the output value.\
-\=> `rlpEncode(value) = rlpPrefix(value) + value`, where + means concatenation of bytes.
-
-To save gas, relay will prepare the blocks for the smart contract so that concatenation `(abi.encodePacked)` is used instead of `rlpEncode`.
-
-For example, relay can split `rlpEncode(header)` by separator `receiptRoot`\
-`rlpParts := bytes.Split(rlpHeader, receiptRoot)`, then\
-`keccak256(abi.encodePacked(rlpParts[0], receiptRoot, rlpParts[1]) == needHash`
-
-#### Receipts proof (todo)
-
-simplified example of merkle patricia tree:
-
-```
-receiptsRoot = hash(rlpEncode(childrens)
-├── path1 = hash(rlpEncode(childrens)
-│   ├── receipt1
-│   ├── receipt2
-│   ├── receipt...
-│   └── receipt16
-├── path2 = hash(rlpEncode(childrens)
-│   ├── receipt1
-│   ├── receipt2
-│   ├── receipt...
-│   ├── receipt6
-│   │   ├── someReceiptInfo
-│   │   ├── **eventData**
-│   │   └── someMoreReceiptInfo
-│   ├── receipt...
-│   └── receipt16
-└── path3 = hash(rlpEncode(childrens)
-    ├── receipt1
-    ├── receipt...
-    └── receipt16
-```
-
-smart contract have `eventData` as function argument and `receiptsRoot` as `blocks[0].prevHashOrReceiptRoot`,\
-so we need to provide other data to check if `eventData` was in trie.
-
-simplify trie
-
-```
-receiptsRoot = hash(path1 + path2 + path3)
-├── path1 = hash(rlpEncode(childrens)
-├── path2 = hash(rlpEncode(p1 + eventData + p2)
-│   ├── p1 = rlpEncode(receipt1-receip5) + someReceipt6InfoRLP
-│   ├───── eventData
-│   └── p2 = someMoreReceipt6InfoRLP + rlpEncode(receipt7-receipt16)
-└── path3 = hash(rlpEncode(childrens)
-```
-
-=>
-
-path2 = hash(p1 + eventData + p2)  
-receiptsRoot = hash(path1 + path2 + path3)
-
-=>
-
-```bytes[] proof = [p1, p2, path1, path3, ...]```
-
-check
-
-```
-hash(abi.encodePacked(
-    p5,
-    hash(abi.encodePacked(
-        p3, 
-        hash(abi.encodePacked(
-            p1,
-            eventData,
-            p2
-        )),
-        p4
-    )),
-    p6
-) == header.receiptsRoot
-```
 
 
 ### Fees API
