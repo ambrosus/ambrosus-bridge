@@ -20,17 +20,15 @@ fi
 
 
 if [[ "$MPC_MEID" == "Kevin" || "$MPC_MEID" == "Lang"  || "$MPC_MEID" == "Rory" ]]; then
-  CMD="go run ./cmd/main.go -reshare -url $URL -partyIDs $OLD_PARTY -threshold 5 -partyIDsNew $NEW_PARTY -thresholdNew 5 -shareDir $SHARE_DIR -meID $MPC_MEID"
+  CMD="go run ./cmd/mpc_keygen/main.go -reshare -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir $SHARE_DIR -meID $MPC_MEID"
 elif [[ "$MPC_MEID" == "backup2" || "$MPC_MEID" == "Michael2" || "$MPC_MEID" == "Seth2" || "$MPC_MEID" == "Od2" ]]; then
-  CMD="go run ./cmd/main.go -reshare -url $URL -partyIDs $OLD_PARTY -threshold 5 -partyIDsNew $NEW_PARTY -thresholdNew 5 -shareDir $SHARE_DIR -meIDNew $MPC_MEID"
+  CMD="go run ./cmd/mpc_keygen/main.go -reshare -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir $SHARE_DIR -meIDNew $MPC_MEID"
 elif [[ "$MPC_MEID" == "Andrey" ]]; then
-  CMD="go run ./cmd/main.go -reshare -url $URL -partyIDs $OLD_PARTY -threshold 5 -partyIDsNew $NEW_PARTY -thresholdNew 5 -shareDir $SHARE_DIR -meID Andrey -meIDNew Andrey2"
+  CMD="go run ./cmd/mpc_keygen/main.go -reshare -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir $SHARE_DIR -meID Andrey -meIDNew Andrey2"
 else
     echo "Error: MPC_MEID value does not match any condition"
     exit 1
 fi
-
-
 
 
 if [[ -z $NO_DOCKER_INSTALL ]]; then
