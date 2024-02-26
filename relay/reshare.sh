@@ -6,7 +6,8 @@ MPC_MEID=$2
 
 SIDE_NET_LOWERCASE="${SIDE_NET,,}"
 KEYGEN_CONTAINER_NAME="${SIDE_NET_LOWERCASE}-relay-keygen"
-SHARE_DIR="${PWD}/share_${SIDE_NET_LOWERCASE}"
+SHARE_DIR="share_${SIDE_NET_LOWERCASE}"
+SHARE_DIR_HOST="${PWD}/${SHARE_DIR}"
 
 
 if [[ "$SIDE_NET_LOWERCASE" == "eth" ]]; then
@@ -60,7 +61,7 @@ echo "Starting reshare..."
 
 docker run -it --rm \
   --name $KEYGEN_CONTAINER_NAME \
-  -v $SHARE_DIR:/app/shared \
+  -v $SHARE_DIR_HOST:/app/shared \
   --entrypoint '/bin/sh' \
   $IMAGE:latest \
   -c "$CMD"
