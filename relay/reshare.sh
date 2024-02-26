@@ -64,7 +64,7 @@ docker run -it --rm \
   --name $KEYGEN_CONTAINER_NAME \
   -v $SHARE_DIR:/app/shared \
   --entrypoint '/bin/sh' \
-  $IMAGE:$TAG \
+  $IMAGE:latest \
   -c "$CMD"
 
 
