@@ -30,12 +30,12 @@
         "bsc": "0x5B7eC4D70Df5Cc1e4E5dFF97b0d9aCc35908C33f",
         "eth": "0x5731311327A62B67E25a4d99270483bf35F46Ab4"
       },
-      "nativeAnalog": ""
+      "nativeAnalog": "AMB"
     },
     "SAMB2": {
       "isActive": true,
-      "name": "Synthetic Amber 2",
-      "symbol": "SAMB2",
+      "name": "Synthetic Amber",
+      "symbol": "SAMB",
       "denomination": 18,
       "decimals": {
         "amb": 18,
@@ -54,7 +54,7 @@
       "nativeAnalog": "AMB"
     },
     "WETH": {
-      "isActive": false,
+      "isActive": true,
       "name": "Wrapped Ether",
       "symbol": "WETH",
       "denomination": 18,
@@ -67,13 +67,13 @@
         "eth"
       ],
       "addresses": {
-        "amb": "",
+        "amb": "0xFB8cB8084C428345555E630c0FB0d86A7D033045",
         "eth": "0x5ECfeaD3d77F6814D189F6209ea27eCD1c00D45a"
       },
       "nativeAnalog": "ETH"
     },
     "WBNB": {
-      "isActive": false,
+      "isActive": true,
       "name": "Wrapped BNB",
       "symbol": "WBNB",
       "denomination": 18,
@@ -86,7 +86,7 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "",
+        "amb": "0x7809b228731E144f243b3Bb79441938aa0885506",
         "bsc": "0x3050A5cBe1ec89917933476a99962A40e802B89C"
       },
       "nativeAnalog": "BNB"

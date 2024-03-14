@@ -60,13 +60,13 @@
       }
     },
     "WETH": {
-      "isActive": false,
+      "isActive": true,
       "name": "Wrapped Ether",
       "symbol": "WETH",
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
       "networks": {
         "amb": {
-          "address": "",
+          "address": "0xFB8cB8084C428345555E630c0FB0d86A7D033045",
           "denomination": 18,
           "isPrimary": false
         },
@@ -79,13 +79,13 @@
       }
     },
     "WBNB": {
-      "isActive": false,
+      "isActive": true,
       "name": "Wrapped BNB",
       "symbol": "WBNB",
       "logo": "https://bscscan.com/token/images/binance_32.png",
       "networks": {
         "amb": {
-          "address": "",
+          "address": "0x7809b228731E144f243b3Bb79441938aa0885506",
           "denomination": 18,
           "isPrimary": false
         },
