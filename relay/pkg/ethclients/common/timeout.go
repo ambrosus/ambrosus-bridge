@@ -2,15 +2,12 @@ package common
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/rpc"
 )
 
 const timeout = 2 * time.Minute
@@ -96,62 +93,7 @@ func (ec *Client) SyncProgress(ctx context.Context) (*ethereum.SyncProgress, err
 func (ec *Client) CallContract(ctx context.Context, call ethereum.CallMsg, blockNumber *big.Int) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	var hex hexutil.Bytes
-	err := ec.c.CallContext(ctx, &hex, "eth_call", toCallArg(call), toBlockNumArg(blockNumber))
-	if err != nil {
-		return nil, err
-	}
-	return hex, nil
-}
-
-func toCallArg(msg ethereum.CallMsg) interface{} {
-	arg := map[string]interface{}{
-		"from": msg.From,
-		"to":   msg.To,
-	}
-	if len(msg.Data) > 0 {
-		arg["data"] = hexutil.Bytes(msg.Data)
-	}
-	if msg.Value != nil {
-		arg["value"] = (*hexutil.Big)(msg.Value)
-	}
-	if msg.Gas != 0 {
-		arg["gas"] = hexutil.Uint64(msg.Gas)
-	}
-	if msg.GasPrice != nil {
-		arg["gasPrice"] = (*hexutil.Big)(msg.GasPrice)
-	}
-	if msg.GasFeeCap != nil {
-		arg["maxFeePerGas"] = (*hexutil.Big)(msg.GasFeeCap)
-	}
-	if msg.GasTipCap != nil {
-		arg["maxPriorityFeePerGas"] = (*hexutil.Big)(msg.GasTipCap)
-	}
-	if msg.AccessList != nil {
-		arg["accessList"] = msg.AccessList
-	}
-	if msg.BlobGasFeeCap != nil {
-		arg["maxFeePerBlobGas"] = (*hexutil.Big)(msg.BlobGasFeeCap)
-	}
-	if msg.BlobHashes != nil {
-		arg["blobVersionedHashes"] = msg.BlobHashes
-	}
-	return arg
-}
-
-func toBlockNumArg(number *big.Int) string {
-	if number == nil {
-		return "latest"
-	}
-	if number.Sign() >= 0 {
-		return hexutil.EncodeBig(number)
-	}
-	// It's negative.
-	if number.IsInt64() {
-		return rpc.BlockNumber(number.Int64()).String()
-	}
-	// It's negative and large, which is invalid.
-	return fmt.Sprintf("<invalid %d>", number)
+	return ec.Client.CallContract(ctx, call, blockNumber)
 }
 
 func (ec *Client) EstimateGas(ctx context.Context, call ethereum.CallMsg) (uint64, error) {
