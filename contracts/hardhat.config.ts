@@ -17,17 +17,18 @@ const config: HardhatUserConfig = {
 
   networks: {
     hardhat: {
-      blockGasLimit: 40000000, // amb value
-      hardfork: "byzantium",
+      // blockGasLimit: 40000000, // amb value
+      // hardfork: "byzantium",
       companionNetworks: {amb: 'hardhat'},
-      initialDate: "13 May 2022 18:10:36 GMT",
+      // initialDate: "13 May 2022 18:10:36 GMT",
 
       // for debugging: run local node with state from some network
       forking: {
-        enabled: false,
-        url: "https://network.ambrosus-dev.io",
+        enabled: true,
+        url: "https://mainnet.infura.io/v3/" + process.env.INFURA_KEY,
+        // url: "https://network.ambrosus-dev.io",
         // url: "https://eth-rinkeby.alchemyapi.io/v2/e1F5R9XuWDU2-zCtzaMDg4Ybb5SuoEDA"
-        blockNumber: 0xb00ba,
+        blockNumber: 19218848,
       }
     },
 
@@ -152,7 +153,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,
+            runs: 500,
           },
           // Note: for amb deploy
           evmVersion: "byzantium"
