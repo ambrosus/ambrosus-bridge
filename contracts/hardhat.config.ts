@@ -142,7 +142,7 @@ const config: HardhatUserConfig = {
         settings: {
           optimizer: {
             enabled: true,
-            runs: 200,  // todo bigger
+            runs: 500,  // todo bigger
           },
           // Note: for amb deploy
           evmVersion: "byzantium"
