@@ -103,7 +103,7 @@
       "logo": "https://etherscan.io/token/images/centre-usdc_28.png",
       "networks": {
         "amb": {
-          "address": "0x7A70536307a0411d2Df2FE832CFa16231089dD6F",
+          "address": "0xFF9F502976E7bD2b4901aD7Dd1131Bb81E5567de",
           "denomination": 18,
           "isPrimary": false
         },
