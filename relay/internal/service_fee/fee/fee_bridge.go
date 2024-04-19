@@ -6,8 +6,7 @@ import (
 )
 
 var percentFromAmount = map[uint64]int64{
-	0:       0.3 * 100, // 0 .. 100_000 $ => 0.3%
-	100_000: 0.1 * 100, // 100_000 .. * $ => 0.1%
+	0:       0.0 * 100, // 0.. ...$ => 0%
 }
 
 func getBridgeFee(nativeUsdPrice, tokenUsdPrice, amount, minBridgeFee decimal.Decimal) (decimal.Decimal, error) {
