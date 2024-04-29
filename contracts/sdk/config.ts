@@ -21,12 +21,14 @@ export function getPairs(configFile: Config, sourceNetwork: Network, destination
 
   const tokenPairs: [Token, Token][] = [];
 
-  // NOTE: only one of destination tokens can be the wrapper for native coin
-  // if there are multiple - we need to select the latest occurrence in config (it's restriction of a contracts implementation)
+  // NOTE: only one token can be the wrapper for native coin
+  // if there are multiple - we need to select the latest occurrence in config
+  // (for destination it's restriction of a contracts implementation, for source it's just dumb to have multiple wrappers for the same coin')
   // and it's already a case with multiple tokens: SAMB and SAMB2  in eth->amb bridge
-  // so, reverse tokens array and store the `isAnyDestinationNativeWrapper` flag
+  // so, reverse tokens array and store the flags below
 
   const tokens = Object.values(configFile.tokens).reverse()
+  let isAnySourceNativeWrapper = false;
   let isAnyDestinationNativeWrapper = false;
 
   for (const token of tokens) {
@@ -48,8 +50,10 @@ export function getPairs(configFile: Config, sourceNetwork: Network, destination
     tokenPairs.push(createPair(false, false));
 
     // create native -> erc20 if need
-    if (tokenSource.isPrimary && tokenSource.nativeCoin)
+    if (tokenSource.isPrimary && tokenSource.nativeCoin && !isAnySourceNativeWrapper) {
       tokenPairs.push(createPair(true, false));
+      isAnySourceNativeWrapper = true;
+    }
 
     // create erc20 -> native if need
     if (tokenDest.isPrimary && tokenDest.nativeCoin && !isAnyDestinationNativeWrapper) {
