@@ -9,9 +9,9 @@ import {ethers} from "ethers";
 
 
 dotenv.config();
-// 0x295C2707319ad4BecA6b5bb4086617fD6F240CfE, used instead of empty PK
-const devPK = "34d8e83fca265e9ab5bcc1094fa64e98692375bf8980d066a9edcf4953f0f2f5"
-const bscScanApiKey = "NFH875QU828E37MQD7XB3QHFBE4XTC2AKH"
+const devPK = process.env.PRIVATE_KEY_DEV || ethers.constants.HashZero;  // used for dev networks
+const bscScanApiKey = process.env.ETHERSCAN_API_KEY;
+const etherScanApiKey = process.env.ETHERSCAN_API_KEY;
 
 const config: HardhatUserConfig = {
 
@@ -26,7 +26,6 @@ const config: HardhatUserConfig = {
       forking: {
         enabled: false,
         url: "https://network.ambrosus-dev.io",
-        // url: "https://eth-rinkeby.alchemyapi.io/v2/e1F5R9XuWDU2-zCtzaMDg4Ybb5SuoEDA"
         blockNumber: 0xb00ba,
       }
     },
@@ -52,7 +51,7 @@ const config: HardhatUserConfig = {
     },
     "integr/eth": {
       url: "http://127.0.0.1:8502",
-      accounts: ["0x51d098d8aee092622149d8f3a79cc7b1ce36ff97fadaa2fbd623c65badeefadc", "e7420b6492b8c876d23cd8a1156e35af4bc5dc5703fb4b79b376cb268a718e2e"],
+      accounts: [process.env.PRIVATEKEY_INTEGR1 || ethers.constants.HashZero, process.env.PRIVATEKEY_INTEGR2 || ethers.constants.HashZero],
       tags: ["eth", "integr"],
       companionNetworks: {amb: 'integr/amb'},
     },
@@ -80,7 +79,7 @@ const config: HardhatUserConfig = {
     },
     "integr/amb": {
       url: "http://127.0.0.1:8545",
-      accounts: ["0x80f702eb861f36fe8fbbe1a7ccceb04ef7ddef714604010501a5f67c8065d446", "0x5b18f0adcca221f65373b20158f95313ecd51bde42b96a4c16f5eb851576bc06"],
+      accounts: [process.env.PRIVATEKEY_INTEGR3 || ethers.constants.HashZero, process.env.PRIVATEKEY_INTEGR4 || ethers.constants.HashZero],
       tags: ["amb", "integr"],
       hardfork: "byzantium",
     },
@@ -131,7 +130,7 @@ const config: HardhatUserConfig = {
 
   verify: {
     etherscan: {
-      apiKey: "DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+      apiKey: etherScanApiKey,
     },
   },
 
