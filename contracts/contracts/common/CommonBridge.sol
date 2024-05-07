@@ -172,12 +172,13 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(transfersLocked.endTimestamp > 0, "no locked transfers with this id");
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        proceedTransfers(transfersLocked.transfers);
-
         delete lockedTransfers[eventId];
         emit TransferFinish(eventId);
 
         oldestLockedEventId = eventId + 1;
+
+        // delete lockedTransfers[eventId] first to prevent reentrancy
+        proceedTransfers(transfersLocked.transfers);
     }
 
     // optimized version of unlockTransfers that unlock all transfer that can be unlocked in one call
@@ -187,10 +188,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[eventId];
             if (transfersLocked.endTimestamp == 0 || transfersLocked.endTimestamp > block.timestamp) break;
 
-            proceedTransfers(transfersLocked.transfers);
-
             delete lockedTransfers[eventId];
             emit TransferFinish(eventId);
+
+            // delete lockedTransfers[eventId] first to prevent reentrancy
+            proceedTransfers(transfersLocked.transfers);
         }
         oldestLockedEventId = eventId;
     }
