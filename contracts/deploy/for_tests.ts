@@ -3,7 +3,7 @@ import {DeployFunction} from "hardhat-deploy/types";
 import {ethers} from "hardhat";
 
 const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
-    const {owner, admin} = await hre.getNamedAccounts();
+    const {owner, admin, relay} = await hre.getNamedAccounts();
 
     const {address: mockAddr} = await hre.deployments.deploy("BridgeERC20Test", {
         from: owner,
@@ -27,8 +27,7 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     });
 
 
-    await hre.deployments.deploy("CommonBridgeTest", {from: owner}); // can't use calldata in normal constructor, so ...
-    await hre.deployments.execute("CommonBridgeTest", {from: owner}, "constructor_", {
+    const commonArgs = {
         sideBridgeAddress: ethers.constants.AddressZero,
         relayAddress: ethers.constants.AddressZero,
         feeProviderAddress: ethers.constants.AddressZero,
@@ -41,7 +40,33 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
         timeframeSeconds: 14400,
         lockTime: 1000,
         minSafetyBlocks: 10,
-    });
+    }
+
+    await hre.deployments.deploy("CommonBridgeTest", {from: owner}); // can't use calldata in normal constructor, so ...
+    await hre.deployments.execute("CommonBridgeTest", {from: owner}, "constructor_", commonArgs);
+
+
+    const realDeploymentsOptions = {
+        from: owner,
+        proxy: {
+            owner: owner,
+            proxyArgs: ["{implementation}", "{data}", [owner], [1]],
+            proxyContract: "ProxyMultiSig",
+            execute: {
+                init: {
+                    methodName: "initialize",
+                    args: [{...commonArgs, relayAddress: relay}]
+                }
+            }
+        },
+        log: true
+    }
+
+    await hre.deployments.deploy("BSC_AmbBridge", realDeploymentsOptions);
+    await hre.deployments.deploy("BSC_BscBridge", realDeploymentsOptions);
+    await hre.deployments.deploy("ETH_AmbBridge", realDeploymentsOptions);
+    await hre.deployments.deploy("ETH_EthBridge", realDeploymentsOptions);
+
 
     await hre.deployments.deploy("CheckUntrustlessTest", {
         from: owner,
