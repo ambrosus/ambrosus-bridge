@@ -322,6 +322,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     // submitted transfers saves in `lockedTransfers` for `lockTime` period
     function lockTransfers(CommonStructs.Transfer[] calldata events, uint eventId) internal {
+        require(lockedTransfers[eventId].endTimestamp == 0, "lockedTransfers[eventId] not empty");
         lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
         for (uint i = 0; i < events.length; i++)
             lockedTransfers[eventId].transfers.push(events[i]);
