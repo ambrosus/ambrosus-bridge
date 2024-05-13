@@ -18,7 +18,7 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       blockGasLimit: 40000000, // amb value
-      hardfork: "byzantium",
+      hardfork: "petersburg",
       companionNetworks: {amb: 'hardhat'},
       initialDate: "13 May 2022 18:10:36 GMT",
 
@@ -59,21 +59,21 @@ const config: HardhatUserConfig = {
     "dev/amb": {
       url: "https://network.ambrosus-dev.io",
       tags: ["amb", "devnet"],
-      hardfork: "byzantium",
+      hardfork: "petersburg",
       companionNetworks: {eth: 'dev/eth', bsc: 'dev/bsc'},
       accounts: [devPK], // todo devPk
     },
     "test/amb": {
       url: "https://network.ambrosus-test.io",
       tags: ["amb", "testnet"],
-      hardfork: "byzantium",
+      hardfork: "petersburg",
       companionNetworks: {eth: 'test/eth', bsc: 'test/bsc'},
       accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero],
     },
     "main/amb": {
       url: "https://network.ambrosus.io",
       tags: ["amb", "mainnet"],
-      hardfork: "byzantium",
+      hardfork: "petersburg",
       companionNetworks: {eth: 'main/eth', bsc: 'main/bsc'},
       accounts: [process.env.PRIVATEKEY_OWNER_AMB || ethers.constants.HashZero],
     },
@@ -81,7 +81,7 @@ const config: HardhatUserConfig = {
       url: "http://127.0.0.1:8545",
       accounts: [process.env.PRIVATEKEY_INTEGR3 || ethers.constants.HashZero, process.env.PRIVATEKEY_INTEGR4 || ethers.constants.HashZero],
       tags: ["amb", "integr"],
-      hardfork: "byzantium",
+      hardfork: "petersburg",
     },
 
 
@@ -144,7 +144,7 @@ const config: HardhatUserConfig = {
             runs: 200,  // todo bigger
           },
           // Note: for amb deploy
-          evmVersion: "byzantium"
+          evmVersion: "petersburg"
         },
       }, {
         version: "0.4.22",
@@ -154,7 +154,7 @@ const config: HardhatUserConfig = {
             runs: 200,
           },
           // Note: for amb deploy
-          evmVersion: "byzantium"
+          evmVersion: "petersburg"
         },
       },
     ],

@@ -7,7 +7,7 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CommonStructs.sol";
 import "../tokens/IWrapper.sol";
-import "../checks/SignatureCheck.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
@@ -364,12 +364,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
 
         for (uint i = 0; i < signatureFeeCheckNumber; i++) {
-            messageHash = keccak256(abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
+            messageHash = ECDSA.toEthSignedMessageHash(
                     keccak256(abi.encodePacked(token, timestampEpoch, transferFee, bridgeFee, amount))
-                ));
+                );
 
-            signer = ecdsaRecover(messageHash, signature);
+            (signer, ) = ECDSA.tryRecover(messageHash, signature);
             if (hasRole(FEE_PROVIDER_ROLE, signer))
                 return;
             timestampEpoch--;
