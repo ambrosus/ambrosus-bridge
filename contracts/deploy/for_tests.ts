@@ -12,12 +12,18 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
             ethers.constants.AddressZero, // bridgeAddress
         ],
     });
-    await hre.deployments.deploy("BridgeERC20_AmbTest", {
+    await hre.deployments.deploy("BridgeERC20_Amb", {
         from: owner,
         args: [
             "Mock", "Mock", 18,
             [ethers.constants.AddressZero], // bridgeAddresses
             [0], // bridgeDecimals
+        ],
+    });
+    await hre.deployments.deploy("MintableERC20", {
+        from: owner,
+        args: [
+            "Mock", "Mock", 18,
         ],
     });
 
@@ -81,6 +87,15 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     await hre.deployments.deploy("ProxyMultisigTest", {
         from: owner,
     });
+
+    await hre.deployments.deploy("MultiSigWallet", {
+        from: owner,
+        args: [
+            [owner],
+            1
+        ],
+    });
+
 
     await hre.deployments.deploy("ProxyMultiSig", {
         from: owner,
