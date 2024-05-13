@@ -18,7 +18,8 @@ contract Faucet is AccessControl {
 
     function withdraw(address toAddress, uint256 amount) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(address(this).balance >= amount, "not enough funds");
-        payable(toAddress).transfer(amount);
+        (bool sent, ) = payable(toAddress).call{value: amount}("");
+        require(sent, "Transfer failed");
     }
 
     receive() external payable {}

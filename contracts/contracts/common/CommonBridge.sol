@@ -144,8 +144,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(amount > 0, "Cannot withdraw 0");
 
         feeCheck(tokenThisAddress, feeSignature, transferFee, bridgeFee, amount);
-        transferFeeRecipient.transfer(transferFee);
-        bridgeFeeRecipient.transfer(bridgeFee);
+        (bool sent, ) = payable(transferFeeRecipient).call{value: transferFee}("");
+        require(sent, "Transfer failed (transferFee)");
+        (sent, ) = payable(bridgeFeeRecipient).call{value: bridgeFee}("");
+        require(sent, "Transfer failed (bridgeFee)");
 
         require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
 
@@ -330,7 +332,8 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
             if (transfers[i].tokenAddress == address(0)) {// native token
                 IWrapper(wrapperAddress).withdraw(transfers[i].amount);
-                payable(transfers[i].toAddress).transfer(transfers[i].amount);
+                (bool sent, ) = payable(transfers[i].toAddress).call{value: transfers[i].amount}("");
+                require(sent, "Transfer failed");
             } else {// ERC20 token
                 require(
                     IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
