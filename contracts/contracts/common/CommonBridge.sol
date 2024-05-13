@@ -95,7 +95,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     /// @param feeSignature Signature signed by relay that confirms that the fee values are valid
     function wrapWithdraw(address toAddress,
         bytes calldata feeSignature, uint transferFee, uint bridgeFee
-    ) public payable {
+    ) public payable whenNotPaused {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
@@ -129,7 +129,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     function withdraw(
         address tokenThisAddress, address toAddress, uint amount, bool unwrapSide,
         bytes calldata feeSignature, uint transferFee, uint bridgeFee
-    ) payable public {
+    ) payable public whenNotPaused {
         address tokenSideAddress;
         if (unwrapSide) {
             require(tokenAddresses[address(0)] == tokenThisAddress, "Token not point to native token");
@@ -158,7 +158,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     // can be called to force emit `Transfer` event, without waiting for withdraw in next timeframe
-    function triggerTransfers() public {
+    function triggerTransfers() public whenNotPaused {
         require(queue.length != 0, "Queue is empty");
 
         emit Transfer(outputEventId++, queue);
