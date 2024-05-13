@@ -8,9 +8,12 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CommonStructs.sol";
 import "../tokens/IWrapper.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
+    using SafeERC20 for IERC20;
+
     // DEFAULT_ADMIN_ROLE can grants and revokes all roles below; Set to multisig (proxy contract address)
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");  // can change tokens; unpause contract; change params like lockTime, minSafetyBlocks, ...
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");  // can submit transfers
@@ -149,7 +152,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         (sent, ) = payable(bridgeFeeRecipient).call{value: bridgeFee}("");
         require(sent, "Transfer failed (bridgeFee)");
 
-        require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
+        IERC20(tokenThisAddress).safeTransferFrom(msg.sender, address(this), amount);
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, tokenThisAddress, tokenSideAddress, amount, transferFee, bridgeFee);
@@ -335,9 +338,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
                 (bool sent, ) = payable(transfers[i].toAddress).call{value: transfers[i].amount}("");
                 require(sent, "Transfer failed");
             } else {// ERC20 token
-                require(
-                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
-                    "Fail transfer coins");
+                IERC20(transfers[i].tokenAddress).safeTransfer(transfers[i].toAddress, transfers[i].amount);
             }
 
         }
