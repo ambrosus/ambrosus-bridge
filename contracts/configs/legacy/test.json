@@ -1,15 +1,15 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0xC54450028dAE52c1DC1bb9Dabe553457eABd4Aa3",
-      "side": "0x0B64e989491A5f0e435F0c7f5cFA212f3Ce4a6f9"
+      "amb": "0xfBE44B3BF26B966d652365066De53AD7FAC676b1",
+      "side": "0x5aCa9902EBb559b0c05A2989a6974985f7E00EA4"
     },
     "bsc": {
-      "amb": "0x1D335E8B7787fB6c51F98713df5BCb56884FD023",
-      "side": "0x68fE45c5a95aF1Ab697935697C40c7c06aC600eC"
+      "amb": "0x90D74C8c3Eb8E81710B21ecFb619167D37B1604f",
+      "side": "0xB6D835e90Bf3a9287A22971e0008F611131fb2F1"
     }
   },
-  "ambFaucetAddress": "0xe208a39e3F988f1565628457F17E9Aa469B78F76",
+  "ambFaucetAddress": "0xada8AFC2b7e25F0bDEDA9Cb742a25d1dD15C64Dc",
   "tokens": {
     "SAMB": {
       "isActive": true,
@@ -26,9 +26,9 @@
         "amb"
       ],
       "addresses": {
-        "amb": "0x3c80Eb9ebe759F28Ae6f366275A9e2A9FE341b0a",
-        "bsc": "0x97197b41749340268DFa5Ac2CDf6a4AC3cC505e9",
-        "eth": "0x1CE24855341425b05F1bB548c013fD5a1e2f6631"
+        "amb": "0x2Cf845b49e1c4E5D657fbBF36E97B7B5B7B7b74b",
+        "bsc": "0x27b141C9b4607120F86C3c7c5c9865209BF63377",
+        "eth": "0xC6b3b8FCefEd44D6f903Dd15f3b4d5DD64F9982a"
       },
       "nativeAnalog": "AMB"
     },
@@ -47,9 +47,9 @@
         "amb"
       ],
       "addresses": {
-        "amb": "0x3c80Eb9ebe759F28Ae6f366275A9e2A9FE341b0a",
+        "amb": "0x2Cf845b49e1c4E5D657fbBF36E97B7B5B7B7b74b",
         "bsc": "",
-        "eth": "0x9d95Ce4fCE159E16d52aD5b35ac6eb993D8Efe34"
+        "eth": "0x62E54D42A09384a09b2299632bb935A977D221B4"
       },
       "nativeAnalog": "AMB"
     },
@@ -67,8 +67,8 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0xdd82283Fc93Aa4373B6B27a7B25EB3A770fc3aba",
-        "eth": "0x5ECfeaD3d77F6814D189F6209ea27eCD1c00D45a"
+        "amb": "0x2427F8f72E8CAb019435a301F1A46F3bB426a35e",
+        "eth": "0x754a5A4bc790624340a917d090c20DFA65A2c997"
       },
       "nativeAnalog": "ETH"
     },
@@ -86,8 +86,8 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x160fb9e3a978F44c5E7fd82b17aAe27773e5b58D",
-        "bsc": "0x3050A5cBe1ec89917933476a99962A40e802B89C"
+        "amb": "0x5aaC4B010822AE3cC1143FAB900700BE6Df9210e",
+        "bsc": "0xeA7D7f76051E5b185e432D6291aE91A6F40bC2C8"
       },
       "nativeAnalog": "BNB"
     },
@@ -107,9 +107,9 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0xe5A673b4BfCc7c6804185F35b94693b4CAfCF43c",
-        "bsc": "0xb345925B1CA8E9646811F40d55C15eaB9fe98247",
-        "eth": "0xa4d27f0404d33f82D9955D928b4577036303dA60"
+        "amb": "0x7a62cbebD63D8e5F99Abe67dD228A2F480fA1475",
+        "bsc": "0xC5AB6ef61093F074c58a19ef55EDBc22646fAc4D",
+        "eth": "0x07e2a6000F65180C3FFF4a5F875Bb7b266561bBe"
       },
       "nativeAnalog": ""
     },
@@ -129,9 +129,9 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0xd0322ae33ff5E14E4F200a2AAd57748F0899FAD9",
-        "bsc": "0x3D37429A3b25fCe6dc2Bb1772f308Bf394589712",
-        "eth": "0x6032372039E6B6eab140576eD88e4250a5B9DbA2"
+        "amb": "0x6e61C59336c576724c9Cf957eB5aBA2Cb355E0f2",
+        "bsc": "0x2D710E9691F88Af4dDF0191152947f8ecEeadF6F",
+        "eth": "0x5E19dDe8dD2246D092c65a60214c504A8B719654"
       },
       "nativeAnalog": ""
     },
@@ -149,8 +149,8 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x220bB4D0d16AA509D126907d3fAe4EF55bE7316C",
-        "bsc": "0xf679a28086Eba9C72285481a19f32FCC950EfAe4"
+        "amb": "0xAFD67d610d535d63d86cd74F6bcD72b43cb2758e",
+        "bsc": "0x92A8b00F1Db49A1abD0288938716Da23925967CC"
       },
       "nativeAnalog": ""
     }
