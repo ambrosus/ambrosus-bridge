@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0x90D74C8c3Eb8E81710B21ecFb619167D37B1604f",
+            "contractAddr": "0xA6971aB610d45E0F9D519C06D747a8670E4921Fb",
             "privateKey": "in env"
         },
         "BSC": {
             "httpUrl": "https://bsc-testnet.nodereal.io/v1/7e4174dba68f4a18aeb1ebd839b1f197",
             "wsUrl": "wss://bsc-testnet.nodereal.io/ws/v1/7e4174dba68f4a18aeb1ebd839b1f197",
-            "contractAddr": "0xB6D835e90Bf3a9287A22971e0008F611131fb2F1",
+            "contractAddr": "0xb88b5eb0AB4768bB96Eac930531Ec5269A5dFdfe",
             "privateKey": "in env"
         }
     },
@@ -27,7 +27,7 @@
         },
         "ambFaucet": {
             "enable": true,
-            "faucetAddress": "0xada8AFC2b7e25F0bDEDA9Cb742a25d1dD15C64Dc",
+            "faucetAddress": "0xC5ac5952883CB95709F1CD49E2b4A5ac291d3C0C",
             "minBalance": "0",
             "sendAmount": "1000000000000000000"
         }
