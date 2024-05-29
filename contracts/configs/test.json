@@ -42,7 +42,7 @@
       "logo": "https://media-exp1.licdn.com/dms/image/C560BAQFuR2Fncbgbtg/company-logo_200_200/0/1636390910839?e=2159024400&v=beta&t=W0WA5w02tIEH859mVypmzB_FPn29tS5JqTEYr4EYvps",
       "networks": {
         "amb": {
-          "address": "",
+          "address": "0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c",
           "denomination": 18,
           "isPrimary": true,
           "nativeCoin": "AMB"
@@ -53,7 +53,7 @@
           "isPrimary": false
         },
         "eth": {
-          "address": "",
+          "address": "0xA93b86955C4dbb3210Bd4C4eD98C57a11F6f3db2",
           "denomination": 18,
           "isPrimary": false
         }

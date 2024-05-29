@@ -47,9 +47,9 @@
         "amb"
       ],
       "addresses": {
-        "amb": "",
+        "amb": "0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c",
         "bsc": "",
-        "eth": ""
+        "eth": "0xA93b86955C4dbb3210Bd4C4eD98C57a11F6f3db2"
       },
       "nativeAnalog": "AMB"
     },
