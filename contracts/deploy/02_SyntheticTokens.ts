@@ -32,9 +32,6 @@ const func: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const deployInNonAmbNetwork = async (token: Token) => {
     let bridgeAddress = configFile.bridges[netName]?.side || ethers.constants.AddressZero
 
-    // TODO remove
-    console.log(`TEMPORARILY USING 0x375148D19a56e32A4D3D3d605Dc835b87f21114f AS bridgeAddress instead of ${bridgeAddress}.`)
-    bridgeAddress = "0x375148D19a56e32A4D3D3d605Dc835b87f21114f"
     const {address} = await hre.deployments.deploy(token.symbol, {
       contract: "BridgeERC20",
       args: [token.name, token.symbol, token.networks[netName].denomination, bridgeAddress],
