@@ -60,7 +60,7 @@
       }
     },
     "WETH": {
-      "isActive": true,
+      "isActive": false,
       "name": "Wrapped Ether",
       "symbol": "WETH",
       "logo": "https://ethereum.org/static/bfc04ac72981166c740b189463e1f74c/448ee/eth-diamond-black-white.webp",
@@ -79,7 +79,7 @@
       }
     },
     "WBNB": {
-      "isActive": true,
+      "isActive": false,
       "name": "Wrapped BNB",
       "symbol": "WBNB",
       "logo": "https://bscscan.com/token/images/binance_32.png",
