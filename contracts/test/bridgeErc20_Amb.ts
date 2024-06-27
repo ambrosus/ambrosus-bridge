@@ -24,7 +24,7 @@ describe("BridgeERC20_Amb", () => {
     userS = await ethers.getSigner(user);
     bridge6S = await ethers.getSigner(bridge6);
 
-    ambERC20 = await ethers.getContract("BridgeERC20_AmbTest", ownerS);
+    ambERC20 = await ethers.getContract("BridgeERC20_Amb", ownerS);
   });
 
   beforeEach(async () => {

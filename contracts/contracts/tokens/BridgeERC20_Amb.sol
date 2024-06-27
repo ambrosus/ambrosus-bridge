@@ -34,7 +34,6 @@ contract BridgeERC20_Amb is ERC20, Ownable {
         _setSideTokenDecimals(bridgeAddresses_, sideTokenDecimals_);
     }
 
-    // todo check if we need this func
     function _setSideTokenDecimals(address[] memory bridgeAddresses_, uint8[] memory sideTokenDecimals_) private {
         require(bridgeAddresses_.length == sideTokenDecimals_.length, "wrong array lengths");
         for (uint i = 0; i < bridgeAddresses_.length; i++)

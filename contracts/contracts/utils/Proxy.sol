@@ -5,7 +5,6 @@ import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/StorageSlot.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "./MultiSigWallet.sol";
-import "hardhat/console.sol";
 
 
 contract ProxyMultiSig is Proxy, MultiSigWallet {

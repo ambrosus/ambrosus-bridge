@@ -7,10 +7,13 @@ import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "./CommonStructs.sol";
 import "../tokens/IWrapper.sol";
-import "../checks/SignatureCheck.sol";
+import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 
 contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgradeable {
+    using SafeERC20 for IERC20;
+
     // DEFAULT_ADMIN_ROLE can grants and revokes all roles below; Set to multisig (proxy contract address)
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");  // can change tokens; unpause contract; change params like lockTime, minSafetyBlocks, ...
     bytes32 public constant RELAY_ROLE = keccak256("RELAY_ROLE");  // can submit transfers
@@ -95,7 +98,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     /// @param feeSignature Signature signed by relay that confirms that the fee values are valid
     function wrapWithdraw(address toAddress,
         bytes calldata feeSignature, uint transferFee, uint bridgeFee
-    ) public payable {
+    ) public payable whenNotPaused {
         address tokenSideAddress = tokenAddresses[wrapperAddress];
         require(tokenSideAddress != address(0), "Unknown token address");
 
@@ -103,8 +106,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
         uint amount = msg.value - transferFee - bridgeFee;
         feeCheck(wrapperAddress, feeSignature, transferFee, bridgeFee, amount);
-        transferFeeRecipient.transfer(transferFee);
-        bridgeFeeRecipient.transfer(bridgeFee);
+        (bool sent, ) = payable(transferFeeRecipient).call{value: transferFee}("");
+        require(sent, "Transfer failed (transferFee)");
+        (sent, ) = payable(bridgeFeeRecipient).call{value: bridgeFee}("");
+        require(sent, "Transfer failed (bridgeFee)");
 
         IWrapper(wrapperAddress).deposit{value : amount}();
 
@@ -129,7 +134,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     function withdraw(
         address tokenThisAddress, address toAddress, uint amount, bool unwrapSide,
         bytes calldata feeSignature, uint transferFee, uint bridgeFee
-    ) payable public {
+    ) payable public whenNotPaused {
         address tokenSideAddress;
         if (unwrapSide) {
             require(tokenAddresses[address(0)] == tokenThisAddress, "Token not point to native token");
@@ -144,10 +149,12 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(amount > 0, "Cannot withdraw 0");
 
         feeCheck(tokenThisAddress, feeSignature, transferFee, bridgeFee, amount);
-        transferFeeRecipient.transfer(transferFee);
-        bridgeFeeRecipient.transfer(bridgeFee);
+        (bool sent, ) = payable(transferFeeRecipient).call{value: transferFee}("");
+        require(sent, "Transfer failed (transferFee)");
+        (sent, ) = payable(bridgeFeeRecipient).call{value: bridgeFee}("");
+        require(sent, "Transfer failed (bridgeFee)");
 
-        require(IERC20(tokenThisAddress).transferFrom(msg.sender, address(this), amount), "Fail transfer coins");
+        IERC20(tokenThisAddress).safeTransferFrom(msg.sender, address(this), amount);
 
         queue.push(CommonStructs.Transfer(tokenSideAddress, toAddress, amount));
         emit Withdraw(msg.sender, outputEventId, tokenThisAddress, tokenSideAddress, amount, transferFee, bridgeFee);
@@ -156,7 +163,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
     }
 
     // can be called to force emit `Transfer` event, without waiting for withdraw in next timeframe
-    function triggerTransfers() public {
+    function triggerTransfers() public whenNotPaused {
         require(queue.length != 0, "Queue is empty");
 
         emit Transfer(outputEventId++, queue);
@@ -172,12 +179,13 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         require(transfersLocked.endTimestamp > 0, "no locked transfers with this id");
         require(transfersLocked.endTimestamp < block.timestamp, "lockTime has not yet passed");
 
-        proceedTransfers(transfersLocked.transfers);
-
         delete lockedTransfers[eventId];
         emit TransferFinish(eventId);
 
         oldestLockedEventId = eventId + 1;
+
+        // delete lockedTransfers[eventId] first to prevent reentrancy
+        proceedTransfers(transfersLocked.transfers);
     }
 
     // optimized version of unlockTransfers that unlock all transfer that can be unlocked in one call
@@ -187,10 +195,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
             CommonStructs.LockedTransfers memory transfersLocked = lockedTransfers[eventId];
             if (transfersLocked.endTimestamp == 0 || transfersLocked.endTimestamp > block.timestamp) break;
 
-            proceedTransfers(transfersLocked.transfers);
-
             delete lockedTransfers[eventId];
             emit TransferFinish(eventId);
+
+            // delete lockedTransfers[eventId] first to prevent reentrancy
+            proceedTransfers(transfersLocked.transfers);
         }
         oldestLockedEventId = eventId;
     }
@@ -315,6 +324,7 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
     // submitted transfers saves in `lockedTransfers` for `lockTime` period
     function lockTransfers(CommonStructs.Transfer[] calldata events, uint eventId) internal {
+        require(lockedTransfers[eventId].endTimestamp == 0, "lockedTransfers[eventId] not empty");
         lockedTransfers[eventId].endTimestamp = block.timestamp + lockTime;
         for (uint i = 0; i < events.length; i++)
             lockedTransfers[eventId].transfers.push(events[i]);
@@ -328,11 +338,10 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
 
             if (transfers[i].tokenAddress == address(0)) {// native token
                 IWrapper(wrapperAddress).withdraw(transfers[i].amount);
-                payable(transfers[i].toAddress).transfer(transfers[i].amount);
+                (bool sent, ) = payable(transfers[i].toAddress).call{value: transfers[i].amount}("");
+                require(sent, "Transfer failed");
             } else {// ERC20 token
-                require(
-                    IERC20(transfers[i].tokenAddress).transfer(transfers[i].toAddress, transfers[i].amount),
-                    "Fail transfer coins");
+                IERC20(transfers[i].tokenAddress).safeTransfer(transfers[i].toAddress, transfers[i].amount);
             }
 
         }
@@ -359,12 +368,11 @@ contract CommonBridge is Initializable, AccessControlUpgradeable, PausableUpgrad
         uint timestampEpoch = block.timestamp / SIGNATURE_FEE_TIMESTAMP;
 
         for (uint i = 0; i < signatureFeeCheckNumber; i++) {
-            messageHash = keccak256(abi.encodePacked(
-                    "\x19Ethereum Signed Message:\n32",
+            messageHash = ECDSA.toEthSignedMessageHash(
                     keccak256(abi.encodePacked(token, timestampEpoch, transferFee, bridgeFee, amount))
-                ));
+                );
 
-            signer = ecdsaRecover(messageHash, signature);
+            (signer, ) = ECDSA.tryRecover(messageHash, signature);
             if (hasRole(FEE_PROVIDER_ROLE, signer))
                 return;
             timestampEpoch--;

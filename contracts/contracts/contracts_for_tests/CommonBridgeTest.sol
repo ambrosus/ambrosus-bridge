@@ -2,6 +2,7 @@
 pragma solidity 0.8.6;
 
 import "../common/CommonBridge.sol";
+import "hardhat/console.sol";
 
 contract CommonBridgeTest is CommonBridge {
 
@@ -24,7 +25,7 @@ contract CommonBridgeTest is CommonBridge {
 
 
     function checkSignatureTest(bytes32 hash, bytes memory signature) public view returns(address) {
-        return ecdsaRecover(hash, signature);
+        return ECDSA.recover(hash, signature);
     }
 
 
