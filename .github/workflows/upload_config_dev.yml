@@ -32,8 +32,8 @@ jobs:
 
       - name: Upload config legacy
         run: |
-          aws s3 cp contracts/configs/dev.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/v1/index.html --content-type application/json --cache-control no-cache
+          aws s3 cp contracts/configs/dev.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/v1 --content-type application/json --cache-control no-cache
 
       - name: Upload config 
         run: |
-          aws s3 cp contracts/configs/test.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/v2/index.html --content-type application/json --cache-control no-cache
+          aws s3 cp contracts/configs/test.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/v2 --content-type application/json --cache-control no-cache
