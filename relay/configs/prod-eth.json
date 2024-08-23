@@ -25,11 +25,11 @@
                 "isServer": true,
                 "meID": "master",
                 "partyIDs": [
-                    "master",
-                    "Kevin",
-                    "Lang",
-                    "Rory",
-                    "Andrey"
+                    "master2",
+                    "Andrey2",
+                    "Valar2",
+                    "MG2",
+                    "OD2"
                 ],
                 "threshold": 5,
                 "serverURL": ":6555",
@@ -43,11 +43,11 @@
                 "isServer": true,
                 "meID": "master",
                 "partyIDs": [
-                    "master",
-                    "Kevin",
-                    "Lang",
-                    "Rory",
-                    "Andrey"
+                    "master2",
+                    "Andrey2",
+                    "Valar2",
+                    "MG2",
+                    "OD2"
                 ],
                 "threshold": 5,
                 "serverURL": ":6455",
