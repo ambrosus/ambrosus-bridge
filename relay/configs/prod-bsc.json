@@ -34,7 +34,7 @@
                 "threshold": 5,
                 "serverURL": ":6555",
                 "accessToken": "in env",
-                "sharePath": "shared/share_master"
+                "sharePath": "shared/share_master2"
             }
         },
         "ambToSide": {
@@ -52,7 +52,7 @@
                 "threshold": 5,
                 "serverURL": ":6455",
                 "accessToken": "in env",
-                "sharePath": "shared/share_master"
+                "sharePath": "shared/share_master2"
             }
         }
     },
