@@ -23,7 +23,7 @@
             "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
-                "meID": "master",
+                "meID": "master2",
                 "partyIDs": [
                     "master2",
                     "Andrey2",
@@ -41,7 +41,7 @@
             "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
-                "meID": "master",
+                "meID": "master2",
                 "partyIDs": [
                     "master2",
                     "Andrey2",
