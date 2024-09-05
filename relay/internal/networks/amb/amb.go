@@ -71,7 +71,7 @@ func (b *Bridge) IsEventRemoved(eventLog *types.Log) error {
 		return fmt.Errorf("parityHeaderByNumber: %w", err)
 	}
 	if header.Hash(true) != eventLog.BlockHash {
-		return fmt.Errorf("looks like the event has been removed")
+		return fmt.Errorf("looks like the event has been removed %d", eventLog.BlockNumber)
 	}
 	return nil
 }
