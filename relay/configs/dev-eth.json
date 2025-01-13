@@ -57,7 +57,7 @@
             "privateKey": "in env",
             "minBridgeFeeUSD": 5,
             "minTransferFeeUSD": 0.5,
-            "explorerURL": "https://api-sepolia.etherscan.io/api?apikey=DY4Z86MQ2D9E24C6HB98PTA79EKJ5TQIFX",
+            "explorerURL": "in env",
             "transferFeeRecipient": "0x",
             "transferFeeIncludedTxsFromAddresses": [
                 "0xD693a3cc5686e74Ca2e72e8120A2F2013B8eE66E"
@@ -68,7 +68,7 @@
     "externalLogger": {
         "telegram": {
             "enable": true,
-            "token": "5244673889:AAGa9f6UYZEtpJWWIKy7iPbI-qiQJbT8zZw",
+            "token": "in env",
             "chatId": "-1001732781392"
         }
     },
