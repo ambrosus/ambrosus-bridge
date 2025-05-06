@@ -78,7 +78,7 @@
         "amb": {
             "privateKey": "in env",
             "minBridgeFeeUSD": 0,
-            "minTransferFeeUSD": 10,
+            "minTransferFeeUSD": 1,
             "feeApiUrl": "https://backoffice-api.ambrosus.io/relay/fee?networkThis=amb&networkSide=eth&eventFrom=4&onlyLastEventsCount=5"
         },
         "side": {
