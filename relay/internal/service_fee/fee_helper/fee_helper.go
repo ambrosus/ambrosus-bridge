@@ -45,7 +45,12 @@ func NewFeeHelper(bridge networks.Bridge, cfg config.FeeApiNetwork) (*FeeHelper,
 }
 
 func (b *FeeHelper) Sign(digestHash []byte) ([]byte, error) {
-	return crypto.Sign(digestHash, b.privateKey)
+	sign, err := crypto.Sign(digestHash, b.privateKey)
+	if err != nil {
+		return nil, err
+	}
+	sign[64] += 27
+	return sign, nil
 }
 
 func (b *FeeHelper) GetTransferFee() (thisGas, sideGas decimal.Decimal, err error) {

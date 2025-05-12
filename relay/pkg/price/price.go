@@ -16,8 +16,12 @@ func TokenToUSD(token *TokenInfo) (price float64, err error) {
 		price, err = GetAmb()
 	} else if token.Symbol == "USDT" || token.Symbol == "BUSD" {
 		price, err = GetKucoin(token)
+	} else if token.Symbol == "WBNB" {
+		price, err = GetBinance(token, "BNB")
+	} else if token.Symbol == "WETH" {
+		price, err = GetBinance(token, "ETH")
 	} else {
-		price, err = Get0x(token)
+		price, err = GetBinance(token, token.Symbol)
 	}
 
 	return price, err

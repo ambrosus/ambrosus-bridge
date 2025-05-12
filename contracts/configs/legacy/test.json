@@ -1,15 +1,15 @@
 {
   "bridges": {
     "eth": {
-      "amb": "0x3B851d4d79C44AbBBF914D6bc61A2BdCC7387d85",
-      "side": "0xEFf51A8fD7129Ca474b1dcCBE7925ef6b5D45F31"
+      "amb": "0x912AA57fA7BbFed301c2f59A1FB1e94135D10F17",
+      "side": "0x1C1B6e4A6d35aFEFC79eEc045fDD91a097E8aD0c"
     },
     "bsc": {
-      "amb": "0xF01EF9dFf8cA6e4324b000812D75Aa4A67ee52ca",
-      "side": "0x6C13c3Bb2A34fB7fb6D06102397e3Ba004E23DF4"
+      "amb": "0xA6971aB610d45E0F9D519C06D747a8670E4921Fb",
+      "side": "0xb88b5eb0AB4768bB96Eac930531Ec5269A5dFdfe"
     }
   },
-  "ambFaucetAddress": "0x090801d716A9d501F57519B1f4bd6aBD2961aa88",
+  "ambFaucetAddress": "0xC5ac5952883CB95709F1CD49E2b4A5ac291d3C0C",
   "tokens": {
     "SAMB": {
       "isActive": true,
@@ -26,16 +26,16 @@
         "amb"
       ],
       "addresses": {
-        "amb": "0x096B5914C95C34Df19500DAff77470C845EC749D",
-        "bsc": "0x5B7eC4D70Df5Cc1e4E5dFF97b0d9aCc35908C33f",
-        "eth": "0x5731311327A62B67E25a4d99270483bf35F46Ab4"
+        "amb": "0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c",
+        "bsc": "0xD570b2AB6efBFE296798E56D74153563E082d75c",
+        "eth": "0xcB029692aF80BB4E5B9b9A06B7587275eE1ab0cF"
       },
       "nativeAnalog": "AMB"
     },
     "SAMB2": {
       "isActive": true,
-      "name": "Synthetic Amber",
-      "symbol": "SAMB",
+      "name": "AirDAO",
+      "symbol": "AMB",
       "denomination": 18,
       "decimals": {
         "amb": 18,
@@ -47,9 +47,9 @@
         "amb"
       ],
       "addresses": {
-        "amb": "0x096B5914C95C34Df19500DAff77470C845EC749D",
+        "amb": "0x8D3e03889bFCb859B2dBEB65C60a52Ad9523512c",
         "bsc": "",
-        "eth": "0x9eECA5cf0A2DaD66c869a156fF61E1E921c3eCBf"
+        "eth": "0xA93b86955C4dbb3210Bd4C4eD98C57a11F6f3db2"
       },
       "nativeAnalog": "AMB"
     },
@@ -67,8 +67,8 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0xFB8cB8084C428345555E630c0FB0d86A7D033045",
-        "eth": "0x5ECfeaD3d77F6814D189F6209ea27eCD1c00D45a"
+        "amb": "0xF0FdC3f1D8D567bB6108f3Ef12BA4E2bb6C0a969",
+        "eth": "0x7cc041cb88D96D54B8aC4eFf8f9B83112C6748c5"
       },
       "nativeAnalog": "ETH"
     },
@@ -86,8 +86,8 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x7809b228731E144f243b3Bb79441938aa0885506",
-        "bsc": "0x3050A5cBe1ec89917933476a99962A40e802B89C"
+        "amb": "0x740219322978F445822d5FdB84462028A8745729",
+        "bsc": "0x2ca25159d6C26633466c0DBB5e0bB07371FB30BA"
       },
       "nativeAnalog": "BNB"
     },
@@ -107,9 +107,9 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0x8c33e9D24eBf3918D37eC2F26BaE044C9fD30Ea9",
-        "bsc": "0xb345925B1CA8E9646811F40d55C15eaB9fe98247",
-        "eth": "0x616Fa52DAA24DaE80C540cFf75B00a984e1c5a53"
+        "amb": "0xF7c8f345Ac1d29F13c16d8Ae34f534D9056E3FF2",
+        "bsc": "0x1cfba749C207835721BbF72988CEEEfCCCBE69cb",
+        "eth": "0xD498EC07f7D486B401368E59d24368114C4A1418"
       },
       "nativeAnalog": ""
     },
@@ -129,9 +129,9 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0x55Be7dd776fAbe89d93bAC66ed1cf0Ab31bdd6eB",
-        "bsc": "0x0eaFF0298C550c88A19d8a7E5F379AA5E9262886",
-        "eth": "0xC52A85b99f40b57B7134Df6C0C40A58E8a7159d9"
+        "amb": "0x92f47Ee54B8320A4E74Ddb256dc6e9129bCFD053",
+        "bsc": "0x348217B6bb40571dcf5D3be8966d40f1a3BC5422",
+        "eth": "0x34d4324d5094BF80Bd70d479111140374aF76ECa"
       },
       "nativeAnalog": ""
     },
@@ -149,8 +149,8 @@
         "bsc"
       ],
       "addresses": {
-        "amb": "0x615D835e0C492b4309E79439765F66Db7BdcE200",
-        "bsc": "0xBb98C65b61F9e67a453e96d26E4602A209c09f1e"
+        "amb": "0x38742FA88FD3b16318Ba64F4747E41954e9FFc0e",
+        "bsc": "0x70c9b66c948c155ed875E4B0Dce76A70f91EDA93"
       },
       "nativeAnalog": ""
     }

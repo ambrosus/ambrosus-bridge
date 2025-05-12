@@ -1,5 +1,5 @@
 OLD_PARTY="master Kevin Lang Rory Andrey"
-NEW_PARTY="master2 Andrey2 backup2 Michael2 Seth2 Od2"
+NEW_PARTY="master2 Andrey2 backup2 Valar2 MG2 OD2"
 
 SIDE_NET=$1
 MPC_MEID=$2
@@ -21,10 +21,12 @@ fi
 
 if [[ "$MPC_MEID" == "Kevin" || "$MPC_MEID" == "Lang"  || "$MPC_MEID" == "Rory" ]]; then
   CMD="go run ./cmd/mpc_keygen/main.go -reshare -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir ./shared -meID $MPC_MEID"
-elif [[ "$MPC_MEID" == "backup2" || "$MPC_MEID" == "Michael2" || "$MPC_MEID" == "Seth2" || "$MPC_MEID" == "Od2" ]]; then
+elif [[ "$MPC_MEID" == "backup2" || "$MPC_MEID" == "Valar2" || "$MPC_MEID" == "MG2" || "$MPC_MEID" == "OD2" ]]; then
   CMD="go run ./cmd/mpc_keygen/main.go -reshare -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir ./shared -meIDNew $MPC_MEID"
 elif [[ "$MPC_MEID" == "Andrey" ]]; then
   CMD="go run ./cmd/mpc_keygen/main.go -reshare -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir ./shared -meID Andrey -meIDNew Andrey2"
+elif [[ "$MPC_MEID" == "master" ]]; then
+  CMD="go run ./cmd/mpc_keygen/main.go -reshare -server :6555 -url $URL -partyIDs '$OLD_PARTY' -threshold 5 -partyIDsNew '$NEW_PARTY' -thresholdNew 5 -shareDir ./shared -meID master -meIDNew master2"
 else
     echo "Error: MPC_MEID value does not match any condition"
     exit 1

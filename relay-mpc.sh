@@ -84,7 +84,7 @@ set +e
 docker rm -f $RELAY_CONTAINER_NAME
 set -e
 
-IMAGE=ghcr.io/ambrosus/ambrosus-bridge
+IMAGE=ghcr.io/ascendia-network/ambrosus-bridge
 STAGE=${STAGE:-prod}
 if [ $STAGE == "prod" ]; then
   TAG=latest

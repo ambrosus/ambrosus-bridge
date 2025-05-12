@@ -4,13 +4,13 @@
         "AMB": {
             "httpUrl": "https://network.ambrosus-test.io",
             "wsUrl": "wss://network.ambrosus-test.io/ws",
-            "contractAddr": "0x3B851d4d79C44AbBBF914D6bc61A2BdCC7387d85",
+            "contractAddr": "0x912AA57fA7BbFed301c2f59A1FB1e94135D10F17",
             "privateKey": "in env"
         },
         "ETH": {
             "httpUrl": "https://sepolia.infura.io/v3/01117e8ede8e4f36801a6a838b24f36c",
             "wsUrl": "wss://sepolia.infura.io/ws/v3/01117e8ede8e4f36801a6a838b24f36c",
-            "contractAddr": "0xEFf51A8fD7129Ca474b1dcCBE7925ef6b5D45F31",
+            "contractAddr": "0x1C1B6e4A6d35aFEFC79eEc045fDD91a097E8aD0c",
             "privateKey": "in env"
         }
     },
@@ -20,40 +20,14 @@
     "submitters": {
         "enable": true,
         "sideToAmb": {
-            "variant": "untrustless2",
-            "mpc": {
-                "isServer": true,
-                "meID": "master",
-                "partyIDs": [
-                    "master",
-                    "Max",
-                    "AndreyM"
-                ],
-                "threshold": 2,
-                "serverURL": ":6555",
-                "accessToken": "in env",
-                "sharePath": "shared/share_master"
-            }
+            "variant": "untrustless2"
         },
         "ambToSide": {
-            "variant": "untrustless2",
-            "mpc": {
-                "isServer": true,
-                "meID": "master",
-                "partyIDs": [
-                    "master",
-                    "Max",
-                    "AndreyM"
-                ],
-                "threshold": 2,
-                "serverURL": ":6455",
-                "accessToken": "in env",
-                "sharePath": "shared/share_master"
-            }
+            "variant": "untrustless2"
         },
         "ambFaucet": {
             "enable": true,
-            "faucetAddress": "0x090801d716A9d501F57519B1f4bd6aBD2961aa88",
+            "faucetAddress": "0xC5ac5952883CB95709F1CD49E2b4A5ac291d3C0C",
             "minBalance": "0",
             "sendAmount": "1000000000000000000"
         }

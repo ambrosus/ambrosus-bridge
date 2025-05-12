@@ -29,6 +29,11 @@ jobs:
         id: extract_bucket
         run: echo "::set-output name=bucket_name::$(aws s3 ls | grep bridge-config-prod | awk '{print $3}')"
 
+      - name: Upload legacy config
+        run: |
+          aws s3 cp contracts/configs/legacy/main.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/v1 --content-type application/json --cache-control no-cache
+
       - name: Upload config
         run: |
-          aws s3 cp contracts/configs/legacy/main.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/index.html --content-type application/json --cache-control no-cache
+          aws s3 cp contracts/configs/main.json s3://${{ steps.extract_bucket.outputs.bucket_name }}/v2 --content-type application/json --cache-control no-cache
+

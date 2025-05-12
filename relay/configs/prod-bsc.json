@@ -23,36 +23,36 @@
             "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
-                "meID": "master",
+                "meID": "master2",
                 "partyIDs": [
-                    "master",
-                    "Kevin",
-                    "Lang",
-                    "Rory",
-                    "Andrey"
+                    "master2",
+                    "Andrey2",
+                    "Valar2",
+                    "MG2",
+                    "OD2"
                 ],
                 "threshold": 5,
                 "serverURL": ":6555",
                 "accessToken": "in env",
-                "sharePath": "shared/share_master"
+                "sharePath": "shared/share_master2"
             }
         },
         "ambToSide": {
             "variant": "untrustless-mpc",
             "mpc": {
                 "isServer": true,
-                "meID": "master",
+                "meID": "master2",
                 "partyIDs": [
-                    "master",
-                    "Kevin",
-                    "Lang",
-                    "Rory",
-                    "Andrey"
+                    "master2",
+                    "Andrey2",
+                    "Valar2",
+                    "MG2",
+                    "OD2"
                 ],
                 "threshold": 5,
                 "serverURL": ":6455",
                 "accessToken": "in env",
-                "sharePath": "shared/share_master"
+                "sharePath": "shared/share_master2"
             }
         }
     },

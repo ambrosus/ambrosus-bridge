@@ -15,9 +15,10 @@ contract sAMB is IWrapper, ERC20 {
 
     function withdraw(uint amount) public override {
         _burn(msg.sender, amount);
-        payable(msg.sender).transfer(amount);
-
         emit Withdrawal(msg.sender, amount);
+
+        (bool sent, ) = payable(msg.sender).call{value: amount}("");
+        require(sent, "Transfer failed");
     }
 
 }

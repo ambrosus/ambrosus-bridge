@@ -49,7 +49,7 @@
       "addresses": {
         "amb": "0x2b2d892C3fe2b4113dd7aC0D2c1882AF202FB28F",
         "bsc": "",
-        "eth": "0x586EE5Df24c5a426e42eD7Ea6e3EB0f00a4a2256"
+        "eth": "0xf4fB9BF10E489EA3Edb03E094939341399587b0C"
       },
       "nativeAnalog": "AMB"
     },
@@ -107,7 +107,7 @@
         "eth"
       ],
       "addresses": {
-        "amb": "0xd8dd0273D31c1cd9Dba104DaCA7C1dfEE4f7b805",
+        "amb": "0xFF9F502976E7bD2b4901aD7Dd1131Bb81E5567de",
         "bsc": "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
         "eth": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
       },

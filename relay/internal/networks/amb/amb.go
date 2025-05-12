@@ -10,6 +10,7 @@ import (
 	nc "github.com/ambrosus/ambrosus-bridge/relay/internal/networks/common"
 	"github.com/ambrosus/ambrosus-bridge/relay/internal/networks/events"
 	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity"
+	"github.com/ambrosus/ambrosus-bridge/relay/pkg/ethclients/parity/parity_rpc"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/rs/zerolog"
@@ -34,7 +35,7 @@ func New(cfg *config.Network, sideBridgeName string, eventsApi events.Events, ba
 	// ///////////////////
 	origin := nc.GetAmbrosusOrigin()
 
-	rpcHTTPClient, err := rpc.DialHTTP(cfg.HttpURL)
+	rpcHTTPClient, err := parity_rpc.DialHTTP(cfg.HttpURL)
 	if err != nil {
 		return nil, fmt.Errorf("dial http: %w", err)
 	}
@@ -70,7 +71,7 @@ func (b *Bridge) IsEventRemoved(eventLog *types.Log) error {
 		return fmt.Errorf("parityHeaderByNumber: %w", err)
 	}
 	if header.Hash(true) != eventLog.BlockHash {
-		return fmt.Errorf("looks like the event has been removed")
+		return fmt.Errorf("looks like the event has been removed %d", eventLog.BlockNumber)
 	}
 	return nil
 }
