@@ -22,6 +22,7 @@ type response struct {
 	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
 	TransferFee *hexutil.Big  `json:"transferFee"`
 	Amount      *hexutil.Big  `json:"amount"`
+	TotalFeeUsd *hexutil.Big  `json:"totalFeeUsd"`
 	Signature   hexutil.Bytes `json:"signature"`
 }
 
@@ -32,7 +33,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bridgeFee, transferFee, amount, signature, err := p.Service.GetFees(req.TokenAddress, (*big.Int)(req.Amount), req.IsAmb, req.IsAmountWithFees)
+	bridgeFee, transferFee, amount, totalFeeUsd, signature, err := p.Service.GetFees(req.TokenAddress, (*big.Int)(req.Amount), req.IsAmb, req.IsAmountWithFees)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Errorf("error when getting fees: %w", err))
 		return
@@ -42,6 +43,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 		BridgeFee:   (*hexutil.Big)(bridgeFee),
 		TransferFee: (*hexutil.Big)(transferFee),
 		Amount:      (*hexutil.Big)(amount),
+		TotalFeeUsd: (*hexutil.Big)(totalFeeUsd),
 		Signature:   signature,
 	}
 
