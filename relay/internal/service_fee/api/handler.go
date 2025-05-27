@@ -22,7 +22,7 @@ type response struct {
 	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
 	TransferFee *hexutil.Big  `json:"transferFee"`
 	Amount      *hexutil.Big  `json:"amount"`
-	TotalFeeUsd *hexutil.Big  `json:"totalFeeUsd"`
+	TotalFeeUsd float64       `json:"totalFeeUsd"`
 	Signature   hexutil.Bytes `json:"signature"`
 }
 
@@ -43,7 +43,7 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 		BridgeFee:   (*hexutil.Big)(bridgeFee),
 		TransferFee: (*hexutil.Big)(transferFee),
 		Amount:      (*hexutil.Big)(amount),
-		TotalFeeUsd: (*hexutil.Big)(totalFeeUsd),
+		TotalFeeUsd: totalFeeUsd,
 		Signature:   signature,
 	}
 

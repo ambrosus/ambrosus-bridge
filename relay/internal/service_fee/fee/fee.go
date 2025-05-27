@@ -41,7 +41,7 @@ func NewFee(amb, side BridgeFeeApi) *Fee {
 }
 
 func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, isAmountWithFees bool) (
-	bridgeFee, transferFee, amount *big.Int, totalFeeUsd *big.Int, signature []byte, err error) {
+	bridgeFee, transferFee, amount *big.Int, totalFeeUsd float64, signature []byte, err error) {
 
 	bridge, sideBridge := p.getBridges(isAmb)
 
@@ -67,7 +67,7 @@ func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, is
 	return bridgeFee, transferFee, amount, totalFeeUsd, signature, err
 }
 
-func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Address, amount decimal.Decimal, isAmountWithFees bool) (bridgeFeeBI, transferFeeBI, amountBI *big.Int, totalFeeUsd *big.Int, err error) {
+func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Address, amount decimal.Decimal, isAmountWithFees bool) (bridgeFeeBI, transferFeeBI, amountBI *big.Int, totalFeeUsd float64, err error) {
 	// get coin prices of this and side bridges
 	thisCoinPrice, sideCoinPrice, tokenUsdPrice, err := p.getPrices(bridge, sideBridge, tokenAddress)
 	if err != nil {
@@ -98,9 +98,9 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 	}
 
 	totalFeeNative := transferFee.Add(bridgeFee)
-	totalFeeUSD := coin2Usd(totalFeeNative, thisCoinPrice)
+	totalFeeUSD, _ := coin2Usd(totalFeeNative, thisCoinPrice).Float64()
 
-	return bridgeFee.RoundUp(0).BigInt(), transferFee.RoundUp(0).BigInt(), amount.BigInt(), totalFeeUSD.BigInt(), nil
+	return bridgeFee.RoundUp(0).BigInt(), transferFee.RoundUp(0).BigInt(), amount.BigInt(), totalFeeUSD, nil
 
 }
 
