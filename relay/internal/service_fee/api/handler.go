@@ -19,11 +19,12 @@ type reqParams struct {
 }
 
 type response struct {
-	BridgeFee   *hexutil.Big  `json:"bridgeFee"`
-	TransferFee *hexutil.Big  `json:"transferFee"`
-	Amount      *hexutil.Big  `json:"amount"`
-	TotalFeeUsd float64       `json:"totalFeeUsd"`
-	Signature   hexutil.Bytes `json:"signature"`
+	BridgeFee      *hexutil.Big  `json:"bridgeFee"`
+	TransferFee    *hexutil.Big  `json:"transferFee"`
+	Amount         *hexutil.Big  `json:"amount"`
+	TransferFeeUSD float64       `json:"transferFeeUsd"`
+	BridgeFeeUSD   float64       `json:"bridgeFeeUsd"`
+	Signature      hexutil.Bytes `json:"signature"`
 }
 
 func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,18 +34,19 @@ func (p *FeeAPI) feesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bridgeFee, transferFee, amount, totalFeeUsd, signature, err := p.Service.GetFees(req.TokenAddress, (*big.Int)(req.Amount), req.IsAmb, req.IsAmountWithFees)
+	bridgeFee, transferFee, amount, transferFeeUSD, bridgeFeeUSD, signature, err := p.Service.GetFees(req.TokenAddress, (*big.Int)(req.Amount), req.IsAmb, req.IsAmountWithFees)
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, fmt.Errorf("error when getting fees: %w", err))
 		return
 	}
 
 	result := &response{
-		BridgeFee:   (*hexutil.Big)(bridgeFee),
-		TransferFee: (*hexutil.Big)(transferFee),
-		Amount:      (*hexutil.Big)(amount),
-		TotalFeeUsd: totalFeeUsd,
-		Signature:   signature,
+		BridgeFee:      (*hexutil.Big)(bridgeFee),
+		TransferFee:    (*hexutil.Big)(transferFee),
+		Amount:         (*hexutil.Big)(amount),
+		TransferFeeUSD: transferFeeUSD,
+		BridgeFeeUSD:   bridgeFeeUSD,
+		Signature:      signature,
 	}
 
 	w.Header().Set("Content-Type", "application/json")

@@ -41,7 +41,7 @@ func NewFee(amb, side BridgeFeeApi) *Fee {
 }
 
 func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, isAmountWithFees bool) (
-	bridgeFee, transferFee, amount *big.Int, totalFeeUsd float64, signature []byte, err error) {
+	bridgeFee, transferFee, amount *big.Int, transferFeeUSD, bridgeFeeUSD float64, signature []byte, err error) {
 
 	bridge, sideBridge := p.getBridges(isAmb)
 
@@ -51,7 +51,7 @@ func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, is
 	}
 
 	// get fees
-	bridgeFee, transferFee, amount, totalFeeUsd, err = p.getFees(bridge, sideBridge, tokenAddress, decimal.NewFromBigInt(reqAmount, 0), isAmountWithFees)
+	bridgeFee, transferFee, amount, transferFeeUSD, bridgeFeeUSD, err = p.getFees(bridge, sideBridge, tokenAddress, decimal.NewFromBigInt(reqAmount, 0), isAmountWithFees)
 	if err != nil {
 		return
 	}
@@ -64,10 +64,10 @@ func (p *Fee) GetFees(tokenAddress common.Address, reqAmount *big.Int, isAmb, is
 		err = fmt.Errorf("error when signing data: %w", err)
 	}
 
-	return bridgeFee, transferFee, amount, totalFeeUsd, signature, err
+	return bridgeFee, transferFee, amount, transferFeeUSD, bridgeFeeUSD, signature, err
 }
 
-func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Address, amount decimal.Decimal, isAmountWithFees bool) (bridgeFeeBI, transferFeeBI, amountBI *big.Int, totalFeeUsd float64, err error) {
+func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Address, amount decimal.Decimal, isAmountWithFees bool) (bridgeFeeBI, transferFeeBI, amountBI *big.Int, transferFeeUSD, bridgeFeeUSD float64, err error) {
 	// get coin prices of this and side bridges
 	thisCoinPrice, sideCoinPrice, tokenUsdPrice, err := p.getPrices(bridge, sideBridge, tokenAddress)
 	if err != nil {
@@ -97,10 +97,10 @@ func (p *Fee) getFees(bridge, sideBridge BridgeFeeApi, tokenAddress common.Addre
 		return
 	}
 
-	totalFeeNative := transferFee.Add(bridgeFee)
-	totalFeeUSD, _ := coin2Usd(totalFeeNative, thisCoinPrice).Float64()
+	transferFeeUSD, _ = coin2Usd(transferFee, thisCoinPrice).Float64()
+	bridgeFeeUSD, _ = coin2Usd(bridgeFee, thisCoinPrice).Float64()
 
-	return bridgeFee.RoundUp(0).BigInt(), transferFee.RoundUp(0).BigInt(), amount.BigInt(), totalFeeUSD, nil
+	return bridgeFee.RoundUp(0).BigInt(), transferFee.RoundUp(0).BigInt(), amount.BigInt(), transferFeeUSD, bridgeFeeUSD, nil
 
 }
 
