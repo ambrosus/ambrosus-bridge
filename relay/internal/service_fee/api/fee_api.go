@@ -42,7 +42,7 @@ func (p *FeeAPI) setupCORS() *cors.Cors {
 	// setup CORS
 	var allowedOrigins = []string{"*"}
 	if os.Getenv("STAGE") == "prod" {
-		allowedOrigins = []string{"https://*ambrosus.io", "https://*airdao.io", "https://*amplify.com"}
+		allowedOrigins = []string{"https://*ambrosus.io", "https://*airdao.io", "https://*amplify.com", "https://*ascendia.network"}
 	}
 
 	return cors.New(cors.Options{
